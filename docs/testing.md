@@ -4,6 +4,26 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-13: a new phone, an OPPO CPH2363
+
+The owner set up a second phone, an OPPO CPH2363 (Android 14, eight cores,
+8 GB), on 0.2.0-beta.9 from the release, and found it "really struggling".
+
+**Measured** over wireless debugging, the app open. Its first backup of the
+phone's folders read 1,021 files, 9.8 GB, in 95 s. Meanwhile the app used
+1.4 cores, the engine was held 3 to 13 s at a time, and screens waited up to
+64 s for it. Afterwards, with the app open and syncing every half minute,
+0.2 of a core. The phone's own memory was nearly full (7.67 of 7.8 GB, 3.5 GB
+in swap), and its system lowered the screen's brightness for QurbSpace at
+38 °C.
+
+**Fixed:** the backup read its files while holding the engine. Now it holds
+the engine to plan what to read and to record what was read, and reads with
+it let go, leaving the engine free for 20 ms between batches
+(`Store::plan_outside_folder`, `OutsideReader`, `record_outside_batch`).
+Tested by the storage and phone engine suites; **not yet measured on a first
+backup**, since the OPPO's has finished.
+
 ## 2026-11-12: the person's controls (decision 0086)
 
 **Conditions.** The owner's laptop, release builds at the commit that adds

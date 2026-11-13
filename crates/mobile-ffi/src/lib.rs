@@ -2658,8 +2658,15 @@ fn happenings(
 /// taking an optional callback interface can cross an FFI boundary.
 impl Qurb {
 
-    /// Keep one folder where it lies, a few seconds at a time until
-    /// `deadline`, adding what was done to `run` (decisions 0062 and 0063).
+    /// Keep one folder where it lies until `deadline`, adding what was done
+    /// to `run` (decisions 0062 and 0063).
+    ///
+    /// The engine is held only to plan and to record: files are read with
+    /// it let go. Read under it, a first backup of 9.8 GB on a new OPPO held
+    /// it up to 13 s at a time, and a screen waited 64 s behind it -- the app
+    /// "really struggling" (the owner, 2026-11-13). A file that cannot be
+    /// read is left for the next run: mostly one WhatsApp moved or deleted
+    /// in the minute it took to list the folder.
     fn keep_folder(
         &self,
         prefix: &str,
@@ -2668,41 +2675,40 @@ impl Qurb {
         deadline: std::time::Instant,
         run: &mut BackupRun,
     ) -> Result<(), QurbError> {
-        let before = (run.added, run.changed, run.failed);
-        let remaining_before = run.remaining;
-        // Files that could not be read this run: skipped for the rest of it,
-        // and tried again next time. Mostly ones WhatsApp moved or deleted in
-        // the minute it took to list the folder -- ordinary, and on the S23
-        // it stopped every run after the first at one such file.
-        let mut unreadable = std::collections::HashSet::new();
-        let mut remaining;
-        loop {
-            // A few seconds at a time, letting go of the engine in between, so
-            // that the app is never kept waiting on it for a whole first run.
-            let slice = (std::time::Instant::now() + std::time::Duration::from_secs(3)).min(deadline);
-            let skip = |path: &str| unreadable.contains(path);
-            let report =
-                self.engine()?.store_mut().keep_outside_folder(prefix, listing, keep_when_gone, Some(slice), &skip)?;
-            run.added += report.added as u32;
-            run.changed += report.changed as u32;
-            run.kept += report.kept as u32;
-            run.deleted += report.deleted as u32;
-            run.bytes_read += report.bytes_read;
-            remaining = report.remaining as u32;
-            run.failed += report.failed.len() as u32;
-            if run.first_failure.is_none() {
-                run.first_failure = report.failed.first().map(|(path, why)| format!("{path}: {why}"));
-            }
-            unreadable.extend(report.failed.into_iter().map(|(path, _)| path));
-            if report.remaining == 0 || std::time::Instant::now() >= deadline {
+        let (plan, reader) = {
+            let mut engine = self.engine()?;
+            let plan = engine.store_mut().plan_outside_folder(prefix, listing, keep_when_gone, &|_| false)?;
+            (plan, engine.store().outside_reader())
+        };
+        let qurb_storage::OutsidePlan { work, report: planned } = plan;
+        let mut report = planned;
+        let mut left = work.as_slice();
+        while !left.is_empty() {
+            if std::time::Instant::now() >= deadline {
+                report.remaining += left.len();
                 break;
             }
+            let (batch, rest) = left.split_at(left.len().min(qurb_storage::OUTSIDE_BATCH));
+            left = rest;
+            let read = reader.read(batch);
+            self.engine()?.store_mut().record_outside_batch(batch, read, &mut report);
+            // Let go long enough for a screen waiting on the engine to take
+            // it: the lock is not fair, and is otherwise taken back at once.
+            if !left.is_empty() {
+                std::thread::sleep(BACKUP_GAP);
+            }
         }
-        run.remaining = remaining_before + remaining;
-        // Unchanged since before this run: each slice also counts the files
-        // an earlier slice of it just read.
-        let done = (run.added - before.0) + (run.changed - before.1) + remaining + (run.failed - before.2);
-        run.unchanged += (listing.len() as u32).saturating_sub(done);
+        run.added += report.added as u32;
+        run.changed += report.changed as u32;
+        run.unchanged += report.unchanged as u32;
+        run.kept += report.kept as u32;
+        run.deleted += report.deleted as u32;
+        run.bytes_read += report.bytes_read;
+        run.remaining += report.remaining as u32;
+        run.failed += report.failed.len() as u32;
+        if run.first_failure.is_none() {
+            run.first_failure = report.failed.first().map(|(path, why)| format!("{path}: {why}"));
+        }
         Ok(())
     }
 
@@ -3893,6 +3899,10 @@ const LOOK_EVERY: std::time::Duration = std::time::Duration::from_millis(200);
 /// A look that comes this much later than asked means the process was not
 /// running in between.
 const FROZEN: std::time::Duration = std::time::Duration::from_secs(3);
+
+/// How long a backup leaves the engine free between recording one batch of
+/// files and the next, for a screen waiting on it to take it.
+const BACKUP_GAP: std::time::Duration = std::time::Duration::from_millis(20);
 
 /// Until when a collector's silence is excused, given when this pass last
 /// looked and when it looks now.

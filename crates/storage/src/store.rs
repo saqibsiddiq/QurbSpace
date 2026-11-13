@@ -422,6 +422,66 @@ fn describe(documents: Option<&std::sync::Arc<dyn Documents>>, source: &str) -> 
 /// reading them one at a time came to 63 ms a file on the S23 (decision 0062).
 const READING_AT_ONCE: usize = 4;
 
+/// How many files outside the folder are read before they are recorded: a
+/// few rounds of [`READING_AT_ONCE`].
+pub const OUTSIDE_BATCH: usize = READING_AT_ONCE * 4;
+
+/// The new and changed files of a folder outside qurb's, to be read, with
+/// what planning them found (`Store::plan_outside_folder`).
+pub struct OutsidePlan {
+    pub work: Vec<OutsideWork>,
+    pub report: OutsideReport,
+}
+
+/// One file to read.
+pub struct OutsideWork {
+    entry: OutsideEntry,
+    /// Where it goes in the vault.
+    path: String,
+    /// Kept before, so changed rather than added.
+    before: bool,
+    /// Too recent to trust when last read.
+    racy: bool,
+}
+
+/// What files were found to hold, in the order asked, for
+/// `Store::record_outside_batch`.
+pub struct OutsideRead(Vec<Result<Manifest>>);
+
+/// Reads files outside the folder, several at once, without the store.
+pub struct OutsideReader {
+    documents: Option<std::sync::Arc<dyn Documents>>,
+}
+
+impl OutsideReader {
+    pub fn read(&self, batch: &[OutsideWork]) -> OutsideRead {
+        let next = std::sync::atomic::AtomicUsize::new(0);
+        let mut described: Vec<Option<Result<Manifest>>> = (0..batch.len()).map(|_| None).collect();
+        std::thread::scope(|scope| {
+            let workers: Vec<_> = (0..READING_AT_ONCE.min(batch.len()))
+                .map(|_| {
+                    let (next, documents) = (&next, self.documents.as_ref());
+                    scope.spawn(move || {
+                        let mut mine = Vec::new();
+                        loop {
+                            let i = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                            let Some(work) = batch.get(i) else { break };
+                            mine.push((i, describe(documents, &work.entry.source)));
+                        }
+                        mine
+                    })
+                })
+                .collect();
+            for worker in workers {
+                for (i, result) in worker.join().expect("a reader panicked") {
+                    described[i] = Some(result);
+                }
+            }
+        });
+        OutsideRead(described.into_iter().map(|d| d.expect("every file was read")).collect())
+    }
+}
+
 /// A file's content hash as the index records it -- BLAKE3 over all of its
 /// bytes in order, which is what [`chunker::chunk_bytes`] computes -- read in
 /// pieces rather than held.
@@ -1872,6 +1932,36 @@ impl Store {
         until: Option<std::time::Instant>,
         skip: &dyn Fn(&str) -> bool,
     ) -> Result<OutsideReport> {
+        let OutsidePlan { work, mut report } = self.plan_outside_folder(prefix, listing, keep_when_gone, skip)?;
+        let reader = self.outside_reader();
+        let mut left = work.as_slice();
+        while !left.is_empty() {
+            if until.is_some_and(|deadline| std::time::Instant::now() >= deadline) {
+                report.remaining += left.len();
+                break;
+            }
+            let (batch, rest) = left.split_at(left.len().min(OUTSIDE_BATCH));
+            left = rest;
+            let read = reader.read(batch);
+            self.record_outside_batch(batch, read, &mut report);
+        }
+        Ok(report)
+    }
+
+    /// The first part of [`keep_outside_folder`](Self::keep_outside_folder),
+    /// which needs the index: gone files dealt with, unchanged ones counted,
+    /// and the new and changed ones listed to be read. The reading needs
+    /// nothing of the store ([`OutsideReader`]), so a caller that holds the
+    /// store behind a lock can let go of it while files are read -- the phone,
+    /// whose screens waited up to 64 s behind a first backup of 9.8 GB on a
+    /// new OPPO (2026-11-13).
+    pub fn plan_outside_folder(
+        &mut self,
+        prefix: &str,
+        listing: &[OutsideEntry],
+        keep_when_gone: &dyn Fn(&str) -> bool,
+        skip: &dyn Fn(&str) -> bool,
+    ) -> Result<OutsidePlan> {
         let prefix = prefix.trim_end_matches('/');
         let mut report = OutsideReport::default();
         let kept = self.db.outside_under(prefix)?;
@@ -1917,70 +2007,47 @@ impl Store {
             if skip(&entry.path) {
                 continue;
             }
-            work.push((entry, path, before.is_some()));
-        }
-
-        // Read several at once, a few batches at a time, and record each in
-        // order here: the reading waits on the platform, the recording on
-        // the index, which takes one writer.
-        let documents = self.documents.clone();
-        let mut left = work.as_slice();
-        while !left.is_empty() {
-            if until.is_some_and(|deadline| std::time::Instant::now() >= deadline) {
-                report.remaining += left.len();
-                break;
-            }
-            let (batch, rest) = left.split_at(left.len().min(READING_AT_ONCE * 4));
-            left = rest;
-            let next = std::sync::atomic::AtomicUsize::new(0);
-            let mut described: Vec<Option<Result<Manifest>>> = (0..batch.len()).map(|_| None).collect();
-            std::thread::scope(|scope| {
-                let workers: Vec<_> = (0..READING_AT_ONCE.min(batch.len()))
-                    .map(|_| {
-                        let (next, documents) = (&next, documents.as_ref());
-                        scope.spawn(move || {
-                            let mut mine = Vec::new();
-                            loop {
-                                let i = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                                let Some((entry, _, _)) = batch.get(i) else { break };
-                                mine.push((i, describe(documents, &entry.source)));
-                            }
-                            mine
-                        })
-                    })
-                    .collect();
-                for worker in workers {
-                    for (i, result) in worker.join().expect("a reader panicked") {
-                        described[i] = Some(result);
-                    }
-                }
+            work.push(OutsideWork {
+                racy: racy.contains(path.as_str()),
+                entry: entry.clone(),
+                path,
+                before: before.is_some(),
             });
-            for ((entry, path, before), manifest) in batch.iter().zip(described) {
-                let recorded = manifest
-                    .expect("every file was read")
-                    .and_then(|m| self.record_outside(path, &entry.source, entry.size, entry.mtime_ns, &m));
-                match recorded {
-                    // Read again only because it was too recent to trust, and
-                    // the same after all.
-                    Ok(put) if put.unchanged && *before && racy.contains(path.as_str()) => {
-                        let _ = self.db.set_racy(path, too_recent(entry.mtime_ns));
-                        report.bytes_read += entry.size;
-                        report.unchanged += 1;
-                    }
-                    Ok(_) => {
-                        let _ = self.db.set_racy(path, too_recent(entry.mtime_ns));
-                        report.bytes_read += entry.size;
-                        if *before {
-                            report.changed += 1;
-                        } else {
-                            report.added += 1;
-                        }
-                    }
-                    Err(e) => report.failed.push((entry.path.clone(), e.to_string())),
+        }
+        Ok(OutsidePlan { work, report })
+    }
+
+    /// What reads files outside the folder, to be used without the store.
+    pub fn outside_reader(&self) -> OutsideReader {
+        OutsideReader { documents: self.documents.clone() }
+    }
+
+    /// The last part: each file of `batch` recorded in the index as `read`
+    /// found it, in order, and counted in `report`.
+    pub fn record_outside_batch(&mut self, batch: &[OutsideWork], read: OutsideRead, report: &mut OutsideReport) {
+        for (work, manifest) in batch.iter().zip(read.0) {
+            let OutsideWork { entry, path, before, racy } = work;
+            let recorded = manifest.and_then(|m| self.record_outside(path, &entry.source, entry.size, entry.mtime_ns, &m));
+            match recorded {
+                // Read again only because it was too recent to trust, and
+                // the same after all.
+                Ok(put) if put.unchanged && *before && *racy => {
+                    let _ = self.db.set_racy(path, too_recent(entry.mtime_ns));
+                    report.bytes_read += entry.size;
+                    report.unchanged += 1;
                 }
+                Ok(_) => {
+                    let _ = self.db.set_racy(path, too_recent(entry.mtime_ns));
+                    report.bytes_read += entry.size;
+                    if *before {
+                        report.changed += 1;
+                    } else {
+                        report.added += 1;
+                    }
+                }
+                Err(e) => report.failed.push((entry.path.clone(), e.to_string())),
             }
         }
-        Ok(report)
     }
 
     /// Take back a send the other device has not collected yet.
