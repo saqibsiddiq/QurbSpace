@@ -175,6 +175,21 @@ at once. Making them on the laptop instead, a few KB each, needs a JPEG
 decoder, none of which is on this machine. (6) Every screen portrait: the
 app followed the phone's auto-rotate. (4) and (5) asked about.
 
+**Sends not instant, and Recently deleted** (the owner, 2026-11-13: "why is
+sending from phone to laptop isnt instant as hell", and a screenshot). A send
+from the S23 at 14:11:18 UTC was announced on the home network within the
+second, and the laptop ignored it -- "announced, and already listened to" --
+waiting for news on the connection it held to the S23, which came at
+14:11:43 when that lapsed: a phone's pass starts afresh, and its news never
+comes down the old connection. An announcement now says whether it carries
+news, and one that does is acted on whatever is held. The laptop's mailbox
+step is 10 s a device, not 30, so it never holds a send up long. On the
+phone's Recently deleted, XML files were drawn by their first line,
+`<?xml version='1.0'`, three times over; code and markup are now drawn as a
+tile of their kind. Its Restore all and Delete all floated over the grid,
+hid the last row, and the syncing notice landed on them; the bar is now in
+the dock above the tab bar, where a page's bar goes. Not yet seen on a phone.
+
 **Background activity**: the app asks once, after the notifications, with
 Android's own question; Settings has *Background activity*, Allowed or
 Restricted. On the OPPO the question was hidden under a folder request

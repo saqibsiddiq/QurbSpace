@@ -159,7 +159,7 @@ pub struct Connector {
     /// that discovers it by polling on a backoff will almost never be asking
     /// during one. Being told means acting inside the window rather than
     /// hoping to coincide with it.
-    arrivals: broadcast::Sender<MemberId>,
+    arrivals: broadcast::Sender<(MemberId, bool)>,
     /// Devices seen on this network lately, which is better evidence of
     /// reachability than anything the rendezvous service can offer.
     neighbours: Neighbours,
@@ -215,7 +215,7 @@ impl Drop for Connector {
 async fn follow_beacons(
     mut sightings: mpsc::UnboundedReceiver<crate::local::Beacon>,
     neighbours: Neighbours,
-    arrivals: broadcast::Sender<MemberId>,
+    arrivals: broadcast::Sender<(MemberId, bool)>,
 ) {
     while let Some(beacon) = sightings.recv().await {
         tracing::debug!(
@@ -226,7 +226,9 @@ async fn follow_beacons(
         neighbours.note(beacon.member, beacon.endpoints);
         // A send with no receivers is not a failure: nothing is listening yet,
         // or nothing cares. The sighting is recorded either way.
-        let _ = arrivals.send(beacon.member);
+        // With whether it says it has news: a device already listened to is
+        // synced with for news, not for being there (2026-11-13).
+        let _ = arrivals.send((beacon.member, beacon.news));
     }
 }
 
@@ -692,7 +694,7 @@ impl Connector {
     ///
     /// A late subscriber misses earlier arrivals, which is deliberate: this is
     /// a nudge to try now, not a log to be replayed.
-    pub fn arrivals(&self) -> broadcast::Receiver<MemberId> {
+    pub fn arrivals(&self) -> broadcast::Receiver<(MemberId, bool)> {
         self.arrivals.subscribe()
     }
 
@@ -1363,7 +1365,7 @@ async fn stay_signalled(
     mut here: watch::Receiver<Endpoints>,
     endpoint: quinn::Endpoint,
     identity: Identity,
-    arrivals_tx: broadcast::Sender<MemberId>,
+    arrivals_tx: broadcast::Sender<(MemberId, bool)>,
 ) {
     let mut client = first;
     let mut wait = RECONNECT_FLOOR;
@@ -1430,7 +1432,7 @@ async fn run_signalling(
     here: &mut watch::Receiver<Endpoints>,
     endpoint: quinn::Endpoint,
     identity: Identity,
-    arrivals_tx: broadcast::Sender<MemberId>,
+    arrivals_tx: broadcast::Sender<(MemberId, bool)>,
 ) {
     let mut waiting: HashMap<MemberId, oneshot::Sender<Result<Endpoints>>> = HashMap::new();
     // Until the connector goes, which ends this task anyway; a closed channel
@@ -1531,7 +1533,7 @@ async fn run_signalling(
                 Some(FromServer::Appeared { peer }) => {
                     // No receivers is the ordinary case -- nothing is obliged
                     // to care -- so a send error is not a problem.
-                    let _ = arrivals_tx.send(peer.member);
+                    let _ = arrivals_tx.send((peer.member, false));
                 }
 
                 // Somebody has something for this device. Reported on the same
@@ -1540,7 +1542,7 @@ async fn run_signalling(
                 // appeared" and "they have news" does not change what to do.
                 Some(FromServer::Waiting { from }) => {
                     tracing::debug!(?from, "a peer says it has something for us");
-                    let _ = arrivals_tx.send(from);
+                    let _ = arrivals_tx.send((from, true));
                 }
 
                 None => {

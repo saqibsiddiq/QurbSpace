@@ -34,16 +34,11 @@ class DeletedScreen(app: MainActivity, fromSettings: Boolean = false) : Screen(a
 
     private val views = ScreenPageBinding.inflate(app.layoutInflater)
     private val bar = LinearLayout(app)
-    private val frame = FrameLayout(app).apply {
-        addView(views.root)
-        addView(bar, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT,
-            Gravity.BOTTOM).apply {
-            val side = app.resources.getDimensionPixelSize(R.dimen.gutter)
-            // Above the tab bar, which floats over the page's foot.
-            setMargins(side, 0, side, app.resources.getDimensionPixelSize(R.dimen.nav_clearance))
-        })
-    }
-    override val view: View get() = frame
+    override val view: View get() = views.root
+    // In the dock, above the tab bar, where a page's own bar goes: floated
+    // over the grid it hid the last row, and "Syncing with your devices"
+    // landed on top of it (the owner's screenshot, 2026-11-13).
+    override val dockBar: View get() = bar
     override val tab = if (fromSettings) R.id.tab_settings else R.id.tab_files
     private val backWords = if (fromSettings) "Settings" else "Files"
 
@@ -75,7 +70,9 @@ class DeletedScreen(app: MainActivity, fromSettings: Boolean = false) : Screen(a
         views.action.setPadding(kit.dp(16), 0, kit.dp(16), 0)
         views.action.textSize = 14f
         views.action.elevation = kit.dp(1).toFloat()
-        views.sections.setPadding(0, 0, 0, kit.dp(84))
+        // Room for the dock -- the tab bar and this page's bar above it -- so
+        // the last row is never under them.
+        views.sections.setPadding(0, 0, 0, app.resources.getDimensionPixelSize(R.dimen.nav_clearance) + kit.dp(80))
         bar.apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL

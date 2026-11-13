@@ -176,7 +176,7 @@ pub struct Daemon {
 /// How often the mailbox is used for a device that cannot be reached, and
 /// how long each way at most.
 const MAILBOX_EVERY: Duration = Duration::from_secs(60);
-const MAILBOX_FOR: Duration = Duration::from_secs(30);
+const MAILBOX_FOR: Duration = Duration::from_secs(10);
 
 /// How often this computer's own folders are looked through for its backup,
 /// and for how long at most: a new folder of thousands of files is read
@@ -858,16 +858,22 @@ impl Daemon {
                     // new. A phone awake announces every twenty seconds or
                     // so, and each was a full pass, for hours on end
                     // (2026-10-28).
+                    // Unless it says it has news: a phone that has just sent
+                    // something says so, and its news did not come down the
+                    // connection listened on -- a phone's pass starts afresh
+                    // -- so a send waited 25 s for that connection to lapse
+                    // (the owner, 2026-11-13: "isnt instant as hell").
                     let arrived: std::collections::BTreeSet<Fingerprint> = arrived
                         .into_iter()
-                        .filter_map(|member| peers.member(&connector, member))
-                        .filter(|peer| {
+                        .filter_map(|(member, news)| peers.member(&connector, member).map(|peer| (peer, news)))
+                        .filter(|(peer, news)| {
                             let listening = peers.listening(peer);
-                            if listening {
+                            if listening && !news {
                                 tracing::debug!(peer = %peer.short(), "announced, and already listened to");
                             }
-                            !listening
+                            !listening || *news
                         })
+                        .map(|(peer, _)| peer)
                         .collect();
                     for peer in &arrived {
                         tracing::info!(peer = %peer.short(), "a peer is reachable and has news; syncing now");

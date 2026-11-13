@@ -84,7 +84,7 @@ object Thumbs {
                 "video" -> media(context) { it.setDataSource(file.path) }?.let { framed(it.first, it.second) }
                 "song" -> media(context) { it.setDataSource(file.path) }?.first
                 "pdf" -> page(file)
-                "text", "table" -> text(java.io.FileInputStream(file).use { input ->
+                "text", "table" -> if (coded(path)) tile(path) else text(java.io.FileInputStream(file).use { input ->
                     val buf = ByteArray(TEXT_BYTES); val n = input.read(buf).coerceAtLeast(0); buf.copyOf(n) })
                 else -> if (path.endsWith(".apk", true)) app(context, file) ?: tile(path) else tile(path)
             } ?: tile(path)
@@ -127,7 +127,7 @@ object Thumbs {
                     local.parentFile?.mkdirs()
                     if (local.exists() || open.convert(file, local.path)) page(local) else tile(file.name)
                 }
-                "text", "table" -> text(open.stream(file).readAt(0uL, minOf(file.size, TEXT_BYTES.toULong()).toUInt()))
+                "text", "table" -> if (coded(file.name)) tile(file.name) else text(open.stream(file).readAt(0uL, minOf(file.size, TEXT_BYTES.toULong()).toUInt()))
                 else -> tile(file.name)
             }
         }
@@ -210,6 +210,18 @@ object Thumbs {
     /** Anything else: its kind written on a white tile, ZIP. */
     /** A document as the mockups draw one (components.css's .th.doc): a
      *  white page of grey lines, its type on a coloured tag at the foot. */
+    /**
+     * Code and markup, whose first lines read as noise in a tile -- XML's
+     * `<?xml version='1.0'` three times over in Recently deleted (the owner,
+     * 2026-11-13): drawn by their kind. Notes keep their first lines.
+     */
+    private val codes = setOf(
+        "xml", "json", "html", "htm", "yml", "yaml", "toml", "ini", "cfg", "conf", "log",
+        "js", "ts", "kt", "java", "rs", "py", "c", "h", "cpp", "css", "sh", "sql", "plist",
+    )
+
+    private fun coded(name: String) = name.substringAfterLast('.', "").lowercase() in codes
+
     private fun tile(name: String): Bitmap? {
         val ext = name.substringAfterLast('.', "").uppercase().take(4)
         if (ext.isEmpty()) return null
