@@ -50,6 +50,12 @@ const SWEEP_INTERVAL: Duration = Duration::from_secs(120);
 /// already open, before that connection closes.
 const GOODBYE_WAIT: Duration = Duration::from_secs(3);
 
+/// How long a connection kept from an earlier pass is given to answer before
+/// it is taken for dead and the device dialled again. A list unchanged comes
+/// back in well under a second on a home network; a slow path is given
+/// fifteen, and the second try no limit.
+const KEPT_ANSWERS_WITHIN: Duration = Duration::from_secs(15);
+
 const TRUST_INTERVAL: Duration = Duration::from_secs(30);
 
 /// How often to notice that a connected device went away, while any is
@@ -1060,7 +1066,18 @@ impl Daemon {
         // Set by whichever peer brought something new, so the others can be
         // told once at the end rather than per peer.
         let mut news_from: Option<Fingerprint> = None;
-        let attempted = peers.ready();
+        let mut attempted = peers.ready();
+        // A device that just said it is there first, then the others by when
+        // each was last reached. In turn and 21 s each, devices that never
+        // answer -- a phone's identities from before it was set up again --
+        // otherwise came before a phone that had just gone onto mobile data,
+        // and it was reached only once it was home again (2026-11-13).
+        if let Ok(store) = self.open_store() {
+            let seen = |peer: &Fingerprint| {
+                store.db().peer_by_fingerprint(peer.as_bytes()).ok().flatten().and_then(|k| k.last_seen).unwrap_or(0)
+            };
+            attempted.sort_by_key(|peer| (!peers.announced.contains(peer), std::cmp::Reverse(seen(peer))));
+        }
         if !attempted.is_empty() {
             self.report(|status| status.state = crate::status::State::Working);
         }
@@ -1141,21 +1158,39 @@ impl Daemon {
         peers: &mut Peers,
         peer: Fingerprint,
     ) -> Result<usize> {
-        let client = match peers.connection(peer) {
-            Some(client) => client,
-            None => {
-                let client = Arc::new(connector.reach(peer).await?);
-                peers.connected(peer, Arc::clone(&client));
-                peers.watch(peer, Arc::clone(&client));
-                client
-            }
-        };
-
         // Its list as kept from the last sync, if it says nothing changed
         // since (`qurb_peer::trees`): a phone's lists here are its backups'
         // tens of thousands of files.
         let trees = qurb_peer::trees::Trees::at(self.store_dir.join("trees"));
-        let tree = match client.tree_kept(&peer, &trees).await {
+        let fresh = |peers: &mut Peers, client: PeerClient| {
+            let client = Arc::new(client);
+            peers.connected(peer, Arc::clone(&client));
+            peers.watch(peer, Arc::clone(&client));
+            client
+        };
+        let (client, asked) = match peers.connection(peer) {
+            // A connection kept from before may be dead: the device moved
+            // from Wi-Fi to mobile data, and its old path answers nothing. It
+            // took 80 s to say so on 2026-11-13. Given a short while, then a
+            // fresh dial at once, by whatever path reaches it now.
+            Some(client) => match tokio::time::timeout(KEPT_ANSWERS_WITHIN, client.tree_kept(&peer, &trees)).await {
+                Ok(Ok(tree)) => (client, Ok(tree)),
+                Ok(Err(qurb_peer::Error::Removed)) => (client, Err(qurb_peer::Error::Removed)),
+                _ => {
+                    tracing::debug!(peer = %peer.short(), "a kept connection did not answer; dialling again");
+                    peers.disconnected(peer);
+                    let client = fresh(peers, connector.reach(peer).await?);
+                    let asked = client.tree_kept(&peer, &trees).await;
+                    (client, asked)
+                }
+            },
+            None => {
+                let client = fresh(peers, connector.reach(peer).await?);
+                let asked = client.tree_kept(&peer, &trees).await;
+                (client, asked)
+            }
+        };
+        let tree = match asked {
             Ok(tree) => tree,
             // It removed this device, and said so: forgotten here, and
             // remembered as having done it, for the interface to say. The

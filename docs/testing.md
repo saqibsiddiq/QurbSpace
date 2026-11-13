@@ -55,6 +55,20 @@ than since the app started (which had to overtake everything confirmed
 before it moved), never goes back, and is read every second rather than
 every two. Not yet watched on the phone after that change.
 
+**Mobile data** (the owner: "when i switched to mobile data in new phone,
+it failed to connect with laptop"). The OPPO left the home Wi-Fi at 07:11:02
+UTC mid-transfer and was back at 07:13:35. The laptop heard it announce a
+change through the rendezvous service at 07:11:46 and 07:12:53, but never
+reached it. It reused the connection from the Wi-Fi, which took until 07:12:28
+to fail ("connection lost: timed out"), and an announcement cleared every
+device's waiting time, so it then tried three of the S23's identities from
+before it was set up again, and the S23, which was away, 21 s each, before the
+OPPO. Changed: a device that just announced itself is tried first, the rest
+by when each was last reached, and a kept connection that does not answer
+within 15 s is dropped and the device dialled again at once. **Not yet tried
+on mobile data**; the phone's own side of those two minutes was not read,
+since wireless debugging goes with the Wi-Fi.
+
 **Background activity**: the app asks once, after the notifications, with
 Android's own question; Settings has *Background activity*, Allowed or
 Restricted. On the OPPO the question was hidden under a folder request
