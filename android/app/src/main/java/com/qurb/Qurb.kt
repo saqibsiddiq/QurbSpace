@@ -50,7 +50,13 @@ object Engine {
         connectivity.registerDefaultNetworkCallback(object : android.net.ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: android.net.Network) {
                 if (first) { first = false; return }
-                later.launch { runCatching { open(context).networkChanged() } }
+                later.launch {
+                    runCatching { open(context).networkChanged() }
+                    // Off the home network: Tor started now, so the next pass
+                    // finds the computer through it in a second rather than
+                    // a minute (2026-11-13).
+                    if (!unmetered(context)) runCatching { open(context).warmTor() }
+                }
             }
 
             override fun onLost(network: android.net.Network) {

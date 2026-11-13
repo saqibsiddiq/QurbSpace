@@ -202,6 +202,8 @@ class ControlSheets(private val app: MainActivity) {
         runCatching { engine?.peers() }.getOrNull()?.forEach { appendLine("${it.name} (${it.relation}, ${it.kind ?: "?"}), last seen ${it.lastSeen}") }
         appendLine("\n== Activity, newest first")
         runCatching { engine?.history(200u, null) }.getOrNull()?.forEach { appendLine("${it.at} ${it.kind} ${it.path ?: ""} ${it.detail ?: ""}") }
+        appendLine("\n== Reaching the computers")
+        append(runCatching { engine?.connectionLog() }.getOrNull().orEmpty().takeLast(200_000))
         appendLine("\n== Log")
         runCatching {
             val log = Runtime.getRuntime().exec(arrayOf("logcat", "-d", "-v", "time", "--pid=${android.os.Process.myPid()}"))

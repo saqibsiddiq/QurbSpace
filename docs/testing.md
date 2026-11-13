@@ -119,6 +119,23 @@ device, asks on the connection that device last made to it
 (`a_computer_asks_on_the_connection_the_phone_made`). **Not yet tried on
 mobile data.**
 
+**Tor, measured** (2026-11-13, 16:00). On the third try on Jio the laptop heard
+the OPPO announce itself six times and nothing connected, Tor included. The
+laptop's own Tor logged 54 failed descriptor uploads ("Timeout exceeded") and
+20 times "Too many preemptive onion service circuits failed" in three hours,
+while six of Tor's seven directory authorities answered a TCP connection from
+it: Tor is not blocked here. `crates/peer/examples/torprobe.rs`, from the
+laptop on the home Excitel connection, a fresh Tor state each run, reaching the
+laptop's own onion service: 58.1 s the first time, 0.9 s and 0.8 s after. So
+the onion service is reachable, and a cold Tor takes a minute, which the phone,
+giving it 35 s, never waited for. Changed: 90 s for a computer that may need
+Tor; Tor started and the computer's onion service reached in the background
+when the phone moves to a metered network or opens on one (`Qurb::warm_tor`);
+and the phone keeps its own log of reaching its computers, in
+`connections.log` beside the store, put in the report, since the OPPO prunes
+the app's lines from the system log. Bridges not tried: nothing here needs
+them. Whether Jio blocks Tor is not known yet.
+
 **Background activity**: the app asks once, after the notifications, with
 Android's own question; Settings has *Background activity*, Allowed or
 Restricted. On the OPPO the question was hidden under a folder request

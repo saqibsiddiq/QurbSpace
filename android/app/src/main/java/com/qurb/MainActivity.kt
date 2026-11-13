@@ -563,6 +563,8 @@ class MainActivity : AppCompatActivity() {
         Notices.onScreen = true
         if (!::views.isInitialized) return
         if (lockIfAsked()) return
+        // Opened away from home: Tor warmed for the passes to come.
+        if (!Engine.unmetered(this)) lifecycleScope.launch(Dispatchers.IO) { runCatching { Engine.open(this@MainActivity).warmTor() } }
         current?.refresh()
         updateDock()
         catchUp()

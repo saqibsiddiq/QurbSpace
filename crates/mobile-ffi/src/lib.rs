@@ -915,6 +915,7 @@ fn logging() {
 
         let Ok(layer) = tracing_android::layer("qurb") else { return };
         let _ = tracing_subscriber::registry()
+            .with(connection_log::Layer)
             // Debug from the engine, warnings from everything else. Enough to
             // follow a sync without the noise of every library it uses.
             .with(
@@ -929,6 +930,78 @@ fn logging() {
 
 #[cfg(not(target_os = "android"))]
 fn logging() {}
+
+/// How this phone tried to reach its computers, kept in a file of its own
+/// beside the store: some makers' Android -- an OPPO's, 2026-11-13 -- prunes
+/// an app's lines from the system log within minutes, and with them the only
+/// account of why a phone on mobile data did not connect. Read into the
+/// report (`Qurb::connection_log`). Half a megabyte, then started again with
+/// the last half kept.
+#[cfg(target_os = "android")]
+mod connection_log {
+    use std::io::Write;
+    use std::path::PathBuf;
+    use std::sync::{Mutex, OnceLock};
+
+    static FILE: OnceLock<PathBuf> = OnceLock::new();
+    static WRITING: Mutex<()> = Mutex::new(());
+    const MOST: u64 = 512 << 10;
+
+    pub fn set_dir(dir: &std::path::Path) {
+        let _ = FILE.set(dir.join("connections.log"));
+    }
+
+    pub fn read() -> String {
+        FILE.get().and_then(|f| std::fs::read_to_string(f).ok()).unwrap_or_default()
+    }
+
+    fn keep(line: &str) {
+        let Some(file) = FILE.get() else { return };
+        let Ok(_writing) = WRITING.lock() else { return };
+        if std::fs::metadata(file).is_ok_and(|m| m.len() > MOST) {
+            if let Ok(all) = std::fs::read_to_string(file) {
+                let half = all.len() / 2;
+                let from = all[half..].find('\n').map_or(half, |n| half + n + 1);
+                let _ = std::fs::write(file, &all[from..]);
+            }
+        }
+        if let Ok(mut out) = std::fs::OpenOptions::new().create(true).append(true).open(file) {
+            let _ = out.write_all(line.as_bytes());
+        }
+    }
+
+    struct Fields(String);
+
+    impl tracing::field::Visit for Fields {
+        fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
+            if field.name() == "message" {
+                self.0.insert_str(0, &format!("{value:?} "));
+            } else {
+                self.0.push_str(&format!("{}={value:?} ", field.name()));
+            }
+        }
+    }
+
+    pub struct Layer;
+
+    impl<S: tracing::Subscriber> tracing_subscriber::Layer<S> for Layer {
+        fn on_event(&self, event: &tracing::Event<'_>, _: tracing_subscriber::layer::Context<'_, S>) {
+            let meta = event.metadata();
+            // Reaching, Tor, and the passes themselves; not every file.
+            let wanted = meta.target().starts_with("qurb_peer::connect")
+                || meta.target().starts_with("qurb_peer::tor")
+                || (meta.target().starts_with("qurb") && *meta.level() <= tracing::Level::INFO);
+            if !wanted {
+                return;
+            }
+            let mut fields = Fields(String::new());
+            event.record(&mut fields);
+            let secs = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+            let (h, m, s) = ((secs / 3600) % 24, (secs / 60) % 60, secs % 60);
+            keep(&format!("{h:02}:{m:02}:{s:02}Z {} {} {}\n", meta.level(), meta.target(), fields.0.trim_end()));
+        }
+    }
+}
 
 #[uniffi::export]
 pub fn create_protected(
@@ -1878,6 +1951,40 @@ impl Qurb {
         NETWORK.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
 
+    /// How this phone tried to reach its computers lately, for a report.
+    pub fn connection_log(&self) -> String {
+        #[cfg(target_os = "android")]
+        return connection_log::read();
+        #[cfg(not(target_os = "android"))]
+        String::new()
+    }
+
+    /// Start Tor and reach each computer's onion service now, in the
+    /// background, so that a pass that needs it finds it ready: from nothing
+    /// Tor took 58 s to reach the laptop, and 0.9 s once warm (measured from
+    /// the laptop, 2026-11-13), while a pass gives it 90. Called when the
+    /// phone leaves for a network that is not its home one.
+    pub fn warm_tor(&self) {
+        #[cfg(feature = "tor")]
+        {
+            let Ok(runtime) = self.runtime() else { return };
+            let Ok(Ok(peers)) = self.look().map(|engine| engine.store().db().trusted_peers()) else { return };
+            // Only computers have onion services, and only theirs are kept.
+            for peer in peers {
+                let fp = qurb_peer::Fingerprint::from_bytes(peer.fingerprint);
+                let Some(onion) = qurb_peer::tor::remembered(&fp) else { continue };
+                runtime.spawn(async move {
+                    let started = std::time::Instant::now();
+                    match tokio::time::timeout(TOR_BUDGET, qurb_peer::tor::dial(&onion)).await {
+                        Ok(Ok(_)) => tracing::info!(ms = started.elapsed().as_millis() as u64, "Tor warmed: the computer's onion service reached"),
+                        Ok(Err(e)) => tracing::info!(error = %e, "Tor could not reach the computer's onion service"),
+                        Err(_) => tracing::info!("Tor did not reach the computer's onion service in time"),
+                    }
+                });
+            }
+        }
+    }
+
     pub fn prepare_computers(&self, seconds: u32) {
         let Ok(peers) = self.peers() else { return };
         for peer in peers.into_iter().filter(|p| p.kind.as_deref() != Some("phone") && (p.relation == "own" || p.relation == "host")) {
@@ -2805,6 +2912,8 @@ impl Qurb {
         // Tor's state beside the store, so it is fetched once, not each start.
         #[cfg(feature = "tor")]
         qurb_peer::tor::set_dir(store_dir.join("tor"));
+        #[cfg(target_os = "android")]
+        connection_log::set_dir(&store_dir);
 
         if !vault.exists() {
             return Err(QurbError::NotSetUp { detail: format!("{root} has no vault") });
@@ -3853,7 +3962,7 @@ impl Drop for Held<'_> {
 /// The least a computer is given to answer when Tor is built in: the direct
 /// path's head start, Tor's first start, and the slowest reach measured.
 #[cfg(feature = "tor")]
-const TOR_BUDGET: std::time::Duration = std::time::Duration::from_secs(35);
+const TOR_BUDGET: std::time::Duration = std::time::Duration::from_secs(90);
 
 const WAITED_LONG: std::time::Duration = std::time::Duration::from_millis(250);
 
