@@ -1156,6 +1156,17 @@ impl Daemon {
                 store.db().peer_by_fingerprint(peer.as_bytes()).ok().flatten().and_then(|k| k.last_seen).unwrap_or(0)
             };
             attempted.sort_by_key(|peer| (!peers.announced.contains(peer), std::cmp::Reverse(seen(peer))));
+            // A device since set up again never answers under its old
+            // identity: dialled, each cost a pass 35 s once the slow paths
+            // were raced (2026-11-13), and the owner's laptop had three.
+            attempted.retain(|peer| {
+                store
+                    .db()
+                    .peer_by_fingerprint(peer.as_bytes())
+                    .ok()
+                    .flatten()
+                    .is_none_or(|k| store.db().became(&k.device_id).ok().flatten().is_none())
+            });
         }
         if !attempted.is_empty() {
             self.report(|status| status.state = crate::status::State::Working);

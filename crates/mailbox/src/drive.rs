@@ -280,6 +280,15 @@ pub async fn sign_in(client: &Client, open: impl FnOnce(&str)) -> Result<Refresh
         .json()
         .await
         .map_err(place)?;
+    // Google asks for each permission with a box of its own, and the one for
+    // QurbSpace's folder can be left unticked: signed in, and allowed only an
+    // email address (the owner's first sign-in, 2026-11-13).
+    let granted = answer.get("scope").and_then(|s| s.as_str()).unwrap_or_default();
+    if !granted.split_whitespace().any(|s| s == SCOPE) {
+        return Err(Error::Place(
+            "Google Drive was not allowed: sign in again and tick the box for QurbSpace's own data in your Drive".into(),
+        ));
+    }
     let refresh_token = answer
         .get("refresh_token")
         .and_then(|t| t.as_str())
