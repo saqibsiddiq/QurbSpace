@@ -48,6 +48,17 @@ const RENDEZVOUS_TIMEOUT: Duration = Duration::from_secs(20);
 /// rather than each one in turn.
 const CANDIDATE_TIMEOUT: Duration = Duration::from_secs(8);
 
+/// How far either side of a peer's public port a sweep goes, how many it
+/// tries at once, and how long between batches (2026-11-13, for phones
+/// behind Jio's, Airtel's and Vi's NAT; see `Connector::sweep`).
+const SWEEP_WINDOW: u16 = 512;
+const SWEEP_BATCH: usize = 64;
+const SWEEP_PACE: Duration = Duration::from_millis(40);
+/// How long a sweep may take in all.
+const SWEEP_FOR: Duration = Duration::from_secs(12);
+/// How often a sweep towards one device may run.
+const SWEEP_AGAIN: Duration = Duration::from_secs(5 * 60);
+
 /// How long the direct paths have before the relay is tried alongside them
 /// (`Connector::direct_or_relay`).
 const RELAY_HEAD_START: Duration = Duration::from_secs(4);
@@ -1073,10 +1084,102 @@ impl Connector {
             attempts = rest;
         }
 
+        // Nothing answered where the peer said it was. Behind a carrier's NAT
+        // the port it reaches out from is not the one a STUN server saw, but
+        // usually one near it: tried, nearest first.
+        if endpoints.public.is_some_and(|p| is_public(p.ip())) && may_sweep(&peer) {
+            match self.sweep(peer, endpoints).await {
+                Ok(client) => return Ok(client),
+                Err(why) => failures.push(why),
+            }
+        }
+
         Err(Error::Unreachable {
             peer: peer.short(),
             tried: failures.join(", "),
         })
+    }
+
+    /// Dial the ports around a peer's public one, a batch at a time, keeping
+    /// the first that answers (A2 of 2026-11-13). The other side does the
+    /// same towards this one when it is asked to punch, so each opens its own
+    /// NAT to the other's likely port. Costs a few hundred small packets, and
+    /// only when every ordinary path failed.
+    async fn sweep(&self, peer: Fingerprint, endpoints: &Endpoints) -> std::result::Result<PeerClient, String> {
+        let ports = endpoints.around_public(SWEEP_WINDOW);
+        let tried = ports.len();
+        let started = tokio::time::Instant::now();
+        let (found_tx, mut found_rx) = tokio::sync::mpsc::unbounded_channel::<quinn::Connection>();
+        let mut pending = tokio::task::JoinSet::new();
+        let mut left = ports.as_slice();
+        loop {
+            if !left.is_empty() && started.elapsed() < SWEEP_FOR {
+                let (batch, rest) = left.split_at(left.len().min(SWEEP_BATCH));
+                left = rest;
+                for &candidate in batch {
+                    let Ok(config) = tls::client_config(&self.identity, peer) else { continue };
+                    let Ok(connecting) = self.endpoint.connect_with(config, candidate, "qurb-device") else { continue };
+                    let found = found_tx.clone();
+                    pending.spawn(async move {
+                        if let Ok(Ok(connection)) = tokio::time::timeout(CANDIDATE_TIMEOUT, connecting).await {
+                            if found.send(connection.clone()).is_err() {
+                                connection.close(0u32.into(), b"another path won");
+                            }
+                        }
+                    });
+                }
+            }
+            tokio::select! {
+                Some(connection) = found_rx.recv() => {
+                    tracing::info!(peer = %peer.short(), candidate = %connection.remote_address(),
+                        tried = tried - left.len(), after_ms = started.elapsed().as_millis() as u64,
+                        "connected by sweeping the ports around its public one");
+                    drop(found_rx);
+                    // The rest finish or time out behind the caller; any that
+                    // land close themselves, their sender gone.
+                    tokio::spawn(async move { while pending.join_next().await.is_some() {} });
+                    return Ok(PeerClient::from_parts(self.endpoint.clone(), connection));
+                }
+                _ = tokio::time::sleep(SWEEP_PACE), if !left.is_empty() && started.elapsed() < SWEEP_FOR => {}
+                done = pending.join_next(), if left.is_empty() || started.elapsed() >= SWEEP_FOR => {
+                    if done.is_none() {
+                        return Err(format!("{tried} ports around its public address swept, none answered"));
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Whether a sweep towards `peer` may go now: at most one every
+/// [`SWEEP_AGAIN`] each, since one is about a megabyte of attempts, and on
+/// mobile data that is the person's. Process-wide, as a phone makes a fresh
+/// connector for every pass.
+fn may_sweep(peer: &Fingerprint) -> bool {
+    static LAST: std::sync::Mutex<Option<std::collections::HashMap<Fingerprint, std::time::Instant>>> =
+        std::sync::Mutex::new(None);
+    let Ok(mut last) = LAST.lock() else { return false };
+    let last = last.get_or_insert_with(Default::default);
+    let now = std::time::Instant::now();
+    if last.get(peer).is_some_and(|at| now.duration_since(*at) < SWEEP_AGAIN) {
+        return false;
+    }
+    last.insert(*peer, now);
+    true
+}
+
+/// An address on the open internet: not private, shared (100.64/10, a
+/// carrier's or Tailscale's), loopback or link-local.
+fn is_public(ip: std::net::IpAddr) -> bool {
+    match ip {
+        std::net::IpAddr::V4(v4) => {
+            !(v4.is_private() || v4.is_loopback() || v4.is_link_local() || v4.is_unspecified()
+                || (v4.octets()[0] == 100 && (v4.octets()[1] & 0xc0) == 64))
+        }
+        std::net::IpAddr::V6(v6) => {
+            !(v6.is_loopback() || v6.is_unspecified() || (v6.segments()[0] & 0xfe00) == 0xfc00
+                || (v6.segments()[0] & 0xffc0) == 0xfe80)
+        }
     }
 }
 
@@ -1255,6 +1358,22 @@ async fn run_signalling(
                         None => {
                             for candidate in theirs.spread() {
                                 knock(&endpoint, &identity, candidate);
+                            }
+                            // And the ports around its public one, a batch at
+                            // a time: the caller behind a carrier's NAT comes
+                            // from one of them, and this side's router lets it
+                            // in only once something has gone out to it.
+                            if theirs.public.is_some_and(|p| is_public(p.ip())) {
+                                let (endpoint, identity) = (endpoint.clone(), identity.clone());
+                                let around = theirs.around_public(SWEEP_WINDOW);
+                                tokio::spawn(async move {
+                                    for batch in around.chunks(SWEEP_BATCH) {
+                                        for &candidate in batch {
+                                            knock(&endpoint, &identity, candidate);
+                                        }
+                                        tokio::time::sleep(SWEEP_PACE).await;
+                                    }
+                                });
                             }
                         }
                     }

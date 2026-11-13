@@ -84,6 +84,23 @@ fixed port, 47474, for a forward to be set in the router by hand. Seen: the
 OPPO kept the laptop's onion address at 13:19:36. **Not yet tried away from
 home.**
 
+**Any network: A1 and A2** (the owner: "make it work on jio or vi or airtel
+or any other network"). A1, built: one socket for IPv4 and IPv6
+(`nat::bind_dual`), so a phone's IPv6 address can be dialled and punched;
+before, every socket was IPv4 only and offered IPv6 addresses it could not
+answer on. It pays off only where both ends have IPv6, and the owner's home
+has none yet. A2, built as a sweep rather than the full birthday method:
+when no ordinary path answers and the peer's public address is on the open
+internet, the ports up to 512 either side of it are dialled, 64 at a time,
+for at most 12 s, at most once every 5 minutes for each device (about a
+megabyte of attempts); a device asked to punch knocks the same ports towards
+the caller. It reaches a phone whose carrier hands it a block of ports near
+the one a STUN server saw; one whose carrier picks ports at random it does
+not, and needs the birthday method, many sockets on the phone, which one
+connection socket per device does not allow. Tests: one socket takes IPv4 and
+IPv6 (`nat::both_families`), the order of the ports swept. **Not yet tried
+on Jio, Airtel or Vi.**
+
 **Background activity**: the app asks once, after the notifications, with
 Android's own question; Settings has *Background activity*, Allowed or
 Restricted. On the OPPO the question was hidden under a folder request

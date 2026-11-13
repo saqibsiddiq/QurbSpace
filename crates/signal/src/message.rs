@@ -54,6 +54,24 @@ impl Endpoints {
         out
     }
 
+    /// The ports either side of the public address, out to `window`, not
+    /// counting those [`spread`](Self::spread) already gives: where a phone
+    /// behind a carrier's NAT is likely to be reached from, its carrier handing
+    /// it a block of ports near the one a STUN server saw. Nearest first.
+    pub fn around_public(&self, window: u16) -> Vec<SocketAddr> {
+        let Some(public) = self.public else { return Vec::new() };
+        let mut out = Vec::new();
+        for step in 1..=window {
+            for port in [public.port().checked_add(step), public.port().checked_sub(step)].into_iter().flatten() {
+                let skip = port >= public.port() && port - public.port() <= SPREAD;
+                if !skip && port > 1023 {
+                    out.push(SocketAddr::new(public.ip(), port));
+                }
+            }
+        }
+        out
+    }
+
     pub fn is_empty(&self) -> bool {
         self.public.is_none() && self.local.is_empty()
     }
@@ -236,5 +254,19 @@ mod tests {
         for forbidden in ["path", "file", "name", "chunk", "hash", "content"] {
             assert!(!json.contains(forbidden), "{forbidden:?} appeared in a signalling message");
         }
+    }
+}
+
+#[cfg(test)]
+mod around {
+    use super::*;
+
+    #[test]
+    fn the_ports_around_a_public_one_nearest_first_without_the_spread() {
+        let at: SocketAddr = "198.51.100.7:40000".parse().unwrap();
+        let endpoints = Endpoints { public: Some(at), local: vec![], onion: None };
+        let ports: Vec<u16> = endpoints.around_public(6).iter().map(|a| a.port()).collect();
+        assert_eq!(ports, vec![39999, 39998, 39997, 39996, 40005, 39995, 40006, 39994]);
+        assert!(Endpoints { public: None, local: vec![], onion: None }.around_public(6).is_empty());
     }
 }
