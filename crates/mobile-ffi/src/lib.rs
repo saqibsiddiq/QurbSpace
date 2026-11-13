@@ -3506,12 +3506,12 @@ impl Qurb {
         }
 
         // This person's computers not reached: letters through the mailbox,
-        // when it is on, in what is left of the window (2026-11-13).
-        let left = budget.saturating_sub(started.elapsed());
-        if left > std::time::Duration::from_secs(3) {
-            let reached: Vec<qurb_peer::Fingerprint> = askers.iter().map(|(peer, _)| *peer).collect();
-            self.use_mailbox(&runtime, &reached, left);
-        }
+        // when it is on (2026-11-13). Its own time, not what is left of the
+        // window: reaching a computer that cannot be reached now waits out
+        // Tor and the Nostr relays, and left nothing, so a send from a phone
+        // on mobile data never went this way -- the case it is for.
+        let reached: Vec<qurb_peer::Fingerprint> = askers.iter().map(|(peer, _)| *peer).collect();
+        self.use_mailbox(&runtime, &reached, MAILBOX_FOR);
 
         // Stay a moment for the others.
         //
@@ -4134,6 +4134,10 @@ const LOOK_EVERY: std::time::Duration = std::time::Duration::from_millis(200);
 /// A look that comes this much later than asked means the process was not
 /// running in between.
 const FROZEN: std::time::Duration = std::time::Duration::from_secs(3);
+
+/// How long a pass gives the mailbox, collecting and posting, whatever time
+/// reaching took.
+const MAILBOX_FOR: std::time::Duration = std::time::Duration::from_secs(25);
 
 /// How long a backup leaves the engine free between recording one batch of
 /// files and the next, for a screen waiting on it to take it.
