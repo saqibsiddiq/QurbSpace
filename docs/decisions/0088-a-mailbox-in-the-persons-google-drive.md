@@ -1,8 +1,9 @@
 # 0088 — A mailbox in the person's Google Drive
 
 **Status:** Accepted and built, 2026-11-13. Tested through a plain folder
-(`crates/mailbox/tests/exchange.rs`); **not yet run against Google Drive or
-between the phone and the laptop.** Amends
+(`crates/mailbox/tests/exchange.rs`), and once between the S23 and the laptop
+through Google Drive: three screenshots sent with the laptop off, collected
+when it started ([testing.md](../testing.md)). Amends
 [0082](0082-each-users-computer-is-their-server.md) (no relay of ours, no
 cloud): this uses the person's own cloud, by their choice.
 
@@ -55,7 +56,7 @@ no library added; the waiting space capped at 2 GB.
 
 ## Left undone
 
-- Not run against Google Drive yet, nor between the devices.
+- One run between devices only; no measure yet of speed through Drive.
 - Files over 64 MB; a resumable upload for larger packs.
 - WebDAV as a second place, for people who would rather not use Google.
 - Showing in the window and on the phone that something waits in the mailbox.

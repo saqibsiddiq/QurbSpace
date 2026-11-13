@@ -149,6 +149,20 @@ no answer from a STUN server, and nothing direct worked: Jio is not the same
 from one connection to the next. The send set to go when the phone left was
 sent only when it came home, since the laptop never failed to reach it.
 
+**Google Drive, first run between the devices** (2026-11-13, 18:54 to 19:15
+local; decision 0088, with the transfer path of 0087's amendment). The S23,
+QurbSpace on the laptop closed, three screenshots sent from the S23 to the
+laptop: the S23 gave up reaching it and posted its list and one pack of
+1.3 MB to the Drive folder at 18:54:38. The laptop started at 19:14:32,
+collected the pack, applied three files with none waiting, and saved them to
+`~/Downloads/qurb` at 19:15:41, as a send that came live is saved. Found on
+the way: the first sign-in on the laptop granted only an email address, the
+Drive permission not given, and every request was refused (403); sign-in now
+checks for it. And the phone's mailbox had only what reaching the laptop left
+of a pass, which was nothing; it has 25 s of its own. Not yet seen: the S23
+taking the laptop's receipt; the new phone collecting the 71 packs (about
+270 MB) the laptop posted for it, since it has not signed in.
+
 **Background activity**: the app asks once, after the notifications, with
 Android's own question; Settings has *Background activity*, Allowed or
 Restricted. On the OPPO the question was hidden under a folder request
