@@ -247,6 +247,11 @@ pub enum Request {
     /// that this device hears now rather than at its next request, which is
     /// answered [`Response::Removed`] anyway. Answered [`Response::Noted`].
     Goodbye,
+    /// This computer's onion service, answered as [`Response::About`] with
+    /// the address, or [`Response::NotFound`] when it has none. Asked on the
+    /// home network, so that a phone off it can reach the computer through
+    /// Tor when the rendezvous service does not answer (2026-11-13).
+    Onion,
     /// An Office document turned into a PDF by the computer, to be shown on
     /// the phone: answered [`Response::Converted`], or [`Response::NotFound`]
     /// where it may not be read, is not Office, or nothing here converts it.
@@ -449,6 +454,7 @@ const TAG_STORAGE: u8 = 34;
 const TAG_EMPTY_DELETED: u8 = 35;
 const TAG_CONVERT: u8 = 36;
 const TAG_GOODBYE: u8 = 37;
+const TAG_ONION: u8 = 38;
 
 /// The most of a file one [`Request::Upload`] carries: a few chunks' worth,
 /// small enough that a slow link sends one in seconds.
@@ -670,6 +676,7 @@ impl Request {
             Request::Storage => out.push(TAG_STORAGE),
             Request::EmptyDeleted => out.push(TAG_EMPTY_DELETED),
             Request::Goodbye => out.push(TAG_GOODBYE),
+            Request::Onion => out.push(TAG_ONION),
             Request::Convert { content, name } => {
                 out.push(TAG_CONVERT);
                 out.extend_from_slice(content);
@@ -772,6 +779,7 @@ impl Request {
             TAG_STORAGE => Request::Storage,
             TAG_EMPTY_DELETED => Request::EmptyDeleted,
             TAG_GOODBYE => Request::Goodbye,
+            TAG_ONION => Request::Onion,
             TAG_CONVERT => Request::Convert { content: r.hash()?, name: r.name()? },
             TAG_BECOME => {
                 let len = r.count()?;
@@ -1586,6 +1594,7 @@ mod tests {
             Request::Storage,
             Request::EmptyDeleted,
             Request::Goodbye,
+            Request::Onion,
             Request::Convert { content: [7; 32], name: "lease.docx".into() },
             Request::Become { cert: vec![0x30, 0x82, 1, 2] },
         ] {

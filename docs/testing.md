@@ -69,6 +69,21 @@ within 15 s is dropped and the device dialled again at once. **Not yet tried
 on mobile data**; the phone's own side of those two minutes was not read,
 since wireless debugging goes with the Wi-Fi.
 
+**On mobile data, again** (12:55 to 12:57 your time). The laptop was told by the
+rendezvous service that the OPPO was there, and could not reach it: its IPv6
+address (Jio's) the laptop cannot dial, having none of its own but
+Tailscale's, and its IPv4 ones were the home router's, left from the Wi-Fi.
+The phone never tried Tor: the introduction that carries the computer's
+onion address did not come back within 20 s, and without it there was no
+address to try. The router (a Boa web server) answers neither NAT-PMP nor,
+at any usual address, UPnP: opening a port by itself was not built, since
+nothing here could test it. Changed: a phone asks its computer where its
+onion service is, on the home network (`Request::Onion`), and keeps it; away,
+with no introduction, it tries Tor with that address. The laptop listens on a
+fixed port, 47474, for a forward to be set in the router by hand. Seen: the
+OPPO kept the laptop's onion address at 13:19:36. **Not yet tried away from
+home.**
+
 **Background activity**: the app asks once, after the notifications, with
 Android's own question; Settings has *Background activity*, Allowed or
 Restricted. On the OPPO the question was hidden under a folder request

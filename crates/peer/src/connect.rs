@@ -800,6 +800,15 @@ impl Connector {
             match self.race(peer, &here).await {
                 Ok(client) => {
                     tracing::debug!(peer = %peer.short(), "reached on the local network");
+                    // Where it is on Tor, asked here at home and kept: away,
+                    // with the rendezvous service silent, Tor is then still
+                    // there to try. A build from before cannot say.
+                    #[cfg(feature = "tor")]
+                    if crate::tor::remembered(&peer).is_none() {
+                        if let Ok(Ok(Some(onion))) = tokio::time::timeout(Duration::from_secs(3), client.onion()).await {
+                            crate::tor::remember(&peer, &onion);
+                        }
+                    }
                     return Ok(client);
                 }
                 // The sighting was stale, or the address moved between the
@@ -819,10 +828,33 @@ impl Connector {
             .map_err(|_| Error::Signalling { detail: "signalling has stopped".into() })?;
 
         let endpoints = match tokio::time::timeout(RENDEZVOUS_TIMEOUT, answer).await {
-            Ok(Ok(result)) => result?,
-            Ok(Err(_)) => return Err(Error::Signalling { detail: "signalling has stopped".into() }),
-            Err(_) => return Err(Error::PeerDidNotAnswer),
+            Ok(Ok(result)) => result,
+            Ok(Err(_)) => Err(Error::Signalling { detail: "signalling has stopped".into() }),
+            Err(_) => Err(Error::PeerDidNotAnswer),
         };
+        #[cfg_attr(not(feature = "tor"), allow(unused_mut))]
+        let mut endpoints = match endpoints {
+            Ok(endpoints) => endpoints,
+            // The rendezvous service did not introduce them: on 2026-11-13 a
+            // phone on mobile data never reached its computer this way, and
+            // never tried Tor, which needs the address the introduction
+            // carries. Tried with the one kept from before, if there is one.
+            #[cfg(feature = "tor")]
+            Err(e) => match crate::tor::remembered(&peer) {
+                Some(onion) => {
+                    tracing::info!(peer = %peer.short(), error = %e, "not introduced; trying its onion service as kept");
+                    return self.through_tor(peer, &onion).await;
+                }
+                None => return Err(e),
+            },
+            #[cfg(not(feature = "tor"))]
+            Err(e) => return Err(e),
+        };
+        #[cfg(feature = "tor")]
+        match &endpoints.onion {
+            Some(onion) => crate::tor::remember(&peer, onion),
+            None => endpoints.onion = crate::tor::remembered(&peer),
+        }
 
         self.or_through_tor(peer, &endpoints).await
     }

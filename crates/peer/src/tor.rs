@@ -31,6 +31,49 @@ pub fn set_dir(dir: PathBuf) {
     let _ = DIR.set(dir);
 }
 
+/// Where each paired computer's onion service is, as it last said: kept
+/// beside Tor's own state, so that a phone away from home, its rendezvous
+/// service not answering, can still try Tor (2026-11-13). One line each,
+/// the fingerprint in hex and the address.
+fn onions_file() -> PathBuf {
+    DIR.get().cloned().unwrap_or_else(|| std::env::temp_dir().join("qurb-tor")).join("onions")
+}
+
+/// The onion service `peer` last said it has.
+pub fn remembered(peer: &crate::Fingerprint) -> Option<String> {
+    let key = hex(peer);
+    std::fs::read_to_string(onions_file())
+        .ok()?
+        .lines()
+        .find_map(|line| line.split_once(' ').filter(|(fp, _)| *fp == key).map(|(_, onion)| onion.trim().to_string()))
+}
+
+/// Keep `onion` as `peer`'s, replacing what was kept for it.
+pub fn remember(peer: &crate::Fingerprint, onion: &str) {
+    if remembered(peer).as_deref() == Some(onion) {
+        return;
+    }
+    let key = hex(peer);
+    let file = onions_file();
+    let mut lines: Vec<String> = std::fs::read_to_string(&file)
+        .unwrap_or_default()
+        .lines()
+        .filter(|line| !line.starts_with(&format!("{key} ")))
+        .map(String::from)
+        .collect();
+    lines.push(format!("{key} {onion}"));
+    if let Some(dir) = file.parent() {
+        let _ = std::fs::create_dir_all(dir);
+    }
+    if std::fs::write(&file, lines.join("\n") + "\n").is_ok() {
+        tracing::debug!(peer = %peer.short(), "kept its onion service, for when it cannot be found otherwise");
+    }
+}
+
+fn hex(peer: &crate::Fingerprint) -> String {
+    peer.as_bytes().iter().map(|b| format!("{b:02x}")).collect()
+}
+
 /// The port a computer's onion service is reached on.
 const PORT: u16 = 1;
 
@@ -159,6 +202,7 @@ pub async fn host(quic_port: u16) -> crate::Result<String> {
             .map(|a| a.display_unredacted().to_string())
             .ok_or_else(|| crate::Error::Tor { detail: "no onion address yet".into() })?
     };
+    crate::set_onion_hosted(onion.clone());
     tokio::spawn(async move {
         // Kept alive with the task: dropped, the service stops.
         let _service = service;
@@ -233,5 +277,23 @@ async fn bridge(stream: arti_client::DataStream, local: UdpSocket, mut to: Optio
         _ = inbound => {}
         _ = outbound => {}
         _ = quiet => {}
+    }
+}
+
+#[cfg(test)]
+mod remembering {
+    use super::*;
+
+    #[test]
+    fn a_computers_onion_is_kept_and_replaced() {
+        set_dir(tempfile::tempdir().unwrap().keep());
+        let laptop = crate::Fingerprint::from_bytes([0xa1; 32]);
+        let other = crate::Fingerprint::from_bytes([0xb2; 32]);
+        assert_eq!(remembered(&laptop), None);
+        remember(&laptop, "first.onion");
+        remember(&other, "other.onion");
+        remember(&laptop, "second.onion");
+        assert_eq!(remembered(&laptop).as_deref(), Some("second.onion"));
+        assert_eq!(remembered(&other).as_deref(), Some("other.onion"), "another computer's was lost");
     }
 }

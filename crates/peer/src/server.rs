@@ -919,6 +919,12 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
         // What kind of device this is, for a peer paired before devices said
         // so (decision 0053). Not found until whatever opened the store has
         // said.
+        // Where this computer's onion service is, to its own person's
+        // devices: the phone keeps it for when it is away from home.
+        Request::Onion => match crate::onion_hosted() {
+            Some(onion) if !other_person && owner.is_some() => Response::About { kind: onion },
+            _ => Response::NotFound,
+        },
         Request::About => match store.db().local_kind()? {
             Some(kind) => Response::About { kind },
             None => Response::NotFound,

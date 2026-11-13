@@ -57,6 +57,21 @@ pub mod tor;
 pub mod wire;
 
 pub use client::PeerClient;
+
+/// This computer's onion service, once it is published (`tor::host`): what
+/// it answers [`wire::Request::Onion`] with. None on a device hosting none.
+static HOSTED_ONION: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
+
+pub fn onion_hosted() -> Option<String> {
+    HOSTED_ONION.lock().ok().and_then(|o| o.clone())
+}
+
+#[cfg_attr(not(feature = "tor-host"), allow(dead_code))]
+pub(crate) fn set_onion_hosted(onion: String) {
+    if let Ok(mut held) = HOSTED_ONION.lock() {
+        *held = Some(onion);
+    }
+}
 pub use connect::{relay_address_ok, relay_for, resolve_relay, Connector, Finding, RelayAt};
 pub use error::{Error, Result};
 pub use identity::{Fingerprint, Identity};

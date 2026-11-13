@@ -433,6 +433,17 @@ impl PeerClient {
     /// for a device paired before devices said so when pairing (decision
     /// 0053). `None` from a device that does not say: an older build answers
     /// "not found".
+    /// The device's onion service, where it hosts one and says so
+    /// ([`Request::Onion`]); none from a build from before.
+    pub async fn onion(&self) -> Result<Option<String>> {
+        match self.request(Request::Onion).await {
+            Ok(Response::About { kind }) => Ok(Some(kind)),
+            Ok(Response::NotFound) | Err(Error::Protocol { .. }) => Ok(None),
+            Ok(other) => Err(unexpected("onion", &other)),
+            Err(e) => Err(e),
+        }
+    }
+
     pub async fn about(&self) -> Result<Option<String>> {
         match self.request(Request::About).await? {
             Response::About { kind } => Ok(Some(kind)),
