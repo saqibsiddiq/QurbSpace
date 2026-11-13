@@ -136,6 +136,19 @@ and the phone keeps its own log of reaching its computers, in
 the app's lines from the system log. Bridges not tried: nothing here needs
 them. Whether Jio blocks Tor is not known yet.
 
+**On Jio, fourth try** (17:11 to 17:15 local, 2026-11-13; the build with the
+Nostr path, Tor warmed, both ends answering on connections made to them). The
+OPPO on Jio had 192.0.0.2, Jio's IPv4 carried over IPv6 (464XLAT), and its
+IPv6. Phone to laptop direct at 11:41:18 UTC, to the home's public
+192.140.152.69:47474, the laptop's fixed port; Tor warmed and reached the
+laptop's onion service in 34.9 s, then 1.4 s and 1.3 s; laptop to phone
+direct at 11:42:24, to the phone's Jio address 157.35.2.240:44163; synced
+until it came home at 11:45:12. The Nostr path was not needed, so it is not
+yet tried in the field. On the three tries before, the same phone on Jio got
+no answer from a STUN server, and nothing direct worked: Jio is not the same
+from one connection to the next. The send set to go when the phone left was
+sent only when it came home, since the laptop never failed to reach it.
+
 **Background activity**: the app asks once, after the notifications, with
 Android's own question; Settings has *Background activity*, Allowed or
 Restricted. On the OPPO the question was hidden under a folder request
