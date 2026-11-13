@@ -2557,6 +2557,48 @@ pub fn set_notifications(hosted: Host<'_>, on: bool) -> Answer<()> {
     change_config(&hosted, |config| config.notifications = on)
 }
 
+/// The Google Drive mailbox (`qurb_mailbox`, 2026-11-13): whether the
+/// owner's client is on this computer, and the account signed in, if any.
+#[derive(Serialize)]
+pub struct DriveState {
+    ready: bool,
+    on: bool,
+    account: Option<String>,
+}
+
+#[tauri::command]
+pub fn drive_state() -> DriveState {
+    let account = qurb_cli::drive_account::signed_in();
+    DriveState {
+        ready: qurb_cli::drive_account::client().is_some(),
+        on: account.is_some(),
+        account: account.and_then(|a| a.account),
+    }
+}
+
+/// Sign in to Google Drive in the browser, and turn the mailbox on: from the
+/// next pass, a device of this person's that cannot be reached is written to
+/// and read from through it. Waits for the person, up to five minutes.
+#[tauri::command(async)]
+pub async fn drive_sign_in() -> Answer<DriveState> {
+    let client = qurb_cli::drive_account::client()
+        .ok_or("QurbSpace's Google client is not on this computer (docs/google-drive-setup.md)")?;
+    let refresh = qurb_mailbox::drive::sign_in(&client, |url| {
+        let _ = qurb_cli::platform::open(url);
+    })
+    .await
+    .map_err(failed)?;
+    qurb_cli::drive_account::keep(&refresh).map_err(failed)?;
+    Ok(drive_state())
+}
+
+/// Turn the mailbox off, forgetting the account here.
+#[tauri::command]
+pub fn drive_sign_out() -> Answer<DriveState> {
+    qurb_cli::drive_account::forget().map_err(failed)?;
+    Ok(drive_state())
+}
+
 /// One setting changed in the config file, which is the setting.
 fn change_config(hosted: &Hosted, change: impl FnOnce(&mut qurb_cli::Config)) -> Answer<()> {
     let dir = qurb_cli::store_dir(&hosted.root());

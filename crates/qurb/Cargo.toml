@@ -26,6 +26,8 @@ tokio.workspace = true
 qurb-engine = { path = "../engine" }
 qurb-keys = { path = "../keys" }
 qurb-peer = { path = "../peer" }
+qurb-mailbox = { path = "../mailbox" }
+serde_json = "1"
 qurb-relay = { path = "../relay" }
 qurb-signal = { path = "../signal" }
 qurb-storage = { path = "../storage" }

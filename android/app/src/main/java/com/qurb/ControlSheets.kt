@@ -142,6 +142,37 @@ class ControlSheets(private val app: MainActivity) {
             .onDismiss(then)
     }
 
+    /**
+     * Google Drive as the mailbox: off, what it is for and the account to
+     * use; on, which account, and off again.
+     */
+    fun drive(then: () -> Unit) {
+        val account = GoogleDrive.account(app)
+        if (account != null) {
+            kit.sheet()
+                .mark(R.drawable.ic_cloud, R.color.green_soft, R.color.green)
+                .title("Google Drive", centred = true)
+                .line(account)
+                .buttons("Turn off", danger = true) {
+                    GoogleDrive.signOut(app)
+                    then()
+                }
+                .show()
+            return
+        }
+        kit.sheet()
+            .mark(R.drawable.ic_cloud, R.color.green_soft, R.color.green)
+            .title("Google Drive", centred = true)
+            .line("When your devices can't reach each other, they leave each other files here, encrypted")
+            .buttons("Choose account") {
+                app.pickDriveAccount { on ->
+                    app.say(if (on) "Google Drive on" else "Google Drive not allowed")
+                    then()
+                }
+            }
+            .show()
+    }
+
     fun receivedWords(): String = when (Controls.received(app)) {
         Controls.RECEIVED_DOWNLOADS -> "Downloads"
         // The folder's own name: "primary:Documents/Sent" is "Sent".

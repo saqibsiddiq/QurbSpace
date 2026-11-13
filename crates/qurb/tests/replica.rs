@@ -5,6 +5,8 @@
 //! data: watching a directory it does not have, attaching a folder it does not
 //! have, or materialising files it was never meant to write.
 
+#![recursion_limit = "256"]
+
 use qurb_cli::{store_dir, Daemon};
 use qurb_engine::PinSet;
 use qurb_keys::{Opened, Vault};

@@ -7,6 +7,8 @@
 //! the folder. Run here rather than through the functions behind them, because
 //! the faults were all in reading the arguments.
 
+#![recursion_limit = "256"]
+
 use std::path::Path;
 use std::process::{Command, Output};
 

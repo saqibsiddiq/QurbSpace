@@ -12,6 +12,7 @@ pub mod backup;
 pub mod config;
 pub mod daemon;
 pub mod disk;
+pub mod drive_account;
 pub mod layout;
 pub mod lock;
 pub mod platform;

@@ -40,7 +40,7 @@ use chacha20poly1305::{ChaCha20Poly1305, Nonce};
 use qurb_storage::db::TrustedPeer;
 use qurb_storage::Store;
 use qurb_sync::{Action, Content, DeviceId, FileVersion};
-use std::collections::{BTreeMap, HashSet};
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 

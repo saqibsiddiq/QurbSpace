@@ -897,6 +897,9 @@ qurb/
 │   │                        settings the window changes too, pause, staying
 │   │                        awake, quiet notifications, updates (0086)
 │   │
+│   ├── mailbox/           Devices leaving each other sealed letters in a cloud
+│   │                      folder when they cannot reach each other: Google
+│   │                      Drive's app folder, or a plain folder (0088)
 │   ├── desktop/           The desktop application: the daemon in a window.
 │   │   ├── src/main.rs      opens the window, and the daemon if there is one
 │   │   ├── src/session.rs   unmade or running, and the phrase in between
@@ -1324,6 +1327,7 @@ for the workspace as it stands.
 | A device set up again is one device | the same person's, same name and kind, paired after the older was last seen: listed as the newer, which offers to remove the older and says what is kept for it — the owner's item 6, 2026-10-14 |
 | Awake while collecting | while a plan brings content in, on mains power, GNOME's and logind's sleep inhibitors are held (`awake.rs`), bound to Qurb's own life — the owner's item 1, 2026-10-14; *Stay awake to collect* in the window's Settings turns it off (0086) |
 | Over the Nostr relays | when the meeting point is the Nostr relays, the QUIC session can run over them too, a packet an ephemeral event, sealed and addressed to one device by a daily topic (`qurb_signal::nostr::datagrams`, `qurb_peer::nostr_path`); raced beside the introduction and Tor when a device is not on the local network; 35–52 KB/s measured — [0087](decisions/0087-quic-over-nostr-relays.md) |
+| A mailbox in Google Drive | opt-in: a device answers offline what the other would ask live -- its list, packs of what the other lacks, receipts -- into QurbSpace's hidden folder in the person's Drive, sealed with a key from the master key, and the other collects, plans and applies only what arrived (`crates/mailbox`); collected always, posted when the device was not reached; 2 GB waiting, files up to 64 MB — [0088](decisions/0088-a-mailbox-in-the-persons-google-drive.md) |
 | Pausing | `qurb_peer::pause`, process-wide: paused until a time or until resumed, or held off mobile data on the phone. Paused, a device runs no pass and the server closes another device's connection at its next request, so the other side sees it off rather than failing file by file (`tests/pause.rs`). The computer's is in its config file, read at each pass; the phone's in the app's settings, said to the engine before each sync — [0086](decisions/0086-the-persons-controls.md) |
 | Requests answered in parallel | the index is asked under the store's lock, the bytes read after it is let go (`Store::locate`, `ChunkReader`), so requests made at once are read at once — [0064](decisions/0064-many-small-files-quickly.md) |
 | Vault authorisation | tree, manifest and chunk requests all check the asker's scope |

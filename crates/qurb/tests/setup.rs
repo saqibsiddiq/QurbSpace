@@ -5,6 +5,8 @@
 //! route and missing something the other writes is a difference that shows up
 //! much later, on the device that was set up the unusual way.
 
+#![recursion_limit = "256"]
+
 use qurb_keys::{Purpose, RecoveryPhrase, Vault};
 use qurb_storage::{ChunkKey, Store};
 use std::path::Path;

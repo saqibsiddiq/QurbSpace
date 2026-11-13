@@ -187,6 +187,7 @@ class SettingsScreen(app: MainActivity) : Screen(app) {
         }
         kit.setting(card, R.drawable.ic_cell_signal, "Mobile data", sheets.mobileWords()) { sheets.mobileData { refresh() } }
         kit.setting(card, R.drawable.ic_hard_drive, "Backups", sheets.backupWords()) { sheets.backups { refresh() } }
+        kit.setting(card, R.drawable.ic_cloud, "Google Drive", GoogleDrive.account(app) ?: "Off") { sheets.drive { refresh() } }
         kit.setting(card, R.drawable.ic_shield_check, "Background activity",
             if (Battery.free(app)) "Allowed" else "Restricted") { Battery.ask(app) }
         kit.setting(card, R.drawable.ic_history, "Background sync",

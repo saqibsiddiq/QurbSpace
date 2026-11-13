@@ -167,7 +167,16 @@ pub struct Daemon {
     /// backup (`crate::backup`), so that a busy run of syncs does not read
     /// them each time.
     backed_up_at: Mutex<Option<std::time::Instant>>,
+    /// When each device was last written to and read from through the
+    /// mailbox (`qurb_mailbox`), so that it is done at most every
+    /// [`MAILBOX_EVERY`].
+    mailed_at: Mutex<std::collections::HashMap<Fingerprint, std::time::Instant>>,
 }
+
+/// How often the mailbox is used for a device that cannot be reached, and
+/// how long each way at most.
+const MAILBOX_EVERY: Duration = Duration::from_secs(60);
+const MAILBOX_FOR: Duration = Duration::from_secs(30);
 
 /// How often this computer's own folders are looked through for its backup,
 /// and for how long at most: a new folder of thousands of files is read
@@ -194,6 +203,7 @@ impl Daemon {
             asked: None,
             pins: None,
             backed_up_at: Mutex::new(None),
+            mailed_at: Mutex::new(std::collections::HashMap::new()),
         }
     }
 
@@ -983,6 +993,62 @@ impl Daemon {
         }
     }
 
+    /// Collect from, through the mailbox, each of this person's devices, and
+    /// post to those not reached on this pass: at most every
+    /// [`MAILBOX_EVERY`] each, and only while the person has it on.
+    async fn use_mailbox(&self, engine: &mut Engine, peers: &Peers) {
+        let Some(account) = crate::drive_account::signed_in() else { return };
+        let me = match engine.store().device_id() {
+            Ok(me) => me,
+            Err(_) => return,
+        };
+        let key = self.master.derive(qurb_keys::Purpose::Mailbox).to_bytes();
+        let place = qurb_mailbox::Place::Drive(qurb_mailbox::drive::Drive::with_refresh(account));
+        let mailbox = match qurb_mailbox::Mailbox::new(place, key, me, &self.store_dir) {
+            Ok(mailbox) => mailbox,
+            Err(e) => return tracing::warn!(error = %e, "the mailbox could not be opened"),
+        };
+        let Ok(known) = engine.store().db().trusted_peers() else { return };
+        let mine: Vec<_> = known
+            .into_iter()
+            .filter(|p| !p.relation.is_other_person())
+            // Not a device since set up again: its later self is the one
+            // posted to, and letters for one that will never look only fill
+            // the folder.
+            .filter(|p| engine.store().db().became(&p.device_id).ok().flatten().is_none())
+            .collect();
+        let holds = qurb_mailbox::Owned(Mutex::new(engine));
+        for peer in mine {
+            let fp = Fingerprint::from_bytes(peer.fingerprint);
+            {
+                let mut mailed = self.mailed_at.lock().expect("mailed_at");
+                if mailed.get(&fp).is_some_and(|at| at.elapsed() < MAILBOX_EVERY) {
+                    continue;
+                }
+                mailed.insert(fp, std::time::Instant::now());
+            }
+            match mailbox.collect(&holds, &peer, MAILBOX_FOR).await {
+                Ok(c) if c.packs + c.applied > 0 => {
+                    tracing::info!(peer = %fp.short(), packs = c.packs, bytes = c.bytes, applied = c.applied, waiting = c.waiting, "collected through the mailbox")
+                }
+                Ok(_) => {}
+                Err(e) => tracing::info!(peer = %fp.short(), error = %e, "the mailbox could not be read"),
+            }
+            // Collected from whether or not it was reached, so nothing waits
+            // there once a live path is back; posted to only when not.
+            if peers.connections.contains_key(&fp) {
+                continue;
+            }
+            match mailbox.post(&holds, &peer, MAILBOX_FOR).await {
+                Ok(p) if p.list || p.packs + p.receipts > 0 => {
+                    tracing::info!(peer = %fp.short(), list = p.list, packs = p.packs, bytes = p.bytes, delivered = p.delivered, full = p.full, "posted through the mailbox")
+                }
+                Ok(_) => {}
+                Err(e) => tracing::info!(peer = %fp.short(), error = %e, "the mailbox could not be written"),
+            }
+        }
+    }
+
     /// Keep this computer's own folders in its vault (`crate::backup`), at
     /// most every [`BACKUP_EVERY`] and for [`BACKUP_FOR`]; sooner again while
     /// a folder still has files left to read.
@@ -1142,6 +1208,10 @@ impl Daemon {
         if news_from.is_some() {
             self.announce_news(connector, peers, news_from).await;
         }
+
+        // This person's devices not reached: letters through the mailbox,
+        // when it is on (`qurb_mailbox`, 2026-11-13).
+        self.use_mailbox(engine, peers).await;
 
         // How each device is reached, from the connections actually held
         // rather than from anything remembered about them, so a device that

@@ -17,6 +17,7 @@ path = "src/main.rs"
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+qurb-mailbox = { path = "../mailbox" }
 qurb-cli = { path = "../qurb" }
 qurb-keys = { path = "../keys" }
 qurb-peer = { path = "../peer" }

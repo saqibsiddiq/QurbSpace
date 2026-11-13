@@ -11,9 +11,9 @@ let SETTINGS = null;
 async function drawSettings(main) {
   const body = h("div", {});
   main.append(h("div", { class: "pg pg-narrow" }, pageHead("Settings", null), body));
-  let s, st, atLogin;
+  let s, st, atLogin, drive;
   try {
-    [s, st, atLogin] = await Promise.all([invoke("settings"), invoke("storage").catch(() => null), invoke("starts_at_login").catch(() => false)]);
+    [s, st, atLogin, drive] = await Promise.all([invoke("settings"), invoke("storage").catch(() => null), invoke("starts_at_login").catch(() => false), invoke("drive_state").catch(() => null)]);
   } catch (e) { put(body, oops(e)); return; }
   SETTINGS = s;
   const theme = { system: "Auto", light: "Light", dark: "Dark" }[window.qurbTheme?.chosen?.() ?? "system"];
@@ -31,6 +31,7 @@ async function drawSettings(main) {
     group("Connection",
       setting({ ic: "pause", name: "Pause sync", value: pausedWords(s.paused_until), onclick: () => pauseSheet(s.paused_until) }),
       setting({ ic: "arrow-up-down", name: "Speed limit", value: speedWords(s), onclick: () => go("speed") }),
+      drive?.ready ? setting({ ic: "cloud", name: "Google Drive", value: drive.on ? (drive.account ?? "On") : "Off", onclick: () => driveSheet(drive) }) : null,
       setting({ ic: "laptop", name: "Stay awake to collect", end: toggle(s.stay_awake, (on) => invoke("set_stay_awake", { on }), "Stay awake to collect") }),
       setting({ ic: "link", name: "Advanced", onclick: () => go("advanced") })),
     group("App",
@@ -133,6 +134,36 @@ function askDownloads() {
     note: "Err" in at ? at.Err : "Where files sent to this computer go",
     save: (downloads) => saveSettings({ downloads }),
   });
+}
+
+// ---------- Google Drive, the mailbox ----------
+
+/** On: who is signed in, and off. Off: what it is for, and sign in. */
+function driveSheet(drive) {
+  const box = sheet({ ic: "cloud", title: "Google Drive", sub: drive.on ? drive.account ?? "On" : "When your devices can't reach each other, they leave each other files here, encrypted" });
+  if (drive.on) {
+    box.append(actions(btn("Turn off", async () => {
+      box.close();
+      try { await invoke("drive_sign_out"); } catch (e) { toast(String(e), true); }
+      go("settings");
+    }, "btn-danger-solid")));
+    return;
+  }
+  const signIn = btn("Sign in", async () => {
+    signIn.disabled = true;
+    signIn.textContent = "Finish in your browser…";
+    try {
+      const now = await invoke("drive_sign_in");
+      box.close();
+      toast(now.account ? `Signed in as ${now.account}` : "Google Drive on");
+      go("settings");
+    } catch (e) {
+      signIn.disabled = false;
+      signIn.textContent = "Sign in";
+      toast(String(e), true);
+    }
+  }, "btn-main");
+  box.append(actions(btn("Cancel", () => box.close(), "btn-quiet"), signIn));
 }
 
 // ---------- Pause, notifications (decision 0086) ----------

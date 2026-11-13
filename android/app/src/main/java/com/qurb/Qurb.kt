@@ -386,6 +386,8 @@ object Engine {
      */
     suspend fun <T> hearingTheNetwork(context: Context, work: suspend () -> T): T {
         noteNetwork(context)
+        // A Google Drive token for the mailbox, when it is on (2026-11-13).
+        handle?.let { GoogleDrive.refresh(context, it) }
         val wifi = context.applicationContext
             .getSystemService(Context.WIFI_SERVICE) as? android.net.wifi.WifiManager
         val lock = runCatching {

@@ -721,6 +721,11 @@ pub struct Qurb {
     /// What this device has handed to devices collecting from it. Read while
     /// a pass runs, from another thread, so it takes no lock.
     serving: Arc<ServingStats>,
+    /// An access token for the person's Google Drive, given by the app when
+    /// the mailbox is on (`qurb_mailbox`); and whether Google last refused
+    /// it, for the app to fetch another.
+    drive_token: Mutex<Option<String>>,
+    drive_refused: std::sync::atomic::AtomicBool,
     /// Each computer reached to browse it, kept while its connection lasts
     /// (the owner's list of 2026-11-01, item 7): opening a computer built
     /// a whole connection from nothing every time -- an endpoint, the relay,
@@ -1947,6 +1952,20 @@ impl Qurb {
         self.reach_states.lock().expect("reach_states poisoned").get(&fingerprint).cloned().unwrap_or_default()
     }
 
+    /// The Google Drive access token the phone's account gave, or none: the
+    /// mailbox off (`qurb_mailbox`, 2026-11-13).
+    pub fn set_drive_token(&self, token: Option<String>) {
+        if let Ok(mut held) = self.drive_token.lock() {
+            *held = token.filter(|t| !t.is_empty());
+        }
+    }
+
+    /// Whether Google refused the token since last asked: the app then asks
+    /// the account for a fresh one.
+    pub fn drive_token_refused(&self) -> bool {
+        self.drive_refused.swap(false, std::sync::atomic::Ordering::Relaxed)
+    }
+
     pub fn network_changed(&self) {
         NETWORK.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
@@ -2760,10 +2779,91 @@ fn happenings(
     }
 }
 
+/// The phone's engine as the mailbox holds it: taken for each short step and
+/// let go between, so a screen is never kept waiting on a pack crossing the
+/// network.
+struct PhoneHolds<'a>(&'a Qurb);
+
+impl qurb_mailbox::Holds for PhoneHolds<'_> {
+    fn store<R>(&self, f: impl FnOnce(&mut Store) -> R) -> R {
+        let mut engine = self.0.engine().expect("the engine is open while a pass runs");
+        f(engine.store_mut())
+    }
+    fn engine<R>(&self, f: impl FnOnce(&mut Engine) -> R) -> R {
+        let mut engine = self.0.engine().expect("the engine is open while a pass runs");
+        f(&mut engine)
+    }
+}
+
 /// Not exported. `#[uniffi::export]` takes every function in the block it is
 /// applied to, and neither a `MutexGuard` nor a four-argument constructor
 /// taking an optional callback interface can cross an FFI boundary.
 impl Qurb {
+
+    /// Collect from, through the mailbox, each of this person's computers,
+    /// and post to those not in `reached`, sharing `budget`.
+    fn use_mailbox(&self, runtime: &tokio::runtime::Runtime, reached: &[qurb_peer::Fingerprint], budget: std::time::Duration) {
+        let Some(token) = self.drive_token.lock().ok().and_then(|t| t.clone()) else { return };
+        let Ok((me, peers)) = self.look().and_then(|engine| {
+            let db = engine.store().db();
+            let peers: Vec<_> = db
+                .trusted_peers()?
+                .into_iter()
+                .filter(|p| p.relation == qurb_storage::db::Relation::Own)
+                .filter(|p| db.peer_kind(&p.device_id).ok().flatten().as_deref() != Some("phone"))
+                .filter(|p| db.became(&p.device_id).ok().flatten().is_none())
+                .collect();
+            Ok((engine.store().device_id()?, peers))
+        }) else {
+            return;
+        };
+        if peers.is_empty() {
+            return;
+        }
+        let key = self.master.derive(Purpose::Mailbox).to_bytes();
+        let place = qurb_mailbox::Place::Drive(qurb_mailbox::drive::Drive::with_token(token));
+        let mailbox = match qurb_mailbox::Mailbox::new(place, key, me, &self.store_dir) {
+            Ok(mailbox) => mailbox,
+            Err(e) => return tracing::warn!(error = %e, "the mailbox could not be opened"),
+        };
+        let each = budget / (peers.len() as u32 * 2).max(1);
+        let holds = PhoneHolds(self);
+        let refused = |e: &qurb_mailbox::Error| matches!(e, qurb_mailbox::Error::NotSignedIn);
+        for peer in peers {
+            let fp = qurb_peer::Fingerprint::from_bytes(peer.fingerprint);
+            let done = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                runtime.block_on(async {
+                    match mailbox.collect(&holds, &peer, each).await {
+                        Ok(c) if c.packs + c.applied > 0 => tracing::info!(peer = %fp.short(), packs = c.packs, bytes = c.bytes, applied = c.applied, waiting = c.waiting, "collected through the mailbox"),
+                        Ok(_) => {}
+                        Err(e) => {
+                            if refused(&e) {
+                                self.drive_refused.store(true, std::sync::atomic::Ordering::Relaxed);
+                            }
+                            tracing::info!(peer = %fp.short(), error = %e, "the mailbox could not be read");
+                        }
+                    }
+                    // Posted to only when not reached live this pass.
+                    if reached.contains(&fp) {
+                        return;
+                    }
+                    match mailbox.post(&holds, &peer, each).await {
+                        Ok(p) if p.list || p.packs + p.receipts > 0 => tracing::info!(peer = %fp.short(), list = p.list, packs = p.packs, bytes = p.bytes, delivered = p.delivered, full = p.full, "posted through the mailbox"),
+                        Ok(_) => {}
+                        Err(e) => {
+                            if refused(&e) {
+                                self.drive_refused.store(true, std::sync::atomic::Ordering::Relaxed);
+                            }
+                            tracing::info!(peer = %fp.short(), error = %e, "the mailbox could not be written");
+                        }
+                    }
+                })
+            }));
+            if done.is_err() {
+                tracing::warn!("the mailbox stopped part-way: the engine went");
+            }
+        }
+    }
 
     /// Keep one folder where it lies until `deadline`, adding what was done
     /// to `run` (decisions 0062 and 0063).
@@ -2958,6 +3058,8 @@ impl Qurb {
             wake_token: Mutex::new(settings.wake_token),
             runtime: Mutex::new(None),
             serving: Arc::new(ServingStats::default()),
+            drive_token: Mutex::new(None),
+            drive_refused: std::sync::atomic::AtomicBool::new(false),
             kept_open: Mutex::new(std::collections::HashMap::new()),
             opening: Mutex::new(std::collections::HashMap::new()),
             reach_states: Arc::new(Mutex::new(std::collections::HashMap::new())),
@@ -3401,6 +3503,14 @@ impl Qurb {
                     outcome.unreachable += 1;
                 }
             }
+        }
+
+        // This person's computers not reached: letters through the mailbox,
+        // when it is on, in what is left of the window (2026-11-13).
+        let left = budget.saturating_sub(started.elapsed());
+        if left > std::time::Duration::from_secs(3) {
+            let reached: Vec<qurb_peer::Fingerprint> = askers.iter().map(|(peer, _)| *peer).collect();
+            self.use_mailbox(&runtime, &reached, left);
         }
 
         // Stay a moment for the others.

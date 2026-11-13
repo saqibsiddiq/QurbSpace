@@ -6,6 +6,8 @@
 //! whether a file is on disk — and a storage screen that offered to free the
 //! third would be offering to delete somebody's only copy.
 
+#![recursion_limit = "256"]
+
 use qurb_cli::{Availability, View};
 use qurb_storage::db::Event;
 use qurb_storage::{ChunkKey, Store};

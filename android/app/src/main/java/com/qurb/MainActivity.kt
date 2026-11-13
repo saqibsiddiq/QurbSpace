@@ -309,6 +309,28 @@ class MainActivity : AppCompatActivity() {
         textSaver.launch(name)
     }
 
+    /** What to do once a Google account is picked for the mailbox. */
+    private var onDriveAccount: ((Boolean) -> Unit)? = null
+
+    private val driveAccountPicker = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val then = onDriveAccount
+        onDriveAccount = null
+        val name = result.data?.getStringExtra(android.accounts.AccountManager.KEY_ACCOUNT_NAME)
+        if (name == null) {
+            then?.invoke(false)
+            return@registerForActivityResult
+        }
+        GoogleDrive.signIn(this, name) { on -> then?.invoke(on) }
+    }
+
+    /** Pick the Google account whose Drive is the mailbox, and allow it. */
+    fun pickDriveAccount(then: (Boolean) -> Unit) {
+        onDriveAccount = then
+        driveAccountPicker.launch(GoogleDrive.chooser())
+    }
+
     /** What to do once a folder for received files is picked (decision 0086). */
     private var onReceivedFolder: (() -> Unit)? = null
 

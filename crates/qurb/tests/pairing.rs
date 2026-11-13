@@ -6,6 +6,8 @@
 //! These check the two things that makes necessary: a second store handle, and
 //! a port of its own.
 
+#![recursion_limit = "256"]
+
 use qurb_peer::{Identity, Ours, PairingHost};
 use qurb_storage::{ChunkKey, Store};
 use std::path::Path;
