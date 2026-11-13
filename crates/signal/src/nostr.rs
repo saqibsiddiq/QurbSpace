@@ -435,6 +435,195 @@ async fn stay_on(
     }
 }
 
+// ---------------------------------------------------------------------------
+// Datagrams over the relays: the path when no other is (2026-11-13)
+// ---------------------------------------------------------------------------
+
+/// Datagrams to and from the other devices of a group, carried by public
+/// Nostr relays: the way a phone on Jio reached its laptop when nothing else
+/// did -- no IPv4 of its own, no IPv6 at home, Tor not getting through -- while
+/// its announcements through the relays always arrived.
+///
+/// What a relay sees is what it sees of the meeting messages: an ephemeral
+/// event signed by a key for this session alone, tagged with a topic that
+/// changes every day and names, to the group alone, the device it is for,
+/// carrying bytes it cannot read. Inside is a QUIC packet (`qurb_peer`), so
+/// the devices' own end-to-end encryption and pinned identities hold as over
+/// any other path: the relays could drop packets, never read or change them.
+///
+/// Slow by nature: relays limit how much one connection may post, so this
+/// sends at most [`DATAGRAMS_PER_SECOND`], and QUIC's own congestion control
+/// does the rest. Measured from the owner's laptop across the default relays,
+/// 2026-11-13 (`crates/peer/examples/nostrprobe.rs`): a handshake in 0.4 to
+/// 0.5 s, a round trip of 400 to 510 ms, 256 KB at 35 to 52 KB/s each way
+/// (17 KB/s at 25 a second). Enough to approve, to sync a list, to
+/// send a small file; a backup waits for a faster path.
+pub struct Datagrams {
+    /// Send a datagram to a member of the group.
+    pub send: mpsc::UnboundedSender<(MemberId, Vec<u8>)>,
+    /// Datagrams from members of the group, as they arrive.
+    pub received: mpsc::UnboundedReceiver<(MemberId, Vec<u8>)>,
+    carrying: tokio::task::JoinHandle<()>,
+}
+
+impl Drop for Datagrams {
+    fn drop(&mut self) {
+        self.carrying.abort();
+    }
+}
+
+impl Datagrams {
+    /// Two members' datagrams joined directly, with no relay: for testing
+    /// what runs over this path without the public relays.
+    pub fn linked(a: MemberId, b: MemberId) -> (Datagrams, Datagrams) {
+        let (a_send, mut a_out) = mpsc::unbounded_channel::<(MemberId, Vec<u8>)>();
+        let (b_send, mut b_out) = mpsc::unbounded_channel::<(MemberId, Vec<u8>)>();
+        let (to_a, a_received) = mpsc::unbounded_channel();
+        let (to_b, b_received) = mpsc::unbounded_channel();
+        let a_carrying = tokio::spawn(async move {
+            while let Some((to, payload)) = a_out.recv().await {
+                if to == b && to_b.send((a, payload)).is_err() {
+                    return;
+                }
+            }
+        });
+        let b_carrying = tokio::spawn(async move {
+            while let Some((to, payload)) = b_out.recv().await {
+                if to == a && to_a.send((b, payload)).is_err() {
+                    return;
+                }
+            }
+        });
+        (
+            Datagrams { send: a_send, received: a_received, carrying: a_carrying },
+            Datagrams { send: b_send, received: b_received, carrying: b_carrying },
+        )
+    }
+}
+
+/// The most datagrams posted a second, each to every relay: 60, measured
+/// without a relay refusing; more is asking more of volunteers' relays.
+pub const DATAGRAMS_PER_SECOND: u32 = 60;
+
+/// The keys of the datagram path: its own sealing key, and a topic for each
+/// member and day.
+struct DataKeys {
+    seal: [u8; 32],
+    group: [u8; 32],
+}
+
+impl DataKeys {
+    fn of(group: &GroupId) -> Self {
+        Self { seal: blake3::derive_key("qurb nostr datagram seal v1", group.as_bytes()), group: *group.as_bytes() }
+    }
+
+    fn topic(&self, member: &MemberId, day: u64) -> String {
+        let mut input = self.group.to_vec();
+        input.extend_from_slice(member.as_bytes());
+        input.extend_from_slice(&day.to_be_bytes());
+        hex(&blake3::derive_key("qurb nostr datagram topic v1", &input)[..16])
+    }
+
+    fn topics_now(&self, member: &MemberId) -> Vec<String> {
+        let day = now() / 86_400;
+        vec![self.topic(member, day), self.topic(member, day.saturating_sub(1))]
+    }
+
+    /// `to`, `from`, when, and the packet, sealed: a nonce, then the rest.
+    fn seal(&self, to: &MemberId, from: &MemberId, payload: &[u8]) -> String {
+        let mut plain = Vec::with_capacity(72 + payload.len());
+        plain.extend_from_slice(to.as_bytes());
+        plain.extend_from_slice(from.as_bytes());
+        plain.extend_from_slice(&now().to_be_bytes());
+        plain.extend_from_slice(payload);
+        let nonce: [u8; 12] = rand_bytes();
+        let cipher = ChaCha20Poly1305::new(&self.seal.into());
+        let mut out = nonce.to_vec();
+        out.extend(cipher.encrypt(Nonce::from_slice(&nonce), plain.as_slice()).unwrap_or_default());
+        hex(&out)
+    }
+
+    /// The nonce, who it is for, who from, when, and the packet.
+    fn open(&self, content: &str) -> Option<([u8; 12], MemberId, MemberId, u64, Vec<u8>)> {
+        let bytes = unhex(content)?;
+        if bytes.len() < 12 + 16 + 72 {
+            return None;
+        }
+        let cipher = ChaCha20Poly1305::new(&self.seal.into());
+        let plain = cipher.decrypt(Nonce::from_slice(&bytes[..12]), &bytes[12..]).ok()?;
+        let to = MemberId::from_bytes(plain[..32].try_into().ok()?);
+        let from = MemberId::from_bytes(plain[32..64].try_into().ok()?);
+        let at = u64::from_be_bytes(plain[64..72].try_into().ok()?);
+        Some((bytes[..12].try_into().ok()?, to, from, at, plain[72..].to_vec()))
+    }
+}
+
+/// Open the datagram path for `member` of `group` on the relays `url` names.
+/// Returns at once: the relays connect in the background, and what is sent
+/// before any listens is lost, as over a network not yet up.
+pub fn datagrams(url: &str, group: GroupId, member: MemberId) -> Datagrams {
+    let relays = relays_of(url);
+    let keys = std::sync::Arc::new(DataKeys::of(&group));
+    let (send, mut to_send) = mpsc::unbounded_channel::<(MemberId, Vec<u8>)>();
+    let (deliver, received) = mpsc::unbounded_channel::<(MemberId, Vec<u8>)>();
+    let carrying = tokio::spawn(async move {
+        let signer = Signer256::new();
+        let mut topics = keys.topics_now(&member);
+        let mut pool = Pool::get(relays.clone(), topics.clone());
+        let mut heard = pool.heard.subscribe();
+        let mut told: VecDeque<[u8; 12]> = VecDeque::new();
+        // A bucket of posts, refilled every second.
+        let mut allowance = DATAGRAMS_PER_SECOND;
+        let mut refill = tokio::time::interval(Duration::from_secs(1));
+        // The day's topics, looked at each minute: a computer runs past midnight.
+        let mut look = tokio::time::interval(Duration::from_secs(60));
+        loop {
+            tokio::select! {
+                _ = refill.tick() => allowance = DATAGRAMS_PER_SECOND,
+                _ = look.tick() => {
+                    let now_topics = keys.topics_now(&member);
+                    if now_topics != topics {
+                        topics = now_topics;
+                        pool = Pool::get(relays.clone(), topics.clone());
+                        heard = pool.heard.subscribe();
+                    }
+                }
+                out = to_send.recv() => {
+                    let Some((to, payload)) = out else { return };
+                    // Over the allowance it is dropped, as a full router
+                    // drops it; QUIC slows down and sends again.
+                    if allowance == 0 {
+                        continue;
+                    }
+                    allowance -= 1;
+                    let topic = keys.topic(&to, now() / 86_400);
+                    let event = signer.event(&topic, keys.seal(&to, &member, &payload));
+                    let _ = pool.post.send(serde_json::json!(["EVENT", event]).to_string());
+                }
+                content = heard.recv() => {
+                    let content = match content {
+                        Ok(content) => content,
+                        Err(broadcast::error::RecvError::Lagged(_)) => continue,
+                        Err(broadcast::error::RecvError::Closed) => return,
+                    };
+                    let Some((nonce, to, from, at, payload)) = keys.open(&content) else { continue };
+                    if to != member || from == member || now().saturating_sub(at) > FRESH_FOR || told.contains(&nonce) {
+                        continue;
+                    }
+                    told.push_back(nonce);
+                    if told.len() > REMEMBERED * 8 {
+                        told.pop_front();
+                    }
+                    if deliver.send((from, payload)).is_err() {
+                        return;
+                    }
+                }
+            }
+        }
+    });
+    Datagrams { send, received, carrying }
+}
+
 fn rand_bytes<const N: usize>() -> [u8; N] {
     let mut out = [0u8; N];
     getrandom::fill(&mut out).expect("the system's random source");
@@ -479,6 +668,19 @@ mod tests {
         let key = k256::schnorr::VerifyingKey::from_bytes(&unhex(event["pubkey"].as_str().unwrap()).unwrap()).unwrap();
         let sig = k256::schnorr::Signature::try_from(unhex(event["sig"].as_str().unwrap()).unwrap().as_slice()).unwrap();
         key.verify_raw(&id, &sig).expect("the signature does not verify");
+    }
+
+    #[test]
+    fn a_datagram_opens_only_for_its_group_and_says_who_it_is_for() {
+        let keys = DataKeys::of(&GroupId::from_bytes([1; 32]));
+        let other = DataKeys::of(&GroupId::from_bytes([2; 32]));
+        let (to, from) = (MemberId::from_bytes([7; 32]), MemberId::from_bytes([8; 32]));
+        let sealed = keys.seal(&to, &from, b"a quic packet");
+        let (_, to_, from_, _, payload) = keys.open(&sealed).expect("did not open");
+        assert_eq!((to_, from_, payload.as_slice()), (to, from, b"a quic packet".as_slice()));
+        assert!(other.open(&sealed).is_none(), "another group opened it");
+        assert_ne!(keys.topic(&to, 1), keys.topic(&from, 1), "two devices share a topic");
+        assert_ne!(keys.topic(&to, 1), keys.topic(&to, 2), "the topic does not change by day");
     }
 
     #[test]

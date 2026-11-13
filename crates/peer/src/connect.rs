@@ -52,6 +52,9 @@ const CANDIDATE_TIMEOUT: Duration = Duration::from_secs(8);
 /// tries at once, and how long between batches (2026-11-13, for phones
 /// behind Jio's, Airtel's and Vi's NAT; see `Connector::sweep`).
 const SWEEP_WINDOW: u16 = 512;
+/// How long a connection over the Nostr relays is given: each packet goes
+/// through a relay and back, a quarter of a second or more.
+const NOSTR_TIMEOUT: Duration = Duration::from_secs(30);
 const SWEEP_BATCH: usize = 64;
 const SWEEP_PACE: Duration = Duration::from_millis(40);
 /// How long a sweep may take in all.
@@ -151,6 +154,9 @@ pub struct Connector {
     background: Vec<tokio::task::AbortHandle>,
     /// Where the rendezvous service is, for meetings started later.
     signal_url: String,
+    /// QUIC over the public Nostr relays, when they are the meeting point:
+    /// the path when there is no other (`crate::nostr_path`).
+    nostr: Option<NostrPath>,
     /// Devices of other people this one meets under a secret of their own
     /// (decision 0060): a guest of this computer, or a computer this device
     /// visits. Each has its own rendezvous session.
@@ -341,6 +347,11 @@ enum Command {
     Waiting { to: MemberId },
     /// Say how this device can be woken while it is not connected.
     Reachable { via: Option<String> },
+}
+
+struct NostrPath {
+    socket: Arc<crate::nostr_path::NostrSocket>,
+    endpoint: quinn::Endpoint,
 }
 
 struct RelayPath {
@@ -551,6 +562,27 @@ impl Connector {
             );
         }
 
+        // Over the Nostr relays too, when they are the meeting point: opened
+        // now, so that a device away can be reached on it as well as reach.
+        let nostr = if qurb_signal::nostr::is_nostr(&signal_url) {
+            let datagrams = qurb_signal::nostr::datagrams(
+                &signal_url,
+                GroupId::derive(&master),
+                MemberId::derive(&master, identity.fingerprint().as_bytes()),
+            );
+            let socket = crate::nostr_path::NostrSocket::over(datagrams);
+            let server_config = tls::server_config(&identity, allowed)?;
+            match crate::nostr_path::endpoint_over(Arc::clone(&socket), Some(server_config)) {
+                Ok(endpoint) => Some(NostrPath { socket, endpoint }),
+                Err(e) => {
+                    tracing::warn!(error = %e, "no path over the nostr relays");
+                    None
+                }
+            }
+        } else {
+            None
+        };
+
         Ok(Self {
             endpoint,
             identity,
@@ -563,6 +595,7 @@ impl Connector {
             beacons,
             background,
             signal_url,
+            nostr,
             meetings: std::sync::Mutex::new(std::collections::HashMap::new()),
         })
     }
@@ -735,6 +768,34 @@ impl Connector {
         self.relay.as_ref().map(|r| &r.endpoint)
     }
 
+    /// The endpoint over the Nostr relays, to be accepted on as the others
+    /// are, when there is one.
+    pub fn nostr_endpoint(&self) -> Option<&quinn::Endpoint> {
+        self.nostr.as_ref().map(|n| &n.endpoint)
+    }
+
+    /// `peer` reached over the Nostr relays: slow, and the one path when
+    /// there is no other.
+    async fn through_nostr(&self, peer: Fingerprint, target: MemberId) -> Result<PeerClient> {
+        let nostr = self.nostr.as_ref().ok_or(Error::NoCandidates)?;
+        let at = nostr.socket.address_of(target).ok_or(Error::NoCandidates)?;
+        tracing::info!(peer = %peer.short(), "trying the nostr relays");
+        let started = tokio::time::Instant::now();
+        let config = tls::client_config(&self.identity, peer)?;
+        let connecting = nostr
+            .endpoint
+            .connect_with(config, at, "qurb-device")
+            .map_err(|e| Error::Unreachable { peer: peer.short(), tried: format!("nostr: {e}") })?;
+        match tokio::time::timeout(NOSTR_TIMEOUT, connecting).await {
+            Ok(Ok(connection)) => {
+                tracing::info!(peer = %peer.short(), after_ms = started.elapsed().as_millis() as u64, "connected over the nostr relays");
+                Ok(PeerClient::from_parts(nostr.endpoint.clone(), connection).through_relay())
+            }
+            Ok(Err(e)) => Err(Error::Unreachable { peer: peer.short(), tried: format!("nostr: {e}") }),
+            Err(_) => Err(Error::Unreachable { peer: peer.short(), tried: "nostr: timed out".into() }),
+        }
+    }
+
     pub fn local_addr(&self) -> Result<SocketAddr> {
         self.endpoint
             .local_addr()
@@ -831,96 +892,62 @@ impl Connector {
             }
         }
 
-        // Away from the computer's network, with its onion address kept: Tor
-        // started alongside the introduction, a head start behind it, rather
-        // than after the introduction's twenty seconds had run out -- by then
-        // a phone's pass had five left, and Tor takes eighteen or more. On
-        // 2026-11-13 a phone on Jio never reached its laptop that way.
+        // Away from the device's network: introduced by the rendezvous
+        // service, and -- a head start behind -- Tor to its kept onion
+        // address and the Nostr relays, all at once, the first to connect
+        // kept. One after another they did not fit any pass: the introduction
+        // alone waited twenty seconds, Tor takes a minute from cold, and on
+        // 2026-11-13 a phone on Jio reached its laptop by none of them.
+        let mut paths: Vec<std::pin::Pin<Box<dyn std::future::Future<Output = Result<PeerClient>> + Send + '_>>> = Vec::new();
+        paths.push(Box::pin(self.introduced(peer, target)));
         #[cfg(feature = "tor")]
         if let Some(onion) = crate::tor::remembered(&peer) {
-            let introduced = self.introduced(peer, target);
-            tokio::pin!(introduced);
-            if let Ok(found) = tokio::time::timeout(RELAY_HEAD_START, &mut introduced).await {
-                if found.is_ok() {
-                    return found;
-                }
-                return self.through_tor(peer, &onion).await;
-            }
-            let tor = self.through_tor(peer, &onion);
-            tokio::pin!(tor);
-            let (mut introduced_failed, mut tor_failed) = (None, None);
-            loop {
-                tokio::select! {
-                    result = &mut introduced, if introduced_failed.is_none() => match result {
-                        Ok(client) => return Ok(client),
-                        Err(e) => introduced_failed = Some(e),
-                    },
-                    result = &mut tor, if tor_failed.is_none() => match result {
-                        Ok(client) => return Ok(client),
-                        Err(e) => tor_failed = Some(e),
-                    },
-                }
-                if let (Some(_), Some(e)) = (&tor_failed, introduced_failed.take()) {
-                    return Err(e);
+            paths.push(Box::pin(async move {
+                tokio::time::sleep(RELAY_HEAD_START).await;
+                self.through_tor(peer, &onion).await
+            }));
+        }
+        if self.nostr.is_some() {
+            paths.push(Box::pin(async move {
+                tokio::time::sleep(RELAY_HEAD_START).await;
+                self.through_nostr(peer, target).await
+            }));
+        }
+        let mut first_error = None;
+        let mut racing: futures_util::stream::FuturesUnordered<_> = paths.into_iter().collect();
+        while let Some(result) = futures_util::StreamExt::next(&mut racing).await {
+            match result {
+                Ok(client) => return Ok(client),
+                Err(e) => {
+                    first_error.get_or_insert(e);
                 }
             }
         }
-
-        let (reply, answer) = oneshot::channel();
-
-        self.signal
-            .send(Command::Introduce { to: target, reply })
-            .map_err(|_| Error::Signalling { detail: "signalling has stopped".into() })?;
-
-        let endpoints = match tokio::time::timeout(RENDEZVOUS_TIMEOUT, answer).await {
-            Ok(Ok(result)) => result,
-            Ok(Err(_)) => Err(Error::Signalling { detail: "signalling has stopped".into() }),
-            Err(_) => Err(Error::PeerDidNotAnswer),
-        };
-        #[cfg_attr(not(feature = "tor"), allow(unused_mut))]
-        let mut endpoints = match endpoints {
-            Ok(endpoints) => endpoints,
-            // The rendezvous service did not introduce them: on 2026-11-13 a
-            // phone on mobile data never reached its computer this way, and
-            // never tried Tor, which needs the address the introduction
-            // carries. Tried with the one kept from before, if there is one.
-            #[cfg(feature = "tor")]
-            Err(e) => match crate::tor::remembered(&peer) {
-                Some(onion) => {
-                    tracing::info!(peer = %peer.short(), error = %e, "not introduced; trying its onion service as kept");
-                    return self.through_tor(peer, &onion).await;
-                }
-                None => return Err(e),
-            },
-            #[cfg(not(feature = "tor"))]
-            Err(e) => return Err(e),
-        };
-        #[cfg(feature = "tor")]
-        match &endpoints.onion {
-            Some(onion) => crate::tor::remember(&peer, onion),
-            None => endpoints.onion = crate::tor::remembered(&peer),
-        }
-
-        self.or_through_tor(peer, &endpoints).await
+        Err(first_error.unwrap_or(Error::NoCandidates))
     }
 
     /// Introduced by the rendezvous service and reached by an address it
-    /// carried, or the relay: no Tor, which the caller races beside it.
-    #[cfg(feature = "tor")]
+    /// carried, or the relay; and through Tor to an onion address it carried,
+    /// when none was kept before -- a kept one the caller races beside this.
     async fn introduced(&self, peer: Fingerprint, target: MemberId) -> Result<PeerClient> {
         let (reply, answer) = oneshot::channel();
         self.signal
             .send(Command::Introduce { to: target, reply })
             .map_err(|_| Error::Signalling { detail: "signalling has stopped".into() })?;
-        let endpoints = match tokio::time::timeout(RENDEZVOUS_TIMEOUT, answer).await {
+        #[cfg_attr(not(feature = "tor"), allow(unused_mut))]
+        let mut endpoints = match tokio::time::timeout(RENDEZVOUS_TIMEOUT, answer).await {
             Ok(Ok(result)) => result?,
             Ok(Err(_)) => return Err(Error::Signalling { detail: "signalling has stopped".into() }),
             Err(_) => return Err(Error::PeerDidNotAnswer),
         };
-        if let Some(onion) = &endpoints.onion {
-            crate::tor::remember(&peer, onion);
+        #[cfg(feature = "tor")]
+        if let Some(onion) = endpoints.onion.clone() {
+            if crate::tor::remembered(&peer).is_some() {
+                endpoints.onion = None;
+            }
+            crate::tor::remember(&peer, &onion);
         }
-        self.direct_or_relay(peer, &endpoints).await
+        self.or_through_tor(peer, &endpoints).await
     }
 
     /// [`direct_or_relay`](Self::direct_or_relay), and when nothing there got

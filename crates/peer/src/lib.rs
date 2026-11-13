@@ -43,6 +43,7 @@ pub mod kept;
 pub mod limit;
 pub mod local;
 pub mod nat;
+pub mod nostr_path;
 pub mod openings;
 pub mod pairing;
 pub mod pause;

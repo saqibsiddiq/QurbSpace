@@ -597,7 +597,7 @@ impl Daemon {
         // them things on when they cannot be dialled: a phone behind its
         // carrier's NAT (2026-11-13). Used only after dialling failed.
         let (dialled_in, mut dialled_in_rx) = mpsc::unbounded_channel::<(Fingerprint, PeerClient)>();
-        for endpoint in [Some(connector.endpoint().clone()), connector.relay_endpoint().cloned()]
+        for endpoint in [Some(connector.endpoint().clone()), connector.relay_endpoint().cloned(), connector.nostr_endpoint().cloned()]
             .into_iter()
             .flatten()
         {

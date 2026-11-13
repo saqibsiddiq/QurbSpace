@@ -3290,7 +3290,7 @@ impl Qurb {
         let served = self.shared_store()?;
         let generation = qurb_peer::Generation::new();
         let mut accepting = Vec::new();
-        for endpoint in [Some(connector.endpoint().clone()), connector.relay_endpoint().cloned()]
+        for endpoint in [Some(connector.endpoint().clone()), connector.relay_endpoint().cloned(), connector.nostr_endpoint().cloned()]
             .into_iter()
             .flatten()
         {
@@ -4511,7 +4511,7 @@ impl Dial {
         }
         let generation = qurb_peer::Generation::new();
         let mut accepting = Vec::new();
-        for endpoint in [Some(connector.endpoint().clone()), connector.relay_endpoint().cloned()].into_iter().flatten() {
+        for endpoint in [Some(connector.endpoint().clone()), connector.relay_endpoint().cloned(), connector.nostr_endpoint().cloned()].into_iter().flatten() {
             let store = Arc::clone(&self.served);
             let generation = Arc::clone(&generation);
             let trust = self.trust.clone();

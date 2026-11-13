@@ -64,3 +64,8 @@ qurb-keys = { path = "../keys" }
 qurb-watcher = { path = "../watcher" }
 tempfile = "3"
 tokio = { version = "1", features = ["full"] }
+
+# Measures reaching an onion service through Tor (docs/testing.md).
+[[example]]
+name = "torprobe"
+required-features = ["tor"]

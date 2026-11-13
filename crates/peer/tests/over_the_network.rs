@@ -488,3 +488,40 @@ async fn a_computer_asks_on_the_connection_the_phone_made() {
     let tree = asking.tree().await.expect("the phone did not answer on its own connection");
     assert!(tree.iter().any(|f| f.path == "DCIM/IMG_0001.jpg"), "{tree:?}");
 }
+
+/// QUIC over the Nostr path (`nostr_path`), its datagrams joined directly
+/// here rather than by public relays: the laptop serves, the phone dials it
+/// by its name in the group and reads its list, end-to-end as on any path.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_phone_reaches_its_computer_over_the_nostr_path() {
+    use qurb_signal::{nostr::Datagrams, MemberId};
+    let mut laptop = Device::new();
+    let phone = Device::new();
+    laptop.write("notes/plan.txt", b"reached without an address");
+    let (laptop_name, phone_name) = (MemberId::from_bytes([1; 32]), MemberId::from_bytes([2; 32]));
+    let (at_laptop, at_phone) = Datagrams::linked(laptop_name, phone_name);
+
+    let laptop_socket = qurb_peer::nostr_path::NostrSocket::over(at_laptop);
+    let laptop_end = qurb_peer::nostr_path::endpoint_over(
+        laptop_socket,
+        Some(qurb_peer::tls::server_config(&laptop.identity, &qurb_peer::tls::TrustList::new(vec![phone.identity.fingerprint()])).unwrap()),
+    )
+    .unwrap();
+    let store = Arc::new(Mutex::new(Store::open(&laptop.root.join(".qurb"), ChunkKey::from_bytes([42; 32])).unwrap().in_tree(&laptop.root)));
+    let trust = qurb_peer::tls::TrustList::new(vec![phone.identity.fingerprint()]);
+    tokio::spawn(async move {
+        let connection = laptop_end.accept().await.unwrap().await.unwrap();
+        qurb_peer::server::serve_connection(connection, store, qurb_peer::Generation::new(), &trust).await
+    });
+
+    let phone_socket = qurb_peer::nostr_path::NostrSocket::over(at_phone);
+    let to_laptop = phone_socket.address_of(laptop_name).unwrap();
+    let phone_end = qurb_peer::nostr_path::endpoint_over(phone_socket, None).unwrap();
+    let config = qurb_peer::tls::client_config(&phone.identity, laptop.identity.fingerprint()).unwrap();
+    let connection = tokio::time::timeout(std::time::Duration::from_secs(10), phone_end.connect_with(config, to_laptop, "qurb-device").unwrap())
+        .await
+        .expect("no handshake over the nostr path")
+        .unwrap();
+    let tree = PeerClient::from_parts(phone_end.clone(), connection).tree().await.unwrap();
+    assert!(tree.iter().any(|f| f.path == "notes/plan.txt"), "{tree:?}");
+}
