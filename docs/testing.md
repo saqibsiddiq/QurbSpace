@@ -24,6 +24,42 @@ it let go, leaving the engine free for 20 ms between batches
 Tested by the storage and phone engine suites; **not yet measured on a first
 backup**, since the OPPO's has finished.
 
+**Speed and the progress bar** (the owner: "why is the backing up and sending
+speed not as fast as my internet speed? ... why is the progress bar not
+reflecting the progress in real-time?"). The OPPO and the laptop share a
+5 GHz Wi-Fi (the laptop's link 526 Mbit/s, the OPPO's 390), so the internet
+is not on the path. Measured at the laptop's interface, 120 s each, while
+the laptop collected the OPPO's camera and WhatsApp backup:
+
+| when | MB/s | what was crossing |
+|---|---|---|
+| before any change, app on screen | 8.59 | camera photos, about 9 MB each |
+| before, screen off (a foreground worker serving) | 8.76 | the same |
+| photos fetched 14 at a time (SMALL 4 → 16 MiB) | 7.27, then 9.35 | larger files by then, 18 to 57 MB |
+| the final build, screen off | 6.39 | WhatsApp's small files |
+
+Each file came at 7 to 11 MB/s, the phone's app at up to 1.7 cores while
+serving and the phone at 37 to 38 °C, its system dimming the screen for it.
+The earlier slowness, about 1 GB in 12 minutes, came from pauses of up to
+30 s between files while the first backup held the engine, which the
+phone's server needs too (fixed above). **Not kept:** fetching photos
+together. Its gain could not be told apart from the change in what was
+crossing, and it stopped a file under 16 MB, cut off part-way, from carrying
+on where it stopped (`a_file_cut_off_part_way_carries_on_where_it_stopped`
+failed). Reverted.
+
+The bar was moving: 55 % to 60 % in three minutes, sampled every 30 s, about
+1,000 files a minute. At this backup's size 1 % is about half a minute. It
+now counts the bytes gone since the computer last confirmed a file, rather
+than since the app started (which had to overtake everything confirmed
+before it moved), never goes back, and is read every second rather than
+every two. Not yet watched on the phone after that change.
+
+**Background activity**: the app asks once, after the notifications, with
+Android's own question; Settings has *Background activity*, Allowed or
+Restricted. On the OPPO the question was hidden under a folder request
+shown at the same opening. Not yet granted there.
+
 ## 2026-11-12: the person's controls (decision 0086)
 
 **Conditions.** The owner's laptop, release builds at the commit that adds

@@ -187,6 +187,8 @@ class SettingsScreen(app: MainActivity) : Screen(app) {
         }
         kit.setting(card, R.drawable.ic_cell_signal, "Mobile data", sheets.mobileWords()) { sheets.mobileData { refresh() } }
         kit.setting(card, R.drawable.ic_hard_drive, "Backups", sheets.backupWords()) { sheets.backups { refresh() } }
+        kit.setting(card, R.drawable.ic_shield_check, "Background activity",
+            if (Battery.free(app)) "Allowed" else "Restricted") { Battery.ask(app) }
         kit.setting(card, R.drawable.ic_history, "Background sync",
             SyncWorker.words(SyncWorker.every(app))) { background() }
         kit.setting(card, R.drawable.ic_link, "Advanced") { app.push(AdvancedScreen(app)) }

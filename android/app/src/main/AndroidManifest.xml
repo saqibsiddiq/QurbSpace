@@ -35,6 +35,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Asked once, on first opening: let the app run in the background, so
+         a backup or a send carries on with the screen off. Phones that save
+         battery hard, such as an OPPO (2026-11-13), otherwise freeze it. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- Decision 0078: the beta updates itself, wherever the phone is. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- Decision 0063: the phone's own folders, chosen on the computer that

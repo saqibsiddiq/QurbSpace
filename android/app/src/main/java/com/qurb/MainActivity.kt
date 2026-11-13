@@ -578,6 +578,16 @@ class MainActivity : AppCompatActivity() {
         if (!prefs.getBoolean(ASKED_TO_NOTIFY, false)) {
             prefs.edit().putBoolean(ASKED_TO_NOTIFY, true).apply()
             askToNotify()
+        } else if (!prefs.getBoolean(ASKED_BATTERY, false) && !Battery.free(this)) {
+            // Once, on the next opening after the notifications were asked
+            // about, so the two questions do not stack.
+            prefs.edit().putBoolean(ASKED_BATTERY, true).apply()
+            kit.sheet()
+                .mark(R.drawable.ic_shield_check, R.color.green_soft, R.color.green)
+                .title("Run in the background?", centred = true)
+                .line("So backups and sends finish with the screen off")
+                .buttons("Allow", secondary = "Not now") { Battery.ask(this) }
+                .show()
         }
     }
 
@@ -1484,6 +1494,7 @@ class MainActivity : AppCompatActivity() {
         /** Whether notifications were asked for on first opening (item 11). */
         const val NOTIFY_PREFS = "notify"
         const val ASKED_TO_NOTIFY = "asked"
+        const val ASKED_BATTERY = "asked_battery"
         const val TAB = "tab"
         val TABS = setOf(R.id.tab_home, R.id.tab_files, R.id.tab_settings)
 

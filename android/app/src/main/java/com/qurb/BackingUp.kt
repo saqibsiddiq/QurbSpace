@@ -47,8 +47,12 @@ object BackingUp {
     private const val TOTAL = "total"
     private const val LEFT = "left"
 
-    /** What this process had handed over when it first saw the round. */
-    @Volatile private var servedAtStart: ULong? = null
+    /** What this process had handed over when the computer last confirmed
+     *  a file, and how much was left then. */
+    @Volatile private var servedAtConfirm: ULong? = null
+    @Volatile private var leftAtConfirm: ULong? = null
+    /** The most the round has been shown done: the bar never goes back. */
+    @Volatile private var shownDone = 0uL
 
     /** Whether [watch] has put its notice up: only then does [finish] take
      *  it down, which shares its place with a long transfer's. */
@@ -60,7 +64,9 @@ object BackingUp {
         val left = waiting.bytesLeft
         if (waiting.filesLeft == 0uL) {
             prefs.edit().remove(TOTAL).remove(LEFT).apply()
-            servedAtStart = null
+            servedAtConfirm = null
+            leftAtConfirm = null
+            shownDone = 0uL
             return Round(0uL, 0uL, waiting)
         }
         var total = prefs.getLong(TOTAL, 0L).toULong()
@@ -71,10 +77,25 @@ object BackingUp {
             else -> total
         }
         prefs.edit().putLong(TOTAL, total.toLong()).putLong(LEFT, left.toLong()).apply()
-        val start = servedAtStart ?: served.also { servedAtStart = it }
+        // What the computer has confirmed, and what has gone to it since the
+        // last confirmation, so the bar moves as bytes go rather than only
+        // when a batch of files is confirmed (the owner, 2026-11-13: "the
+        // progress bar not reflecting the progress in real-time"). Counted
+        // from the start of the round before, the bytes gone since this
+        // process started had to overtake everything confirmed earlier, and
+        // the bar stood still until they did.
+        if (leftAtConfirm != left || servedAtConfirm == null || served < (servedAtConfirm ?: 0uL)) {
+            leftAtConfirm = left
+            servedAtConfirm = served
+        }
         val confirmed = total - left
-        val moving = if (served > start) served - start else 0uL
-        return Round(minOf(maxOf(confirmed, moving), total), total, waiting, going)
+        val moving = served - (servedAtConfirm ?: served)
+        // Short of the whole until the computer confirms the last file, and
+        // never back: a confirmation counting less than what had gone resets
+        // `moving` to nothing.
+        val done = maxOf(shownDone, minOf(confirmed + moving, total - 1uL))
+        shownDone = done
+        return Round(done, total, waiting, going)
     }
 
     /** The computer keeping this phone's backups, for naming on the notice. */

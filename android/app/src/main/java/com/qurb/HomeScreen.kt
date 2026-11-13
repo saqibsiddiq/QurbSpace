@@ -111,12 +111,12 @@ class HomeScreen(app: MainActivity) : Screen(app) {
 
     private fun show(state: State) {
         last = state
-        // Every two seconds while Home is on screen, the backup read again
-        // and drawn again when it has moved: a backup that starts after Home
-        // was drawn shows, and its bar moves as the computer collects.
+        // Every second while Home is on screen, the backup read again and
+        // drawn again when it has moved: a backup that starts after Home was
+        // drawn shows, and its bar moves as the computer collects.
         if (ticking == null) ticking = scope.launch {
             while (view.isAttachedToWindow) {
-                delay(2_000)
+                delay(1_000)
                 val now = last ?: continue
                 val fresh = runCatching {
                     withContext(Dispatchers.IO) {
