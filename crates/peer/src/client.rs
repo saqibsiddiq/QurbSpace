@@ -136,8 +136,10 @@ impl PeerClient {
         self.relayed
     }
 
+    /// Where the peer is, an IPv4 one as IPv4 even from a socket bound for
+    /// both (`nat::bind_dual`): a home address is still private.
     pub fn remote_address(&self) -> SocketAddr {
-        self.connection.remote_address()
+        crate::nat::plain(self.connection.remote_address())
     }
 
     /// Round-trip time, as QUIC currently estimates it.

@@ -360,8 +360,7 @@ impl Connector {
         // -- at the start of every pass a phone makes.
         let me = *MemberId::derive(&master, identity.fingerprint().as_bytes()).as_bytes();
         let opening = relay.map(|at| (format!("{at:?}"), open_relay(at, me)));
-        let socket = std::net::UdpSocket::bind(bind)
-            .map_err(|e| Error::Io { path: bind.to_string().into(), source: e })?;
+        let socket = nat::bind_dual(bind).map_err(|e| Error::Io { path: bind.to_string().into(), source: e })?;
         let local = socket
             .local_addr()
             .map_err(|e| Error::Io { path: "local_addr".into(), source: e })?;

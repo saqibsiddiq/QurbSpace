@@ -80,6 +80,52 @@ pub struct Reflexive {
     pub local: SocketAddr,
 }
 
+/// Bind for every address family there is: `0.0.0.0:port` becomes
+/// `[::]:port` taking IPv4 as well, so that a peer's IPv6 address can be
+/// dialled and IPv6 punched. Phones on Jio, Airtel and Vi have IPv6 and only
+/// a carrier's shared IPv4, which nothing outside can reach; until 2026-11-13
+/// every socket here was IPv4 only, and offered IPv6 addresses it could not
+/// answer on ("invalid remote address"). Where a system will not have both
+/// on one socket, IPv4 as before.
+pub fn bind_dual(addr: SocketAddr) -> std::io::Result<UdpSocket> {
+    if let SocketAddr::V4(v4) = addr {
+        if v4.ip().is_unspecified() {
+            let both = (|| -> std::io::Result<UdpSocket> {
+                let socket = socket2::Socket::new(socket2::Domain::IPV6, socket2::Type::DGRAM, Some(socket2::Protocol::UDP))?;
+                socket.set_only_v6(false)?;
+                socket.bind(&SocketAddr::new(IpAddr::V6(std::net::Ipv6Addr::UNSPECIFIED), v4.port()).into())?;
+                Ok(socket.into())
+            })();
+            match both {
+                Ok(socket) => return Ok(socket),
+                Err(e) => tracing::debug!(error = %e, "IPv6 and IPv4 on one socket refused; IPv4 only"),
+            }
+        }
+    }
+    UdpSocket::bind(addr)
+}
+
+/// `to` as `socket` can send to it: an IPv4 address written the IPv6 way,
+/// `::ffff:a.b.c.d`, from a socket bound for both.
+pub fn as_sent_from(socket: &UdpSocket, to: SocketAddr) -> SocketAddr {
+    match (socket.local_addr(), to) {
+        (Ok(SocketAddr::V6(_)), SocketAddr::V4(v4)) => SocketAddr::new(IpAddr::V6(v4.ip().to_ipv6_mapped()), v4.port()),
+        _ => to,
+    }
+}
+
+/// The plain form of an address a socket bound for both reports: an IPv4
+/// peer as IPv4.
+pub fn plain(address: SocketAddr) -> SocketAddr {
+    match address {
+        SocketAddr::V6(v6) => match v6.ip().to_ipv4_mapped() {
+            Some(v4) => SocketAddr::new(IpAddr::V4(v4), v6.port()),
+            None => address,
+        },
+        v4 => v4,
+    }
+}
+
 /// Ask one server what address our packets appear to come from.
 pub fn reflexive_address(
     socket: &UdpSocket,
@@ -92,7 +138,7 @@ pub fn reflexive_address(
     let previous = socket.read_timeout().ok().flatten();
     socket.set_read_timeout(Some(timeout)).map_err(io("set_read_timeout"))?;
 
-    socket.send_to(&request, server).map_err(io("send_to"))?;
+    socket.send_to(&request, as_sent_from(socket, server)).map_err(io("send_to"))?;
 
     let mut buffer = [0u8; 1024];
     let result = loop {
@@ -103,9 +149,9 @@ pub fn reflexive_address(
         // Anything may arrive on a UDP port. Only a well-formed response
         // carrying our own transaction id counts, which is also what stops an
         // off-path attacker from answering on the server's behalf.
-        if from == server {
+        if plain(from) == server {
             if let Some(address) = parse_binding_response(&buffer[..len], &transaction) {
-                break Ok(address);
+                break Ok(plain(address));
             }
         }
     };
@@ -264,7 +310,7 @@ pub fn punch(socket: &UdpSocket, peer: SocketAddr, attempts: usize) -> Result<()
     for _ in 0..attempts.max(1) {
         // A dropped packet here is the expected case, not a failure — the whole
         // point is that the first ones do not get through.
-        let _ = socket.send_to(KNOCK, peer);
+        let _ = socket.send_to(KNOCK, as_sent_from(socket, peer));
         std::thread::sleep(Duration::from_millis(20));
     }
     Ok(())
@@ -592,5 +638,37 @@ mod address_tests {
             found.iter().any(|ip| !ip.is_loopback()),
             "no usable address found among {found:?}"
         );
+    }
+}
+
+#[cfg(test)]
+mod both_families {
+    use super::*;
+
+    /// One socket, bound for both, hears an IPv4 peer and an IPv6 one, and
+    /// answers the IPv4 one at its own address.
+    #[test]
+    fn one_socket_takes_ipv4_and_ipv6() {
+        let both = bind_dual("0.0.0.0:0".parse().unwrap()).unwrap();
+        both.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+        let port = both.local_addr().unwrap().port();
+        let Ok(v6) = UdpSocket::bind("[::1]:0") else { return }; // no IPv6 here at all
+        let v4 = UdpSocket::bind("127.0.0.1:0").unwrap();
+        v4.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+
+        v4.send_to(b"four", ("127.0.0.1", port)).unwrap();
+        v6.send_to(b"six", ("::1", port)).unwrap();
+        let mut heard = Vec::new();
+        let mut buffer = [0u8; 16];
+        for _ in 0..2 {
+            let (n, from) = both.recv_from(&mut buffer).unwrap();
+            heard.push((buffer[..n].to_vec(), plain(from)));
+        }
+        assert!(heard.iter().any(|(m, from)| m == b"four" && *from == v4.local_addr().unwrap()), "{heard:?}");
+        assert!(heard.iter().any(|(m, _)| m == b"six"), "{heard:?}");
+
+        both.send_to(b"back", as_sent_from(&both, v4.local_addr().unwrap())).unwrap();
+        let (n, _) = v4.recv_from(&mut buffer).unwrap();
+        assert_eq!(&buffer[..n], b"back");
     }
 }
