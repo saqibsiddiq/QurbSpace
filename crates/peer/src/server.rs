@@ -563,6 +563,28 @@ fn piece(store: &Store, device: &qurb_sync::DeviceId, id: &[u8; 16], offset: u64
 
 /// What a request is answered with: at once, or, for a chunk, the bytes once
 /// they are read without the store (decision 0064).
+/// Answer `request` as if `asker` had sent it, with no connection: what the
+/// mailbox (`qurb_mailbox`) does, a device's list and its receipts posted
+/// to a folder both reach rather than said live. The same rules decide what
+/// is shown and recorded as for a request that arrived. Not for a document to
+/// convert, which needs a program and is not asked this way.
+pub fn answer_offline(store: &mut Store, request: &Request, asker: Fingerprint) -> Result<Response> {
+    match answer(store, request, Some(asker))? {
+        Answer::Now(response) => Ok(response),
+        Answer::Read { hash, places, reader } => {
+            let read = reader.read(&hash, &places);
+            store.sends_changed(&read.changed_sends)?;
+            store.outsides_changed(&read.changed_outside)?;
+            match read.bytes {
+                Ok(bytes) => Ok(Response::Chunk(bytes)),
+                Err(qurb_storage::Error::ChunkMissing { .. }) => Ok(Response::NotFound),
+                Err(e) => Err(e.into()),
+            }
+        }
+        Answer::Convert { .. } => Ok(Response::NotFound),
+    }
+}
+
 enum Answer {
     Now(Response),
     /// A document read under the lock, turned into a PDF after it is let go:

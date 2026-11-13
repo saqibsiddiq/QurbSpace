@@ -34,6 +34,9 @@ pub enum Purpose {
     /// key without either sending it (decision 0053). One-way, like every
     /// derivation here: seeing it says nothing about the key.
     PairingCheck,
+    /// Sealing what a person's devices leave for each other in a cloud
+    /// folder they share (`qurb_mailbox`): the provider holds only this.
+    Mailbox,
 }
 
 impl Purpose {
@@ -46,6 +49,7 @@ impl Purpose {
             Purpose::MetadataAuth => b"qurb/metadata-auth/v1",
             Purpose::LocalDiscovery => b"qurb/local-discovery/v1",
             Purpose::PairingCheck => b"qurb/pairing-check/v1",
+            Purpose::Mailbox => b"qurb/mailbox/v1",
         }
     }
 }

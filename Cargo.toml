@@ -4,6 +4,7 @@ members = [
     "crates/desktop",
     "crates/engine",
     "crates/keys",
+    "crates/mailbox",
     "crates/mobile-ffi",
     "crates/peer",
     "crates/qurb",
