@@ -163,6 +163,18 @@ of a pass, which was nothing; it has 25 s of its own. Not yet seen: the S23
 taking the laptop's receipt; the new phone collecting the 71 packs (about
 270 MB) the laptop posted for it, since it has not signed in.
 
+**The owner's list of 2026-11-13, evening.** (2) Syncing on a timer removed:
+the phone's pass every half minute on screen is gone, and the laptop no longer
+says it is syncing for a round that moves nothing. (3) Previews in remote
+access on the OPPO: its photos carry no embedded thumbnail (one read: an
+890-byte EXIF block, no second JPEG), and a picture on a computer without one
+was fetched for a thumbnail only up to 3 MB, so its camera folder on the
+laptop showed one preview in fifteen after ten seconds. Now up to 12 MB, and
+each thumbnail kept on disk by content so a folder opened again shows them
+at once. Making them on the laptop instead, a few KB each, needs a JPEG
+decoder, none of which is on this machine. (6) Every screen portrait: the
+app followed the phone's auto-rotate. (4) and (5) asked about.
+
 **Background activity**: the app asks once, after the notifications, with
 Android's own question; Settings has *Background activity*, Allowed or
 Restricted. On the OPPO the question was hidden under a folder request

@@ -1168,9 +1168,10 @@ impl Daemon {
                     .is_none_or(|k| store.db().became(&k.device_id).ok().flatten().is_none())
             });
         }
-        if !attempted.is_empty() {
-            self.report(|status| status.state = crate::status::State::Working);
-        }
+        // Not said to be syncing for looking: a round runs whenever a phone
+        // says it changed and every two minutes, and the window turned to
+        // "Syncing" each time with nothing moving (the owner, 2026-11-13).
+        // What moves shows as it moves, receiving or sending.
 
         for peer in attempted {
             match self.sync_one(engine, connector, peers, peer).await {

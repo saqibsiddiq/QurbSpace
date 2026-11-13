@@ -42,8 +42,13 @@ object Thumbs {
     private const val SIDE = 192
     /** What of a JPEG on a computer is read for the thumbnail it carries. */
     private const val EXIF_BYTES = 96 * 1024
-    /** Past this, a picture on a computer with no thumbnail of its own is not fetched for one. */
-    private const val WHOLE_MOST = 3L * 1024 * 1024
+    /**
+     * Past this, a picture on a computer with no thumbnail of its own is not
+     * fetched for one. Was 3 MB: an OPPO's photos carry no thumbnail and are
+     * larger, so the new phone's backed-up camera folder showed almost none
+     * (the owner, 2026-11-13: "struggling with preview in remote access").
+     */
+    private const val WHOLE_MOST = 12L * 1024 * 1024
     /** Past this, a PDF on a computer is shown by its kind, not fetched for its first page. */
     private const val PDF_MOST = 8L * 1024 * 1024
     /** What of a text is read for its first lines. */
@@ -280,7 +285,11 @@ object Thumbs {
             val got = withContext(reading) {
                 // Scrolled past, or the row bound to another file: not read.
                 if (icon.tag != key) return@withContext null
-                runCatching { read() }.getOrNull()
+                // Made before, and kept on disk: a picture on a computer is
+                // fetched once for its thumbnail, not every time the folder
+                // is opened (2026-11-13).
+                kept(icon.context, key)?.let { return@withContext it }
+                runCatching { read() }.getOrNull()?.also { keep(icon.context, key, it) }
             }
             if (got == null) {
                 if (icon.tag == key) none += key
@@ -288,6 +297,21 @@ object Thumbs {
             }
             held.put(key, got)
             if (icon.tag == key) put(icon, got)
+        }
+    }
+
+    /** Where a thumbnail of what is on a computer is kept: by its content. */
+    private fun keptAt(context: android.content.Context, key: String): java.io.File? =
+        if (key.startsWith("kept:")) java.io.File(context.cacheDir, "thumbs-kept/${key.removePrefix("kept:").take(32)}.jpg") else null
+
+    private fun kept(context: android.content.Context, key: String): Bitmap? =
+        keptAt(context, key)?.takeIf { it.exists() }?.let { BitmapFactory.decodeFile(it.path) }
+
+    private fun keep(context: android.content.Context, key: String, bitmap: Bitmap) {
+        val file = keptAt(context, key) ?: return
+        runCatching {
+            file.parentFile?.mkdirs()
+            file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 80, it) }
         }
     }
 
