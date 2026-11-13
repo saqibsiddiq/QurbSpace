@@ -3432,13 +3432,10 @@ impl Qurb {
         for peer in peers.iter().copied() {
             let connector = Arc::clone(&connector);
             let left = budget.saturating_sub(started.elapsed());
-            // A computer that may need Tor -- its onion address kept -- is
-            // given Tor's time, not the pass's: twenty-five seconds is shorter
-            // than Tor takes to reach it from mobile data (2026-11-13).
-            #[cfg(feature = "tor")]
-            let left = if qurb_peer::tor::remembered(&peer).is_some() { left.max(TOR_BUDGET) } else { left };
             reaching.spawn_on(
-                async move { (peer, tokio::time::timeout(left, connector.reach(peer)).await) },
+                // To sync: home Wi-Fi, then directly, within seconds; what
+                // cannot go that way goes through the mailbox (2026-11-13).
+                async move { (peer, tokio::time::timeout(left, connector.reach_for(peer, qurb_peer::Need::Transfer)).await) },
                 runtime.handle(),
             );
         }

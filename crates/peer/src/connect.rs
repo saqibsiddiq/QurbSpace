@@ -46,7 +46,28 @@ const RENDEZVOUS_TIMEOUT: Duration = Duration::from_secs(20);
 ///
 /// Short: the candidates are raced in parallel, so this bounds the whole attempt
 /// rather than each one in turn.
-const CANDIDATE_TIMEOUT: Duration = Duration::from_secs(8);
+const CANDIDATE_TIMEOUT: Duration = Duration::from_secs(4);
+
+/// What reaching a device is for (the owner, 2026-11-13): to move files --
+/// home Wi-Fi, then directly, then the mailbox -- or to look at it -- home
+/// Wi-Fi, then directly, then Tor or the Nostr relays.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Need {
+    Transfer,
+    Access,
+}
+
+/// The longest reaching may take, for each: seconds, so that nobody waits
+/// minutes for an answer (the owner, 2026-11-13).
+const TRANSFER_WITHIN: Duration = Duration::from_secs(10);
+const ACCESS_WITHIN: Duration = Duration::from_secs(15);
+/// How long the rendezvous service's introduction is waited for, when
+/// reaching: it comes in a second or so when it comes at all.
+const INTRODUCED_WITHIN: Duration = Duration::from_secs(6);
+/// How far behind the direct path Tor and the Nostr relays start.
+const SLOW_HEAD_START: Duration = Duration::from_secs(2);
+/// How long Tor is waited for once the Nostr relays have connected.
+const PREFER_TOR_FOR: Duration = Duration::from_secs(3);
 
 /// How far either side of a peer's public port a sweep goes, how many it
 /// tries at once, and how long between batches (2026-11-13, for phones
@@ -58,7 +79,7 @@ const NOSTR_TIMEOUT: Duration = Duration::from_secs(30);
 const SWEEP_BATCH: usize = 64;
 const SWEEP_PACE: Duration = Duration::from_millis(40);
 /// How long a sweep may take in all.
-const SWEEP_FOR: Duration = Duration::from_secs(12);
+const SWEEP_FOR: Duration = Duration::from_secs(6);
 /// How often a sweep towards one device may run.
 const SWEEP_AGAIN: Duration = Duration::from_secs(5 * 60);
 
@@ -836,7 +857,26 @@ impl Connector {
     ///
     /// Asks the rendezvous service to introduce them, waits to be told to punch,
     /// then races every address the peer offered.
+    /// Reach `peer` to look at it: home Wi-Fi, then directly, then Tor and
+    /// the Nostr relays (the owner, 2026-11-13). See [`Need`].
     pub async fn reach(&self, peer: Fingerprint) -> Result<PeerClient> {
+        self.reach_for(peer, Need::Access).await
+    }
+
+    /// Reach `peer` for what `need` is: within seconds, whatever the outcome,
+    /// so nobody is kept waiting minutes (the owner, 2026-11-13).
+    pub async fn reach_for(&self, peer: Fingerprint, need: Need) -> Result<PeerClient> {
+        let within = match need {
+            Need::Transfer => TRANSFER_WITHIN,
+            Need::Access => ACCESS_WITHIN,
+        };
+        match tokio::time::timeout(within, self.reach_inner(peer, need)).await {
+            Ok(reached) => reached,
+            Err(_) => Err(Error::Unreachable { peer: peer.short(), tried: format!("nothing answered within {} s", within.as_secs()) }),
+        }
+    }
+
+    async fn reach_inner(&self, peer: Fingerprint, need: Need) -> Result<PeerClient> {
         let (signal, target, meeting) = self.session_for(&peer);
         if meeting {
             // Another person's device, met under a secret of their own: not
@@ -893,32 +933,55 @@ impl Connector {
         }
 
         // Away from the device's network: introduced by the rendezvous
-        // service, and -- a head start behind -- Tor to its kept onion
-        // address and the Nostr relays, all at once, the first to connect
-        // kept. One after another they did not fit any pass: the introduction
-        // alone waited twenty seconds, Tor takes a minute from cold, and on
-        // 2026-11-13 a phone on Jio reached its laptop by none of them.
-        let mut paths: Vec<std::pin::Pin<Box<dyn std::future::Future<Output = Result<PeerClient>> + Send + '_>>> = Vec::new();
-        paths.push(Box::pin(self.introduced(peer, target)));
+        // service and reached directly. A transfer stops there: what Tor and
+        // the Nostr relays carry is too slow for it, and the mailbox takes it
+        // instead (the owner, 2026-11-13).
+        if need == Need::Transfer {
+            return self.introduced_direct(peer, target).await;
+        }
+
+        // To look at it, Tor to its kept onion address and the Nostr relays as
+        // well, a head start behind, all at once. Whichever connects first is
+        // kept -- but the Nostr relays carry tens of kilobytes a second and
+        // Tor far more, so if they win, Tor is given a moment to catch up.
+        enum Path {
+            Direct,
+            Tor,
+            Nostr,
+        }
+        let mut paths: Vec<std::pin::Pin<Box<dyn std::future::Future<Output = (Path, Result<PeerClient>)> + Send + '_>>> = Vec::new();
+        paths.push(Box::pin(async move { (Path::Direct, self.introduced_direct(peer, target).await) }));
         #[cfg(feature = "tor")]
         if let Some(onion) = crate::tor::remembered(&peer) {
             paths.push(Box::pin(async move {
-                tokio::time::sleep(RELAY_HEAD_START).await;
-                self.through_tor(peer, &onion).await
+                tokio::time::sleep(SLOW_HEAD_START).await;
+                (Path::Tor, self.through_tor(peer, &onion).await)
             }));
         }
         if self.nostr.is_some() {
             paths.push(Box::pin(async move {
-                tokio::time::sleep(RELAY_HEAD_START).await;
-                self.through_nostr(peer, target).await
+                tokio::time::sleep(SLOW_HEAD_START).await;
+                (Path::Nostr, self.through_nostr(peer, target).await)
             }));
         }
+        let tor_racing = paths.len() == 3;
         let mut first_error = None;
         let mut racing: futures_util::stream::FuturesUnordered<_> = paths.into_iter().collect();
-        while let Some(result) = futures_util::StreamExt::next(&mut racing).await {
-            match result {
-                Ok(client) => return Ok(client),
-                Err(e) => {
+        while let Some((path, result)) = futures_util::StreamExt::next(&mut racing).await {
+            match (path, result) {
+                (Path::Nostr, Ok(nostr)) if tor_racing => {
+                    // Tor may be a moment behind, and worth the wait.
+                    let deadline = tokio::time::Instant::now() + PREFER_TOR_FOR;
+                    while let Ok(Some((path, result))) = tokio::time::timeout_at(deadline, futures_util::StreamExt::next(&mut racing)).await {
+                        if let (Path::Tor | Path::Direct, Ok(better)) = (path, result) {
+                            nostr.close();
+                            return Ok(better);
+                        }
+                    }
+                    return Ok(nostr);
+                }
+                (_, Ok(client)) => return Ok(client),
+                (_, Err(e)) => {
                     first_error.get_or_insert(e);
                 }
             }
@@ -926,28 +989,23 @@ impl Connector {
         Err(first_error.unwrap_or(Error::NoCandidates))
     }
 
-    /// Introduced by the rendezvous service and reached by an address it
-    /// carried, or the relay; and through Tor to an onion address it carried,
-    /// when none was kept before -- a kept one the caller races beside this.
-    async fn introduced(&self, peer: Fingerprint, target: MemberId) -> Result<PeerClient> {
+    /// Introduced by the rendezvous service, briefly, and reached by an
+    /// address it carried or the relay; never Tor.
+    async fn introduced_direct(&self, peer: Fingerprint, target: MemberId) -> Result<PeerClient> {
         let (reply, answer) = oneshot::channel();
         self.signal
             .send(Command::Introduce { to: target, reply })
             .map_err(|_| Error::Signalling { detail: "signalling has stopped".into() })?;
-        #[cfg_attr(not(feature = "tor"), allow(unused_mut))]
-        let mut endpoints = match tokio::time::timeout(RENDEZVOUS_TIMEOUT, answer).await {
+        let endpoints = match tokio::time::timeout(INTRODUCED_WITHIN, answer).await {
             Ok(Ok(result)) => result?,
             Ok(Err(_)) => return Err(Error::Signalling { detail: "signalling has stopped".into() }),
             Err(_) => return Err(Error::PeerDidNotAnswer),
         };
         #[cfg(feature = "tor")]
-        if let Some(onion) = endpoints.onion.clone() {
-            if crate::tor::remembered(&peer).is_some() {
-                endpoints.onion = None;
-            }
-            crate::tor::remember(&peer, &onion);
+        if let Some(onion) = &endpoints.onion {
+            crate::tor::remember(&peer, onion);
         }
-        self.or_through_tor(peer, &endpoints).await
+        self.direct_or_relay(peer, &endpoints).await
     }
 
     /// [`direct_or_relay`](Self::direct_or_relay), and when nothing there got

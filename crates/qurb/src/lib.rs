@@ -7,6 +7,10 @@
 //! The binary in `main.rs` is the terminal front end. `qurb-tray` is another.
 //! Neither owns the daemon; both run the same one.
 
+// Reaching a peer races its paths, and the future that builds is deeper
+// than the compiler looks by default.
+#![recursion_limit = "256"]
+
 pub mod awake;
 pub mod backup;
 pub mod config;

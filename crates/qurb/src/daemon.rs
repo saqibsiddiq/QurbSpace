@@ -1267,7 +1267,8 @@ impl Daemon {
         let dial = |peers: &Peers| {
             let back = peers.dialled_in.get(&peer).filter(|c| c.connection().close_reason().is_none()).cloned();
             async move {
-                match connector.reach(peer).await {
+                // To sync: home Wi-Fi, then directly; the mailbox after.
+                match connector.reach_for(peer, qurb_peer::Need::Transfer).await {
                     Ok(client) => Ok(Arc::new(client)),
                     Err(e) => match back {
                         Some(back) => {

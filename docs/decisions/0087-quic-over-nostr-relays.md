@@ -63,6 +63,25 @@ process on the owner's laptop (Excitel, Wi-Fi), across the six default relays,
 | 60 a second | 0.4 s | 404 ms | 9.9 s, 51.8 KB/s each way |
 | 60 a second, again | 0.5 s | 513 ms | 14.8 s, 34.5 KB/s each way |
 
+## Amended 2026-11-13: what each path is for
+
+The owner: "if we are either sending or backing up, it should first try home
+wifi then direct connection then drive; but if we are remote accessing, it
+should try home wifi then direct connection then tor or nostr relay whichever
+is better; ... the operations must be executed within seconds".
+
+- **To move files** (`Need::Transfer`): home Wi-Fi, then directly
+  (introduced, IPv6, punching, the port sweep), within 10 s; what does not go
+  that way goes through the mailbox
+  ([0088](0088-a-mailbox-in-the-persons-google-drive.md)). Tor and the Nostr
+  relays are not used to move files: tens of kilobytes a second.
+- **To look** (`Need::Access`: browsing a computer's folder, opening a file,
+  an approval): home Wi-Fi, then directly, and Tor and the Nostr relays two
+  seconds behind, within 15 s. If the Nostr relays connect first, Tor is
+  waited for three seconds more and kept if it comes: it carries far more.
+- Waits shortened to fit: the introduction 6 s (was 20), each address 4 s
+  (was 8), the port sweep 6 s (was 12).
+
 ## Consequences
 
 - Away from home on any network that lets a phone reach a public WebSocket

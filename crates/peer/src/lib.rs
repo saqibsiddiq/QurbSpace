@@ -73,7 +73,7 @@ pub(crate) fn set_onion_hosted(onion: String) {
         *held = Some(onion);
     }
 }
-pub use connect::{relay_address_ok, relay_for, resolve_relay, Connector, Finding, RelayAt};
+pub use connect::{relay_address_ok, relay_for, resolve_relay, Connector, Finding, Need, RelayAt};
 pub use error::{Error, Result};
 pub use identity::{Fingerprint, Identity};
 pub use local::Beacon;

@@ -12,6 +12,10 @@
 //! job of a screen, so it cannot be a precondition of the screen existing; see
 //! [`session`] for the two situations and the one transition between them.
 
+// Reaching a peer races its paths, and the future that builds is deeper
+// than the compiler looks by default.
+#![recursion_limit = "256"]
+
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use anyhow::Result;
