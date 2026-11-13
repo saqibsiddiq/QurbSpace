@@ -136,6 +136,13 @@ impl PeerClient {
         self.relayed
     }
 
+    /// The QUIC connection itself, for answering the peer's requests on it as
+    /// well as asking: a phone behind a carrier's NAT cannot be dialled, and
+    /// its computer asks it things on the connection the phone made.
+    pub fn connection(&self) -> quinn::Connection {
+        self.connection.clone()
+    }
+
     /// Where the peer is, an IPv4 one as IPv4 even from a socket bound for
     /// both (`nat::bind_dual`): a home address is still private.
     pub fn remote_address(&self) -> SocketAddr {

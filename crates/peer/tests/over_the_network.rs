@@ -451,3 +451,40 @@ fn pseudo_random(seed: u32, len: usize) -> Vec<u8> {
     }
     out
 }
+
+/// A phone behind a carrier's NAT cannot be dialled, so its computer asks it
+/// things on the connection the phone made (2026-11-13): the phone answers on
+/// it as it would on one it accepted, and the computer reads its list there.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_computer_asks_on_the_connection_the_phone_made() {
+    let laptop = Device::new();
+    let mut phone = Device::new();
+    phone.write("DCIM/IMG_0001.jpg", b"a photo the laptop never dialled for");
+
+    let socket = std::net::UdpSocket::bind("127.0.0.1:0").unwrap();
+    let laptop_end = qurb_peer::nat::endpoint_from(
+        socket,
+        Some(qurb_peer::tls::server_config(&laptop.identity, &qurb_peer::tls::TrustList::new(vec![phone.identity.fingerprint()])).unwrap()),
+    )
+    .unwrap();
+    let at = laptop_end.local_addr().unwrap();
+
+    // The phone dials out, and answers on what it dialled.
+    let phone_end = qurb_peer::nat::endpoint_from(std::net::UdpSocket::bind("127.0.0.1:0").unwrap(), None).unwrap();
+    let config = qurb_peer::tls::client_config(&phone.identity, laptop.identity.fingerprint()).unwrap();
+    let accepting = laptop_end.clone();
+    let accepted = tokio::spawn(async move { accepting.accept().await.unwrap().await.unwrap() });
+    let dialled = phone_end.connect_with(config, at, "qurb-device").unwrap().await.unwrap();
+    let store = Arc::new(Mutex::new(Store::open(&phone.root.join(".qurb"), ChunkKey::from_bytes([42; 32])).unwrap().in_tree(&phone.root)));
+    let trust = qurb_peer::tls::TrustList::new(vec![laptop.identity.fingerprint()]);
+    tokio::spawn(async move {
+        qurb_peer::server::serve_connection(dialled, store, qurb_peer::Generation::new(), &trust).await
+    });
+
+    // The laptop asks on the connection it was given.
+    let accepted = accepted.await.unwrap();
+    assert_eq!(qurb_peer::server::asker_of(&accepted), Some(phone.identity.fingerprint()));
+    let asking = PeerClient::from_parts(laptop_end.clone(), accepted);
+    let tree = asking.tree().await.expect("the phone did not answer on its own connection");
+    assert!(tree.iter().any(|f| f.path == "DCIM/IMG_0001.jpg"), "{tree:?}");
+}

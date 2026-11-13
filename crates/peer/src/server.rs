@@ -219,6 +219,11 @@ impl PeerServer {
     }
 }
 
+/// Which device a connection is from, as its certificate proves.
+pub fn asker_of(connection: &quinn::Connection) -> Option<Fingerprint> {
+    fingerprint_of(connection)
+}
+
 /// The fingerprints of every device this store trusts.
 pub fn trusted_fingerprints(store: &Store) -> Result<Vec<Fingerprint>> {
     Ok(store

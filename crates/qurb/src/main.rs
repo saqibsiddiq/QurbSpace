@@ -4,6 +4,10 @@
 //! so that something other than a terminal can run the same one — an interface
 //! should display the engine rather than reimplement it.
 
+// Reaching a peer races its paths -- local, introduced, Tor -- and the
+// future that builds is deeper than the compiler looks by default.
+#![recursion_limit = "256"]
+
 use anyhow::{bail, Context, Result};
 use qurb_cli::config::Config;
 use qurb_cli::daemon::Daemon;

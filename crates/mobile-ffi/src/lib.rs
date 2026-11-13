@@ -3221,6 +3221,11 @@ impl Qurb {
         for peer in peers.iter().copied() {
             let connector = Arc::clone(&connector);
             let left = budget.saturating_sub(started.elapsed());
+            // A computer that may need Tor -- its onion address kept -- is
+            // given Tor's time, not the pass's: twenty-five seconds is shorter
+            // than Tor takes to reach it from mobile data (2026-11-13).
+            #[cfg(feature = "tor")]
+            let left = if qurb_peer::tor::remembered(&peer).is_some() { left.max(TOR_BUDGET) } else { left };
             reaching.spawn_on(
                 async move { (peer, tokio::time::timeout(left, connector.reach(peer)).await) },
                 runtime.handle(),
@@ -3261,6 +3266,17 @@ impl Qurb {
                     continue;
                 }
             };
+            // Answer on the connection this phone made, too: a computer that
+            // cannot dial a phone behind its carrier's NAT asks it things on
+            // this one instead, to collect a backup or a send (2026-11-13).
+            {
+                let (store, generation, trust) = (Arc::clone(&served), Arc::clone(&generation), trust.clone());
+                let watcher: Arc<dyn qurb_peer::Served> = self.serving.clone();
+                let connection = client.connection();
+                accepting.push(runtime.spawn(async move {
+                    qurb_peer::server::serve_connection_watched(connection, store, generation, watcher, &trust).await
+                }));
+            }
             match self.sync_reached(&runtime, &client, peer, left) {
                 Ok(Some(stats)) => {
                     outcome.reached += 1;

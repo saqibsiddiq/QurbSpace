@@ -101,6 +101,24 @@ connection socket per device does not allow. Tests: one socket takes IPv4 and
 IPv6 (`nat::both_families`), the order of the ports swept. **Not yet tried
 on Jio, Airtel or Vi.**
 
+**On Jio again, with A1 and A2** (15:17 to 15:21, Home said "saqib is off").
+Seen from the laptop: asked to reach the OPPO, it was given only the phone's
+Jio IPv6 address, which it cannot reach with no IPv6 of its own, and no public
+IPv4, so there was nothing to sweep; then the introductions went unanswered.
+Nothing arrived from the phone, through Tor or otherwise. The OPPO's own log
+had almost none of the app's lines: its system pruned them, so the phone's side
+could not be read. Found in the code: on a pass with the app open (25 s) the
+phone waited 20 s for an introduction before starting Tor, which takes 18 s or
+more, so Tor could not finish. And even with the phone reaching the laptop,
+the laptop collects backups and sends by dialling the phone, which a carrier's
+NAT stops. Changed: with the computer's onion address kept and the computer not
+on the local network, Tor starts four seconds after the introduction is asked
+for, beside it, and that computer is given 35 s; the phone answers requests on
+the connection it made to a computer, and the computer, when it cannot dial a
+device, asks on the connection that device last made to it
+(`a_computer_asks_on_the_connection_the_phone_made`). **Not yet tried on
+mobile data.**
+
 **Background activity**: the app asks once, after the notifications, with
 Android's own question; Settings has *Background activity*, Allowed or
 Restricted. On the OPPO the question was hidden under a folder request

@@ -831,6 +831,41 @@ impl Connector {
             }
         }
 
+        // Away from the computer's network, with its onion address kept: Tor
+        // started alongside the introduction, a head start behind it, rather
+        // than after the introduction's twenty seconds had run out -- by then
+        // a phone's pass had five left, and Tor takes eighteen or more. On
+        // 2026-11-13 a phone on Jio never reached its laptop that way.
+        #[cfg(feature = "tor")]
+        if let Some(onion) = crate::tor::remembered(&peer) {
+            let introduced = self.introduced(peer, target);
+            tokio::pin!(introduced);
+            if let Ok(found) = tokio::time::timeout(RELAY_HEAD_START, &mut introduced).await {
+                if found.is_ok() {
+                    return found;
+                }
+                return self.through_tor(peer, &onion).await;
+            }
+            let tor = self.through_tor(peer, &onion);
+            tokio::pin!(tor);
+            let (mut introduced_failed, mut tor_failed) = (None, None);
+            loop {
+                tokio::select! {
+                    result = &mut introduced, if introduced_failed.is_none() => match result {
+                        Ok(client) => return Ok(client),
+                        Err(e) => introduced_failed = Some(e),
+                    },
+                    result = &mut tor, if tor_failed.is_none() => match result {
+                        Ok(client) => return Ok(client),
+                        Err(e) => tor_failed = Some(e),
+                    },
+                }
+                if let (Some(_), Some(e)) = (&tor_failed, introduced_failed.take()) {
+                    return Err(e);
+                }
+            }
+        }
+
         let (reply, answer) = oneshot::channel();
 
         self.signal
@@ -867,6 +902,25 @@ impl Connector {
         }
 
         self.or_through_tor(peer, &endpoints).await
+    }
+
+    /// Introduced by the rendezvous service and reached by an address it
+    /// carried, or the relay: no Tor, which the caller races beside it.
+    #[cfg(feature = "tor")]
+    async fn introduced(&self, peer: Fingerprint, target: MemberId) -> Result<PeerClient> {
+        let (reply, answer) = oneshot::channel();
+        self.signal
+            .send(Command::Introduce { to: target, reply })
+            .map_err(|_| Error::Signalling { detail: "signalling has stopped".into() })?;
+        let endpoints = match tokio::time::timeout(RENDEZVOUS_TIMEOUT, answer).await {
+            Ok(Ok(result)) => result?,
+            Ok(Err(_)) => return Err(Error::Signalling { detail: "signalling has stopped".into() }),
+            Err(_) => return Err(Error::PeerDidNotAnswer),
+        };
+        if let Some(onion) = &endpoints.onion {
+            crate::tor::remember(&peer, onion);
+        }
+        self.direct_or_relay(peer, &endpoints).await
     }
 
     /// [`direct_or_relay`](Self::direct_or_relay), and when nothing there got

@@ -593,6 +593,10 @@ impl Daemon {
             Arc::new(Sending { store: Arc::clone(&served), status: status.clone() })
                 as Arc<dyn qurb_peer::Served>
         });
+        // Connections this person's devices made to this one, kept to ask
+        // them things on when they cannot be dialled: a phone behind its
+        // carrier's NAT (2026-11-13). Used only after dialling failed.
+        let (dialled_in, mut dialled_in_rx) = mpsc::unbounded_channel::<(Fingerprint, PeerClient)>();
         for endpoint in [Some(connector.endpoint().clone()), connector.relay_endpoint().cloned()]
             .into_iter()
             .flatten()
@@ -601,14 +605,20 @@ impl Daemon {
             let generation = Arc::clone(&generation);
             let sending = sending.clone();
             let trust = trust.clone();
+            let dialled_in = dialled_in.clone();
             tokio::spawn(async move {
                 while let Some(incoming) = endpoint.accept().await {
                     let store = Arc::clone(&store);
                     let generation = Arc::clone(&generation);
                     let sending = sending.clone();
                     let trust = trust.clone();
+                    let dialled_in = dialled_in.clone();
+                    let endpoint = endpoint.clone();
                     tokio::spawn(async move {
                         let Ok(connection) = incoming.await else { return };
+                        if let Some(from) = qurb_peer::server::asker_of(&connection).filter(|f| trust.contains(f)) {
+                            let _ = dialled_in.send((from, PeerClient::from_parts(endpoint, connection.clone())));
+                        }
                         match sending {
                             Some(watcher) => {
                                 qurb_peer::server::serve_connection_watched(
@@ -658,6 +668,9 @@ impl Daemon {
 
         loop {
             tokio::select! {
+                Some((from, client)) = dialled_in_rx.recv() => {
+                    peers.dialled_in.insert(from, Arc::new(client));
+                }
                 // `pending()` when there is no watcher, so the arm simply
                 // never fires rather than the loop needing two shapes.
                 event = async {
@@ -1162,11 +1175,28 @@ impl Daemon {
         // since (`qurb_peer::trees`): a phone's lists here are its backups'
         // tens of thousands of files.
         let trees = qurb_peer::trees::Trees::at(self.store_dir.join("trees"));
-        let fresh = |peers: &mut Peers, client: PeerClient| {
-            let client = Arc::new(client);
+        let fresh = |peers: &mut Peers, client: Arc<PeerClient>| {
             peers.connected(peer, Arc::clone(&client));
             peers.watch(peer, Arc::clone(&client));
             client
+        };
+        // Dialled, or failing that the connection it made to this one, while
+        // that is open: a phone behind a carrier's NAT reaches out but cannot
+        // be reached (2026-11-13).
+        let dial = |peers: &Peers| {
+            let back = peers.dialled_in.get(&peer).filter(|c| c.connection().close_reason().is_none()).cloned();
+            async move {
+                match connector.reach(peer).await {
+                    Ok(client) => Ok(Arc::new(client)),
+                    Err(e) => match back {
+                        Some(back) => {
+                            tracing::info!(peer = %peer.short(), error = %e, "not reached; asking on the connection it made");
+                            Ok(back)
+                        }
+                        None => Err(e),
+                    },
+                }
+            }
         };
         let (client, asked) = match peers.connection(peer) {
             // A connection kept from before may be dead: the device moved
@@ -1179,13 +1209,15 @@ impl Daemon {
                 _ => {
                     tracing::debug!(peer = %peer.short(), "a kept connection did not answer; dialling again");
                     peers.disconnected(peer);
-                    let client = fresh(peers, connector.reach(peer).await?);
+                    let dialled = dial(peers).await?;
+                    let client = fresh(peers, dialled);
                     let asked = client.tree_kept(&peer, &trees).await;
                     (client, asked)
                 }
             },
             None => {
-                let client = fresh(peers, connector.reach(peer).await?);
+                let dialled = dial(peers).await?;
+                let client = fresh(peers, dialled);
                 let asked = client.tree_kept(&peer, &trees).await;
                 (client, asked)
             }
@@ -1497,6 +1529,9 @@ impl qurb_peer::Served for Sending {
 struct Peers {
     known: Vec<Fingerprint>,
     connections: HashMap<Fingerprint, Arc<PeerClient>>,
+    /// The connection each device last made to this one, for when it cannot
+    /// be dialled (see `run`).
+    dialled_in: HashMap<Fingerprint, Arc<PeerClient>>,
     /// When to try again, and how long to wait after the next failure.
     ///
     /// Doubling rather than a fixed delay, because the two cases look identical
@@ -1524,6 +1559,7 @@ impl Peers {
         Self {
             known,
             connections: HashMap::new(),
+            dialled_in: HashMap::new(),
             backoff: HashMap::new(),
             changes: mpsc::unbounded_channel(),
             watching: std::collections::HashSet::new(),
