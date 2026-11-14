@@ -86,7 +86,9 @@ yes to Google's sign-in library (`play-services-auth` 21.3.0) for it.
   (`~/.config/qurb/google-web-client.json`, mode 600, not committed) for a
   lasting sign-in to the phone's account, and keeps it beside its own. So
   the person signs in once, on the phone, and the computer is never asked.
-  A fresh code is asked for once a day, or until one was handed.
+  Only a sign-in asks for a code, with the person's yes; a code asked
+  for in the background brought no lasting sign-in, and took the place of
+  the one that did (found 2026-11-14, below).
 - **Asked during setup**: *Connected* has a third switch, Google Drive, on by
   default; Google's sheet follows in the app, and can be cancelled.
 
@@ -121,4 +123,11 @@ opens from the computer, for one -- and posted again each day. The OPPO had
 So a new file reaches the other device one round later than before: its list
 first, then the want, then the packs. Tested by `only_what_was_asked_for_is_posted`
 (`crates/mailbox/tests/exchange.rs`), through a folder; not yet through Drive.
+
+Found in the device pass, 2026-11-14 (docs/beta.md): the OPPO, set up
+again, chose its account at setup, and the background token refresh asked
+Google for a code of its own seconds later; that code replaced the setup's
+before it was handed, and Google gives a lasting sign-in only with a code
+asked for with the person's consent ("Google gave no refresh token for the
+phone's code"). Now the refresh asks for the token alone.
 

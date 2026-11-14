@@ -36,10 +36,6 @@ object GoogleDrive {
      *  step 8). An identifier, not a secret: it is in every copy of the app. */
     const val WEB_CLIENT_ID = "892093025334-8v20aphgklli5jjitd85ehh58chpg8jp.apps.googleusercontent.com"
 
-    /** A code is handed again after this long: the computer keeps the
-     *  sign-in, but a new computer, or one that lost it, gets it this way. */
-    private const val HAND_AGAIN_MS = 24 * 60 * 60 * 1000L
-
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     fun account(context: Context): String? = prefs(context).getString(ACCOUNT, null)
@@ -88,20 +84,20 @@ object GoogleDrive {
     }
 
     /**
-     * Before a sync, with nothing shown: a token for the engine, and once a
-     * day a fresh code for the computers. Google keeps the yes the person
-     * gave; if it wants them asked again, the mailbox waits for Settings.
+     * Before a sync, with nothing shown: a token for the engine. Never a code
+     * for the computers: only one asked for with the person's yes, at sign-in,
+     * brings Google's lasting sign-in with it, and one asked for here took its
+     * place before it was handed (the device pass of 2026-11-14: "Google gave
+     * no refresh token for the phone's code"). A computer that lost the
+     * account gets it again when the person chooses the account again.
      */
     suspend fun refresh(context: Context, engine: uniffi.qurb_mobile.Qurb) = withContext(Dispatchers.IO) {
         if (account(context) == null) return@withContext
-        val now = System.currentTimeMillis()
-        if (engine.driveCodeHanded()) prefs(context).edit().putLong(HANDED, now).apply()
-        val code = now - prefs(context).getLong(HANDED, 0L) > HAND_AGAIN_MS
+        if (engine.driveCodeHanded()) prefs(context).edit().putLong(HANDED, System.currentTimeMillis()).apply()
         val result = runCatching {
-            Tasks.await(Identity.getAuthorizationClient(context).authorize(request(code)), 20, TimeUnit.SECONDS)
+            Tasks.await(Identity.getAuthorizationClient(context).authorize(request(code = false)), 20, TimeUnit.SECONDS)
         }.onFailure { Log.w(TAG, "no Google Drive token", it) }.getOrNull() ?: return@withContext
         if (result.hasResolution()) return@withContext
         result.accessToken?.let { engine.setDriveToken(it) }
-        result.serverAuthCode?.let { engine.setDriveCode(it) }
     }
 }
