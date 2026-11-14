@@ -56,6 +56,8 @@ class SyncWorker(context: Context, params: WorkerParameters) :
         // get past setting up is the one that most needs a newer build.
         Updates.run(applicationContext, install = !Notices.onScreen && Controls.autoUpdate(applicationContext))
         if (!Engine.isSetUp(applicationContext)) return Result.success()
+        // Back after a restart, or after Android stopped it.
+        StayConnected.start(applicationContext)
 
         val started = System.currentTimeMillis()
         return try {

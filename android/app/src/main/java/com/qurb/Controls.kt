@@ -97,6 +97,14 @@ object Controls {
 
     fun setAutoUpdate(context: Context, on: Boolean) = prefs(context).edit().putBoolean("auto_update", on).apply()
 
+    // ---------- Stay connected ----------
+
+    /** Whether the app stays awake listening for the person's computers
+     *  ([StayConnected]); on unless turned off. */
+    fun stayConnected(context: Context): Boolean = prefs(context).getBoolean("stay_connected", true)
+
+    fun setStayConnected(context: Context, on: Boolean) = prefs(context).edit().putBoolean("stay_connected", on).apply()
+
     // ---------- App lock ----------
 
     /** Whether opening the app asks for the screen lock. */

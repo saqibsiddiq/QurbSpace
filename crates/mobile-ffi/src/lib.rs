@@ -1714,6 +1714,70 @@ impl Qurb {
         self.sync_inner(deadline, deadline)
     }
 
+    /// Wait, up to `seconds`, until one of this person's devices says it has
+    /// something for this phone; true if one did. For the app's *Stay
+    /// connected* service (2026-11-14): with no push, a phone in the
+    /// background heard a computer's news only at its next pass, and a file
+    /// sent to it waited minutes. Heard on this Wi-Fi (the beacons) and from
+    /// anywhere through the meeting point, where a computer says it on every
+    /// round while something waits (`announce_deliveries`). Holds no engine:
+    /// the pass the app then runs does the work.
+    pub fn wait_for_news(&self, seconds: u32) -> Result<bool, QurbError> {
+        let window = std::time::Duration::from_secs(seconds.max(1) as u64);
+        if qurb_peer::pause::paused() {
+            std::thread::sleep(window.min(std::time::Duration::from_secs(60)));
+            return Ok(false);
+        }
+        let (peers, accepted) = {
+            let engine = self.engine()?;
+            let peers = qurb_peer::trusted_fingerprints(engine.store())
+                .map_err(|e| QurbError::Storage { detail: e.to_string() })?;
+            let accepted = qurb_peer::accepted_fingerprints(engine.store()).unwrap_or_else(|_| peers.clone());
+            (peers, accepted)
+        };
+        if peers.is_empty() {
+            std::thread::sleep(window.min(std::time::Duration::from_secs(60)));
+            return Ok(false);
+        }
+        let members: std::collections::HashSet<[u8; 32]> = peers
+            .iter()
+            .map(|p| *qurb_signal::rendezvous::MemberId::derive(&self.master, p.as_bytes()).as_bytes())
+            .collect();
+        let identity = self.identity()?;
+        let runtime = self.runtime()?;
+        let trust = qurb_peer::tls::TrustList::new(accepted);
+        runtime.block_on(async {
+            // Its own port, any free one: a pass may start meanwhile on the
+            // phone's, and this one only listens. No relay or address lookups.
+            let started = tokio::time::timeout(
+                std::time::Duration::from_secs(20),
+                qurb_peer::Connector::start(
+                    "0.0.0.0:0".parse().expect("a literal address"),
+                    identity,
+                    self.master.clone(),
+                    &trust,
+                    self.signal_url.clone(),
+                    qurb_peer::Finding { stun: false, beacons: qurb_peer::Finding::everything(None).beacons, relay: None },
+                ),
+            )
+            .await;
+            let Ok(Ok(connector)) = started else { return Ok(false) };
+            let mut arrivals = connector.arrivals();
+            let heard = tokio::time::timeout(window, async {
+                loop {
+                    match arrivals.recv().await {
+                        Ok((member, true)) if members.contains(member.as_bytes()) => return true,
+                        Ok(_) | Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+                        Err(_) => return false,
+                    }
+                }
+            })
+            .await
+            .unwrap_or(false);
+            Ok(heard)
+        })
+    }
+
     /// The same, then keep answering a device that is collecting from this
     /// one, up to `serving_seconds` from the start.
     ///

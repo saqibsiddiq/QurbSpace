@@ -24,6 +24,7 @@ qurb-watcher = { path = "../watcher" }
 qurb-keys = { path = "../keys" }
 qurb-sync = { path = "../sync" }
 qurb-peer = { path = "../peer" }
+qurb-signal = { path = "../signal" }
 qurb-mailbox = { path = "../mailbox" }
 tokio = { version = "1", features = ["rt-multi-thread", "time", "macros", "sync"] }
 # The pairing code as a QR code the screen can draw: the same crate the
@@ -52,7 +53,6 @@ uniffi = { version = "0.32", features = ["build"] }
 [dev-dependencies]
 blake3.workspace = true
 tempfile = "3"
-qurb-signal = { path = "../signal" }
 qurb-relay = { path = "../relay" }
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 

@@ -601,6 +601,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         Notices.onScreen = true
         if (!::views.isInitialized) return
+        StayConnected.start(this)
         if (lockIfAsked()) return
         // Opened away from home: Tor warmed for the passes to come.
         if (!Engine.unmetered(this)) lifecycleScope.launch(Dispatchers.IO) { runCatching { Engine.open(this@MainActivity).warmTor() } }

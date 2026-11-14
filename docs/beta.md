@@ -72,6 +72,7 @@ reset first (*Reset this device*), since the testers will all be new users.
 | 2 | Setup's *Connected*: Photos, WhatsApp, Google Drive switches | | | |
 | 3 | Photos backed up; WhatsApp backed up | | | |
 | 4 | A send each way, on Wi-Fi: how many seconds | | | |
+| 4b | A send to a phone with the app in the background (Stay connected, decision 0090) | ❌ before 0090: not collected in 4 min | | |
 | 5 | A send and browsing on mobile data, away from home | | | |
 | 6 | A preview of a large photo, remotely | | | |
 | 7 | Laptop off: a send through Drive, collected when it starts | | | |

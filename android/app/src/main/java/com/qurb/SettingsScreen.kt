@@ -182,6 +182,16 @@ class SettingsScreen(app: MainActivity) : Screen(app) {
         kit.setting(card, R.drawable.ic_cloud, "Google Drive", GoogleDrive.account(app) ?: "Off") { sheets.drive { refresh() } }
         kit.setting(card, R.drawable.ic_shield_check, "Background activity",
             if (Battery.free(app)) "Allowed" else "Restricted") { Battery.ask(app) }
+        // Files sent to this phone in seconds, not at the next pass
+        // (StayConnected, 2026-11-14).
+        kit.toggle(card, "Stay connected", "", Controls.stayConnected(app)) { on ->
+            Controls.setStayConnected(app, on)
+            if (on) StayConnected.start(app) else StayConnected.stop(app)
+        }.apply {
+            label.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_wifi, 0, 0, 0)
+            label.compoundDrawablePadding = kit.dp(14)
+            label.compoundDrawableTintList = android.content.res.ColorStateList.valueOf(kit.color(R.color.text_2))
+        }
         kit.setting(card, R.drawable.ic_history, "Background sync",
             SyncWorker.words(SyncWorker.every(app))) { background() }
         kit.setting(card, R.drawable.ic_link, "Advanced") { app.push(AdvancedScreen(app)) }
