@@ -90,7 +90,13 @@ yes to Google's sign-in library (`play-services-auth` 21.3.0) for it.
 - **Asked during setup**: *Connected* has a third switch, Google Drive, on by
   default; Google's sheet follows in the app, and can be cancelled.
 
-Left undone: built and compiled, the exchange tested against a plain folder
-only; **not yet tried on a phone**. A code is single-use and short-lived, so
+Tried 2026-11-14 on the OPPO CPH2363 (0.2.0-beta.10, home Wi-Fi, the laptop
+on the commit that adds this): signed in from its Settings to an account other
+than the laptop's; the phone handed the code at 17:42:30 IST, the laptop took
+it on its next mailbox round 62 s later ("signed in to a phone's Google
+account") and its window listed the account; nobody signed in on the laptop.
+
+Left undone: the setup switch not yet tried; nothing yet posted or collected
+through the handed account (the phone was reachable directly). A code is single-use and short-lived, so
 one handed to a computer that is off is wasted until the next day's.
 
