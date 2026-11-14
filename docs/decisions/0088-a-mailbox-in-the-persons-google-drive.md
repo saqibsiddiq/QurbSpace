@@ -95,6 +95,8 @@ on the commit that adds this): signed in from its Settings to an account other
 than the laptop's; the phone handed the code at 17:42:30 IST, the laptop took
 it on its next mailbox round 62 s later ("signed in to a phone's Google
 account") and its window listed the account; nobody signed in on the laptop.
+Since the same day the computer exchanges a code the moment it is handed
+(`qurb_peer::drive_code_handed`), not on its next round; not yet timed.
 
 Left undone: the setup switch not yet tried; nothing yet posted or collected
 through the handed account (the phone was reachable directly). A code is single-use and short-lived, so

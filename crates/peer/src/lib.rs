@@ -67,10 +67,20 @@ static HOSTED_ONION: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(No
 /// for the computer to exchange them (`Request::DriveCode`).
 static DRIVE_CODES: std::sync::Mutex<Vec<(qurb_sync::DeviceId, String)>> = std::sync::Mutex::new(Vec::new());
 
+/// Told when a code is handed over, so the computer exchanges it at once
+/// rather than on its next mailbox round (the owner, 2026-11-14).
+static DRIVE_CODE_GIVEN: std::sync::LazyLock<tokio::sync::Notify> = std::sync::LazyLock::new(tokio::sync::Notify::new);
+
 pub fn drive_code_given(from: qurb_sync::DeviceId, code: String) {
     if let Ok(mut codes) = DRIVE_CODES.lock() {
         codes.push((from, code));
     }
+    DRIVE_CODE_GIVEN.notify_one();
+}
+
+/// Until a code has been handed over since last asked.
+pub async fn drive_code_handed() {
+    DRIVE_CODE_GIVEN.notified().await
 }
 
 /// The codes given since last asked, each once.
