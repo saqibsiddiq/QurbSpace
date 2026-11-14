@@ -308,6 +308,10 @@ struct Kept {
     /// said to be wanted from it.
     #[serde(default)]
     wants: BTreeMap<String, String>,
+    /// A device, by its short name, to when this one first read what it
+    /// wants: packs to it from before were posted blind.
+    #[serde(default)]
+    informed: BTreeMap<String, u64>,
 }
 
 /// One device's side of the folder.
@@ -330,6 +334,8 @@ pub struct Posted {
     pub delivered: usize,
     /// Whether it stopped at [`CAP`].
     pub full: bool,
+    /// Packs posted before the other device said what it wants, taken back.
+    pub taken_back: usize,
 }
 
 /// What a collection did.
@@ -412,8 +418,9 @@ impl Mailbox {
     pub async fn post<H: Holds>(&self, holds: &H, peer: &TrustedPeer, budget: Duration) -> Result<Posted> {
         let started = Instant::now();
         let mut posted = Posted::default();
-        let mut kept = self.kept();
         let them = peer.device_id;
+        posted.taken_back = self.take_back_blind(&them).await?;
+        let mut kept = self.kept();
         let asker = qurb_peer::Fingerprint::from_bytes(peer.fingerprint);
         let letters = self.place.list().await?;
 
@@ -472,7 +479,6 @@ impl Mailbox {
             }
             None => None,
         };
-
         // Packs, a few at a time: read under the engine, sent without it.
         let mut waiting: u64 = Self::between(&letters, &them, &self.me, Kind::Pack).iter().map(|l| l.size).sum();
         let mut from = 0usize;
@@ -489,6 +495,33 @@ impl Mailbox {
         }
         posted.full = waiting >= CAP;
         Ok(posted)
+    }
+
+    /// Packs to `them` posted before it first said what it wants, which were
+    /// posted blind: taken back, and what of them it wants made ready to be
+    /// posted again. Left, a phone drained them pass after pass and used none
+    /// (the S23 on 2026-11-14, about 17 MB a pass, from a backlog of up to
+    /// [`CAP`]). Run on every round, reached or not: a phone reached at home is
+    /// never posted to, and went on collecting the backlog. Returns how many.
+    pub async fn take_back_blind(&self, them: &DeviceId) -> Result<usize> {
+        let letters = self.place.list().await?;
+        let mut wants = Self::between(&letters, &self.me, them, Kind::Want);
+        wants.sort_by(|a, b| a.name.cmp(&b.name));
+        let Some(latest) = wants.last() else { return Ok(0) };
+        let mut kept = self.kept();
+        let said_at = *kept.informed.entry(short(them)).or_insert_with(now);
+        let blind: Vec<Letter> =
+            Self::between(&letters, them, &self.me, Kind::Pack).into_iter().filter(|pack| stamp(&pack.name) < said_at).collect();
+        if !blind.is_empty() {
+            let plain = open(&self.key, &self.place.get(latest).await?).unwrap_or_default();
+            let wanted: std::collections::HashSet<[u8; 32]> = plain.chunks_exact(32).map(|c| c.try_into().expect("32 bytes")).collect();
+            for pack in &blind {
+                self.place.delete(pack).await?;
+            }
+            kept.posted.retain(|content, _| unhex(content).is_none_or(|c| !wanted.contains(&c)));
+        }
+        self.keep(&kept);
+        Ok(blind.len())
     }
 
     /// From `tree[from..]`, the contents `them` is not known to hold, sealed
@@ -745,6 +778,14 @@ impl qurb_engine::ContentSource for Arrived {
 
 fn now() -> u64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0)
+}
+
+/// When a letter was left, from its name (`letter_name`): the Unix seconds
+/// before its random tag. Zero for a name not read.
+fn stamp(name: &str) -> u64 {
+    let last = name.rsplit('.').next().unwrap_or("");
+    let digits = last.len().saturating_sub(12);
+    last.get(..digits).and_then(|d| d.parse().ok()).unwrap_or(0)
 }
 
 fn hex(bytes: &[u8]) -> String {

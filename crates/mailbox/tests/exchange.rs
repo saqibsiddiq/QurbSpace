@@ -161,3 +161,33 @@ async fn a_phones_hello_says_which_folder_it_uses_and_stays() {
     at_laptop.collect(&qurb_mailbox::Owned(std::sync::Mutex::new(&mut laptop.engine)), &phone_as_seen, Duration::from_secs(10)).await.unwrap();
     assert!(at_laptop.heard_from().await.unwrap().contains(&qurb_mailbox::short_name(&phone.id())), "collecting took the hello");
 }
+
+/// Packs posted before the other device said what it wants were posted
+/// blind: once it has said, they are taken back, and what of them it wants is
+/// posted again (2026-11-14: the S23 drained such a backlog, ~17 MB a pass).
+#[tokio::test(flavor = "multi_thread")]
+async fn packs_posted_blind_are_taken_back_once_it_says() {
+    let folder = tempfile::tempdir().unwrap();
+    let mut phone = Device::new();
+    let mut laptop = Device::new();
+    let laptop_as_seen = phone.trust(&laptop, "Laptop");
+    let phone_as_seen = laptop.trust(&phone, "Phone");
+    let at_phone = phone.mailbox(folder.path());
+    let at_laptop = laptop.mailbox(folder.path());
+
+    phone.write("a.txt", b"first");
+    assert!(post(&at_phone, &mut phone, &laptop_as_seen).await.packs > 0);
+    // Letters are stamped to the second.
+    tokio::time::sleep(Duration::from_millis(1100)).await;
+    // The laptop reads the list and says what it wants, with no time to
+    // take the packs.
+    at_laptop.collect(&qurb_mailbox::Owned(std::sync::Mutex::new(&mut laptop.engine)), &phone_as_seen, Duration::ZERO).await.unwrap();
+
+    let again = post(&at_phone, &mut phone, &laptop_as_seen).await;
+    assert!(again.taken_back > 0, "{again:?}");
+    assert!(again.packs > 0, "what it wants was not posted again: {again:?}");
+    let collected = at_laptop.collect(&qurb_mailbox::Owned(std::sync::Mutex::new(&mut laptop.engine)), &phone_as_seen, Duration::from_secs(60)).await.unwrap();
+    assert_eq!(collected.waiting, 0, "{collected:?}");
+    assert_eq!(fs::read(laptop.root.join("a.txt")).unwrap(), b"first");
+}
+

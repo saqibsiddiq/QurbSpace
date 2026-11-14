@@ -120,6 +120,12 @@ opens from the computer, for one -- and posted again each day. The OPPO had
 - Arrivals no plan wants are let go of a day after they came
   (`Mailbox::tidy_inbox`).
 
+- Packs posted before a device first said what it wants were posted blind;
+  they are taken back on every round, reached or not, and what of them it
+  wants is posted again (`Mailbox::take_back_blind`). On its first round the
+  laptop took back 271 from the S23's folder (2026-11-14, 21:55), which the
+  S23 had been collecting at about 17 MB a pass, applying none.
+
 So a new file reaches the other device one round later than before: its list
 first, then the want, then the packs. Tested by `only_what_was_asked_for_is_posted`
 (`crates/mailbox/tests/exchange.rs`), through a folder; not yet through Drive.

@@ -1080,6 +1080,14 @@ impl Daemon {
                     Ok(_) => {}
                     Err(e) => tracing::info!(peer = %fp.short(), account = %label, error = %e, "the mailbox could not be read"),
                 }
+                // Packs it was posted blind, before it said what it wants:
+                // taken back whether or not it is reached, or it collects
+                // them still (2026-11-14).
+                match mailbox.take_back_blind(&peer.device_id).await {
+                    Ok(n) if n > 0 => tracing::info!(peer = %fp.short(), account = %label, packs = n, "took back packs posted before it said what it wants"),
+                    Ok(_) => {}
+                    Err(e) => tracing::debug!(peer = %fp.short(), error = %e, "could not take back blind packs"),
+                }
                 // Collected from whether or not it was reached, so nothing
                 // waits there once a live path is back; posted to only when
                 // not.
@@ -1088,7 +1096,7 @@ impl Daemon {
                 }
                 match mailbox.post(&holds, &peer, MAILBOX_FOR).await {
                     Ok(p) if p.list || p.packs + p.receipts > 0 => {
-                        tracing::info!(peer = %fp.short(), account = %label, list = p.list, packs = p.packs, bytes = p.bytes, delivered = p.delivered, full = p.full, "posted through the mailbox")
+                        tracing::info!(peer = %fp.short(), account = %label, list = p.list, packs = p.packs, bytes = p.bytes, delivered = p.delivered, full = p.full, taken_back = p.taken_back, "posted through the mailbox")
                     }
                     Ok(_) => {}
                     Err(e) => tracing::info!(peer = %fp.short(), account = %label, error = %e, "the mailbox could not be written"),
