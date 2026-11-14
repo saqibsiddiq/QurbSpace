@@ -27,16 +27,16 @@ Nothing is ever stored on a server of ours. There is none.
 | **STUN servers** (Cloudflare, Google) | Your IP address, as any video call reveals it | When a device looks for its own public address |
 | The **Tor network** | As Tor is designed: no single relay learns both ends | Browsing your computer from the phone, when other paths fail |
 | **Google**, if you turn on Drive | That your account uses QurbSpace, when, and how much; not the contents | Only with Drive on |
-| **Google's backup** of your phone | Your QurbSpace key, so a new phone can be set up again — kept only when Android encrypts that backup end to end with your screen lock | Android phones with Google Play services |
+| **Google's backup** of your phone | Your QurbSpace key, so a new phone can be set up again. Kept only when Android encrypts that backup end to end with your screen lock | Android phones with Google Play services |
 | **GitHub** | Your IP address, when the apps check for an update | About once a day |
 
 ## What QurbSpace does not do
 
 - No accounts, no sign-up, no email address asked for.
 - No analytics, no tracking, no crash reporting. *Save a report* (Settings
-  → Advanced) saves a file on your device -- how your devices connected,
-  with their network addresses, and no file contents; it goes nowhere unless
-  you send it yourself.
+  → Advanced) saves a file on your device: how your devices connected, with
+  their network addresses, and no file contents. It goes nowhere unless you
+  send it yourself.
 - No ads, and no selling of anything.
 
 ## On your devices

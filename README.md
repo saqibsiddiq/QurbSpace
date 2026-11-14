@@ -1,6 +1,6 @@
 # QurbSpace
 
-**Your phone and your computer, in sync — with nothing in between.**
+**Your phone and your computer, in sync, with nothing in between.**
 
 QurbSpace keeps files, photo and WhatsApp backups moving between your own
 devices: directly when they can reach each other, encrypted end to end, and
@@ -22,12 +22,12 @@ never stored on a server of ours. Your computer is your cloud.
 - **Sends** a file or photo from the phone to the computer, or back, in
   seconds on the same Wi-Fi.
 - **Backs up** WhatsApp and the folders you choose from the phone to your
-  computer, overnight while charging — not to Google's 15 GB.
+  computer, overnight while charging, instead of Google's 15 GB.
 - **Opens your computer's folders from the phone**, from anywhere: browse,
   preview, download, restore.
 - **Works from anywhere**: home Wi-Fi first, then directly across the
-  internet, then — if you turn it on — through your own Google Drive, sealed
-  so Google cannot read it.
+  internet, then through your own Google Drive if you turn it on, sealed so
+  Google cannot read it.
 - **Stays private**: every file is encrypted between your devices. Nothing
   passes through a server of ours; there is none.
 
@@ -52,8 +52,8 @@ Then:
    notifications, anything the computer sends arrives in seconds; tap the
    notification to disconnect.
 
-Found something wrong? **[Report it](https://github.com/saqibsiddiq/QurbSpace/issues/new/choose)**
-— *Save a report* (Settings → Advanced) saves a file you can attach.
+Found something wrong? **[Report it](https://github.com/saqibsiddiq/QurbSpace/issues/new/choose).**
+*Save a report* (Settings → Advanced) saves a file you can attach.
 
 ## Known gaps
 
@@ -85,7 +85,7 @@ security problem? Please report it privately: [SECURITY.md](SECURITY.md).
 
 ### Start here
 
-**[docs/CODEBASE.md](docs/CODEBASE.md)** — everything needed to understand this
+**[docs/CODEBASE.md](docs/CODEBASE.md)** has everything needed to understand this
 project from scratch. No prior context assumed.
 
 Then, depending on what you want:
@@ -104,7 +104,7 @@ Then, depending on what you want:
 ### Layout
 
 ```
-docs/           documentation — start with CODEBASE.md
+docs/           documentation: start with CODEBASE.md
 crates/         the engine, the program, the desktop window, the services
 android/        the Android app, a thin Kotlin layer over the FFI
 packaging/      installing: an Arch package, an install script, server units, Windows' README
@@ -125,7 +125,7 @@ the `.deb` on Debian, Ubuntu and their kind, the `.rpm` on Fedora and openSUSE
 Tumbleweed, both for glibc 2.34 and later; the Arch package; the static
 `qurb` alone on any Linux; the `.apk` on any Android phone from 8.0.
 
-From this checkout, on Arch — the window, the tray icon and the command line:
+From this checkout, on Arch (the window, the tray icon and the command line):
 
 ```bash
 cd packaging/arch && makepkg -si
@@ -138,8 +138,8 @@ cargo build --release -p qurb-cli -p qurb-tray -p qurb-desktop
 ./packaging/install.sh
 ```
 
-Then open qurb from the applications menu: it sets the device up — nothing to
-write down — and pairs another device by QR code or six digits. From a
+Then open qurb from the applications menu: it sets the device up, with nothing
+to write down, and pairs another device by QR code or six digits. From a
 terminal instead:
 
 ```bash
@@ -168,8 +168,8 @@ cargo test --workspace
 ./scripts/desktop-smoke.sh     # the real window, driven end to end
 ```
 
-The Phase 0 measurements — chunking throughput, boundary stability, NAT
-classification — are in [experiments/phase0-spike](experiments/phase0-spike/)
+The Phase 0 measurements (chunking throughput, boundary stability, NAT
+classification) are in [experiments/phase0-spike](experiments/phase0-spike/)
 and [docs/phases/phase-0-spike.md](docs/phases/phase-0-spike.md). `quictest
 stun` there contacts public STUN servers, revealing your public IP to them as
 any video-call client does.
