@@ -4589,6 +4589,20 @@ impl Db {
         Ok(found)
     }
 
+    /// Where a live file of the folder is read from outside it -- a path, or a
+    /// picked folder's `content:` address -- if it is one.
+    pub fn outside_source(&self, path: &str) -> Result<Option<String>> {
+        Ok(self
+            .conn
+            .query_row(
+                "SELECT o.source FROM outside_sources o JOIN files f ON f.id = o.file_id
+                  WHERE f.path = ?1 AND f.deleted_at IS NULL",
+                params![path],
+                |r| r.get(0),
+            )
+            .optional()?)
+    }
+
     /// Forget a row here and nowhere else: no tombstone is written, so no
     /// other device is told anything, and what pointed at it goes with it
     /// (its chunks' references, where it was read from). For a phone letting

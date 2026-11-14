@@ -77,16 +77,29 @@ reset first (*Reset this device*), since the testers will all be new users.
 | 6 | A preview of a large photo, remotely | ✅ the laptop's folder listed in 3.4 s, a photo's viewer open in under 4 s (the image itself not looked at) | | |
 | 7 | Laptop off: a send through Drive, collected when it starts | | | |
 | 8 | The Drive account handed from the phone to the laptop | | ✅ 17:42, 62 s (before it was made instant) | ✅ |
-| 9 | Settings: every control once | | | |
+| 9 | Settings: every control once | ✅ pause and resume, mobile data, backups, a notification kind, received files, Stay connected off and on (its service stops and starts); app lock not tried (needs the owner's screen lock) | | |
 | 10 | Space the app takes, after a day (testing.md, 2026-11-14) | | | |
 | 11 | Updates: beta.9 updating itself to beta.10, phone and laptop | | | |
-| 12 | A restore drill: the app's data cleared on the OPPO, its files back from the laptop | | | |
+| 12 | A restore drill: the app's data cleared on the OPPO, its files back from the laptop | ✅ a 3.2 MB test file backed up, deleted on the phone, restored in 2.2 s, identical | ✅ set up again and recognised as itself: its backups the laptop's already (item 3) | |
 | 13 | Windows: the zip run on a Windows machine, if one can be borrowed | | | |
 
 Also found and fixed in the pass: the laptop had posted the S23 271 packs
 (about 1 GB) through Drive that it never used, collected at 17 MB a pass
 (decision 0088, amended); Settings showed "Google account" rather than the
 address.
+
+Found and left, from the same pass:
+
+- **A backup of a folder no longer backed up cannot be deleted from the
+  phone.** The phone lets go of the folder's files when it is unchosen, and
+  refuses ("only this phone's own files"); the computer keeps them, as it
+  should, and nothing on either side deletes them now. Who may: to decide.
+  (Fixed meanwhile: a chosen folder's backup, its original deleted, was
+  refused as "still on this phone" for good.) The S23 keeps one 3.2 MB test
+  file this way.
+- **Thumbnails of a computer's photos are not capped**: 70 MB on the S23
+  after one evening's browsing (`cache/thumbs-kept`). Item 7 of the space
+  list, not chosen on 2026-11-14.
 
 Item 11 matters most for the owner's own laptop: its installed app is
 beta.5, which cannot open the current folder (testing.md, *Found, and left*).

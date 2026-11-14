@@ -1517,7 +1517,18 @@ impl Qurb {
             return Err(QurbError::Refused { detail: "only this phone's own files can be deleted from here".into() });
         }
         for file in &files {
-            if engine.store().db().read_from_outside(file)? {
+            // Refused while the original is still on this phone, which the
+            // next backup would copy back. Gone, it may go: until 2026-11-14 a
+            // backup of a folder no longer chosen, its original deleted, could
+            // never be deleted from here (found in the device pass, the S23).
+            // A picked folder's file (`content:`) cannot be looked at here,
+            // and is refused as before.
+            let original_here = match engine.store().db().outside_source(file)? {
+                None => false,
+                Some(source) if source.starts_with("content:") => true,
+                Some(source) => std::path::Path::new(&source).exists(),
+            };
+            if original_here {
                 return Err(QurbError::Refused {
                     detail: "it is still on this phone, and the next backup would bring it back".into(),
                 });
