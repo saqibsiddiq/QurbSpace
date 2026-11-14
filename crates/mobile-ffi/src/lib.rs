@@ -2833,6 +2833,13 @@ impl Qurb {
             let fp = qurb_peer::Fingerprint::from_bytes(peer.fingerprint);
             let done = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 runtime.block_on(async {
+                    // Here, in this phone's own account: how a computer
+                    // signed in to several knows which one to post to it in.
+                    if let Err(e) = mailbox.say_hello(&peer.device_id).await {
+                        if refused(&e) {
+                            self.drive_refused.store(true, std::sync::atomic::Ordering::Relaxed);
+                        }
+                    }
                     match mailbox.collect(&holds, &peer, each).await {
                         Ok(c) if c.packs + c.applied > 0 => tracing::info!(peer = %fp.short(), packs = c.packs, bytes = c.bytes, applied = c.applied, waiting = c.waiting, "collected through the mailbox"),
                         Ok(_) => {}

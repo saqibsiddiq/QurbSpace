@@ -31,7 +31,7 @@ async function drawSettings(main) {
     group("Connection",
       setting({ ic: "pause", name: "Pause sync", value: pausedWords(s.paused_until), onclick: () => pauseSheet(s.paused_until) }),
       setting({ ic: "arrow-up-down", name: "Speed limit", value: speedWords(s), onclick: () => go("speed") }),
-      drive?.ready ? setting({ ic: "cloud", name: "Google Drive", value: drive.on ? (drive.account ?? "On") : "Off", onclick: () => driveSheet(drive) }) : null,
+      drive?.ready ? setting({ ic: "cloud", name: "Google Drive", value: !drive.on ? "Off" : drive.accounts.length === 1 ? drive.accounts[0] : `${drive.accounts.length} accounts`, onclick: () => driveSheet(drive) }) : null,
       setting({ ic: "laptop", name: "Stay awake to collect", end: toggle(s.stay_awake, (on) => invoke("set_stay_awake", { on }), "Stay awake to collect") }),
       setting({ ic: "link", name: "Advanced", onclick: () => go("advanced") })),
     group("App",
@@ -138,28 +138,34 @@ function askDownloads() {
 
 // ---------- Google Drive, the mailbox ----------
 
-/** On: who is signed in, and off. Off: what it is for, and sign in. */
+/** The accounts signed in, each removable, and another added: a phone may
+ * use its own Google account, which this computer then signs in to as well. */
 function driveSheet(drive) {
-  const box = sheet({ ic: "cloud", title: "Google Drive", sub: drive.on ? drive.account ?? "On" : "When your devices can't reach each other, they leave each other files here, encrypted" });
+  const box = sheet({ ic: "cloud", title: "Google Drive", sub: drive.on
+    ? "A phone on another Google account? Add that account here too"
+    : "When your devices can't reach each other, they leave each other files here, encrypted" });
   if (drive.on) {
-    box.append(actions(btn("Turn off", async () => {
-      box.close();
-      try { await invoke("drive_sign_out"); } catch (e) { toast(String(e), true); }
-      go("settings");
-    }, "btn-danger-solid")));
-    return;
+    box.append(h("div", { class: "grp-box grp-gap" }, ...drive.accounts.map((account) => setting({
+      ic: "user-circle", name: account,
+      end: btn("Remove", async (e) => {
+        e.stopPropagation();
+        try { await invoke("drive_sign_out", { account }); } catch (err) { toast(String(err), true); }
+        box.close();
+        go("settings");
+      }, "btn-quiet btn-sm"),
+    }))));
   }
-  const signIn = btn("Sign in", async () => {
+  const signIn = btn(drive.on ? "Add account" : "Sign in", async () => {
     signIn.disabled = true;
     signIn.textContent = "Finish in your browser…";
     try {
       const now = await invoke("drive_sign_in");
       box.close();
-      toast(now.account ? `Signed in as ${now.account}` : "Google Drive on");
+      toast(now.accounts.length ? `Signed in: ${now.accounts[now.accounts.length - 1]}` : "Google Drive on");
       go("settings");
     } catch (e) {
       signIn.disabled = false;
-      signIn.textContent = "Sign in";
+      signIn.textContent = drive.on ? "Add account" : "Sign in";
       toast(String(e), true);
     }
   }, "btn-main");

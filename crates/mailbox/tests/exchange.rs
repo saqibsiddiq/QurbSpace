@@ -107,3 +107,25 @@ async fn half_arrived_contents_wait_rather_than_fail() {
     assert_eq!((collected.applied, collected.waiting), (0, 1), "{collected:?}");
     assert!(!laptop.root.join("a.txt").exists());
 }
+
+/// A phone on its own Google account says hello there, and the hello stays
+/// through collecting: how a computer signed in to several accounts knows
+/// which is the phone's (2026-11-13).
+#[tokio::test(flavor = "multi_thread")]
+async fn a_phones_hello_says_which_folder_it_uses_and_stays() {
+    let folder = tempfile::tempdir().unwrap();
+    let mut phone = Device::new();
+    let mut laptop = Device::new();
+    let _ = phone.trust(&laptop, "Laptop");
+    let phone_as_seen = laptop.trust(&phone, "Phone");
+
+    let at_phone = phone.mailbox(folder.path());
+    assert!(at_phone.say_hello(&laptop.id()).await.unwrap());
+    assert!(!at_phone.say_hello(&laptop.id()).await.unwrap(), "a second hello was left");
+
+    let at_laptop = laptop.mailbox(folder.path());
+    let heard = at_laptop.heard_from().await.unwrap();
+    assert!(heard.contains(&qurb_mailbox::short_name(&phone.id())), "{heard:?}");
+    at_laptop.collect(&qurb_mailbox::Owned(std::sync::Mutex::new(&mut laptop.engine)), &phone_as_seen, Duration::from_secs(10)).await.unwrap();
+    assert!(at_laptop.heard_from().await.unwrap().contains(&qurb_mailbox::short_name(&phone.id())), "collecting took the hello");
+}

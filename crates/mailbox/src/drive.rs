@@ -230,7 +230,7 @@ pub async fn sign_in(client: &Client, open: impl FnOnce(&str)) -> Result<Refresh
             ("code_challenge_method", "S256"),
             ("state", state.as_str()),
             ("access_type", "offline"),
-            ("prompt", "consent"),
+            ("prompt", "select_account consent"),
         ],
     )
     .map_err(|e| Error::Place(e.to_string()))?;

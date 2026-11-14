@@ -183,6 +183,9 @@ enum Kind {
     List,
     Pack,
     Got,
+    /// A device saying it uses this folder: how a computer signed in to
+    /// several accounts learns which is each phone's (2026-11-13).
+    Hello,
 }
 
 impl Kind {
@@ -191,6 +194,7 @@ impl Kind {
             Kind::List => "list",
             Kind::Pack => "pack",
             Kind::Got => "got",
+            Kind::Hello => "hello",
         }
     }
 }
@@ -199,6 +203,11 @@ impl Kind {
 /// which is random and says nothing of the person.
 fn short(device: &DeviceId) -> String {
     hex(&device.as_bytes()[..8])
+}
+
+/// The name letters give `device`, as [`Mailbox::heard_from`] reports it.
+pub fn short_name(device: &DeviceId) -> String {
+    short(device)
 }
 
 fn letter_name(to: &DeviceId, from: &DeviceId, kind: Kind) -> String {
@@ -215,6 +224,7 @@ fn read_name(name: &str) -> Option<(String, String, Kind)> {
         "list" => Kind::List,
         "pack" => Kind::Pack,
         "got" => Kind::Got,
+        "hello" => Kind::Hello,
         _ => return None,
     };
     Some((to.to_string(), from.to_string(), kind))
@@ -352,6 +362,34 @@ impl Mailbox {
             .filter(|l| read_name(&l.name).is_some_and(|(t, f, k)| t == to && f == from && k == kind))
             .cloned()
             .collect()
+    }
+
+    /// Say to `to` that this device uses this folder, unless something from
+    /// it to `to` is here already. A computer signed in to several accounts
+    /// posts to a phone only in the one the phone's letters are in.
+    pub async fn say_hello(&self, to: &DeviceId) -> Result<bool> {
+        let letters = self.place.list().await?;
+        let (to_short, me) = (short(to), short(&self.me));
+        if letters.iter().any(|l| read_name(&l.name).is_some_and(|(t, f, _)| t == to_short && f == me)) {
+            return Ok(false);
+        }
+        self.place.put(&letter_name(to, &self.me, Kind::Hello), seal(&self.key, b"hello")).await?;
+        Ok(true)
+    }
+
+    /// Which devices have left anything here for this one: by the short
+    /// names letters carry (see [`short_name`]).
+    pub async fn heard_from(&self) -> Result<std::collections::HashSet<String>> {
+        let me = short(&self.me);
+        Ok(self
+            .place
+            .list()
+            .await?
+            .iter()
+            .filter_map(|l| read_name(&l.name))
+            .filter(|(to, _, _)| *to == me)
+            .map(|(_, from, _)| from)
+            .collect())
     }
 
     /// Post to `peer`: take its receipts, then its list if it changed, then

@@ -2563,17 +2563,18 @@ pub fn set_notifications(hosted: Host<'_>, on: bool) -> Answer<()> {
 pub struct DriveState {
     ready: bool,
     on: bool,
-    account: Option<String>,
+    /// Every account signed in: this computer's, and each phone's own where
+    /// it uses another (2026-11-13).
+    accounts: Vec<String>,
 }
 
 #[tauri::command]
 pub fn drive_state() -> DriveState {
-    let account = qurb_cli::drive_account::signed_in();
-    DriveState {
-        ready: qurb_cli::drive_account::client().is_some(),
-        on: account.is_some(),
-        account: account.and_then(|a| a.account),
-    }
+    let accounts: Vec<String> = qurb_cli::drive_account::accounts()
+        .into_iter()
+        .map(|a| a.account.unwrap_or_else(|| "A Google account".into()))
+        .collect();
+    DriveState { ready: qurb_cli::drive_account::client().is_some(), on: !accounts.is_empty(), accounts }
 }
 
 /// Sign in to Google Drive in the browser, and turn the mailbox on: from the
@@ -2592,10 +2593,10 @@ pub async fn drive_sign_in() -> Answer<DriveState> {
     Ok(drive_state())
 }
 
-/// Turn the mailbox off, forgetting the account here.
+/// Forget one account here, or every one: the mailbox off.
 #[tauri::command]
-pub fn drive_sign_out() -> Answer<DriveState> {
-    qurb_cli::drive_account::forget().map_err(failed)?;
+pub fn drive_sign_out(account: Option<String>) -> Answer<DriveState> {
+    qurb_cli::drive_account::forget(account.as_deref()).map_err(failed)?;
     Ok(drive_state())
 }
 

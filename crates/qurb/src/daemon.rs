@@ -1003,17 +1003,34 @@ impl Daemon {
     /// post to those not reached on this pass: at most every
     /// [`MAILBOX_EVERY`] each, and only while the person has it on.
     async fn use_mailbox(&self, engine: &mut Engine, peers: &Peers) {
-        let Some(account) = crate::drive_account::signed_in() else { return };
+        let accounts = crate::drive_account::accounts();
+        if accounts.is_empty() {
+            return;
+        }
         let me = match engine.store().device_id() {
             Ok(me) => me,
             Err(_) => return,
         };
         let key = self.master.derive(qurb_keys::Purpose::Mailbox).to_bytes();
-        let place = qurb_mailbox::Place::Drive(qurb_mailbox::drive::Drive::with_refresh(account));
-        let mailbox = match qurb_mailbox::Mailbox::new(place, key, me, &self.store_dir) {
-            Ok(mailbox) => mailbox,
-            Err(e) => return tracing::warn!(error = %e, "the mailbox could not be opened"),
-        };
+        let mut mailboxes = Vec::new();
+        for account in accounts {
+            let label = account.account.clone().unwrap_or_else(|| "a Google account".into());
+            let place = qurb_mailbox::Place::Drive(qurb_mailbox::drive::Drive::with_refresh(account));
+            match qurb_mailbox::Mailbox::new(place, key, me, &self.store_dir) {
+                Ok(mailbox) => mailboxes.push((label, mailbox)),
+                Err(e) => tracing::warn!(error = %e, "the mailbox could not be opened"),
+            }
+        }
+        // Which devices left anything in each account: a phone signed in to
+        // its own account, not this computer's, is found by where its letters
+        // are (2026-11-13).
+        let mut heard = Vec::with_capacity(mailboxes.len());
+        for (label, mailbox) in &mailboxes {
+            heard.push(mailbox.heard_from().await.unwrap_or_else(|e| {
+                tracing::info!(account = %label, error = %e, "the mailbox could not be read");
+                Default::default()
+            }));
+        }
         let Ok(known) = engine.store().db().trusted_peers() else { return };
         let mine: Vec<_> = known
             .into_iter()
@@ -1033,24 +1050,35 @@ impl Daemon {
                 }
                 mailed.insert(fp, std::time::Instant::now());
             }
-            match mailbox.collect(&holds, &peer, MAILBOX_FOR).await {
-                Ok(c) if c.packs + c.applied > 0 => {
-                    tracing::info!(peer = %fp.short(), packs = c.packs, bytes = c.bytes, applied = c.applied, waiting = c.waiting, "collected through the mailbox")
-                }
-                Ok(_) => {}
-                Err(e) => tracing::info!(peer = %fp.short(), error = %e, "the mailbox could not be read"),
+            let name = qurb_mailbox::short_name(&peer.device_id);
+            // Its accounts: those it left letters in; with one account and
+            // nothing heard yet, that one.
+            let mut its: Vec<usize> = (0..mailboxes.len()).filter(|i| heard[*i].contains(&name)).collect();
+            if its.is_empty() && mailboxes.len() == 1 {
+                its.push(0);
             }
-            // Collected from whether or not it was reached, so nothing waits
-            // there once a live path is back; posted to only when not.
-            if peers.connections.contains_key(&fp) {
-                continue;
-            }
-            match mailbox.post(&holds, &peer, MAILBOX_FOR).await {
-                Ok(p) if p.list || p.packs + p.receipts > 0 => {
-                    tracing::info!(peer = %fp.short(), list = p.list, packs = p.packs, bytes = p.bytes, delivered = p.delivered, full = p.full, "posted through the mailbox")
+            for i in its {
+                let (label, mailbox) = &mailboxes[i];
+                match mailbox.collect(&holds, &peer, MAILBOX_FOR).await {
+                    Ok(c) if c.packs + c.applied > 0 => {
+                        tracing::info!(peer = %fp.short(), account = %label, packs = c.packs, bytes = c.bytes, applied = c.applied, waiting = c.waiting, "collected through the mailbox")
+                    }
+                    Ok(_) => {}
+                    Err(e) => tracing::info!(peer = %fp.short(), account = %label, error = %e, "the mailbox could not be read"),
                 }
-                Ok(_) => {}
-                Err(e) => tracing::info!(peer = %fp.short(), error = %e, "the mailbox could not be written"),
+                // Collected from whether or not it was reached, so nothing
+                // waits there once a live path is back; posted to only when
+                // not.
+                if peers.connections.contains_key(&fp) {
+                    continue;
+                }
+                match mailbox.post(&holds, &peer, MAILBOX_FOR).await {
+                    Ok(p) if p.list || p.packs + p.receipts > 0 => {
+                        tracing::info!(peer = %fp.short(), account = %label, list = p.list, packs = p.packs, bytes = p.bytes, delivered = p.delivered, full = p.full, "posted through the mailbox")
+                    }
+                    Ok(_) => {}
+                    Err(e) => tracing::info!(peer = %fp.short(), account = %label, error = %e, "the mailbox could not be written"),
+                }
             }
         }
     }

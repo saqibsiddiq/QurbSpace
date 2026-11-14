@@ -946,6 +946,7 @@ impl Connector {
         // well, a head start behind, all at once. Whichever connects first is
         // kept -- but the Nostr relays carry tens of kilobytes a second and
         // Tor far more, so if they win, Tor is given a moment to catch up.
+        #[cfg_attr(not(feature = "tor"), allow(dead_code))]
         enum Path {
             Direct,
             Tor,
