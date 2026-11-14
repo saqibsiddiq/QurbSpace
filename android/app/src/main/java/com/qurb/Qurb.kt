@@ -135,10 +135,17 @@ object Engine {
     }
 
     /**
-     * Keep the key in Block Store, once, for a phone set up before it was
-     * kept there at setup (decision 0052).
+     * Keep the key in Block Store as it is now: for a phone set up before it
+     * was kept there at setup (decision 0052), and, since the device pass of
+     * 2026-11-14, whenever Block Store holds another -- a save at setup that
+     * failed left the OPPO's an older key than its own, which a reset then
+     * offered back.
      */
+    @Volatile private var keyChecked = false
+
     suspend fun keepKeyOnce(context: Context) {
+        if (keyChecked) return
+        keyChecked = true
         val prefs = context.getSharedPreferences("qurb", Context.MODE_PRIVATE)
         // And the rendezvous address beside it, once, for a phone that set it
         // before it was kept there (2026-10-18).
@@ -147,8 +154,9 @@ object Engine {
             Backup.saveSignal(context, signal)
             prefs.edit().putBoolean("signal_kept", true).apply()
         }
-        if (prefs.getBoolean("key_kept", false)) return
-        Backup.save(context, open(context).recoveryPhrase())
+        val phrase = open(context).recoveryPhrase()
+        if (Backup.find(context) == phrase) return
+        Backup.save(context, phrase)
         prefs.edit().putBoolean("key_kept", true).apply()
     }
 

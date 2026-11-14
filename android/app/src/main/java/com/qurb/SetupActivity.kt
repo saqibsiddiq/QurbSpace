@@ -92,7 +92,11 @@ class SetupActivity : AppCompatActivity() {
         // starting on the phone alone is the link under it. With a key found,
         // Welcome back: Use my key, and Start fresh.
         views.start.setOnClickListener { if (keyFound) fromBackup() else scanner.launch(Intent(this, ScanActivity::class.java)) }
-        views.other.setOnClickListener { if (keyFound) askToStartAgain() else create() }
+        // With a key found, the other way is joining a computer with its code
+        // (the device pass of 2026-11-14): the OPPO, reset, found a key in its
+        // Google backup that was not its computer's, and Use my key or Start
+        // fresh were the only ways on; neither joined the computer.
+        views.other.setOnClickListener { if (keyFound) show(views.joinPanel) else create() }
         views.connectedDone.setOnClickListener { afterConnected() }
         // A step goes back a step, by its link or the phone's back.
         views.joinBack.setOnClickListener { show(null) }
@@ -119,7 +123,7 @@ class SetupActivity : AppCompatActivity() {
                 views.found.visibility = View.VISIBLE
                 views.start.text = "Use my key"
                 views.start.icon = null
-                views.other.text = "Start fresh"
+                views.other.text = "Join with a code"
             }
             // Shown only once Block Store has answered (ten seconds at most):
             // shown before, Start here could become Use my key under a finger,
@@ -293,15 +297,6 @@ class SetupActivity : AppCompatActivity() {
      * Store in place of the one there, which this phone then no longer has
      * any way back to: asked first, as removing a device is.
      */
-    private fun askToStartAgain() {
-        kit.sheet()
-            .mark(R.drawable.ic_key_round, R.color.attention_bg, R.color.attention)
-            .title("Start again with a new key?", centred = true)
-            .warning("The key in your Google backup is replaced")
-            .buttons("Start again", danger = true) { create() }
-            .show()
-    }
-
     private fun create() {
         settle("Could not set up") {
             if (Engine.unfinished(this)) {
