@@ -1,6 +1,6 @@
 // Files: one search across the shared folder and the Vault, then this
-// computer's places as cards two to a row — Shared, Vault, Received,
-// Recently deleted — and a folder for each person this computer keeps files
+// computer's places as cards two to a row — Shared, Vault, Received — and a
+// folder for each person this computer keeps files
 // for. Inside, folders as cards, files as plain rows, or as a gallery where
 // a folder is mostly pictures. A file's sheet has its actions as round
 // buttons, as on the phone; Space looks at the file under the pointer.
@@ -212,7 +212,6 @@ function areaSheet() {
   rounds(box, [
     { ic: "external-link", words: "Show", act: () => invoke("show_root").catch((e) => toast(String(e), true)) },
     top ? { ic: "sliders-horizontal", words: "Who has it", act: () => folderSheet(top) } : null,
-    { ic: "trash-2", words: "Deleted", act: () => go("deleted") },
   ]);
 }
 
@@ -367,7 +366,7 @@ async function freeUp(path) {
 async function deleteFile(path) {
   try {
     await invoke("delete_file", { path });
-    toast("Deleted. In Recently deleted for 30 days");
+    toast("Deleted");
     redraw();
   } catch (e) { toast(String(e), true); }
 }
@@ -548,7 +547,7 @@ document.addEventListener("keydown", (e) => {
   peek(FILES.hover);
 });
 
-// ---------- Received, Recently deleted, two versions ----------
+// ---------- Received, two versions ----------
 
 async function drawReceived(main) {
   const body = h("div", {});
@@ -566,119 +565,6 @@ async function drawReceived(main) {
       })))
       : empty("download", "Files sent to this computer come here"));
   } catch (e) { put(body, oops(e)); }
-}
-
-// Recently deleted (K-2), reached from This computer's storage: each file's
-// preview where it can be had, its name and the device that deleted it; ↺
-// puts it back, × deletes it for good; how long it has left only in its last
-// week. Empty at the top asks first. What the owner's phone deleted from its
-// Private Vault is listed too, while the owner's folder is open -- put back
-// from the phone, whose Recently deleted keeps it.
-// Recently deleted, as Photos keeps its own (D13, D13b): the files
-// themselves in a grid, by where they were deleted; days left only in the
-// last week, on the picture, in amber. Restore all and Delete all at the
-// foot; Select to choose some, the title then saying how many, and the bar
-// holding only Restore -- green, as Send is -- and Delete. What a phone's
-// Vault deleted shows too, put back from the phone.
-
-const DELETED = { selecting: false, chosen: new Set(), entries: [] };
-
-async function drawDeleted(main) {
-  DELETED.selecting = false;
-  DELETED.chosen.clear();
-  main.append(h("div", { class: "pg pg-narrow" }, h("div", { id: "deleted-page" })));
-  let phone;
-  try { [DELETED.entries, phone] = await Promise.all([invoke("recently_deleted"), invoke("phone_deleted").catch(() => null)]); } catch (e) { put($("deleted-page"), oops(e)); return; }
-  DELETED.phone = phone ?? [];
-  drawDeletedPage();
-}
-
-function drawDeletedPage() {
-  const page = $("deleted-page");
-  if (!page) return;
-  const { entries, phone, chosen } = DELETED;
-  const selecting = DELETED.selecting;
-  const back = { words: "This computer", go: () => go("storage") };
-  const head = selecting
-    ? h("div", { class: "pg-hd" },
-      h("button", { class: "back", onclick: back.go }, icon("arrow-left"), back.words),
-      h("div", { class: "pg-title" },
-        h("button", { class: "icon-btn sel-x", "aria-label": "Stop choosing", onclick: () => { DELETED.selecting = false; chosen.clear(); drawDeletedPage(); } }, icon("x")),
-        h("h1", {}, `${chosen.size} selected`),
-        btn("All", () => { entries.forEach((d) => chosen.add(d.id)); drawDeletedPage(); }, "btn-quiet btn-sm")))
-    : pageHead("Recently deleted", back,
-      entries.length ? btn("Select", () => { DELETED.selecting = true; drawDeletedPage(); }, "btn-quiet btn-sm") : null);
-  const dayLeft = (at) => Math.max(1, 30 - Math.floor((Date.now() / 1000 - at) / 86400));
-  const cell = (path, at, id) => {
-    const th = h("span", { class: "rd-th" });
-    previewInto(th, path);
-    if (kindOf(path) === "video") th.append(h("span", { class: "wa-play" }));
-    if (dayLeft(at) <= 7) th.append(h("span", { class: "rd-days" }, dayLeft(at) === 1 ? "1 day" : `${dayLeft(at)} days`));
-    if (selecting && id != null) th.append(h("span", { class: `rd-tick${chosen.has(id) ? "" : " off"}` }, chosen.has(id) ? icon("check") : null));
-    const on = id != null && chosen.has(id);
-    return h(id != null ? "button" : "div", {
-      class: `rd${on ? " sel" : ""}`, title: id != null ? base(path) : `${base(path)}: put back on the phone`,
-      onclick: id != null ? () => {
-        if (!DELETED.selecting) { DELETED.selecting = true; }
-        chosen.has(id) ? chosen.delete(id) : chosen.add(id);
-        drawDeletedPage();
-      } : null,
-    }, th, h("small", {}, base(path)));
-  };
-  const byPhone = new Map();
-  for (const d of phone) {
-    if (!byPhone.has(d.by)) byPhone.set(d.by, []);
-    byPhone.get(d.by).push(d);
-  }
-  const sections = [];
-  if (entries.length) sections.push(label("This computer"), h("div", { class: "rdg" }, ...entries.map((d) => cell(d.path, d.at, d.id))));
-  for (const [by, list] of byPhone) {
-    sections.push(h("div", { class: "label label-who" }, h("span", { class: "circle circle-xs" }, (by || "?")[0].toUpperCase()), `${by}'s Vault`),
-      h("div", { class: "rdg" }, ...list.map((d) => cell(d.path, d.at, null))));
-  }
-  const bar = !entries.length ? null : selecting
-    ? h("div", { class: "selbar" },
-      h("button", { class: "btn btn-main btn-sm", disabled: !chosen.size, onclick: () => restoreDeleted([...chosen]) }, icon("rotate-ccw"), "Restore"),
-      h("button", { class: "btn btn-danger-solid btn-sm", disabled: !chosen.size, onclick: () => forgetDeleted([...chosen]) }, icon("trash-2"), "Delete"))
-    : h("div", { class: "selbar" },
-      btn("Restore all", () => restoreDeleted(entries.map((d) => d.id)), "btn-main btn-sm"),
-      btn("Delete all", () => askEmpty(), "btn-quiet btn-sm btn-red-words"));
-  put(page, head,
-    h("p", { class: "quiet-line" }, "Kept for 30 days, then deleted for good"),
-    ...(sections.length ? sections : [empty("trash-2", "Nothing deleted lately")]),
-    bar);
-  icons(page);
-}
-
-async function restoreDeleted(ids) {
-  let renamed = 0;
-  for (const id of ids) {
-    const d = DELETED.entries.find((x) => x.id === id);
-    try {
-      const at = await invoke("restore_deleted", { id });
-      if (d && at !== d.path) renamed++;
-    } catch (e) { toast(String(e), true); }
-  }
-  toast(renamed ? `Restored, ${renamed} under a new name` : "Restored");
-  go("deleted");
-}
-
-function forgetDeleted(ids) {
-  const box = sheet({ ic: "trash-2", title: ids.length === 1 ? "Delete for good?" : `Delete ${ids.length} for good?`, sub: "They can't be restored" });
-  box.append(actions(btn("Cancel", () => box.close(), "btn-quiet"), btn("Delete", async () => {
-    box.close();
-    for (const id of ids) {
-      try { await invoke("forget_deleted", { id }); } catch (e) { toast(String(e), true); }
-    }
-    go("deleted");
-  }, "btn-danger-solid")));
-}
-
-function askEmpty() {
-  const box = sheet({ ic: "trash-2", title: "Delete all for good?", sub: "They can't be restored" });
-  box.append(actions(btn("Cancel", () => box.close(), "btn-quiet"), btn("Delete all", async () => {
-    try { await invoke("empty_deleted"); box.close(); toast("Deleted"); go("deleted"); } catch (e) { toast(String(e), true); }
-  }, "btn-danger-solid")));
 }
 
 /** Two versions, as the phone's sheet from Home's mark (K-1): straight to
@@ -741,7 +627,7 @@ function conflictBlock(c) {
       block.querySelectorAll(".acts button").forEach((x) => (x.disabled = true));
       try {
         const kept = await invoke("settle_conflict", { other: c.other.path, keep: how });
-        block.replaceWith(row({ ic: tile("circle-check", "tile-ok"), name: how === "both" ? "Kept both" : `Kept ${base(kept)}`, sub: how === "both" ? `The other is ${base(kept)}` : "The other is in Recently deleted" }));
+        block.replaceWith(row({ ic: tile("circle-check", "tile-ok"), name: how === "both" ? "Kept both" : `Kept ${base(kept)}`, sub: how === "both" ? `The other is ${base(kept)}` : "The other is deleted" }));
       } catch (e) { block.querySelectorAll(".acts button").forEach((x) => (x.disabled = false)); toast(String(e), true); }
     }, "btn-quiet");
     if (needsOther && !c.other.here) { b.disabled = true; b.title = "Not on this computer yet"; }

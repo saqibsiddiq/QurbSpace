@@ -1059,7 +1059,7 @@ abstract class ComputerPlace(protected val computer: PeerInfo) : Place() {
 class SharedPlace(computer: PeerInfo) : ComputerPlace(computer) {
     override val title = "Shared"
     override val key = "shared:${computer.fingerprint}"
-    override val deletedTo = "${computer.name} keeps it in Recently deleted for 30 days"
+    override val deletedTo = "Gone for good, on every device"
 
     override fun list(app: MainActivity, dir: String): List<FolderItem> {
         val listing = folder(app).shared(dir)
@@ -1106,7 +1106,7 @@ class SharedPlace(computer: PeerInfo) : ComputerPlace(computer) {
 class BackupPlace(computer: PeerInfo, private val top: String) : ComputerPlace(computer) {
     override val title = top
     override val key = "backup:${computer.fingerprint}"
-    override val deletedTo = "In this phone's Recently deleted for 30 days"
+    override val deletedTo = "Gone for good"
     override val restores = true
     private val vault = "$top/Private Vault"
 

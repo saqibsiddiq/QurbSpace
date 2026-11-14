@@ -195,12 +195,6 @@ pub struct CalledOff {
     pub why: String,
 }
 
-/// How long a deleted file stays in Recently deleted before it goes for good.
-///
-/// Thirty days: long enough to notice something is missing after a holiday,
-/// short enough that a deletion made on purpose is really gone within a month.
-/// Under storage pressure the trash goes sooner -- it is the first thing freed.
-pub const TRASH_RETENTION: std::time::Duration = std::time::Duration::from_secs(30 * 24 * 3600);
 
 /// Whose change this is.
 ///

@@ -75,7 +75,8 @@ The plan is filtered twice before it is acted on. A folder shared with chosen
 devices is left out of what this device takes from a peer it is not shared
 with — its own rules, not the peer's, decide — and a folder kept only remotely
 has new versions recorded rather than fetched. A deletion arriving from a peer
-moves the file into Recently deleted rather than unlinking it.
+moves the file into the store's `trash/`, which housekeeping empties (there
+is no Recently deleted since 2026-11-14, decision 0089).
 
 Content is requested **by hash, not by path**
 ([decision 0010](../../docs/decisions/0010-content-by-hash.md)). The content a

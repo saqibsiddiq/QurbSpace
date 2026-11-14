@@ -236,7 +236,7 @@ folder.search(true, "beach")          // true: the shared folder; false: this
                                       //   phone's own folder there
 folder.makeFolder("Trips")
 folder.rename("Trips/a.jpg", "Trips/b.jpg")   // a folder too, file by file
-folder.delete("Trips")                // into the computer's Recently deleted
+folder.delete("Trips")                // for good (decision 0089)
 folder.addFile(path, "Trips/a.jpg", progress)   // pieces of 4 MiB, checked
                                       //   whole there; returns where it went
 ```
@@ -260,12 +260,7 @@ qurb.rename("Notes/a.txt", "Archive/a.txt")   // its bytes freed to the computer
                                       //   no byte crossing
 qurb.deleteKept("Archive/a.txt")      // this phone's own only; a backup only once
                                       //   its original is gone from the phone;
-                                      //   into this phone's Recently deleted,
-                                      //   freed or not, and restoreDeleted puts
-                                      //   a freed one back on the computer's chunks;
-                                      //   a Private Vault one into the computer's
-                                      //   too, restored there and taken back here
-                                      //   at the next sync
+                                      //   for good, freed or not (decision 0089)
 qurb.syncWithin(15u)                  // what the app does after each
 ```
 

@@ -294,9 +294,8 @@ class KeptScreen(
                 kit.sheet()
                     .mark(R.drawable.ic_trash_2)
                     .title("Delete $name?", centred = true)
-                    // Still in this phone's Recently deleted for 30 days,
-                    // which the phone no longer shows (the owner's list of
-                    // 2026-11-01, item 9), so not promised here.
+                    // Gone for good: there is no Recently deleted since
+                    // 2026-11-14 (decision 0089).
                     .buttons("Delete", danger = true) { change("Deleted $name") { it.deleteKept(file.path) } }
                     .show()
             }

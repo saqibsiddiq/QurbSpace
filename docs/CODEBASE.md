@@ -15,7 +15,7 @@ the prose read against what changed since 2026-10-08. Phases 0–2 are
 complete. Phase 3 is built and its kill criterion is unmeasured, for want of
 a second *network*. Phase 4 has a daemon, a desktop window that does
 everything the command line does — setting up, pairing by code or six
-digits, sending, recently deleted, conflicts, sharing folders with chosen
+digits, sending, conflicts, sharing folders with chosen
 devices, the passphrase — and an Arch package; no automatic updater, by
 decision. Since 2026-10-14 `~/qurb` holds people: `~/qurb/Shared`, the synced
 folder, and a folder for each person, opened only with their phone's yes
@@ -320,7 +320,7 @@ filename is decided automatically.
 
 A person settles it afterwards: keep the original, keep the other version, or
 keep both under their own names. Settling is an ordinary change that syncs like
-any other, and the version not kept goes to Recently deleted. A conflict is
+any other, and the version not kept is deleted. A conflict is
 found by its *name* — `report.conflict-3f2a9c01-2026-09-28-141500.txt`, the
 device's short identifier and the time in UTC — parsed strictly by
 `qurb_sync::conflict_origin`, so there is no table of conflicts to drift out of
@@ -436,11 +436,10 @@ The phone reaches a computer's shared folder live instead (`Request::Shared`
 and the requests after it, `crates/storage/src/shared_folder.rs`), and
 changes its own folder on a computer by changing its own vault, which the
 computer follows; a file freed to the computer is renamed as a new version
-on the same chunks (`Store::rename_freed`), and one deleted goes into the
-phone's Recently deleted with no bytes, to be put back on the chunks its
-deleted row still lists (`Store::restore_freed`), which the computer keeps
-for as long. A Private Vault deletion is in the computer's Recently deleted
-too (`Store::unhold`); restored there (`Store::restore_held`), it is a
+on the same chunks (`Store::rename_freed`), and one deleted is gone for good
+(Recently deleted, which put such files back, was removed on 2026-11-14,
+decision 0089; the store's `restore_freed` and `restore_held` remain,
+reached from no window). Before that, a restore at the computer was a
 version of the computer's after the deletion, which the holder's planning
 does not let the old deletion undo, and the phone takes it back at its next
 sync -- `Action::Restored`, the one sync step a holder's word decides, and
@@ -1044,8 +1043,7 @@ qurb/
 │       │                                      full screen, swiped through
 │       │                  StorageScreen.kt    Settings → Storage: each computer's
 │       │                                      disk and what fills it
-│       │                                      (Request::Storage), Recently deleted
-│       │                                      emptied; this phone's cache
+│       │                                      (Request::Storage); this phone's cache
 │       │                  Opened.kt           a file of a computer's folder,
 │       │                                      opened without keeping it
 │       │                  StreamProvider.kt   a large file of it opened in another
@@ -1054,11 +1052,6 @@ qurb/
 │       │                  ActivityScreen.kt   everything this phone did, by day,
 │       │                                      from Settings, each file told once,
 │       │                                      30 days
-│       │                  DeletedScreen.kt    Recently deleted: thirty days to
-│       │                                      change your mind; a grid by where
-│       │                                      deleted, days left in amber in the
-│       │                                      last week, Select, a bar of Restore
-│       │                                      and Delete (the desktop's D13)
 │       │                  ShowCode.kt         this phone showing a pairing code,
 │       │                                      a page as Figma has it: the QR
 │       │                                      code drawn as dots, its six digits,
@@ -1230,11 +1223,11 @@ The unbuilt parts are listed at the end of this section.
 | SQLite index | paths, chunk lists, reference counts via triggers; a list counter, moved by triggers on every change to a file's listing (schema 27, [0072](decisions/0072-only-what-changed-in-a-list.md)) |
 | Deduplication | within a file, across files, across versions |
 | Single-copy storage | a materialised file *is* its own payload store |
-| Deletion, tombstones, restore | content survives a retention window: the one `gc` is given (seven days in the daemon), and for a device's own vault never less than Recently deleted's 30 days (`gc::collect`, [0073](decisions/0073-the-phone-works-with-its-computer.md)) |
-| Recently deleted | a file taken out of the folder by a deletion goes to `trash/` in the store for 30 days; restoring writes it back as a new version in the area it came from, so a shared file returns everywhere; sharing rules are not kept. A file of a phone's own vault whose bytes are not on the phone -- freed to a computer, or a backup read where it lay -- is listed with no bytes and restored on the chunks its deleted row lists, which the computer still holds. On the computer, a phone's Private Vault deletion is listed too, naming the phone and the phone's folder; restored there, the phone takes it back at its next sync — [0042](decisions/0042-recently-deleted.md), [0073](decisions/0073-the-phone-works-with-its-computer.md) |
+| Deletion, tombstones, restore | content survives a retention window: the one `gc` is given (seven days in the daemon), a device's own vault's included since 2026-11-14 (`gc::collect`, [0089](decisions/0089-no-recently-deleted.md)) |
+| Deleted for good | no Recently deleted since 2026-11-14: a deletion still takes the file to `trash/` in the store, and the next housekeeping (every five minutes in the daemon, after each sync on a phone) empties it; a delete from either app empties its entry at once. The store's restore paths remain, unreachable from any window — [0089](decisions/0089-no-recently-deleted.md), superseding [0042](decisions/0042-recently-deleted.md) |
 | Sharing with chosen devices | a folder's devices are a rule file under `.qurb-sharing/` that syncs like any other; each device derives `shares` tables and filters what peers are shown and what it takes by them — [0044](decisions/0044-sharing-with-chosen-devices.md) |
 | A folder kept remotely | this device's choice (`remote_folders`, never synced): files listed, new versions recorded without their bytes, local copies freed where another device has them — [0045](decisions/0045-a-folder-kept-remotely.md) |
-| Conflicts settled | found by name (`qurb_sync::conflict_origin`), settled as ordinary changes; the version not kept goes to Recently deleted — [0043](decisions/0043-settling-a-conflict.md) |
+| Conflicts settled | found by name (`qurb_sync::conflict_origin`), settled as ordinary changes; the version not kept is deleted for good (decision 0089) — [0043](decisions/0043-settling-a-conflict.md) |
 | Garbage collection | two-stage, never touches a referenced chunk; the daemon runs it every five minutes, a phone after each background sync |
 | Integrity verification | detects missing, corrupt, and orphaned chunks |
 | Reclaiming duplicates | `qurb reclaim`, for stores written before single-copy |
@@ -1311,9 +1304,9 @@ for the workspace as it stands.
 | A folder for each person | the owner's, as a guest's is: asked from the window, a yes from one of the owner's phones (`Unlock` with no key, the computer holding the same one); the ask heard at each sync and every ten seconds of a long pass, the yes sent the same way. Run between the S23 and the laptop on 2026-10-15: shown on the phone six seconds after the ask, open 21 seconds after it, a file opened — [0067](decisions/0067-a-folder-for-each-person.md) |
 | A phone's folder on a computer | `Kept { dir }`: a phone of the computer's own person is shown what is kept for it and for its earlier self, at one place in the tree a person sees, and fetches through the ordinary manifest and chunks; browsed on the S23, 2026-10-15 — [0067](decisions/0067-a-folder-for-each-person.md) |
 | A phone knows what its computer keeps | `confirm_kept`: each sync, a phone asks the computer keeping its vault about up to 64 of its files with no record of it keeping them, at random, and records each yes; a `Got` lost with a connection had left 130 of the S23's WhatsApp files "still to go" for good — [0062](decisions/0062-backing-up-whatsapp.md) |
-| A computer's shared folder, from phones | `Shared { dir }`, `Search { within }`, and `SharedMkdir`, `SharedMove`, `SharedDelete`, `Upload`/`UploadDone` (pieces of at most 4 MiB, checked against the hash before placing): the owner's phones and every guest's open, search and change the computer's shared folder live, nothing copied to the phone; each change made by the computer on its own folder, a deletion to its Recently deleted naming the device, refused with a reason a person can read (`Response::Refused`); `crates/storage/src/shared_folder.rs`, `tests/hostile.rs` — [0073](decisions/0073-the-phone-works-with-its-computer.md) |
+| A computer's shared folder, from phones | `Shared { dir }`, `Search { within }`, and `SharedMkdir`, `SharedMove`, `SharedDelete`, `Upload`/`UploadDone` (pieces of at most 4 MiB, checked against the hash before placing): the owner's phones and every guest's open, search and change the computer's shared folder live, nothing copied to the phone; each change made by the computer on its own folder, a deletion for good at its next housekeeping (decision 0089), refused with a reason a person can read (`Response::Refused`); `crates/storage/src/shared_folder.rs`, `tests/hostile.rs` — [0073](decisions/0073-the-phone-works-with-its-computer.md) |
 | A phone out of the shared area | the engine's `shared_area` switch, off on a phone (`Settings::shared_area`): a sync takes nothing of others' shared files, everything added goes into the phone's vault, and opening runs `Store::leave_shared_area` -- a shared file a computer keeps forgotten here with no tombstone, so deleted nowhere else, its bytes here only once the computer, asked at a sync, has said it holds them; one only the phone has moved into its vault; the area's tombstones and rules forgotten; each run finds less (`tests/leaving_shared.rs`, `out_of_the_shared_area.rs`, `a_phone_leaves_the_shared_area`) — [0073](decisions/0073-the-phone-works-with-its-computer.md) |
-| A phone changes its own folder there | by changing its own vault, which the computer follows at the next sync, files and whole folders alike: copy and paste (`Store::copy_in_vault`, a freed file's copy on the same chunks), rename and move (`Store::move_in_vault` over`Store::rename_file`, and `rename_freed` for a file freed to the computer -- a new version on the same chunks, no byte crossing), delete (`delete_kept`, to the phone's own Recently deleted, bytes or none, and a Private Vault file to the computer's as well, restored from either; a backup only once its original is gone from the phone), add files, search the whole folder (`Search { within: Kept }`); the app syncs at once after each (`tests/freed_rename.rs`, `tests/freed_deletion.rs`, `tests/held_deletion.rs`, `a_phone_changes_its_own_folder_on_the_computer`) — [0073](decisions/0073-the-phone-works-with-its-computer.md) |
+| A phone changes its own folder there | by changing its own vault, which the computer follows at the next sync, files and whole folders alike: copy and paste (`Store::copy_in_vault`, a freed file's copy on the same chunks), rename and move (`Store::move_in_vault` over`Store::rename_file`, and `rename_freed` for a file freed to the computer -- a new version on the same chunks, no byte crossing), delete (`delete_kept`, for good since 2026-11-14; a backup only once its original is gone from the phone), add files, search the whole folder (`Search { within: Kept }`); the app syncs at once after each (`tests/freed_rename.rs`, `tests/freed_deletion.rs`, `tests/held_deletion.rs`, `a_phone_changes_its_own_folder_on_the_computer`) — [0073](decisions/0073-the-phone-works-with-its-computer.md) |
 | The relay carries meetings | one relay connection, several names: a device's own and one per meeting with another person's device, so a computer reaches a guest it cannot dial — [0061](decisions/0061-the-relay-carries-meetings.md) |
 | Staying on the relay | the connection dialled again when it goes, from one second doubling to a minute, every name registered again; a relay down at start kept, known down, and not dialled through until up — tested by restarting a relay under a socket ([0068](decisions/0068-the-rendezvous-service-relays.md), amended 2026-10-18) |
 | A list fetched only when it changed | `TreeDigest`: the fingerprint of the list a device would send; the asker keeps each device's last list (`trees`) and fetches only a changed one, so a pass with nothing changed received 24 KiB rather than 9.8 MB on the S23 — [0071](decisions/0071-a-file-list-fetched-only-when-it-changed.md) |
@@ -1603,7 +1596,7 @@ computer ([decisions/0062](decisions/0062-backing-up-whatsapp.md),
 [0063](decisions/0063-backing-up-a-phones-folders-chosen-on-the-desktop.md)) —
 with conflicts to settle as attention. Files, since 2026-10-24
 ([decisions/0073](decisions/0073-the-phone-works-with-its-computer.md)), has
-*This phone* -- the Private Vault, *Received*, *Recently deleted* -- then each
+*This phone* -- the Private Vault, *Received* -- then each
 computer's *Shared* folder, opened live, then *Devices*, this phone's folder
 on each of its computers. The Vault is browsed by folder and searched, says
 where each file's bytes are, and opens, frees, fetches, renames, moves,
@@ -1616,7 +1609,7 @@ scanning a code, typing six digits, or showing one, a device asking to join
 approved by the six digits both screens show — chooses who keeps the phone's
 own files, and removes a device. A computer asking to open this phone's
 folder there is answered behind the screen lock. Settings
-has Recently deleted, space, copies of sent files, notifications, the theme, syncing and the
+has space, copies of sent files, notifications, the theme, syncing and the
 version. Activity is reached from Home, and Transfers is a bar that appears
 only while something moves. A conflict's sheet previews each version that is on
 the phone. The desktop's three notifications are raised from the history after
@@ -1705,7 +1698,7 @@ network. iOS needs Xcode, which needs a Mac. See
 | Private Vault | this computer's own files, browsed the same way; *Move to shared* takes one back out ([0057](decisions/0057-moving-a-file-into-or-out-of-private-vault.md)) |
 | Devices | who is paired, whether each is connected now and whether directly or through the relay, when each was last reached; a device set up again shown as one, with what is still kept from before — one rule for it, `Db::became`, which the window's list, a phone's folder on a computer and the phone's own list all ask: the person's word first (its page, or `qurb same`), then the same **install** — a marker each device tells the devices it trusts, made one way from what its platform keeps for the app across a reinstall (Android's `ANDROID_ID`, a computer's machine id; `Request::Install`) — then the same name, for devices from before ([0077](decisions/0077-one-device-is-counted-once.md)); and a phone does not change identity in the first place: its identity is derived from the person's key and its `ANDROID_ID`, the same after a reinstall or *Clear data*, and taken over by telling its computers (`Request::Become`, [0079](decisions/0079-a-phone-keeps-one-identity.md)); a person's folder shows one folder per device, its identities merged; a phone's backups from its panel, opened in the person's folder; removing one, with what that will and will not do said first |
 | Activity | reached from Home: what this device did, paged, with the reason where there is one |
-| Storage | how much Qurb takes against the limit or the disk; what is kept here by kind -- each phone's backups (WhatsApp, folders, Private Vault), the shared files, guests' sealed folders, Recently deleted (`storage_parts`); the largest files that can be freed without losing anything; and the allowance |
+| Storage | how much Qurb takes against the limit or the disk; what is kept here by kind -- each phone's backups (WhatsApp, folders, Private Vault), the shared files, guests' sealed folders (`storage_parts`); the largest files that can be freed without losing anything; and the allowance |
 | Settings | grouped lists: this device and its key, devices and pairings, where files sent here go, keep new files private, notifications, the 24 words, appearance — system, light or dark ([0056](decisions/0056-dark-mode.md)) — and the advanced settings — rendezvous, relay, port, start at login, version, Quit |
 | Setting a device up | make a new one, with nothing to write down, or join with another device's code, which brings the key ([0052](decisions/0052-the-key-travels-with-the-code.md)); the storage question asked; the 24 words a fallback |
 | Locked | a key protected by a passphrase is unlocked in the window; at login the window shows itself to ask |
@@ -1715,7 +1708,6 @@ network. iOS needs Xcode, which needs a Mac. See
 | Transfer progress | a panel that appears while something moves or waits: both directions, live, with the time left |
 | Cancelling a send | before it is collected, from the window or `qurb cancel`; never after |
 | Conflicts | attention on Home and Files, reviewed in a sheet: both versions, who made each and when, previewed when here (an image, or a text's start); keep one, the other, or both |
-| Recently deleted | from Files: thirty days, restore — back in the area it was deleted from — or delete for good |
 | Who has each folder | a folder's options, from its menu in Files: share it with chosen devices; free its space here or keep it on this computer |
 | Security | in Settings: how the key is kept and changing it, under This device; pairings and removals, under Devices; this device's identity, under Advanced |
 | One qurb per person | closing the window keeps it syncing; launching again shows the running one |
@@ -1723,7 +1715,7 @@ network. iOS needs Xcode, which needs a Mac. See
 | Gallery and quick preview | a folder mostly of pictures, the phone's camera folder included, as a grid of the pictures' own thumbnails; Space shows the picture, text, video, song or PDF under the pointer, large, the arrow keys moving through the folder. Video, songs and PDFs are served to the window from 127.0.0.1 at a token (`peek`, `peek_kept`, `src/stream.rs`, which serves files on disk as well as from the store) |
 | Search | one field over the shared folder, the Vault, and every person's folder open at the time (`find_people`); a locked one is not searched, and said so |
 | Speed limit | one rate up, one down, for the whole process (`qurb_peer::limit`), settings `upload-limit` and `download-limit`, applied at once from the window ([0076](decisions/0076-a-computer-backs-up-its-folders-and-holds-back-its-speed.md)) |
-| The person's controls | since 2026-11-12, both apps: pause sync (an hour, until 8:00, until resumed), each kind of notification alone, updates installing themselves or waiting for a yes, a report saved locally, resetting the device; the computer also *Stay awake to collect*, the phone mobile data (off, no backups, everything), backups nightly or every six hours, an app lock and where received files are saved. Recently deleted in the window's Settings as on the phone, and *Meeting point* on both — [0086](decisions/0086-the-persons-controls.md) |
+| The person's controls | since 2026-11-12, both apps: pause sync (an hour, until 8:00, until resumed), each kind of notification alone, updates installing themselves or waiting for a yes, a report saved locally, resetting the device; the computer also *Stay awake to collect*, the phone mobile data (off, no backups, everything), backups nightly or every six hours, an app lock and where received files are saved. *Meeting point* on both (Recently deleted, listed here until 2026-11-14, is gone: decision 0089) — [0086](decisions/0086-the-persons-controls.md) |
 | A computer's own folders, backed up | folders outside the synced one kept in this computer's vault under `.qurb-outside/folders/`, read where they lie (`qurb_cli::backup`, setting `backup-folders`), and so kept by the computers chosen to keep its vault; shown on those in the owner's folder ([0076](decisions/0076-a-computer-backs-up-its-folders-and-holds-back-its-speed.md)) |
 
 ### Designed but not built
@@ -1880,9 +1872,7 @@ raises no error doing it. See
 same as running it: until the storage cap went in, `Store::gc` had no caller
 outside tests, and superseded chunks accumulated without limit. The daemon now
 collects on a five-minute timer with a seven-day retention window, before it
-checks the limit; a device's own vault's deletions are kept 30 days whatever
-the window, so a phone's Recently deleted can put back a file whose only
-bytes are on the computer (decision 0073).
+checks the limit, emptying the store's `trash/` first (decision 0089).
 
 **Availability** — files being unreachable when every device is switched off —
 is answered by storage-only replicas, decided in
@@ -1974,12 +1964,6 @@ hand:
 # version, the other, or both. Nothing is lost either way.
 ./target/release/qurb conflicts ~/Sync
 ./target/release/qurb conflicts ~/Sync keep "notes.conflict-3f2a9c01-2026-09-28-141500.txt" both
-```
-
-```bash
-# Recently deleted: thirty days to put a file back where it was.
-./target/release/qurb deleted ~/Sync
-./target/release/qurb restore ~/Sync '#1'
 ```
 
 ```bash

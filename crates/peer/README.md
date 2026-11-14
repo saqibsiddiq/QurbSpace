@@ -218,8 +218,8 @@ whole file's hash). The computer makes each change itself, as one of its own
 any; it checks every path -- relative, nothing hidden, so never the store's
 folder or a sharing rule, outside every folder shared without the asker --
 puts a file only once its bytes hash to what was said, numbers it rather than
-put it over another, and deletes into its Recently deleted, naming the device
-that asked. A reason a person can read comes back as `Refused { why }`.
+put it over another, and deletes for good at its next housekeeping
+(decision 0089). A reason a person can read comes back as `Refused { why }`.
 Nobody else may ask: its other computers, a computer it visits, and anyone
 unplaced are told *not found*. Pieces wait in `.qurb/incoming`, never in the
 folder (`tests/shared_folder.rs`, and `storage/tests/shared_changes.rs`).
@@ -433,7 +433,8 @@ a set that only grew would keep letting it in.
 
 `Storage` tells one of the owner's phones what the computer keeps, by kind,
 measured against the space it gives QurbSpace (its allowance), and
-`EmptyDeleted` empties its Recently deleted for good. `Convert` turns an
+`EmptyDeleted`, sent only by builds before 2026-11-14 (decision 0089),
+empties its store's `trash/`. `Convert` turns an
 Office document the asker may read into a PDF for the phone to show, through
 LibreOffice when it is installed (`convert.rs`); read under the store's
 lock, converted after it is let go; the PDF kept by content in the system's

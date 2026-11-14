@@ -329,11 +329,6 @@ impl PeerClient {
         }
     }
 
-    /// The peer's Recently deleted emptied for good.
-    pub async fn empty_deleted(&self) -> Result<std::result::Result<(), String>> {
-        self.change(Request::EmptyDeleted).await
-    }
-
     async fn change(&self, request: Request) -> Result<std::result::Result<(), String>> {
         match self.request(request).await? {
             Response::Noted => Ok(Ok(())),

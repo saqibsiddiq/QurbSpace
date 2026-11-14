@@ -25,9 +25,7 @@ async function drawSettings(main) {
       icon("chevron-right", "set-go")),
     // One column, as the phone's: the groups read top to bottom.
     group("Manage storage",
-      setting({ ic: "hard-drive", name: "This computer", value: st ? size(st.used) : null, onclick: () => go("storage") }),
-      // Where the phone has it (decision 0086's tidy-up).
-      setting({ ic: "trash-2", name: "Recently deleted", onclick: () => go("deleted") })),
+      setting({ ic: "hard-drive", name: "This computer", value: st ? size(st.used) : null, onclick: () => go("storage") })),
     group("Connection",
       setting({ ic: "pause", name: "Pause sync", value: pausedWords(s.paused_until), onclick: () => pauseSheet(s.paused_until) }),
       setting({ ic: "arrow-up-down", name: "Speed limit", value: speedWords(s), onclick: () => go("speed") }),
@@ -287,7 +285,7 @@ const GIB = 1024 ** 3;
 
 // This computer's storage (S-2): its disk's free space, one bar coloured by
 // what fills it, and a row for each part. No limit and nothing to free: a
-// computer keeps everything (F-3). Recently deleted lives here (F-1).
+// computer keeps everything (F-3).
 async function drawStorage(main) {
   const body = h("div", {});
   main.append(h("div", { class: "pg pg-narrow" }, pageHead("This computer", { words: "Settings", go: () => go("settings") }), body));
@@ -302,7 +300,6 @@ async function drawStorage(main) {
     // A device removed here: what it kept stays, locked, until it is added
     // again or deleted (decision 0084).
     ...(parts.removed ?? []).map((r) => ({ name: `${r.name}, removed`, bytes: Number(r.size), colour: "var(--ink-3)", lead: "lock-keyhole", open: () => deleteRemoved(r) })),
-    { name: "Recently deleted", bytes: Number(parts.deleted), colour: "var(--warn)", lead: "trash-2", open: () => go("deleted") },
   ];
   // Measured against the space given QurbSpace where it is set, as the
   // phone's Manage storage is (the owner's review of 2026-11-03, item 5);
@@ -355,7 +352,7 @@ function limitSheet(limit, used, disk) {
 }
 
 /** A removed device's files, kept here locked: said plainly, then deleted
- * to Recently deleted if asked. Added again, it would have them back. */
+ * for good if asked. Added again, it would have them back. */
 function deleteRemoved(r) {
   const box = sheet({ ic: "lock-keyhole", title: `${r.name} was removed`, sub: `Its ${size(r.size)} here stay locked until it's added again` });
   box.append(h("div", { class: "acts acts-2" },

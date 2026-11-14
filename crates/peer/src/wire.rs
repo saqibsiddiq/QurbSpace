@@ -241,7 +241,8 @@ pub enum Request {
     /// [`Response::NotFound`].
     Storage,
     /// Its Recently deleted emptied for good, asked from the owner's phone:
-    /// answered [`Response::Noted`].
+    /// answered [`Response::Noted`]. Sent only by builds before 2026-11-14
+    /// (decision 0089); still answered.
     EmptyDeleted,
     /// The asker removed this device, said as it does so: best effort, so
     /// that this device hears now rather than at its next request, which is
@@ -551,7 +552,8 @@ pub enum Part {
     Vault,
     /// Another person's, kept for them.
     Guest,
-    /// Recently deleted, kept thirty days.
+    /// Recently deleted, which was kept thirty days: no longer sent since
+    /// 2026-11-14 (decision 0089), still read from older computers.
     Deleted,
     /// Anything else.
     Other,

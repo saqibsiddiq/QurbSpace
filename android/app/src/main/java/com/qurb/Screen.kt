@@ -7,8 +7,7 @@ import uniffi.qurb_mobile.Qurb
 
 /**
  * One place in the app: one of the four under the tab bar, or one reached
- * from them -- Private Vault from Files, Activity from Home, Recently deleted
- * from Files -- which lights up the tab it belongs to and goes back to it.
+ * from them -- Private Vault from Files, Activity from Home -- which lights up the tab it belongs to and goes back to it.
  *
  * Plain classes holding their views, not Fragments. The four are built the
  * first time each is shown and kept for the life of the activity, and changing

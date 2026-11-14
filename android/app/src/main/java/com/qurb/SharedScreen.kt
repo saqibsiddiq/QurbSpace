@@ -256,7 +256,7 @@ class SharedScreen(app: MainActivity, private val computer: PeerInfo, private va
         kit.sheet()
             .mark(R.drawable.ic_trash_2)
             .title("Delete $name?", centred = true)
-            .line("${computer.name} keeps it in Recently deleted for 30 days")
+            .line("Gone for good, on every device")
             .buttons("Delete", danger = true) { change("Deleted $name") { it.delete(path) } }
             .show()
     }

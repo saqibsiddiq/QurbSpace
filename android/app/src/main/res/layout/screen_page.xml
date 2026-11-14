@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A scrolling page of sections, filled from code: Devices, Settings, and
-     the places reached from others (Activity, Recently deleted), which show
+     the places reached from others (Activity), which show
      the way back above their title. -->
 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

@@ -1,6 +1,6 @@
 # 0042 — Recently deleted
 
-**Status:** Accepted
+**Status:** Superseded by [0089](0089-no-recently-deleted.md), 2026-11-14: removed at the owner's word.
 **Date:** 2026-09-28
 
 ## Decision

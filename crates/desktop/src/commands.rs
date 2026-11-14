@@ -1151,9 +1151,6 @@ pub struct StorageParts {
     /// The shared folder: how many files, and how much of them is here.
     shared_files: usize,
     shared_here: String,
-    /// Recently deleted, kept thirty days.
-    deleted_files: usize,
-    deleted: String,
     /// Devices removed here whose files are kept, locked (D21).
     removed: Vec<RemovedPart>,
 }
@@ -1219,15 +1216,12 @@ pub fn storage_parts(hosted: Host<'_>) -> Answer<StorageParts> {
         .map(|p| GuestPart { name: p.name, size: p.size })
         .collect();
     let numbers = hosted.with_store(|s| Ok(View::new(s, 0).storage()?)).map_err(failed)?;
-    let deleted = hosted.with_store(|s| Ok(s.recently_deleted()?)).map_err(failed)?;
     Ok(StorageParts {
         phones: parts,
         phones_once: big(phones_once),
         guests,
         shared_files: numbers.file_count,
         shared_here: big(numbers.files),
-        deleted_files: deleted.len(),
-        deleted: big(deleted.iter().map(|d| d.size).sum()),
         removed: removed_parts(&hosted)?,
     })
 }
@@ -1458,13 +1452,14 @@ pub fn vault_keepers(hosted: Host<'_>) -> Answer<Vec<String>> {
 
 
 
-/// Delete a file from qurb, on every device, keeping it in Recently deleted
-/// for thirty days (decision 0042).
+/// Delete a file from qurb, on every device, for good (decision 0089).
 #[tauri::command(async)]
 pub fn delete_file(hosted: Host<'_>, path: String) -> Answer<()> {
     hosted
         .with_store_mut(|store| {
-            store.delete_to_trash(&path, None)?;
+            if let Some(id) = store.delete_to_trash(&path, None)? {
+                store.forget_deleted(id)?;
+            }
             Ok(())
         })
         .map_err(failed)
@@ -2445,61 +2440,6 @@ fn open_sealed(hosted: &Host<'_>, person: &qurb_sync::DeviceId, key: [u8; 32], p
     reveal(&to)
 }
 
-/// Recently deleted emptied for good: every file in it, here (the owner's
-/// review of 2026-11-03, K-2).
-#[tauri::command(async)]
-pub fn empty_deleted(hosted: Host<'_>) -> Answer<String> {
-    let (_, bytes) = hosted
-        .with_store_mut(|store| Ok(store.empty_trash(std::time::Duration::ZERO)?))
-        .map_err(failed)?;
-    Ok(bytes.to_string())
-}
-
-/// One file the owner's phone deleted from its Private Vault.
-#[derive(Serialize)]
-pub struct PhoneDeleted {
-    path: String,
-    size: String,
-    at: i64,
-    /// The phone, by name.
-    by: String,
-}
-
-/// What the owner's phones deleted from their Private Vault in the last
-/// thirty days -- named only while the owner's folder is open, its names
-/// being as private as its files (the owner, 2026-11-03). Put back from the
-/// phone, whose Recently deleted keeps them. `None` while locked.
-#[tauri::command(async)]
-pub fn phone_deleted(hosted: Host<'_>) -> Answer<Option<Vec<PhoneDeleted>>> {
-    // Only the phones whose folders are open (decision 0085).
-    let phones = owner_phones(&hosted)?;
-    let mut ids: Vec<qurb_sync::DeviceId> = Vec::new();
-    for folder in owner_folders(&phones) {
-        if qurb_peer::openings::is_open(&approver(&hosted, &folder)?) {
-            ids.extend(folder.1);
-        }
-    }
-    if ids.is_empty() {
-        return Ok(None);
-    }
-    let since = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_secs() as i64)
-        .unwrap_or(0)
-        - 30 * 86_400;
-    let rows = hosted.with_store(|store| Ok(store.db().vault_deleted_for(&ids, since)?)).map_err(failed)?;
-    Ok(Some(
-        rows.into_iter()
-            .map(|(path, size, at, owner)| PhoneDeleted {
-                path,
-                size: size.to_string(),
-                at,
-                by: phones.iter().find(|(_, d)| d.id == owner).map(|(_, d)| d.name.clone()).unwrap_or_default(),
-            })
-            .collect(),
-    ))
-}
-
 /// Open one of this computer's places in the file manager (the owner's review
 /// of 2026-11-03, F-1): `shared`, the synced folder; `received`, where files
 /// sent here go -- inside the QurbSpace folder when that is how it is set.
@@ -3033,70 +2973,6 @@ pub fn settle_conflict(hosted: Host<'_>, other: String, keep: String) -> Answer<
         .map_err(failed)?;
     hosted.nudge();
     Ok(kept)
-}
-
-/// A file in Recently deleted (decision 0042).
-#[derive(Serialize)]
-pub struct Deleted {
-    id: i64,
-    path: String,
-    size: String,
-    /// Unix seconds.
-    at: i64,
-    /// "this computer", or the name of the device whose deletion it was.
-    by: Option<String>,
-    why: Option<String>,
-    /// From this computer's Private Vault, where restoring puts it back.
-    private: bool,
-    /// The device whose Private Vault it was in, when not this computer's:
-    /// one of this person's phones, which takes it back once it is restored
-    /// here (decision 0073).
-    of: Option<String>,
-}
-
-#[tauri::command(async)]
-pub fn recently_deleted(hosted: Host<'_>) -> Answer<Vec<Deleted>> {
-    hosted
-        .with_store(|store| {
-            let names = store.db().device_names()?;
-            let me = store.device_id()?;
-            Ok(store
-                .recently_deleted()?
-                .into_iter()
-                .map(|entry| Deleted {
-                    id: entry.id,
-                    path: entry.path,
-                    size: big(entry.size),
-                    at: entry.deleted_at,
-                    by: entry.deleted_by.map(|id| match id == me {
-                        true => "this computer".to_string(),
-                        false => names.get(&id).cloned().unwrap_or_else(|| id.short()),
-                    }),
-                    why: entry.why,
-                    private: entry.scope == Some(me),
-                    of: entry
-                        .scope
-                        .filter(|owner| *owner != me)
-                        .map(|owner| names.get(&owner).cloned().unwrap_or_else(|| owner.short())),
-                })
-                .collect())
-        })
-        .map_err(failed)
-}
-
-/// Put a file back from Recently deleted. Returns where it went, which is
-/// beside its old path when something is there now.
-#[tauri::command(async)]
-pub fn restore_deleted(hosted: Host<'_>, id: i64) -> Answer<String> {
-    let at = hosted.with_store_mut(|store| Ok(store.restore_from_trash(id)?)).map_err(failed)?;
-    hosted.nudge();
-    Ok(at)
-}
-
-/// Delete a file in Recently deleted for good.
-#[tauri::command(async)]
-pub fn forget_deleted(hosted: Host<'_>, id: i64) -> Answer<()> {
-    hosted.with_store_mut(|store| Ok(store.forget_deleted(id)?)).map_err(failed)
 }
 
 /// What removing a device would do, for the question asked before doing it.

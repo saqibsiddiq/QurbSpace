@@ -60,15 +60,10 @@ pub struct GcStats {
 /// `retention` is zero, which asks for everything as `empty_trash` does.
 pub fn collect(db: &mut Db, cas: &Cas, retention: Duration) -> Result<GcStats> {
     let cutoff = db::now() - retention.as_secs() as i64;
-    // A phone deleting a file its computer keeps for it, its bytes not on the
-    // phone, puts it back from the chunks both still list (decision 0073): the
-    // phone's row says which, and the computer's keeps them. At seven days
-    // the computer would let go of them three weeks before the phone's
-    // Recently deleted does.
-    let vault_cutoff = match retention.is_zero() {
-        true => cutoff,
-        false => db::now() - retention.max(crate::store::TRASH_RETENTION).as_secs() as i64,
-    };
+    // Until 2026-11-14 a phone's deleted vault files were kept thirty days
+    // here, for its Recently deleted to put back (decision 0073); that is
+    // gone (decision 0089), so they go with everything else.
+    let vault_cutoff = cutoff;
     let mut stats = GcStats::default();
 
     let tx = db

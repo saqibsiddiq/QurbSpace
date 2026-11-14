@@ -68,7 +68,7 @@ is worth more than a tidy directory.
 | [0039](0039-a-light-android-app.md) | A light Android app, on the platform's own views | Accepted |
 | [0040](0040-the-menu-opens-the-window.md) | The applications menu opens the window | Accepted |
 | [0041](0041-removing-a-device.md) | Removing a device | Accepted — built on the desktop, the phone and the command line; what only it kept reads as on no device since 0055 |
-| [0042](0042-recently-deleted.md) | Recently deleted | Accepted — built on the desktop, the phone and the command line |
+| [0042](0042-recently-deleted.md) | Recently deleted | Superseded by [0089](0089-no-recently-deleted.md) |
 | [0043](0043-settling-a-conflict.md) | Settling a conflict | Accepted — built on the desktop, the phone and the command line |
 | [0044](0044-sharing-with-chosen-devices.md) | Sharing a folder with chosen devices | Accepted — built on the desktop, the phone and the command line |
 | [0045](0045-a-folder-kept-remotely.md) | A folder kept only remotely | Accepted — built on the desktop, the phone and the command line |
@@ -115,3 +115,4 @@ is worth more than a tidy directory.
 | [0086](0086-the-persons-controls.md) | The person's controls: pause, mobile data, backup timing, notification kinds, updates asked first, reset, app lock, received files saved out, staying awake, a local report; tidy-ups | Accepted — built 2026-11-12, tests for the engine parts and the window; not yet tried on the owner's devices |
 | [0087](0087-quic-over-nostr-relays.md) | QUIC over the public Nostr relays when no other path reaches: sealed ephemeral events, raced beside the introduction and Tor, 60 packets a second | Accepted — built and measured 2026-11-13 (35–52 KB/s across the default relays); not yet tried from a phone on mobile data |
 | [0088](0088-a-mailbox-in-the-persons-google-drive.md) | A mailbox in the person's Google Drive: devices leave each other sealed lists, packs and receipts when they cannot reach each other, backups included; opt-in, 2 GB waiting, files up to 64 MB | Accepted — built 2026-11-13, tested through a folder; not yet run against Google Drive |
+| [0089](0089-no-recently-deleted.md) | No Recently deleted: a deletion is for good, emptied at the next housekeeping; pages and commands removed | Accepted — built 2026-11-14, not yet tried on the phones |

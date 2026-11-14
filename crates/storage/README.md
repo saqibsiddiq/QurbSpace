@@ -134,18 +134,19 @@ survive for up to twice the configured retention before the space comes back.
 That errs toward keeping data, which is the right direction here, but it is a
 real disk cost when choosing the window.
 
-### Recently deleted
+### Deleted files
 
 On a device with a folder, the file in the folder is the only copy of its
-bytes, so a tombstone alone keeps nothing to restore. A file taken out of the
-folder by a deletion — made here, or arriving from another device — is
-therefore *moved* into `trash/` in the store directory, and a row in `trash`
-remembers its path, size, who deleted it and when
-([decision 0042](../../docs/decisions/0042-recently-deleted.md)).
-`restore_from_trash` puts it back as a new version in the area it was deleted
-from, which every device that area reaches then takes; after `TRASH_RETENTION` (thirty days) `empty_trash` removes it. Over a
-storage cap the order is: released held content, then the trash, then
-eviction. Settling a conflict (`settle_conflict`) sends the version not kept
+bytes. A file taken out of the folder by a deletion — made here, or arriving
+from another device — is *moved* into `trash/` in the store directory, and a
+row in `trash` remembers its path, size, who deleted it and when. Until
+2026-11-14 that was Recently deleted, kept thirty days and restorable
+([decision 0042](../../docs/decisions/0042-recently-deleted.md)); since then
+nothing shows it and the engine's housekeeping empties it at once with
+`empty_trash(Duration::ZERO)`
+([decision 0089](../../docs/decisions/0089-no-recently-deleted.md)).
+`restore_from_trash` and the other restore paths remain, reached from no
+window. Settling a conflict (`settle_conflict`) sends the version not kept
 here too.
 
 Two kinds of entry have no bytes in `trash/`; their deleted row's chunk list

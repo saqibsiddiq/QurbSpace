@@ -112,8 +112,7 @@ class StorageScreen(app: MainActivity) : Screen(app) {
 
 /**
  * One computer's storage (SE-3, SE-6): free of what it gives QurbSpace, a bar
- * of what fills it, a row for each kind, and Recently deleted emptied after
- * asking. Nothing of the rest of its disk.
+ * of what fills it, a row for each kind. Nothing of the rest of its disk.
  */
 class DeviceStorageScreen(app: MainActivity, private val computer: PeerInfo, private var storage: ComputerStorage) : Screen(app) {
 
@@ -156,33 +155,8 @@ class DeviceStorageScreen(app: MainActivity, private val computer: PeerInfo, pri
             val row = kit.setting(card, R.drawable.ic_circle, Storage.words(part), Words.size(part.bytes))
             row.icon.imageTintList = android.content.res.ColorStateList.valueOf(Storage.colour(app, part.kind))
             row.icon.layoutParams = row.icon.layoutParams.apply { width = kit.dp(12); height = kit.dp(12) }
-            if (part.kind == "deleted" && part.bytes > 0uL) {
-                row.value.text = "Empty"
-                row.value.setTextColor(kit.color(R.color.error))
-                row.root.setOnClickListener { empty(part.bytes) }
-            }
         }
         views.refresh.isRefreshing = false
-    }
-
-    private fun empty(bytes: ULong) {
-        kit.sheet()
-            .mark(R.drawable.ic_trash_2)
-            .title("Empty Recently deleted on ${computer.name}?", centred = true)
-            .line("${Words.size(bytes)}, gone for good")
-            .buttons("Empty", danger = true) {
-                scope.launch {
-                    try {
-                        withContext(Dispatchers.IO) { engine().openKeptFolder(computer.fingerprint, 20u).emptyDeleted() }
-                        app.say("Emptied")
-                        runCatching { Storage.ask(app, computer) }.getOrNull()?.let { storage = it }
-                    } catch (e: Exception) {
-                        app.fail("Not emptied", e)
-                    }
-                    refresh()
-                }
-            }
-            .show()
     }
 }
 
@@ -223,7 +197,6 @@ object Storage {
         "backups" -> 0xFF3B82F6.toInt()
         "vault" -> 0xFF8B5CF6.toInt()
         "guest" -> app.kit.color(R.color.attention)
-        "deleted" -> app.kit.color(R.color.error)
         else -> app.kit.color(R.color.text_3)
     }
 
@@ -232,7 +205,6 @@ object Storage {
         "backups" -> "${part.name} backups"
         "vault" -> "${part.name} Vault"
         "guest" -> part.name
-        "deleted" -> "Recently deleted"
         else -> "Other"
     }
 }

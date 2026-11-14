@@ -1345,9 +1345,8 @@ fn a_phone_leaves_the_shared_area() {
 /// This phone's own folder on the computer, changed from the phone (decision
 /// 0073, item 3): its vault changes and the computer follows at the next
 /// sync -- a file renamed into another folder there, freed on the phone,
-/// deleted, and put back from the phone's Recently deleted, the computer
-/// holding it again from the copy it kept; then deleted again and put back
-/// from the computer's.
+/// and deleted. (Put back from either device's Recently deleted until
+/// 2026-11-14, decision 0089.)
 #[test]
 fn a_phone_changes_its_own_folder_on_the_computer() {
     let _sharing = ALONE.read().unwrap_or_else(|e| e.into_inner());
@@ -1404,32 +1403,6 @@ fn a_phone_changes_its_own_folder_on_the_computer() {
     phone.free_local("Archive/renamed.txt".into()).unwrap();
     phone.delete_kept("Archive/renamed.txt".into()).unwrap();
     until("deleted there", &|| !shows("Archive", "renamed.txt"));
-    let deleted = phone.recently_deleted().unwrap();
-    let entry = deleted.iter().find(|d| d.path == "Archive/renamed.txt").expect("not in Recently deleted");
-    assert_eq!(phone.restore_deleted(entry.id).unwrap(), "Archive/renamed.txt");
-    until("back there", &|| shows("Archive", "renamed.txt"));
-    let on_the_computer = || desktop.recently_deleted().unwrap().into_iter().find(|d| d.path == "Archive/renamed.txt");
-    assert!(on_the_computer().is_none(), "still in the computer's Recently deleted once the phone put it back");
-
-    // Deleted again, and put back at the computer this time (item 3): in
-    // its Recently deleted too, naming the phone; restored there, back in
-    // the phone's folder and, at the phone's next sync, in its Vault --
-    // and the deletion, offered again until then, does not take it again.
-    phone.delete_kept("Archive/renamed.txt".into()).unwrap();
-    until("deleted there again", &|| !shows("Archive", "renamed.txt"));
-    let entry = on_the_computer().expect("not in the computer's Recently deleted");
-    assert_eq!(entry.deleted_by.as_deref(), Some("phone"));
-    desktop.restore_deleted(entry.id).unwrap();
-    until("back on the phone", &|| {
-        let _ = phone.sync_within(5);
-        phone.list().unwrap().iter().any(|f| f.path == "Archive/renamed.txt")
-    });
-    assert!(phone.recently_deleted().unwrap().iter().all(|d| d.path != "Archive/renamed.txt"));
-    assert!(on_the_computer().is_none());
-    // Looked at again until seen: a look that cannot connect in time says
-    // "not there" too, and under a loaded machine one did (2026-10-25). A
-    // deletion taken again would stay, and this would time out on it.
-    until("still there, not deleted again", &|| shows("Archive", "renamed.txt"));
 
     match phone.delete_kept("nothing.txt".into()) {
         Err(qurb_mobile::QurbError::Refused { .. }) => {}

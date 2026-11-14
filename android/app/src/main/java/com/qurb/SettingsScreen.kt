@@ -22,8 +22,8 @@ import uniffi.qurb_mobile.Usage
  * *Connection*: background sync, and Advanced on a page of its own.
  *
  * Gone with the redesign: Backups (each device's page has them), and the
- * Devices row. Kept for now, though the design moves them: Recently deleted
- * here until Files has it, and the shared files' settings under Advanced until
+ * Devices row; and Recently deleted, removed altogether on 2026-11-14
+ * (decision 0089). Kept for now: the shared files' settings under Advanced until
  * the phone stops holding shared files (decision 0073).
  *
  * The name and picture are this phone's own, set here and nowhere else, and
@@ -50,8 +50,6 @@ class SettingsScreen(app: MainActivity) : Screen(app) {
         /** The name set here, or empty. */
         val name: String,
         val picture: android.graphics.Bitmap?,
-        /** Files in this phone's Recently deleted. */
-        val deleted: Int,
     )
 
     override fun refresh() {
@@ -74,7 +72,6 @@ class SettingsScreen(app: MainActivity) : Screen(app) {
                         app.cacheDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }.toULong(),
                         profile?.name.orEmpty(),
                         profile?.picture?.let { Devices.decode(it) },
-                        runCatching { engine.recentlyDeleted().size }.getOrDefault(0),
                     )
                 }
                 show(state)
@@ -122,11 +119,6 @@ class SettingsScreen(app: MainActivity) : Screen(app) {
         kit.label(page, "Manage storage")
         card = kit.card(page)
         kit.setting(card, R.drawable.ic_hard_drive, "Devices") { app.push(StorageScreen(app)) }
-        // Back since the owner's review of 2026-11-03: a file deleted from
-        // the Private Vault here had nowhere to be put back from.
-        kit.setting(card, R.drawable.ic_trash_2, "Recently deleted", if (state.deleted > 0) state.deleted.toString() else "") {
-            app.push(DeletedScreen(app, fromSettings = true))
-        }
         kit.setting(card, R.drawable.ic_file_archive, "Clear cache", Words.size(state.cache)) { clearCache(state.cache) }
         // Its own row, never part of the cache: the devices sent to have
         // these, but one may have lost its copy since (decision 0030).

@@ -69,8 +69,7 @@ object Thumbs {
         icon: ImageView,
         file: java.io.File,
         key: String = "file:${file.path}:${file.lastModified()}",
-        /** What it is called, where its own name says nothing: Recently
-         *  deleted keeps a file's bytes under a number. */
+        /** What it is called, where its own name says nothing. */
         name: String = file.name,
     ) {
         val context = icon.context
@@ -212,7 +211,7 @@ object Thumbs {
      *  white page of grey lines, its type on a coloured tag at the foot. */
     /**
      * Code and markup, whose first lines read as noise in a tile -- XML's
-     * `<?xml version='1.0'` three times over in Recently deleted (the owner,
+     * `<?xml version='1.0'` three times over in a grid (the owner,
      * 2026-11-13): drawn by their kind. Notes keep their first lines.
      */
     private val codes = setOf(

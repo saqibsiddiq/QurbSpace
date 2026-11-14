@@ -1487,20 +1487,20 @@ impl Qurb {
     /// Remove a file from the synced tree.
     ///
     /// Tombstoned rather than erased, so the deletion reaches other devices
-    /// instead of looking to them like a file they should send back -- and
-    /// kept in Recently deleted here, so it can be put back (decision 0042).
+    /// instead of looking to them like a file they should send back. Gone
+    /// for good here at once (decision 0089).
     pub fn remove(&self, path: String) -> Result<(), QurbError> {
-        self.engine()?.store_mut().delete_to_trash(&qurb_watcher::normalize(&path), None)?;
+        let mut engine = self.engine()?;
+        if let Some(id) = engine.store_mut().delete_to_trash(&qurb_watcher::normalize(&path), None)? {
+            engine.store_mut().forget_deleted(id)?;
+        }
         Ok(())
     }
 
     /// Delete a file of this phone's folder on a computer (decision 0073,
     /// item 3): this phone's own vault changes, and the computer follows at
-    /// the next sync. It goes into this phone's Recently deleted, its bytes
-    /// here or not: one freed to the computer is put back from the chunks
-    /// the computer keeps as long (`Store::delete_to_trash_by`). A Private
-    /// Vault file goes into the computer's as well, and restored there comes
-    /// back here at the next sync (`Store::take_back_restored`). A backup -- of
+    /// the next sync. Gone for good here at once, and there at its next
+    /// housekeeping (decision 0089). A backup -- of
     /// WhatsApp, or of a folder -- only once its original is gone from this
     /// phone: while it is here, the next backup would put the copy back, so
     /// that is refused with why. Never a file kept for this phone before it
@@ -1524,7 +1524,9 @@ impl Qurb {
             }
         }
         for file in files {
-            engine.store_mut().delete_to_trash(&file, None)?;
+            if let Some(id) = engine.store_mut().delete_to_trash(&file, None)? {
+                engine.store_mut().forget_deleted(id)?;
+            }
         }
         Ok(())
     }
@@ -2246,57 +2248,6 @@ impl Qurb {
             .and_then(|id| names.get(&id).cloned())
             .unwrap_or_else(|| "other version".into());
         Ok(engine.store_mut().settle_conflict(&other, keep, &label)?)
-    }
-
-    /// What is in Recently deleted on this phone, most recent first
-    /// (decision 0042).
-    pub fn recently_deleted(&self) -> Result<Vec<DeletedFile>, QurbError> {
-        let engine = self.look()?;
-        let store = engine.store();
-        let names = store.db().device_names()?;
-        let me = store.device_id()?;
-        Ok(store
-            .recently_deleted()?
-            .into_iter()
-            .map(|entry| DeletedFile {
-                id: entry.id,
-                path: entry.path,
-                size: entry.size,
-                deleted_at: entry.deleted_at,
-                deleted_by: entry.deleted_by.map(|id| match id == me {
-                    true => "this phone".to_string(),
-                    false => names.get(&id).cloned().unwrap_or_else(|| id.short()),
-                }),
-                why: entry.why,
-                private: entry.scope == Some(me),
-            })
-            .collect())
-    }
-
-    /// Put a recently deleted file back, as a change made here, so it returns
-    /// on every device. Returns where it went: its old path, or beside it when
-    /// something is there now.
-    /// Where a Recently deleted file's bytes are on this phone, for its
-    /// picture in the grid; none when they are not here.
-    pub fn deleted_file(&self, id: i64) -> Option<String> {
-        let engine = self.look().ok()?;
-        engine.store().deleted_bytes_at(id).map(|p| p.to_string_lossy().into_owned())
-    }
-
-    pub fn restore_deleted(&self, id: i64) -> Result<String, QurbError> {
-        Ok(self.engine()?.store_mut().restore_from_trash(id)?)
-    }
-
-    /// Delete a file in Recently deleted for good.
-    pub fn forget_deleted(&self, id: i64) -> Result<(), QurbError> {
-        Ok(self.engine()?.store_mut().forget_deleted(id)?)
-    }
-
-    /// Recently deleted emptied for good, every file in it (Settings →
-    /// Manage storage, the owner's review of 2026-11-03). Returns the bytes
-    /// let go of.
-    pub fn empty_recently_deleted(&self) -> Result<u64, QurbError> {
-        Ok(self.engine()?.store_mut().empty_trash(std::time::Duration::ZERO)?.1)
     }
 
     /// What removing a paired device would do here, for the question asked
@@ -4454,24 +4405,6 @@ pub struct ConflictInfo {
     pub other: ConflictSide,
 }
 
-/// A file in Recently deleted. See [`Qurb::recently_deleted`].
-#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
-pub struct DeletedFile {
-    pub id: i64,
-    /// Where it was.
-    pub path: String,
-    pub size: u64,
-    /// Unix seconds.
-    pub deleted_at: i64,
-    /// "this phone", or the name of the device whose deletion it was.
-    pub deleted_by: Option<String>,
-    /// Why, where "deleted" is not the whole story.
-    pub why: Option<String>,
-    /// Deleted from this phone's Private Vault, which is where restoring puts
-    /// it back: on this phone, not on every device.
-    pub private: bool,
-}
-
 /// What removing a device would do. See [`Qurb::removal_plan`].
 #[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
 pub struct Removal {
@@ -4775,11 +4708,6 @@ impl KeptFolder {
             }
             None => Ok(false),
         }
-    }
-
-    /// The computer's Recently deleted emptied for good.
-    pub fn empty_deleted(&self) -> Result<(), QurbError> {
-        changed(self.run(|c| async move { c.empty_deleted().await }))
     }
 
     pub fn places(&self) -> Result<Vec<ComputerPlace>, QurbError> {

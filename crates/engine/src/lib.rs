@@ -393,6 +393,10 @@ impl Engine {
         // Sends first: one called off, or collected, lets go of references
         // that collection below can then free (decision 0060).
         let called_off = self.store.check_sends()?;
+        // Deleted files go for good here: there is no Recently deleted since
+        // 2026-11-14 (decision 0089). The store still passes them through
+        // `trash/` on the way out, so they are gone within one housekeeping.
+        let expired = self.store.empty_trash(std::time::Duration::ZERO)?;
         let sends_done = self.store.tidy_sends()?;
         // And copies of this device's own files a computer of another person
         // now keeps: the guest chose to keep nothing on the phone (decision
@@ -403,7 +407,6 @@ impl Engine {
         // of 2026-10-26, item 8).
         let _ = self.store.db().forget_old_activity();
         let reclaimed = self.store.reclaim()?;
-        let expired = self.store.empty_trash(qurb_storage::TRASH_RETENTION)?;
         Ok(Housekeeping { collected, reclaimed, expired, called_off, sends_done })
     }
 

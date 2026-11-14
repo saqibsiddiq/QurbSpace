@@ -1,5 +1,8 @@
-//! Recently deleted: a deletion anywhere is recoverable from any device that
-//! held the file (decision 0042).
+//! Recently deleted: a deletion anywhere was recoverable from any device that
+//! held the file (decision 0042). Since 2026-11-14 nothing shows or restores
+//! it (decision 0089): deletions still pass through the store's `trash/`, and
+//! housekeeping lets them go. The restore paths tested here are the store's,
+//! no longer reached from any window.
 //!
 //! Under single-copy storage the file in the folder is the only copy of its
 //! bytes on a device. Before this, a deletion on one device removed the file
@@ -142,22 +145,18 @@ fn deleting_through_qurb_keeps_a_copy_here() {
     assert_eq!(phone.deleted().len(), 1);
 }
 
+/// Housekeeping lets every deleted file go, whatever its age: there is no
+/// Recently deleted to keep them for since 2026-11-14 (decision 0089).
 #[test]
-fn old_entries_expire_and_can_be_deleted_for_good() {
+fn housekeeping_lets_every_deleted_file_go() {
     let mut phone = Device::new();
     phone.write("a.txt", "a");
     phone.write("b.txt", "b");
     phone.engine.store_mut().delete_to_trash("a.txt", None).unwrap();
     phone.engine.store_mut().delete_to_trash("b.txt", None).unwrap();
-
-    // Nothing is thirty days old yet.
-    assert_eq!(phone.engine.housekeep(std::time::Duration::from_secs(3600)).unwrap().expired, (0, 0));
     assert_eq!(phone.deleted().len(), 2);
 
-    let id = phone.deleted()[0].id;
-    phone.engine.store_mut().forget_deleted(id).unwrap();
-    assert_eq!(phone.deleted().len(), 1);
-    assert_eq!(phone.engine.store_mut().empty_trash(std::time::Duration::ZERO).unwrap().0, 1);
+    assert_eq!(phone.engine.housekeep(std::time::Duration::from_secs(3600)).unwrap().expired.0, 2);
     assert!(phone.deleted().is_empty());
     assert_eq!(phone.engine.store().usage().unwrap().trash, 0);
 }

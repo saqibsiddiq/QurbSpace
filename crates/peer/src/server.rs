@@ -1053,12 +1053,11 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
                     parts.push((crate::wire::Part::Guest, p.name, held));
                 }
             }
-            let deleted: u64 = store.recently_deleted()?.iter().map(|d| d.size).sum();
-            parts.push((crate::wire::Part::Deleted, String::new(), deleted));
             Response::Storage { given, used, parts }
         }
         // Its Recently deleted emptied for good, from the owner's phone's
-        // Storage. Nobody else may.
+        // Storage. Nobody else may. Asked only by phones on builds before
+        // 2026-11-14, which had the page (decision 0089).
         Request::EmptyDeleted => {
             if owners_phone(store, asker)?.is_none() {
                 return Ok(Answer::Now(Response::NotFound));

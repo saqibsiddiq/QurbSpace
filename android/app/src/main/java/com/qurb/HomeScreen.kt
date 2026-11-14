@@ -294,7 +294,7 @@ class HomeScreen(app: MainActivity) : Screen(app) {
 
     /**
      * One conflict: both versions described, three choices (§14). Whichever
-     * is not kept goes to Recently deleted, so no choice here loses anything.
+     * is not kept is gone for good (decision 0089).
      */
     private fun review(c: ConflictInfo) {
         fun describe(s: ConflictSide?) = if (s == null) "Since deleted or renamed" else

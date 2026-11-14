@@ -47,16 +47,13 @@ qurb — private cloud storage
                                         Vault; `unprivate` moves it back out
   qurb conflicts [dir] [keep <copy> this|other|both]
                                       files two devices changed at once, and
-                                        settling one: nothing is lost either way
+                                        settling one: the other version is deleted
   qurb share [dir] [<folder> with <device>,... | everyone]
                                       which devices a folder is shared with
                                         (this = this device)
   qurb keep [dir] <folder> here|remote
                                       keep a folder here, or only list it here
                                         and fetch each file when asked for
-  qurb deleted [dir]                  recently deleted files, restorable for 30 days
-  qurb restore [dir] <#n or path>     put a recently deleted file back where it was
-  qurb forget [dir] <#n or path>      delete a recently deleted file for good, here
   qurb holders [dir] [add|remove <device>]
                                       the devices that keep this one's own files
   qurb same [dir] <older device> <newer device>|--not
@@ -256,18 +253,6 @@ fn run() -> Result<()> {
                 _ => bail!("qurb keep [dir] <folder> here|remote"),
             }
             Ok(())
-        }
-        "deleted" => {
-            let (root, _) = split_path(&args)?;
-            deleted(&root)
-        }
-        "restore" => {
-            let (root, which) = split_path(&args)?;
-            restore(&root, &which.context("say which: qurb restore <#n or path> — see `qurb deleted`")?)
-        }
-        "forget" => {
-            let (root, which) = split_path(&args)?;
-            forget(&root, &which.context("say which: qurb forget <#n or path> — see `qurb deleted`")?)
         }
         "free" => {
             let (root, path) = split_path(&args)?;
@@ -1081,7 +1066,7 @@ fn conflicts(root: &Path, rest: &[String]) -> Result<()> {
                 );
             }
             println!("\n`qurb conflicts keep <other> this|other|both` settles one, on every device.");
-            println!("The version not kept goes to Recently deleted.");
+            println!("The version not kept is deleted for good.");
             Ok(())
         }
         [verb, copy, choice] if verb == "keep" => {
@@ -1095,9 +1080,6 @@ fn conflicts(root: &Path, rest: &[String]) -> Result<()> {
             let maker = store.db().folder_row(copy)?.and_then(|(row, _)| row.modified_by);
             let kept = store.settle_conflict(copy, keep, &who(maker))?;
             println!("kept {kept}");
-            if keep != qurb_storage::Keep::Both {
-                println!("  the other version is in Recently deleted — `qurb deleted`");
-            }
             Ok(())
         }
         _ => bail!("qurb conflicts [dir] [keep <copy> this|other|both]"),
@@ -1161,104 +1143,6 @@ fn share(root: &Path, rest: &[String]) -> Result<()> {
         }
         _ => bail!("qurb share [dir] [<folder> with <device>,... | everyone]"),
     }
-}
-
-/// What is in Recently deleted here (decision 0042).
-fn deleted(root: &Path) -> Result<()> {
-    let (_, _, store, _) = open(root)?;
-    let entries = store.recently_deleted()?;
-    if entries.is_empty() {
-        println!("nothing recently deleted here");
-        return Ok(());
-    }
-    let names = store.db().device_names()?;
-    let me = store.device_id()?;
-    for entry in &entries {
-        let by = match entry.deleted_by {
-            Some(id) if id == me => "here".to_string(),
-            Some(id) => format!("on {}", names.get(&id).cloned().unwrap_or_else(|| id.short())),
-            None => String::new(),
-        };
-        let why = entry.why.as_deref().map(|w| format!("  ({w})")).unwrap_or_default();
-        // A file kept here for another device has no bytes in this list's
-        // own folder: they stay with its deleted row (decision 0073).
-        let size = match entry.size {
-            0 => String::new(),
-            n => human(n),
-        };
-        println!(
-            "  #{:<5} {:>12}  {:>9}  {}  deleted {by}{why}",
-            entry.id,
-            ago(entry.deleted_at),
-            size,
-            shown_deleted(entry, &names, &me)
-        );
-    }
-    println!("\n`qurb restore #n` puts one back where it was. Kept for 30 days.");
-    Ok(())
-}
-
-/// Where a deleted file was, as the window shows it: a file of another
-/// device's Private Vault kept here, in that device's folder (decision 0073).
-fn shown_deleted(
-    entry: &qurb_storage::db::Trashed,
-    names: &std::collections::HashMap<qurb_sync::DeviceId, String>,
-    me: &qurb_sync::DeviceId,
-) -> String {
-    match entry.scope.filter(|owner| owner != me) {
-        Some(owner) => format!(
-            "{}/{}",
-            names.get(&owner).cloned().unwrap_or_else(|| owner.short()),
-            qurb_storage::person::shown_as(&entry.path).unwrap_or_else(|| entry.path.clone())
-        ),
-        None => entry.path.clone(),
-    }
-}
-
-/// The Recently deleted entry `which` names: `#n`, or a path, meaning its most
-/// recent deletion.
-fn trashed<'a>(entries: &'a [qurb_storage::db::Trashed], which: &str) -> Result<&'a qurb_storage::db::Trashed> {
-    match which.strip_prefix('#').and_then(|n| n.parse::<i64>().ok()) {
-        Some(id) => entries.iter().find(|e| e.id == id),
-        None => entries.iter().find(|e| e.path == which.trim_start_matches("./")),
-    }
-    .with_context(|| format!("{which} is not in Recently deleted here — see `qurb deleted`"))
-}
-
-fn restore(root: &Path, which: &str) -> Result<()> {
-    let (_, _, mut store, _) = open(root)?;
-    let entries = store.recently_deleted()?;
-    let entry = trashed(&entries, which)?;
-    let at = store.restore_from_trash(entry.id)?;
-    let me = store.device_id()?;
-    if let Some(owner) = entry.scope.filter(|owner| *owner != me) {
-        let names = store.db().device_names()?;
-        let name = names.get(&owner).cloned().unwrap_or_else(|| owner.short());
-        println!("restored {}", shown_deleted(entry, &names, &me));
-        println!("  {name} takes it back at its next sync");
-        return Ok(());
-    }
-    match at == entry.path {
-        true => println!("restored {at}"),
-        false => println!("restored {} as {at}: something is at its old path now", entry.path),
-    }
-    println!("  it returns on your other devices at their next sync");
-    Ok(())
-}
-
-/// Delete one Recently deleted file for good, on this device only: each
-/// device's list is its own (decision 0042), as *Delete for good* is in the
-/// window and on the phone. The command line had restore and not this, so
-/// what a test put there could be cleared only from a window.
-fn forget(root: &Path, which: &str) -> Result<()> {
-    let (_, _, mut store, _) = open(root)?;
-    let entries = store.recently_deleted()?;
-    let entry = trashed(&entries, which)?;
-    let (id, path, size) = (entry.id, entry.path.clone(), entry.size);
-    store.forget_deleted(id)?;
-    println!("deleted {path} for good ({}), here", human(size));
-    println!("  other devices keep their own Recently deleted");
-    Ok(())
 }
 
 /// The devices that keep this device's own files for it (decision 0036).
