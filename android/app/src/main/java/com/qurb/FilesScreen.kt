@@ -76,7 +76,7 @@ class FilesScreen(app: MainActivity, private val private: Boolean, private val u
         views.subtitle.visibility = if (private) View.GONE else View.VISIBLE
         views.action.setOnClickListener { app.pickFilesToAdd(dir, private) }
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
         views.more.setOnClickListener { more() }
 
         val grid = GridLayoutManager(app, 2)

@@ -59,7 +59,7 @@ class KeptScreen(
         views.back.setOnClickListener { app.onBackPressedDispatcher.onBackPressed() }
         views.subtitle.visibility = View.GONE
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
         scope.launch(Dispatchers.IO) { Opened.tidy(app) }
 
         val (field, box) = kit.searchField("Search ${start ?: computer.name}") { typed ->

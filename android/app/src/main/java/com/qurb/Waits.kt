@@ -307,7 +307,7 @@ class WaitingScreen(app: MainActivity) : Screen(app) {
         views.back.setOnClickListener { app.onBackPressedDispatcher.onBackPressed() }
         views.title.text = "Waiting"
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
     }
 
     override fun refresh() {

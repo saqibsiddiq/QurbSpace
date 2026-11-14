@@ -39,7 +39,7 @@ class SettingsScreen(app: MainActivity) : Screen(app) {
     init {
         views.title.text = "Settings"
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
     }
 
     private class State(
@@ -182,8 +182,6 @@ class SettingsScreen(app: MainActivity) : Screen(app) {
         kit.setting(card, R.drawable.ic_cloud, "Google Drive", GoogleDrive.account(app) ?: "Off") { sheets.drive { refresh() } }
         kit.setting(card, R.drawable.ic_shield_check, "Background activity",
             if (Battery.free(app)) "Allowed" else "Restricted") { Battery.ask(app) }
-        kit.setting(card, R.drawable.ic_history, "Background sync",
-            SyncWorker.words(SyncWorker.every(app))) { background() }
         kit.setting(card, R.drawable.ic_link, "Advanced") { app.push(AdvancedScreen(app)) }
     }
 
@@ -248,37 +246,6 @@ class SettingsScreen(app: MainActivity) : Screen(app) {
      * minutes, when Android allows", or every hour once another device's
      * push has woken this phone lately.
      */
-    private fun background() {
-        val facts = LinearLayout(app).apply {
-            orientation = LinearLayout.VERTICAL
-            background = ContextCompat.getDrawable(app, R.drawable.group_quiet)
-            setPadding(0, kit.dp(4), 0, kit.dp(4))
-        }
-        val at = SyncWorker.lastAt(app)
-        val result = SyncWorker.lastResult(app)
-        kit.setting(facts, R.drawable.ic_circle_check, "Last",
-            if (at == null) "Not yet" else listOfNotNull(Words.ago(at / 1000), result).joinToString(", "))
-        val sheet = kit.sheet()
-            .mark(R.drawable.ic_history, R.color.green_soft, R.color.green)
-            .title("Background sync", centred = true)
-            .view(facts, top = 16)
-        kit.setting(facts, R.drawable.ic_clock, "Every", SyncWorker.words(SyncWorker.every(app)))
-        // Two buttons (the owner's list of 2026-10-26, item 16, as revised
-        // the same day): Set, for a timer, and Off, in red. Until one is
-        // set, Auto: every 15 minutes, or hourly once another device's push
-        // wakes this phone. Android's own batching makes any of them a floor.
-        val line = LinearLayout(app).apply { orientation = LinearLayout.HORIZONTAL }
-        line.addView(kit.button("Set") { sheet.dismiss(); timer() },
-            LinearLayout.LayoutParams(0, kit.dp(48), 1f))
-        line.addView(kit.button("Off", Kit.Style.DANGER) {
-            sheet.dismiss()
-            SyncWorker.choose(app, SyncWorker.OFF)
-            app.say("Background sync off")
-            refresh()
-        }, LinearLayout.LayoutParams(0, kit.dp(48), 1f).apply { marginStart = kit.dp(10) })
-        sheet.view(line, top = 18).show()
-    }
-
     /**
      * How often background sync runs, as a timer: hours and minutes on two
      * wheels, from [SyncWorker.SHORTEST] to [SyncWorker.LONGEST], minutes in

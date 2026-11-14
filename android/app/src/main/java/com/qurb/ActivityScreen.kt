@@ -44,7 +44,7 @@ class ActivityScreen(app: MainActivity) : Screen(app) {
         views.back.setOnClickListener { app.onBackPressedDispatcher.onBackPressed() }
         views.title.text = "Activity"
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
     }
 
     override fun refresh() {

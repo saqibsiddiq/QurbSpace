@@ -47,7 +47,7 @@ class DeviceScreen(app: MainActivity, private var peer: PeerInfo) : Screen(app) 
         views.back.setOnClickListener { app.onBackPressedDispatcher.onBackPressed() }
         views.title.visibility = View.GONE
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
     }
 
     private class State(
@@ -370,7 +370,7 @@ class RestoreFolders(app: MainActivity, private val computer: PeerInfo) : Screen
         views.back.setOnClickListener { app.onBackPressedDispatcher.onBackPressed() }
         views.title.text = "Folders"
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
     }
 
     override fun refresh() {

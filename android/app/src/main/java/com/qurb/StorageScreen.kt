@@ -36,7 +36,7 @@ class StorageScreen(app: MainActivity) : Screen(app) {
         views.back.setOnClickListener { app.onBackPressedDispatcher.onBackPressed() }
         views.title.text = "Devices"
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
     }
 
     override fun refresh() {
@@ -127,6 +127,7 @@ class DeviceStorageScreen(app: MainActivity, private val computer: PeerInfo, pri
         views.title.text = computer.name
         views.refresh.setColorSchemeResources(R.color.green)
         views.refresh.setOnRefreshListener {
+            app.sync()
             scope.launch {
                 runCatching { Storage.ask(app, computer) }.getOrNull()?.let { storage = it }
                 refresh()

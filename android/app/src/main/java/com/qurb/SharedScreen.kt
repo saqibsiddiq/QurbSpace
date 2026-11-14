@@ -80,7 +80,7 @@ class SharedScreen(app: MainActivity, private val computer: PeerInfo, private va
             row.indexOfChild(views.action),
             LinearLayout.LayoutParams(kit.dp(44), kit.dp(44)).apply { marginEnd = kit.dp(6) })
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
 
         val page = views.sections
         // No line naming the computer (item 10): the page before is it.

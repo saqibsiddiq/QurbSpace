@@ -27,7 +27,7 @@ class FilesHome(app: MainActivity) : Screen(app) {
     init {
         views.title.text = "Files"
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
     }
 
     override fun refresh() {
@@ -176,7 +176,7 @@ class ComputerFolders(app: MainActivity, private val computer: PeerInfo) : Scree
         views.back.setOnClickListener { app.onBackPressedDispatcher.onBackPressed() }
         views.title.text = computer.name
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
     }
 
     override fun refresh() {

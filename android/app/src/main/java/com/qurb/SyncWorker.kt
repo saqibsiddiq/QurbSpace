@@ -440,58 +440,17 @@ class SyncWorker(context: Context, params: WorkerParameters) :
         }
 
         /**
-         * Ask for a sync every [periodMinutes].
-         *
-         * Fifteen is the shortest period WorkManager accepts for periodic
-         * work. In practice either is a floor rather than a promise — Doze
-         * batches these, so an idle phone may go hours between runs. That is
-         * the platform's decision and arguing with it loses.
-         *
-         * `KEEP` rather than `UPDATE` unless the period changed: re-registering
-         * on every launch with `UPDATE` resets the period, so an app opened
-         * often would never reach the end of one and never sync.
+         * Cancel the pass that ran on a schedule until 2026-11-14. Kept as the
+         * one place a schedule is undone, called as the app opens; the work
+         * itself still runs when asked ([runNow]).
          */
         fun schedule(context: Context) {
-            for (old in RETIRED) {
+            // No pass on a schedule since 2026-11-14: syncing is by hand
+            // (MainActivity), so what an older build scheduled is cancelled.
+            for (old in RETIRED + NAME) {
                 WorkManager.getInstance(context).cancelUniqueWork(old)
             }
-            if (off(context)) {
-                WorkManager.getInstance(context).cancelUniqueWork(NAME)
-                context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(PERIOD).apply()
-                return
-            }
-
-            val constraints = Constraints.Builder()
-                // Any network, not unmetered. Two devices on the same Wi-Fi is
-                // the common case and would be covered either way, but a phone
-                // syncing a document over cellular is a reasonable thing to
-                // want and the transfers are incremental.
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                // Not while the battery is critical. Sync is not urgent enough
-                // to be the reason a phone dies.
-                .setRequiresBatteryNotLow(true)
-                .build()
-
-            // Linear, not exponential. The only thing that retries now is a
-            // sync that ran out of time with work still to do, and the right
-            // answer to that is another window shortly -- not a delay that
-            // doubles away into hours. Exponential backoff here is what put a
-            // phone three hours out from its next attempt.
-            val minutes = periodMinutes(context)
-            val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            val changed = prefs.getLong(PERIOD, 15) != minutes
-            prefs.edit().putLong(PERIOD, minutes).apply()
-
-            val request = PeriodicWorkRequestBuilder<SyncWorker>(minutes, TimeUnit.MINUTES)
-                .setConstraints(constraints)
-                .setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.MINUTES)
-                .build()
-
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                NAME,
-                if (changed) ExistingPeriodicWorkPolicy.UPDATE else ExistingPeriodicWorkPolicy.KEEP,
-                request,
-            )
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(PERIOD).apply()
         }
 
         /**

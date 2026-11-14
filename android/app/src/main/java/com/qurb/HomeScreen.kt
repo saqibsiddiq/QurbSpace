@@ -168,6 +168,10 @@ class HomeScreen(app: MainActivity) : Screen(app) {
                 views.stateLine.visibility = View.VISIBLE
             }
             app.syncing -> hero(StatusMark.Look.SYNCING, R.drawable.mark_refresh_cw, "Syncing")
+            // Not connected: the button's one word is how (the owner,
+            // 2026-11-14: "when user opens the application, make the middle
+            // button 'tap to connect'"). Tapped, it connects and syncs.
+            !Controls.stayConnected(app) -> hero(StatusMark.Look.FIRST, R.drawable.mark_link, "Tap to connect")
             state.conflicts.isNotEmpty() -> {
                 hero(StatusMark.Look.NEEDS_YOU, R.drawable.mark_git_compare, "Two versions")
                 views.markBadge.addView(kit.badge(state.conflicts.size, Kit.Tone.ATTENTION))

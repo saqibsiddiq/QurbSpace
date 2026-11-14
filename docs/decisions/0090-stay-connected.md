@@ -81,3 +81,26 @@ Tried on the S23 the same evening: not connected on opening; connected on
 Sync, the notification shown; disconnected on tapping it, service and
 notification gone; connected again on Sync.
 
+## Amended 2026-11-14: Home says how, and nothing syncs on its own
+
+The owner's list of the same evening: "1. when user opens the application,
+make the middle button 'tap to connect' 2. lets stop doing automatic
+syncing, it can only be triggered manually either by tapping on the middle
+button or refreshing on any screen"; asked which automatic syncs to stop:
+the one on opening the app, and the background pass.
+
+- Not connected, Home's mark is a link in green with the words **Tap to
+  connect**; tapped, it connects and syncs. Connected, it says what it did
+  before (All synced, Syncing, Waiting for ...).
+- **No pass when the app opens or comes back on screen**, and **no
+  background pass on a schedule**: the periodic work is cancelled on every
+  opening, and Settings' *Background sync* is gone.
+- A pass runs on Home's button, **a pull on any screen** (each screen's
+  refresh now syncs as well), a change made in the app (a send, a delete),
+  and, while connected, when a computer says it has something. Nightly
+  backups of WhatsApp and chosen folders keep their schedule.
+
+Tried on the S23: no pass in the 20 s after opening; disconnected from the
+notification, Home read *Tap to connect*; tapped, the service started and a
+pass reached the laptop.
+

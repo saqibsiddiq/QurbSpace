@@ -79,7 +79,7 @@ class FoldersScreen(
         views.back.setOnClickListener { app.onBackPressedDispatcher.onBackPressed() }
         views.title.text = if (dir.isEmpty()) "Folders" else dir.substringAfterLast('/')
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { refresh() }
+        views.refresh.setOnRefreshListener { app.sync(); refresh() }
     }
 
     private class State(val folders: List<OwnFolder>, val keeper: PeerInfo?)

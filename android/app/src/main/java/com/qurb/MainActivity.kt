@@ -434,17 +434,11 @@ class MainActivity : AppCompatActivity() {
                 SyncWorker.running(this@MainActivity).collect { workerRunning(it) }
             }
         }
-        // A pass as it opens, and no more on a timer: one every half minute
-        // while on screen (2026-11-10, for a computer's ask to be heard
-        // without a tap) kept the phone and the laptop syncing all the time,
-        // and the owner asked for it gone (2026-11-13). A pass still runs
-        // when the app opens, on a pull or a tap, on a change, and in the
-        // background on its schedule.
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                if (!syncing) sync(quiet = true)
-            }
-        }
+        // No pass on opening, nor on a timer (the owner, 2026-11-14: "lets stop
+        // doing automatic syncing, it can only be triggered manually either by
+        // tapping on the middle button or refreshing on any screen"). A pass
+        // runs on Home's button, a pull on any screen, a change made here, and
+        // while connected, when a computer says it has something (StayConnected).
         continueSending(intent)
         fromNotice(intent)
         fromSetup(intent)

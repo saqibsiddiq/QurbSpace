@@ -63,7 +63,7 @@ class FolderPage(
         views.back.visibility = View.GONE
         views.title.visibility = View.GONE
         views.refresh.setColorSchemeResources(R.color.green)
-        views.refresh.setOnRefreshListener { load() }
+        views.refresh.setOnRefreshListener { app.sync(); load() }
     }
 
     override fun refresh() {
