@@ -33,8 +33,9 @@ also optional".
   no vibration, no status-bar icon on most phones, folded at the foot of the
   shade -- the word *Connected* in the app's green, hidden on the lock
   screen. Turning the switch off removes it.
-- Started when the app opens and after every background pass, which is how
-  it returns after a restart. Android 14's type for it is `specialUse`, with
+- Started when the app opens, after every background pass, when the phone
+  starts, and when the app has updated itself (`StartAgain.kt`): an update
+  stops the app, and on the S23 it was listening again seconds after one. Android 14's type for it is `specialUse`, with
   the reason given in the manifest; Google Play would review that.
 
 ## Consequences
@@ -48,7 +49,15 @@ also optional".
 - Push through a function of ours stays the way to drop the notification,
   before a public release.
 
+## Measured
+
+The S23 on home Wi-Fi, QurbSpace in the background, 2026-11-14: a 13-byte
+file sent from the laptop at 21:43:53 was heard of within a second, the
+laptop reached at 21:43:57, and the file collected 11.2 s after the send
+(the laptop's send list checked every half second). Before this, the same
+send was not collected in four minutes.
+
 ## Left undone
 
-- Not measured: seconds to collect, battery over a day, whether the OPPO
+- Not measured: battery over a day, whether the OPPO
   keeps it running.

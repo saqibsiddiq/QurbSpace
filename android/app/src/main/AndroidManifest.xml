@@ -37,6 +37,8 @@
     <!-- Stay connected (2026-11-14): listening for the person's computers,
          so a file sent to the phone arrives in seconds. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- And back after the phone restarts (StartAgain.kt). -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Asked once, on first opening: let the app run in the background, so
          a backup or a send carries on with the screen off. Phones that save
@@ -200,6 +202,14 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Listens for the person's own computers saying they have files for this phone, so they arrive at once; there is no push service." />
         </service>
+        <receiver
+            android:name=".StartAgain"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
         <receiver
             android:name=".UpdateReceiver"
             android:exported="false" />
