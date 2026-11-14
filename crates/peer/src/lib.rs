@@ -63,6 +63,21 @@ pub use client::PeerClient;
 /// it answers [`wire::Request::Onion`] with. None on a device hosting none.
 static HOSTED_ONION: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
 
+/// Codes this person's phones handed over for their Google accounts, waiting
+/// for the computer to exchange them (`Request::DriveCode`).
+static DRIVE_CODES: std::sync::Mutex<Vec<(qurb_sync::DeviceId, String)>> = std::sync::Mutex::new(Vec::new());
+
+pub fn drive_code_given(from: qurb_sync::DeviceId, code: String) {
+    if let Ok(mut codes) = DRIVE_CODES.lock() {
+        codes.push((from, code));
+    }
+}
+
+/// The codes given since last asked, each once.
+pub fn drive_codes_taken() -> Vec<(qurb_sync::DeviceId, String)> {
+    DRIVE_CODES.lock().map(|mut codes| std::mem::take(&mut *codes)).unwrap_or_default()
+}
+
 pub fn onion_hosted() -> Option<String> {
     HOSTED_ONION.lock().ok().and_then(|o| o.clone())
 }

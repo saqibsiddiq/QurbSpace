@@ -189,6 +189,10 @@ dependencies {
     // by Play services, carried across a reinstall and backed up end to end
     // encrypted with the screen lock (decision 0052).
     implementation("com.google.android.gms:play-services-auth-blockstore:16.4.0")
+    // Google's sign-in for the Drive mailbox (decision 0088, the owner's yes of
+    // 2026-11-14): its account sheet, and a one-time code the phone hands the
+    // computer so it can reach the same account's folder.
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
 
     // Background sync. WorkManager rather than a bare AlarmManager or a
     // foreground service: it is the only scheduler that survives reboots,

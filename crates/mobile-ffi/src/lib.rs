@@ -726,6 +726,10 @@ pub struct Qurb {
     /// it, for the app to fetch another.
     drive_token: Mutex<Option<String>>,
     drive_refused: std::sync::atomic::AtomicBool,
+    /// A one-time code for this phone's Google account, to hand to the
+    /// computers it reaches (`Request::DriveCode`), and whether one took it.
+    drive_code: Mutex<Option<String>>,
+    drive_code_handed: std::sync::atomic::AtomicBool,
     /// Each computer reached to browse it, kept while its connection lasts
     /// (the owner's list of 2026-11-01, item 7): opening a computer built
     /// a whole connection from nothing every time -- an endpoint, the relay,
@@ -1960,6 +1964,20 @@ impl Qurb {
         }
     }
 
+    /// A one-time code from Google for this phone's account, made for the
+    /// computers: handed to each one this phone reaches, which then reaches
+    /// the phone's own mailbox with nobody signing in there (2026-11-14).
+    pub fn set_drive_code(&self, code: Option<String>) {
+        if let Ok(mut held) = self.drive_code.lock() {
+            *held = code.filter(|c| !c.is_empty());
+        }
+    }
+
+    /// Whether a computer took the code since last asked.
+    pub fn drive_code_handed(&self) -> bool {
+        self.drive_code_handed.swap(false, std::sync::atomic::Ordering::Relaxed)
+    }
+
     /// Whether Google refused the token since last asked: the app then asks
     /// the account for a fresh one.
     pub fn drive_token_refused(&self) -> bool {
@@ -3067,6 +3085,8 @@ impl Qurb {
             serving: Arc::new(ServingStats::default()),
             drive_token: Mutex::new(None),
             drive_refused: std::sync::atomic::AtomicBool::new(false),
+            drive_code: Mutex::new(None),
+            drive_code_handed: std::sync::atomic::AtomicBool::new(false),
             kept_open: Mutex::new(std::collections::HashMap::new()),
             opening: Mutex::new(std::collections::HashMap::new()),
             reach_states: Arc::new(Mutex::new(std::collections::HashMap::new())),
@@ -3491,6 +3511,18 @@ impl Qurb {
                 accepting.push(runtime.spawn(async move {
                     qurb_peer::server::serve_connection_watched(connection, store, generation, watcher, &trust).await
                 }));
+            }
+            // This phone's Google account, handed to the computer reached.
+            if let Some(code) = self.drive_code.lock().ok().and_then(|c| c.clone()) {
+                if let Ok(Ok(true)) = runtime.block_on(async {
+                    tokio::time::timeout(std::time::Duration::from_secs(5), client.drive_code(&code)).await
+                }) {
+                    tracing::info!(computer = %peer.short(), "handed it this phone's Google account");
+                    self.drive_code_handed.store(true, std::sync::atomic::Ordering::Relaxed);
+                    if let Ok(mut held) = self.drive_code.lock() {
+                        *held = None;
+                    }
+                }
             }
             match self.sync_reached(&runtime, &client, peer, left) {
                 Ok(Some(stats)) => {

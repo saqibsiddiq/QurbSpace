@@ -948,6 +948,15 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
         // said.
         // Where this computer's onion service is, to its own person's
         // devices: the phone keeps it for when it is away from home.
+        // A phone of this person's handing over a code for its Google
+        // account, for this computer to reach its mailbox too.
+        Request::DriveCode { code } => match &owner {
+            Some(device) if !other_person => {
+                crate::drive_code_given(*device, code.clone());
+                Response::Noted
+            }
+            _ => Response::NotFound,
+        },
         Request::Onion => match crate::onion_hosted() {
             Some(onion) if !other_person && owner.is_some() => Response::About { kind: onion },
             _ => Response::NotFound,

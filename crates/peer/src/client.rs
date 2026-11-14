@@ -442,6 +442,17 @@ impl PeerClient {
     /// for a device paired before devices said so when pairing (decision
     /// 0053). `None` from a device that does not say: an older build answers
     /// "not found".
+    /// Hand the computer a one-time code for this phone's Google account
+    /// ([`Request::DriveCode`]). Whether it was taken; a build from before
+    /// cannot.
+    pub async fn drive_code(&self, code: &str) -> Result<bool> {
+        match self.request(Request::DriveCode { code: code.to_string() }).await {
+            Ok(Response::Noted) => Ok(true),
+            Ok(_) | Err(Error::Protocol { .. }) => Ok(false),
+            Err(e) => Err(e),
+        }
+    }
+
     /// The device's onion service, where it hosts one and says so
     /// ([`Request::Onion`]); none from a build from before.
     pub async fn onion(&self) -> Result<Option<String>> {

@@ -1003,6 +1003,25 @@ impl Daemon {
     /// post to those not reached on this pass: at most every
     /// [`MAILBOX_EVERY`] each, and only while the person has it on.
     async fn use_mailbox(&self, engine: &mut Engine, peers: &Peers) {
+        // Codes this person's phones handed over for their Google accounts:
+        // each exchanged for a lasting sign-in here, so the computer reaches
+        // the phone's own mailbox with nobody signing in on it (2026-11-14).
+        for (from, code) in qurb_peer::drive_codes_taken() {
+            let Some(client) = crate::drive_account::web_client() else {
+                tracing::warn!("a phone handed over its Google account, and QurbSpace's web client is not on this computer");
+                continue;
+            };
+            match qurb_mailbox::drive::exchange(&client, &code).await {
+                Ok(refresh) => {
+                    let account = refresh.account.clone().unwrap_or_default();
+                    match crate::drive_account::keep(&refresh) {
+                        Ok(()) => tracing::info!(phone = %from.short(), %account, "signed in to a phone's Google account, as it asked"),
+                        Err(e) => tracing::warn!(error = %e, "a phone's Google account could not be kept"),
+                    }
+                }
+                Err(e) => tracing::info!(phone = %from.short(), error = %e, "a phone's code for its Google account was not taken"),
+            }
+        }
         let accounts = crate::drive_account::accounts();
         if accounts.is_empty() {
             return;

@@ -309,27 +309,29 @@ class MainActivity : AppCompatActivity() {
         textSaver.launch(name)
     }
 
-    /** What to do once a Google account is picked for the mailbox. */
-    private var onDriveAccount: ((Boolean) -> Unit)? = null
+    /** What to do with Google's answer, once its screens are done. */
+    private var onDriveAnswer: ((com.google.android.gms.auth.api.identity.AuthorizationResult?) -> Unit)? = null
 
-    private val driveAccountPicker = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
+    private val driveResolver = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
-        val then = onDriveAccount
-        onDriveAccount = null
-        val name = result.data?.getStringExtra(android.accounts.AccountManager.KEY_ACCOUNT_NAME)
-        if (name == null) {
-            then?.invoke(false)
-            return@registerForActivityResult
-        }
-        GoogleDrive.signIn(this, name) { on -> then?.invoke(on) }
+        val then = onDriveAnswer
+        onDriveAnswer = null
+        val answer = runCatching {
+            com.google.android.gms.auth.api.identity.Identity.getAuthorizationClient(this)
+                .getAuthorizationResultFromIntent(result.data)
+        }.getOrNull()
+        then?.invoke(answer)
+    }
+
+    /** Show Google's account sheet and its question, and hear the answer. */
+    fun resolveDrive(intent: android.app.PendingIntent, then: (com.google.android.gms.auth.api.identity.AuthorizationResult?) -> Unit) {
+        onDriveAnswer = then
+        driveResolver.launch(androidx.activity.result.IntentSenderRequest.Builder(intent.intentSender).build())
     }
 
     /** Pick the Google account whose Drive is the mailbox, and allow it. */
-    fun pickDriveAccount(then: (Boolean) -> Unit) {
-        onDriveAccount = then
-        driveAccountPicker.launch(GoogleDrive.chooser())
-    }
+    fun pickDriveAccount(then: (Boolean) -> Unit) = GoogleDrive.signIn(this, then)
 
     /** What to do once a folder for received files is picked (decision 0086). */
     private var onReceivedFolder: (() -> Unit)? = null
@@ -447,14 +449,27 @@ class MainActivity : AppCompatActivity() {
     /**
      * Straight from setup's Connected: Photos chosen there is backed up once
      * Android allows reading the phone's folders, and WhatsApp once its
-     * folder is picked -- each asked here, where those flows live.
+     * folder is picked -- each asked here, where those flows live. Google
+     * Drive first, its account sheet on its own: the computer is handed the
+     * account on the next connection, so it never asks there.
      */
     private fun fromSetup(intent: Intent?) {
         intent ?: return
         val photos = intent.getBooleanExtra(SetupActivity.SETUP_PHOTOS, false)
         val whatsApp = intent.getBooleanExtra(SetupActivity.SETUP_WHATSAPP, false)
+        val drive = intent.getBooleanExtra(SetupActivity.SETUP_DRIVE, false)
         intent.removeExtra(SetupActivity.SETUP_PHOTOS)
         intent.removeExtra(SetupActivity.SETUP_WHATSAPP)
+        intent.removeExtra(SetupActivity.SETUP_DRIVE)
+        if (drive && GoogleDrive.account(this) == null) {
+            pickDriveAccount { on ->
+                if (on) say("Google Drive on")
+                afterSetupDrive(photos, whatsApp)
+            }
+        } else afterSetupDrive(photos, whatsApp)
+    }
+
+    private fun afterSetupDrive(photos: Boolean, whatsApp: Boolean) {
         if (photos && !Folders.allowed(this)) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) startActivity(Folders.allowing(this))
             else requestPermissions(Folders.OLDER, 0)

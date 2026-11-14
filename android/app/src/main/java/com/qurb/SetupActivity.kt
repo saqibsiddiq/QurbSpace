@@ -356,6 +356,10 @@ class SetupActivity : AppCompatActivity() {
     private var wantsPhotos = true
     private var wantsWhatsApp = false
 
+    /** Google Drive as the mailbox, asked here (the owner, 2026-11-14:
+     *  "include setting up google account during the setup of the phone"). */
+    private var wantsDrive = true
+
     /**
      * Connected (the setup stories of 2026-11-03): the computer's face, what
      * being connected means, and what to back up to it -- Photos on, WhatsApp
@@ -370,8 +374,19 @@ class SetupActivity : AppCompatActivity() {
         views.connectedTitle.text = "Connected to $name"
         views.connectedChoices.removeAllViews()
         val card = kit.card(views.connectedChoices)
-        for ((label, icon, on) in listOf(Triple("Photos", R.drawable.ic_image, wantsPhotos), Triple("WhatsApp", R.drawable.ic_whatsapp, wantsWhatsApp))) {
-            kit.toggle(card, label, "", on) { checked -> if (label == "Photos") wantsPhotos = checked else wantsWhatsApp = checked }.apply {
+        val choices = listOf(
+            Triple("Photos", R.drawable.ic_image, wantsPhotos),
+            Triple("WhatsApp", R.drawable.ic_whatsapp, wantsWhatsApp),
+            Triple("Google Drive", R.drawable.ic_cloud, wantsDrive),
+        )
+        for ((label, icon, on) in choices) {
+            kit.toggle(card, label, "", on) { checked ->
+                when (label) {
+                    "Photos" -> wantsPhotos = checked
+                    "WhatsApp" -> wantsWhatsApp = checked
+                    else -> wantsDrive = checked
+                }
+            }.apply {
                 this.label.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0)
                 this.label.compoundDrawablePadding = dp(14)
                 this.label.compoundDrawableTintList = android.content.res.ColorStateList.valueOf(kit.color(R.color.text_2))
@@ -392,7 +407,8 @@ class SetupActivity : AppCompatActivity() {
             }
             startActivity(Intent(this@SetupActivity, MainActivity::class.java)
                 .putExtra(SETUP_PHOTOS, wantsPhotos)
-                .putExtra(SETUP_WHATSAPP, wantsWhatsApp))
+                .putExtra(SETUP_WHATSAPP, wantsWhatsApp)
+                .putExtra(SETUP_DRIVE, wantsDrive))
             finish()
         }
     }
@@ -465,5 +481,6 @@ class SetupActivity : AppCompatActivity() {
         /** Into the app from Connected: back up Photos, and WhatsApp. */
         const val SETUP_PHOTOS = "setup-photos"
         const val SETUP_WHATSAPP = "setup-whatsapp"
+        const val SETUP_DRIVE = "setup-drive"
     }
 }

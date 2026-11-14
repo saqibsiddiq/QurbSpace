@@ -60,3 +60,37 @@ no library added; the waiting space capped at 2 GB.
 - Files over 64 MB; a resumable upload for larger packs.
 - WebDAV as a second place, for people who would rather not use Google.
 - Showing in the window and on the phone that something waits in the mailbox.
+
+## Amended 2026-11-14: each phone's own account, handed to the computer
+
+The owner, 2026-11-13: the new phone signs in to Google with another account
+than the laptop's. Then, 2026-11-14: "include setting up google account
+during the setup of the phone / and when that phone is connected to a laptop,
+the laptop must also get that google account associated with that phone"; and
+yes to Google's sign-in library (`play-services-auth` 21.3.0) for it.
+
+- **A computer may be signed in to several accounts** (commit d6b286c,
+  documented here late). `~/.config/qurb/google-drive.json` holds a list; the
+  old single sign-in is read as a list of one. A phone leaves a `hello`
+  letter for each of its computers in its own account's folder; the computer
+  collects from every account, and posts to a phone only in the account its
+  hello was found in. The window lists the accounts, adds one, removes one.
+- **The phone signs in through Google's sign-in**, not Android's account
+  list: Google's account sheet, the `drive.appdata` permission, and with it
+  a one-time code made for QurbSpace's *web* client
+  (`docs/google-drive-setup.md`, step 8). The access token is asked for
+  silently before each sync, as before.
+- **The phone hands the code to each computer it reaches**
+  (`Request::DriveCode`, wire tag 39, own devices only), before the sync.
+  The computer exchanges it with the web client's secret
+  (`~/.config/qurb/google-web-client.json`, mode 600, not committed) for a
+  lasting sign-in to the phone's account, and keeps it beside its own. So
+  the person signs in once, on the phone, and the computer is never asked.
+  A fresh code is asked for once a day, or until one was handed.
+- **Asked during setup**: *Connected* has a third switch, Google Drive, on by
+  default; Google's sheet follows in the app, and can be cancelled.
+
+Left undone: built and compiled, the exchange tested against a plain folder
+only; **not yet tried on a phone**. A code is single-use and short-lived, so
+one handed to a computer that is off is wasted until the next day's.
+

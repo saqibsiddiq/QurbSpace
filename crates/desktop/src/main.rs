@@ -153,7 +153,6 @@ fn run() -> Result<()> {
             commands::send_files,
             commands::sent_before,
             commands::phone_folders,
-            commands::choose_phone_folder,
             commands::backed_up_preview,
             commands::people,
             commands::person_folder,

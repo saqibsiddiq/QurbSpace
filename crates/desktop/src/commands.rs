@@ -1712,22 +1712,6 @@ pub fn phone_folders(hosted: Host<'_>, phone: String) -> Answer<PhoneFolders> {
         .map_err(failed)
 }
 
-/// Tick, or untick, a phone's folder. Only one the phone said it has: the
-/// phone checks again what it is pointed at, and this keeps the list clean.
-#[tauri::command(async)]
-pub fn choose_phone_folder(hosted: Host<'_>, phone: String, folder: String, chosen: bool) -> Answer<()> {
-    let device = own_phone(&hosted, &phone)?;
-    hosted
-        .with_store(|store| {
-            let db = store.db();
-            if chosen && !db.known_folders(&device.id)?.0.iter().any(|f| f.path == folder) {
-                return Err(anyhow::anyhow!("{} has no folder {folder}", device.name));
-            }
-            Ok(db.choose_folder(&device.id, &folder, chosen)?)
-        })
-        .map_err(failed)
-}
-
 /// How much of a backed-up photo is read for its thumbnail: the start, where
 /// a camera's JPEG carries one of its own (the EXIF thumbnail, inside the
 /// first 64 KB by that standard's rule).

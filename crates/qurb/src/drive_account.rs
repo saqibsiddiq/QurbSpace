@@ -21,6 +21,13 @@ pub fn client() -> Option<qurb_mailbox::drive::Client> {
     qurb_mailbox::drive::Client::from_json(&json)
 }
 
+/// The web client the owner made, which phones ask their codes for
+/// (docs/google-drive-setup.md, step 8).
+pub fn web_client() -> Option<qurb_mailbox::drive::Client> {
+    let json = std::fs::read_to_string(config_dir()?.join("google-web-client.json")).ok()?;
+    qurb_mailbox::drive::Client::from_json(&json)
+}
+
 fn accounts_file() -> Option<PathBuf> {
     config_dir().map(|dir| dir.join("google-drive.json"))
 }

@@ -106,33 +106,27 @@ async function sameDevice(older, newer) {
 }
 
 // ---------- A phone's folders (decision 0063) ----------
+// What the phone backs up here, and how much of it is kept: chosen on the
+// phone only (the owner, 2026-11-14), so nothing to switch on this page.
 
 async function drawPhoneFolders(main, d) {
   const body = h("div", {});
-  main.append(h("div", { class: "pg pg-narrow" }, pageHead("Back up folders", { words: d.name, go: () => go("device", d) }), body));
+  main.append(h("div", { class: "pg pg-narrow" }, pageHead("Backed up", { words: d.name, go: () => go("device", d) }), body));
   const draw = async () => {
     let answer;
     try { answer = await invoke("phone_folders", { phone: d.fingerprint }); } catch (e) { put(body, oops(e)); return; }
-    if (answer.seen_at == null || !answer.folders.length) {
+    const chosen = (answer.folders ?? []).filter((f) => f.chosen);
+    if (answer.seen_at == null || !chosen.length) {
       put(body, empty("smartphone", `On ${d.name}: QurbSpace, Settings, Backups, Back up your folders`));
       return;
     }
-    put(body, 
+    put(body,
       h("p", { class: "note" }, "Over Wi-Fi. Files deleted on the phone stay here"),
-      h("div", { class: "grp-box" }, ...answer.folders.map((f) => {
-        const depth = f.path.split("/").length - 1;
-        const s = setting({
-          ic: "folder",
-          name: depth ? base(f.path) : f.path,
-          value: f.kept_files ? `${f.kept_files.toLocaleString()} of ${f.files.toLocaleString()}` : `${f.files.toLocaleString()} ${f.files === 1 ? "file" : "files"}`,
-          end: toggle(f.chosen, async (on) => {
-            await invoke("choose_phone_folder", { phone: d.fingerprint, folder: f.path, chosen: on });
-            draw();
-          }, f.path),
-        });
-        s.style.paddingLeft = `${16 + depth * 28}px`;
-        return s;
-      })),
+      h("div", { class: "grp-box" }, ...chosen.map((f) => setting({
+        ic: "folder",
+        name: f.path,
+        value: `${f.kept_files.toLocaleString()} of ${f.files.toLocaleString()}`,
+      }))),
       h("p", { class: "note" }, `As ${d.name} said ${ago(answer.seen_at)}`));
   };
   draw();

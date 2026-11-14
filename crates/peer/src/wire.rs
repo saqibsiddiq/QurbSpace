@@ -252,6 +252,11 @@ pub enum Request {
     /// home network, so that a phone off it can reach the computer through
     /// Tor when the rendezvous service does not answer (2026-11-13).
     Onion,
+    /// A one-time code from Google, for the computer to reach the phone's own
+    /// Google Drive mailbox as well (decision 0088, 2026-11-14): exchanged on
+    /// the computer for a lasting sign-in to that account. From this person's
+    /// own phones only. Answered [`Response::Noted`].
+    DriveCode { code: String },
     /// An Office document turned into a PDF by the computer, to be shown on
     /// the phone: answered [`Response::Converted`], or [`Response::NotFound`]
     /// where it may not be read, is not Office, or nothing here converts it.
@@ -455,6 +460,7 @@ const TAG_EMPTY_DELETED: u8 = 35;
 const TAG_CONVERT: u8 = 36;
 const TAG_GOODBYE: u8 = 37;
 const TAG_ONION: u8 = 38;
+const TAG_DRIVE_CODE: u8 = 39;
 
 /// The most of a file one [`Request::Upload`] carries: a few chunks' worth,
 /// small enough that a slow link sends one in seconds.
@@ -677,6 +683,10 @@ impl Request {
             Request::EmptyDeleted => out.push(TAG_EMPTY_DELETED),
             Request::Goodbye => out.push(TAG_GOODBYE),
             Request::Onion => out.push(TAG_ONION),
+            Request::DriveCode { code } => {
+                out.push(TAG_DRIVE_CODE);
+                put_name(&mut out, code);
+            }
             Request::Convert { content, name } => {
                 out.push(TAG_CONVERT);
                 out.extend_from_slice(content);
@@ -780,6 +790,7 @@ impl Request {
             TAG_EMPTY_DELETED => Request::EmptyDeleted,
             TAG_GOODBYE => Request::Goodbye,
             TAG_ONION => Request::Onion,
+            TAG_DRIVE_CODE => Request::DriveCode { code: r.name()? },
             TAG_CONVERT => Request::Convert { content: r.hash()?, name: r.name()? },
             TAG_BECOME => {
                 let len = r.count()?;
@@ -1595,6 +1606,7 @@ mod tests {
             Request::EmptyDeleted,
             Request::Goodbye,
             Request::Onion,
+            Request::DriveCode { code: "4/0Ab32j9...".into() },
             Request::Convert { content: [7; 32], name: "lease.docx".into() },
             Request::Become { cert: vec![0x30, 0x82, 1, 2] },
         ] {

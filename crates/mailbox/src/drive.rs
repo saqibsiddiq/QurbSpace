@@ -29,10 +29,12 @@ pub struct Client {
 }
 
 impl Client {
-    /// Read from the JSON Google gives for a desktop client.
+    /// Read from the JSON Google gives for a desktop client, or for a web
+    /// one (the one a phone's codes are made for, [`exchange`]).
     pub fn from_json(json: &str) -> Option<Self> {
         let value: serde_json::Value = serde_json::from_str(json).ok()?;
-        serde_json::from_value(value.get("installed")?.clone()).ok()
+        let client = value.get("installed").or_else(|| value.get("web"))?;
+        serde_json::from_value(client.clone()).ok()
     }
 }
 
@@ -296,6 +298,50 @@ pub async fn sign_in(client: &Client, open: impl FnOnce(&str)) -> Result<Refresh
         .to_string();
     // Which account: the email in the ID token's middle part, not checked --
     // shown to the person, never trusted for anything.
+    let account = answer
+        .get("id_token")
+        .and_then(|t| t.as_str())
+        .and_then(|t| t.split('.').nth(1))
+        .and_then(unbase64url)
+        .and_then(|b| serde_json::from_slice::<serde_json::Value>(&b).ok())
+        .and_then(|v| v.get("email").and_then(|e| e.as_str()).map(String::from));
+    Ok(Refresh { client_id: client.client_id.clone(), client_secret: client.client_secret.clone(), refresh_token, account })
+}
+
+/// Exchange a one-time code a phone was given for its Google account
+/// (`Request::DriveCode`) for a lasting sign-in to that account: so the
+/// computer reaches the phone's own Drive mailbox with nobody signing in on
+/// it (the owner, 2026-11-14). `client` is the web client the phone asked
+/// the code for.
+pub async fn exchange(client: &Client, code: &str) -> Result<Refresh> {
+    let answer: serde_json::Value = reqwest::Client::new()
+        .post(TOKEN)
+        .form(&[
+            ("client_id", client.client_id.as_str()),
+            ("client_secret", client.client_secret.as_str()),
+            ("code", code),
+            ("grant_type", "authorization_code"),
+            // A code given to an Android app has no address to return to.
+            ("redirect_uri", ""),
+        ])
+        .send()
+        .await
+        .map_err(place)?
+        .json()
+        .await
+        .map_err(place)?;
+    let granted = answer.get("scope").and_then(|s| s.as_str()).unwrap_or_default();
+    if !granted.split_whitespace().any(|s| s == SCOPE) {
+        return Err(Error::Place(format!(
+            "the phone's code did not allow QurbSpace's folder: {}",
+            answer.get("error_description").or_else(|| answer.get("error")).and_then(|e| e.as_str()).unwrap_or("no reason given")
+        )));
+    }
+    let refresh_token = answer
+        .get("refresh_token")
+        .and_then(|t| t.as_str())
+        .ok_or_else(|| Error::Place("Google gave no refresh token for the phone's code".into()))?
+        .to_string();
     let account = answer
         .get("id_token")
         .and_then(|t| t.as_str())

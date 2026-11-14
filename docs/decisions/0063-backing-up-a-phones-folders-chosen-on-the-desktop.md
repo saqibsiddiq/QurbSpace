@@ -6,7 +6,8 @@ same day, all four steps, and seen on the S23 and the laptop: "All files
 access" measured on the S23 first
 ([experiments/file-access-speed](../../experiments/file-access-speed/README.md)),
 then a folder ticked on the laptop backed up from the phone. Amended the same
-day: chosen on either device, the later choice winning.
+day: chosen on either device, the later choice winning. Amended 2026-11-14:
+chosen on the phone only (below).
 **Date:** 2026-10-14
 
 ## What was asked
@@ -281,3 +282,15 @@ Cheap before step 2. After it, each folder is rows like WhatsApp's: no longer
 choosing a folder stops new files, and what was kept stays until the person
 drops it. The two asks are additions to the protocol, unused by a peer that
 does not send them.
+
+## Amended 2026-11-14: chosen on the phone only
+
+The owner: "why does desktop application have the ability to select backup
+folders, it must only show what files are being backed up". Supersedes the
+desktop's half of *chosen on either device* (2026-10-14): the computer's page
+for a phone lists only the chosen folders, each with how many of its files
+are kept here, and has no switches; the `choose_phone_folder` command is
+gone. The protocol is unchanged: the phone's choices still reach the
+computer with its answer to `Folders`, and a choice already made on a
+computer keeps until the phone changes it.
+

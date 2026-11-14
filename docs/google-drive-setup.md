@@ -10,7 +10,7 @@ whoever signs in (the `drive.appdata` scope), and nothing else. It cannot see
 or change that person's files, folders or anything else in their Drive. What it
 puts there is encrypted on the device before it leaves.
 
-Until the project is verified by Google (step 7), only Google accounts listed
+Until the project is verified by Google (step 8), only Google accounts listed
 as test users can sign in, up to 100. That is enough for testing.
 
 ---
@@ -75,12 +75,26 @@ does not treat that secret as secret — it ships inside every copy of the
 program — but keep the file out of the repository anyway: the build will read
 it from there, and it is not committed.
 
-## 6. Tell Claude it is done
+## 6. The web client: for the phone's account, handed to the computer
+
+So the computer can use the phone's Google account without anyone signing in
+on it (decision 0088, amended 2026-11-14): the phone asks Google for a
+one-time code made for this client and hands it to the computer.
+
+1. **Create credentials** → **OAuth client ID** again.
+2. Application type: **Web application**.
+3. Name: `QurbSpace Web`. No origins or redirect URIs.
+4. **Create** → **Download JSON**.
+5. Save it as `~/.config/qurb/google-web-client.json` on the laptop (mode
+   600). Its client ID is also written in the phone app
+   (`GoogleDrive.WEB_CLIENT_ID`); an identifier, not a secret.
+
+## 7. Tell Claude it is done
 
 Say the project is set up and the JSON is saved. No need to paste anything:
 the build reads the file.
 
-## 7. Later, before releasing to the public
+## 8. Later, before releasing to the public
 
 While in **Testing**, only the test users of step 3 can sign in, and Google
 asks them to sign in again every seven days. Before QurbSpace is offered to
