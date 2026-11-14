@@ -1,8 +1,9 @@
 //! A file of a phone's own vault deleted while its bytes are not on the phone
 //! -- freed to the computer keeping them, or a backup read where it lay --
 //! kept in Recently deleted all the same, and put back from the chunks the
-//! deleted row still lists (decision 0073). Before this, such a deletion kept
-//! nothing to restore, and the computer let go of the bytes within two weeks.
+//! deleted row still lists (decision 0073). Since 2026-11-14 nothing shows or
+//! restores it (decision 0089), and its chunks go with the ordinary retention
+//! window rather than thirty days; the store's restore path is still tested.
 
 use qurb_storage::{ChunkKey, OutsideEntry, Store};
 use std::time::Duration;
@@ -52,54 +53,44 @@ impl Phone {
 }
 
 #[test]
-fn a_freed_file_deleted_is_kept_and_put_back_on_its_chunks() {
+fn a_freed_file_deleted_costs_nothing_here_and_goes_with_the_week() {
     let mut phone = Phone::new();
     let bytes = vec![9u8; 3 << 20];
     phone.freed("Notes/diary.txt", &bytes);
 
-    let id = phone.store.delete_to_trash("Notes/diary.txt", None).unwrap().expect("nothing kept");
+    phone.store.delete_to_trash("Notes/diary.txt", None).unwrap().expect("nothing kept");
     let listed = phone.store.recently_deleted().unwrap();
     assert_eq!(listed.len(), 1);
-    assert_eq!(listed[0].path, "Notes/diary.txt");
     assert_eq!(listed[0].size, 0, "counted as costing space here");
     assert_eq!(phone.store.db().trash_bytes().unwrap(), 0);
-    // Nothing to free when space is short: it is not here.
     assert_eq!(phone.store.empty_trash_by(1).unwrap(), 0);
-    assert_eq!(phone.store.recently_deleted().unwrap().len(), 1, "let go of to free space it does not use");
 
-    // Past the week everything else deleted is kept for: still listed with
-    // its chunks, on the phone as on the computer keeping it.
+    // Past the week, gone like everything else deleted (decision 0089): the
+    // thirty days it was kept for Recently deleted are no more.
     phone.age("Notes/diary.txt", 10);
     phone.store.gc(Duration::from_secs(7 * DAY as u64)).unwrap();
-
-    let at = phone.store.restore_from_trash(id).unwrap();
-    assert_eq!(at, "Notes/diary.txt");
     let me = phone.store.device_id().unwrap();
-    let (row, scope) = phone.store.db().folder_row(&at).unwrap().expect("not back");
-    assert_eq!(scope, Some(me), "not back in the vault");
-    assert_eq!(row.content_hash, blake3::hash(&bytes));
-    assert_eq!(phone.store.db().is_materialised(&at).unwrap(), Some(false));
-    assert!(!phone.root.join(&at).exists(), "bytes written that were not here");
-    assert!(phone.store.recently_deleted().unwrap().is_empty());
+    assert!(phone.store.db().deleted_row_in("Notes/diary.txt", &me, &blake3::hash(&bytes)).unwrap().is_none());
 }
 
 #[test]
-fn a_vault_deletion_goes_with_recently_deleted_and_not_before() {
+fn a_vault_deletion_goes_with_the_retention_window() {
     let mut phone = Phone::new();
     phone.freed("old.txt", b"deleted long ago");
     phone.freed("recent.txt", b"deleted three weeks ago");
+    phone.freed("new.txt", b"deleted yesterday");
     phone.store.delete_to_trash("old.txt", None).unwrap();
     phone.store.delete_to_trash("recent.txt", None).unwrap();
+    phone.store.delete_to_trash("new.txt", None).unwrap();
     phone.age("old.txt", 31);
     phone.age("recent.txt", 21);
+    phone.age("new.txt", 1);
 
     let stats = phone.store.gc(Duration::from_secs(7 * DAY as u64)).unwrap();
-    assert_eq!(stats.tombstones_expired, 1);
+    assert_eq!(stats.tombstones_expired, 2);
     let me = phone.store.device_id().unwrap();
-    let old = blake3::hash(b"deleted long ago");
-    let recent = blake3::hash(b"deleted three weeks ago");
-    assert!(phone.store.db().deleted_row_in("old.txt", &me, &old).unwrap().is_none());
-    assert!(phone.store.db().deleted_row_in("recent.txt", &me, &recent).unwrap().is_some());
+    assert!(phone.store.db().deleted_row_in("recent.txt", &me, &blake3::hash(b"deleted three weeks ago")).unwrap().is_none());
+    assert!(phone.store.db().deleted_row_in("new.txt", &me, &blake3::hash(b"deleted yesterday")).unwrap().is_some());
 }
 
 #[test]

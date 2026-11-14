@@ -1819,7 +1819,13 @@ impl Qurb {
     /// chunks for 30.9 MB of files. Slow enough on a large store to belong off
     /// the main thread, like everything here.
     pub fn housekeep(&self) -> Result<Tidied, QurbError> {
-        let done = self.engine()?.housekeep(qurb_engine::RETENTION)?;
+        let mut engine = self.engine()?;
+        let done = engine.housekeep(qurb_engine::RETENTION)?;
+        if let Ok(peers) = engine.store().db().trusted_peers() {
+            let peers: Vec<_> = peers.iter().map(|p| qurb_peer::Fingerprint::from_bytes(p.fingerprint)).collect();
+            qurb_peer::trees::Trees::at(self.store_dir.join("trees")).keep_only(&peers);
+        }
+        drop(engine);
         Ok(Tidied {
             freed: done.bytes_freed(),
             tombstones_expired: done.collected.tombstones_expired as u32,

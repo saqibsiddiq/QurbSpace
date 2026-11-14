@@ -4,6 +4,55 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-14: what the phone apps take, and taking less
+
+The owner: "why are phone apps taking so much space? 1.39gb and 0.94gb ... i
+want my phone apps to take as little space as possible".
+
+**Measured** by a log the app writes on opening (`Space.kt`), over wireless
+debugging, 0.2.0-beta.10, both phones at home, after Recently deleted was
+removed (decision 0089):
+
+| | OPPO CPH2363 | Galaxy S23 |
+|---|---|---|
+| the app itself (`dumpsys diskstats`) | 26 MB | 26 MB |
+| all its data | 140 MB | 916 MB |
+| a file in the Private Vault, the person's own | -- | 387 MB |
+| Drive mailbox, arrivals no plan used | 34 MB | 346 MB |
+| the index, and its write-ahead log | 35 + 11 MB | 42 + 15 MB |
+| copies of the index before upgrades | -- | 2 x 38 MB |
+| Tor's directory | 20 MB | 28 MB |
+| other devices' lists (`trees`) | 15 MB | 17 MB |
+| files opened, cached | 12 MB | 0 |
+| thumbnails | 8 MB | 0 |
+
+Nothing is written to shared storage in the app's name (MediaStore, owner
+`com.qurb`: none on the OPPO). The owner's Android figures were taken before
+these, while Recently deleted still held files.
+
+**Changed** (built and tested by the suites; measured again on the OPPO only
+as far as item 1 -- opened files 12 MB to none -- and the mailbox's growth
+below):
+
+1. Opened files kept an hour, not a day, and 32 MB at most, not 200; tidied
+   when the app starts too (`Opened.kt`).
+2. The mailbox lets go of arrivals no plan wants once a day old
+   (`Mailbox::tidy_inbox`); before, they stayed for good. And the cause:
+   measured again on the OPPO after this build, the mailbox had grown to
+   137 MB, a collection taking 4 packs, 15.6 MB, and applying nothing. The
+   computer posted every file the phone was not known to hold, shared files
+   it never keeps among them. Now a device says what it wants and only that
+   is posted (decision 0088, amended).
+3. The index: the write-ahead log folded in and truncated at every
+   housekeeping, the file vacuumed when a quarter of it and 8 MB are free
+   pages (`Db::compact`); an upgrade keeps one copy of the index before it,
+   not one per upgrade, and lets it go after a fortnight.
+4. Lists kept for devices no longer paired deleted at housekeeping
+   (`Trees::keep_only`).
+
+Left: Tor's 20-28 MB kept on purpose (a warm start in about a second, a cold
+one about a minute); the app's own size and the thumbnail cap not touched.
+
 ## 2026-11-13: a new phone, an OPPO CPH2363
 
 The owner set up a second phone, an OPPO CPH2363 (Android 14, eight cores,

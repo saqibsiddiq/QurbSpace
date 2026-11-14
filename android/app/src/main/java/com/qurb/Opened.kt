@@ -95,11 +95,13 @@ object Opened {
         return java.io.File(folder.download(file, here.path))
     }
 
-    /** Files opened more than a day ago let go of, and the oldest beyond
-     *  [OPENED_MOST] in all. */
+    /** Files opened more than an hour ago let go of, and the oldest beyond
+     *  [OPENED_MOST] in all: when one is opened, and when the app starts.
+     *  An hour, not a day, since 2026-11-14 (the owner: the app "as little
+     *  space as possible"); long enough for the app showing one to have it. */
     fun tidy(context: Context) {
         val opened = java.io.File(context.cacheDir, OPENED)
-        val old = System.currentTimeMillis() - 24L * 60 * 60 * 1000
+        val old = System.currentTimeMillis() - 60L * 60 * 1000
         val kept = opened.listFiles()?.sortedByDescending { it.lastModified() } ?: return
         var total = 0L
         for (dir in kept) {
@@ -113,5 +115,5 @@ object Opened {
     /** Larger than this, a file is read as it is shown rather than fetched first. */
     private const val STREAM_FROM: ULong = 16_777_216uL
     /** The most the cache of opened files holds. */
-    private const val OPENED_MOST = 200L * 1024 * 1024
+    private const val OPENED_MOST = 32L * 1024 * 1024
 }

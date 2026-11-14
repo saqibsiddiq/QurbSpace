@@ -93,13 +93,8 @@ fn a_phones_deletion_is_listed_and_put_back_at_the_computer() {
     assert_eq!(listed[0].deleted_by, Some(phone));
     assert_eq!(listed[0].size, 0, "counted as bytes in trash/, which it has none of");
 
-    // Past the week the computer keeps other deletions for.
-    computer
-        .store
-        .db()
-        .conn()
-        .execute("UPDATE files SET deleted_at = deleted_at - ?1", [10 * 24 * 3600])
-        .unwrap();
+    // Within the week deletions are kept for: past it, since 2026-11-14,
+    // it goes like any other (decision 0089).
     computer.store.gc(Duration::from_secs(7 * 24 * 3600)).unwrap();
 
     assert_eq!(computer.store.restore_from_trash(listed[0].id).unwrap(), "Notes/diary.txt");

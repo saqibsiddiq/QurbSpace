@@ -368,6 +368,10 @@ impl Daemon {
             }
             Err(e) => tracing::warn!(error = %e, "housekeeping failed"),
         }
+        if let Ok(peers) = engine.store().db().trusted_peers() {
+            let peers: Vec<_> = peers.iter().map(|p| Fingerprint::from_bytes(p.fingerprint)).collect();
+            qurb_peer::trees::Trees::at(self.store_dir.join("trees")).keep_only(&peers);
+        }
 
         // No storage limit enforced here: a computer is everyone's server and
         // keeps everything in Shared (the owner's review of 2026-11-03, F-3),

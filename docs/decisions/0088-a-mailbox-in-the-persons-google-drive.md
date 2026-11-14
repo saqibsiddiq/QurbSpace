@@ -102,3 +102,23 @@ Left undone: the setup switch not yet tried; nothing yet posted or collected
 through the handed account (the phone was reachable directly). A code is single-use and short-lived, so
 one handed to a computer that is off is wasted until the next day's.
 
+## Amended 2026-11-14: only what was asked for
+
+Found measuring the phones' space (testing.md, 2026-11-14): the computer
+posted every file in a phone's list that the phone was not known to hold, so
+the phone collected packs of files its plan never fetches -- shared files it
+opens from the computer, for one -- and posted again each day. The OPPO had
+137 MB of them waiting, none applied ("applied=0 waiting=0"); the S23 346 MB.
+
+- After planning from a list, a device leaves a **`want`** letter: the
+  contents its plan still waits for from the other, sealed, one letter, the
+  older taken away, and written again only when it changed.
+- The other posts **only those**. A device that has never left one -- a build
+  before this -- is posted to as before.
+- Arrivals no plan wants are let go of a day after they came
+  (`Mailbox::tidy_inbox`).
+
+So a new file reaches the other device one round later than before: its list
+first, then the want, then the packs. Tested by `only_what_was_asked_for_is_posted`
+(`crates/mailbox/tests/exchange.rs`), through a folder; not yet through Drive.
+

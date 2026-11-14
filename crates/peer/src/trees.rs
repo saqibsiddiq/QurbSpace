@@ -62,6 +62,20 @@ impl Trees {
         self.dir.join(format!("list-{peer}.bin"))
     }
 
+    /// The lists of devices no longer paired let go of: a device removed, or
+    /// set up again under a new identity, left its list here for good (17 MB
+    /// on the S23 on 2026-11-14, the owner wanting the app small).
+    pub fn keep_only(&self, peers: &[Fingerprint]) {
+        let kept: std::collections::HashSet<String> = peers.iter().map(|p| format!("list-{p}.bin")).collect();
+        let Ok(entries) = std::fs::read_dir(&self.dir) else { return };
+        for entry in entries.flatten() {
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if name.starts_with("list-") && !kept.contains(&name) {
+                let _ = std::fs::remove_file(entry.path());
+            }
+        }
+    }
+
     /// The list kept for `peer`, if there is one and it is whole.
     pub fn load(&self, peer: &Fingerprint) -> Option<KeptList> {
         let bytes = std::fs::read(self.path(peer)).ok()?;

@@ -407,6 +407,10 @@ impl Engine {
         // of 2026-10-26, item 8).
         let _ = self.store.db().forget_old_activity();
         let reclaimed = self.store.reclaim()?;
+        // Best effort: an index not compacted now is next time.
+        if let Err(e) = self.store.db().compact() {
+            tracing::warn!(error = %e, "the index was not compacted");
+        }
         Ok(Housekeeping { collected, reclaimed, expired, called_off, sends_done })
     }
 

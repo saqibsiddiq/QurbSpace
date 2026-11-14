@@ -939,13 +939,57 @@ impl Db {
         }
         // About to be migrated: a copy first, as it was, so an upgrade can be
         // undone by putting the older build back with its index. Migrations
-        // only go forward; this is the way back. One copy, the latest.
+        // only go forward; this is the way back. One copy, the latest: each
+        // was named by its schema, so until 2026-11-14 every upgrade's stayed
+        // (two of 38 MB on the S23), and the older ones are let go of here.
         if applied > 0 && (applied as usize) < MIGRATIONS.len() {
             let before = path.with_file_name(format!("index.before-schema-{}.db", MIGRATIONS.len()));
             let _ = std::fs::remove_file(&before);
             conn.execute("VACUUM INTO ?1", params![before.to_string_lossy()])?;
+            for old in Self::copies_before(path) {
+                if old != before {
+                    let _ = std::fs::remove_file(old);
+                }
+            }
         }
         Self::init(conn)
+    }
+
+    /// The copies an upgrade made before migrating (`index.before-schema-N.db`).
+    fn copies_before(path: &Path) -> Vec<std::path::PathBuf> {
+        let Some(dir) = path.parent() else { return Vec::new() };
+        let Ok(entries) = std::fs::read_dir(dir) else { return Vec::new() };
+        entries
+            .flatten()
+            .map(|e| e.path())
+            .filter(|p| p.file_name().and_then(|n| n.to_str()).is_some_and(|n| n.starts_with("index.before-schema-") && n.ends_with(".db")))
+            .collect()
+    }
+
+    /// Keep the index small on disk (the owner, 2026-11-14: the apps "as
+    /// little space as possible"): the write-ahead log folded in and cut back
+    /// to nothing -- 15 MB on the S23 -- and the file rewritten without its
+    /// free pages once they are a quarter of it and 8 MB or more. And an
+    /// upgrade's copy (decision 0047) let go of a fortnight on, when the
+    /// build it would go back to has long been replaced.
+    pub fn compact(&self) -> Result<()> {
+        let page: i64 = self.conn.pragma_query_value(None, "page_size", |r| r.get(0))?;
+        let pages: i64 = self.conn.pragma_query_value(None, "page_count", |r| r.get(0))?;
+        let free: i64 = self.conn.pragma_query_value(None, "freelist_count", |r| r.get(0))?;
+        if free * page >= 8 << 20 && free * 4 >= pages {
+            self.conn.execute_batch("VACUUM")?;
+        }
+        self.conn.query_row("PRAGMA wal_checkpoint(TRUNCATE)", [], |_| Ok(()))?;
+        if let Some(path) = self.conn.path().filter(|p| !p.is_empty()) {
+            let fortnight = std::time::Duration::from_secs(14 * 24 * 60 * 60);
+            for old in Self::copies_before(Path::new(path)) {
+                let aged = std::fs::metadata(&old).and_then(|m| m.modified()).ok().and_then(|t| t.elapsed().ok());
+                if aged.is_some_and(|age| age > fortnight) {
+                    let _ = std::fs::remove_file(old);
+                }
+            }
+        }
+        Ok(())
     }
 
     #[cfg(test)]

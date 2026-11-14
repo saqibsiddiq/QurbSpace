@@ -371,6 +371,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Engine.watchNetwork(applicationContext)
+        lifecycleScope.launch(Dispatchers.IO) {
+            runCatching { Opened.tidy(applicationContext) }
+            runCatching { Space.log(applicationContext) }
+        }
 
         // Not set up, or set up and closed before the 24 words were typed
         // back: the setup screen knows which, and picks up from there.

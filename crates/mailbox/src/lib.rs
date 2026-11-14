@@ -186,6 +186,12 @@ enum Kind {
     /// A device saying it uses this folder: how a computer signed in to
     /// several accounts learns which is each phone's (2026-11-13).
     Hello,
+    /// The contents a device's plan still wants from the other, so the other
+    /// posts those and nothing else (2026-11-14): without it a computer
+    /// posted every file the phone was not known to hold, shared files the
+    /// phone opens from the computer and never keeps among them, again each
+    /// day -- 137 MB waiting on the OPPO, none of it applied.
+    Want,
 }
 
 impl Kind {
@@ -195,6 +201,7 @@ impl Kind {
             Kind::Pack => "pack",
             Kind::Got => "got",
             Kind::Hello => "hello",
+            Kind::Want => "want",
         }
     }
 }
@@ -225,6 +232,7 @@ fn read_name(name: &str) -> Option<(String, String, Kind)> {
         "pack" => Kind::Pack,
         "got" => Kind::Got,
         "hello" => Kind::Hello,
+        "want" => Kind::Want,
         _ => return None,
     };
     Some((to.to_string(), from.to_string(), kind))
@@ -296,6 +304,10 @@ struct Kept {
     /// A device, by its short name, to the fingerprint of the list last
     /// posted to it.
     lists: BTreeMap<String, String>,
+    /// A device, by its short name, to the fingerprint of the contents last
+    /// said to be wanted from it.
+    #[serde(default)]
+    wants: BTreeMap<String, String>,
 }
 
 /// One device's side of the folder.
@@ -448,11 +460,24 @@ impl Mailbox {
         }
         self.keep(&kept);
 
+        // What it said it still wants, if it has said: only those are posted.
+        // A device that never says (a build before 2026-11-14) is posted what
+        // it is not known to hold, as before.
+        let mut wants = Self::between(&letters, &self.me, &them, Kind::Want);
+        wants.sort_by(|a, b| a.name.cmp(&b.name));
+        let wanted: Option<std::collections::HashSet<[u8; 32]>> = match wants.last() {
+            Some(latest) => {
+                let plain = open(&self.key, &self.place.get(latest).await?).unwrap_or_default();
+                Some(plain.chunks_exact(32).map(|c| c.try_into().expect("32 bytes")).collect())
+            }
+            None => None,
+        };
+
         // Packs, a few at a time: read under the engine, sent without it.
         let mut waiting: u64 = Self::between(&letters, &them, &self.me, Kind::Pack).iter().map(|l| l.size).sum();
         let mut from = 0usize;
         while from < tree.len() && waiting < CAP && started.elapsed() < budget {
-            let (packs, next, bytes) = holds.store(|store| self.gather(store, &tree, from, &them, &mut kept))?;
+            let (packs, next, bytes) = holds.store(|store| self.gather(store, &tree, from, &them, wanted.as_ref(), &mut kept))?;
             from = next;
             for pack in packs {
                 waiting += pack.len() as u64;
@@ -469,7 +494,15 @@ impl Mailbox {
     /// From `tree[from..]`, the contents `them` is not known to hold, sealed
     /// into up to [`ROUND`] packs; where it stopped; and the bytes of content
     /// taken. A file over [`LARGEST`] is left for a live path.
-    fn gather(&self, store: &Store, tree: &[FileVersion], from: usize, them: &DeviceId, kept: &mut Kept) -> Result<(Vec<Vec<u8>>, usize, u64)> {
+    fn gather(
+        &self,
+        store: &Store,
+        tree: &[FileVersion],
+        from: usize,
+        them: &DeviceId,
+        wanted: Option<&std::collections::HashSet<[u8; 32]>>,
+        kept: &mut Kept,
+    ) -> Result<(Vec<Vec<u8>>, usize, u64)> {
         let now = now();
         let mut packs = Vec::new();
         let mut pieces: Vec<Piece> = Vec::new();
@@ -480,7 +513,7 @@ impl Mailbox {
             let file = &tree[at];
             at += 1;
             let Content::File { hash, size } = file.content else { continue };
-            if size == 0 || size > LARGEST {
+            if size == 0 || size > LARGEST || wanted.is_some_and(|w| !w.contains(&hash)) {
                 continue;
             }
             if kept.posted.get(&hex(&hash)).is_some_and(|t| now.saturating_sub(*t) < POST_AGAIN) {
@@ -559,14 +592,18 @@ impl Mailbox {
         // Planned as from a list fetched live; applied only where the
         // contents are here, so a backup half-arrived is no failure.
         let inbox = self.dir.join("in");
+        let mut wanted = std::collections::HashSet::new();
+        let mut still: std::collections::BTreeSet<[u8; 32]> = std::collections::BTreeSet::new();
         let received = holds.engine(|engine| -> Result<Vec<[u8; 32]>> {
             let plan = engine.plan_with(&tree, Some(&them))?;
+            wanted.extend(plan.iter().filter_map(needed));
             let (ready, waiting): (Vec<Action>, Vec<Action>) = plan.into_iter().partition(|action| {
                 needed(action).is_none_or(|hash| {
                     inbox.join(hex(&hash)).exists() || engine.store().can_read_content(&blake3::Hash::from(hash)).unwrap_or(false)
                 })
             });
             collected.waiting = waiting.len();
+            still.extend(waiting.iter().filter_map(needed));
             if ready.is_empty() {
                 return Ok(Vec::new());
             }
@@ -583,7 +620,53 @@ impl Mailbox {
             }
             self.place.put(&letter_name(&them, &self.me, Kind::Got), seal(&self.key, &receipt)).await?;
         }
+        self.tidy_inbox(&wanted);
+        self.say_wanted(&letters, &them, &still).await?;
         Ok(collected)
+    }
+
+    /// Tell `them` what is still wanted from it, when that changed: one
+    /// letter, the older ones taken away.
+    async fn say_wanted(&self, letters: &[Letter], them: &DeviceId, still: &std::collections::BTreeSet<[u8; 32]>) -> Result<()> {
+        let mut plain = Vec::with_capacity(still.len() * 32);
+        for content in still {
+            plain.extend_from_slice(content);
+        }
+        let digest = blake3::hash(&plain).to_hex().to_string();
+        let mut kept = self.kept();
+        let mine = Self::between(letters, them, &self.me, Kind::Want);
+        if kept.wants.get(&short(them)) == Some(&digest) && !mine.is_empty() {
+            return Ok(());
+        }
+        self.place.put(&letter_name(them, &self.me, Kind::Want), seal(&self.key, &plain)).await?;
+        for letter in &mine {
+            self.place.delete(letter).await?;
+        }
+        kept.wants.insert(short(them), digest);
+        self.keep(&kept);
+        Ok(())
+    }
+
+    /// What arrived and no plan wants any more -- a file deleted or changed
+    /// again before its contents came, or already had another way -- let go
+    /// of once a day old, whole or in part. Until 2026-11-14 it stayed: 346 MB
+    /// of the S23's 916 (the owner: "i want my phone apps to take as little
+    /// space as possible"). A day, so a file another device's list still
+    /// wants is not dropped between its collections.
+    fn tidy_inbox(&self, wanted: &std::collections::HashSet<[u8; 32]>) {
+        let day = std::time::Duration::from_secs(24 * 60 * 60);
+        let Ok(entries) = std::fs::read_dir(self.dir.join("in")) else { return };
+        for entry in entries.flatten() {
+            let name = entry.file_name().to_string_lossy().into_owned();
+            let content = name.split('.').next().and_then(unhex);
+            if content.is_some_and(|c| wanted.contains(&c)) {
+                continue;
+            }
+            let old = entry.metadata().and_then(|m| m.modified()).ok().and_then(|t| t.elapsed().ok()).is_some_and(|age| age > day);
+            if old {
+                let _ = std::fs::remove_file(entry.path());
+            }
+        }
     }
 
     /// A piece written where its content is being put together, and the
@@ -666,6 +749,18 @@ fn now() -> u64 {
 
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
+}
+
+/// A content hash from its name in the inbox, as [`hex`] wrote it.
+fn unhex(text: &str) -> Option<[u8; 32]> {
+    if text.len() != 64 {
+        return None;
+    }
+    let mut out = [0u8; 32];
+    for (i, byte) in out.iter_mut().enumerate() {
+        *byte = u8::from_str_radix(text.get(i * 2..i * 2 + 2)?, 16).ok()?;
+    }
+    Some(out)
 }
 
 #[cfg(test)]

@@ -81,9 +81,41 @@ async fn what_one_device_posts_the_other_collects_and_the_receipt_comes_back() {
     let small = blake3::hash(b"a note from the phone");
     assert!(phone.engine.store().db().device_holds(&small, &laptop.id()).unwrap(), "not recorded as delivered");
 
-    // Nothing left in the folder but the list.
+    // Nothing left in the folder but the list, and what the laptop wants.
     let left: Vec<_> = fs::read_dir(folder.path()).unwrap().flatten().map(|e| e.file_name().to_string_lossy().to_string()).collect();
-    assert!(left.iter().all(|n| n.contains(".list.")), "{left:?}");
+    assert!(left.iter().all(|n| n.contains(".list.") || n.contains(".want.")), "{left:?}");
+}
+
+async fn post(at: &Mailbox, device: &mut Device, to: &qurb_storage::db::TrustedPeer) -> qurb_mailbox::Posted {
+    at.post(&qurb_mailbox::Owned(std::sync::Mutex::new(&mut device.engine)), to, Duration::from_secs(60)).await.unwrap()
+}
+
+/// Once a device has said what it wants, the other posts that and nothing
+/// else (2026-11-14): a new file waits for the list that names it to be
+/// planned from and asked for, rather than being posted on the chance.
+#[tokio::test(flavor = "multi_thread")]
+async fn only_what_was_asked_for_is_posted() {
+    let folder = tempfile::tempdir().unwrap();
+    let mut phone = Device::new();
+    let mut laptop = Device::new();
+    let laptop_as_seen = phone.trust(&laptop, "Laptop");
+    let phone_as_seen = laptop.trust(&phone, "Phone");
+    let at_phone = phone.mailbox(folder.path());
+    let at_laptop = laptop.mailbox(folder.path());
+
+    phone.write("a.txt", b"first");
+    assert!(post(&at_phone, &mut phone, &laptop_as_seen).await.packs > 0, "a device that has said nothing is posted to as before");
+    at_laptop.collect(&qurb_mailbox::Owned(std::sync::Mutex::new(&mut laptop.engine)), &phone_as_seen, Duration::from_secs(60)).await.unwrap();
+
+    // The laptop has all it wanted, and said so: a new file is not posted
+    // until it asks.
+    phone.write("b.txt", b"second");
+    assert_eq!(post(&at_phone, &mut phone, &laptop_as_seen).await.packs, 0);
+    let collected = at_laptop.collect(&qurb_mailbox::Owned(std::sync::Mutex::new(&mut laptop.engine)), &phone_as_seen, Duration::from_secs(60)).await.unwrap();
+    assert_eq!(collected.waiting, 1, "{collected:?}");
+    assert!(post(&at_phone, &mut phone, &laptop_as_seen).await.packs > 0, "asked for, and not posted");
+    at_laptop.collect(&qurb_mailbox::Owned(std::sync::Mutex::new(&mut laptop.engine)), &phone_as_seen, Duration::from_secs(60)).await.unwrap();
+    assert_eq!(fs::read(laptop.root.join("b.txt")).unwrap(), b"second");
 }
 
 #[tokio::test(flavor = "multi_thread")]

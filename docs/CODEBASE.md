@@ -1045,7 +1045,11 @@ qurb/
 │       │                                      disk and what fills it
 │       │                                      (Request::Storage); this phone's cache
 │       │                  Opened.kt           a file of a computer's folder,
-│       │                                      opened without keeping it
+│       │                                      opened without keeping it: an
+│       │                                      hour, 32 MB at most
+│       │                  Space.kt            what the app's storage holds,
+│       │                                      folder by folder, to the log
+│       │                                      on opening (testing.md 2026-11-14)
 │       │                  StreamProvider.kt   a large file of it opened in another
 │       │                                      app as it arrives, seekable, read
 │       │                                      a chunk at a time
@@ -1872,7 +1876,11 @@ raises no error doing it. See
 same as running it: until the storage cap went in, `Store::gc` had no caller
 outside tests, and superseded chunks accumulated without limit. The daemon now
 collects on a five-minute timer with a seven-day retention window, before it
-checks the limit, emptying the store's `trash/` first (decision 0089).
+checks the limit, emptying the store's `trash/` first (decision 0089), and
+compacts the index (`Db::compact`: the write-ahead log truncated, a vacuum
+when free pages are a quarter of it). A phone and the daemon also delete the
+lists kept for devices no longer paired (`Trees::keep_only`), and a mailbox
+lets go of arrivals no plan wants once a day old (`Mailbox::tidy_inbox`).
 
 **Availability** — files being unreachable when every device is switched off —
 is answered by storage-only replicas, decided in
