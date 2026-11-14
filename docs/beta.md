@@ -68,20 +68,25 @@ reset first (*Reset this device*), since the testers will all be new users.
 
 | | item | S23 | OPPO | laptop |
 |---|---|---|---|---|
-| 1 | Set up from nothing: install, pair by QR, and by six digits | | | |
-| 2 | Setup's *Connected*: Photos, WhatsApp, Google Drive switches | | | |
-| 3 | Photos backed up; WhatsApp backed up | | | |
-| 4 | A send each way, on Wi-Fi: how many seconds | | | |
-| 4b | A send to a phone with the app in the background (Stay connected, decision 0090) | ❌ before 0090: not collected in 4 min | | |
+| 1 | Set up from nothing: install, pair by QR, and by six digits | | ✅ six digits, after two fixes: a stale key from the Google backup offered with no way to join; Google's code replaced before it was handed | ✅ |
+| 2 | Setup's *Connected*: Photos, WhatsApp, Google Drive switches | | ✅ | |
+| 3 | Photos backed up; WhatsApp backed up | | ✅ set up again, recognised as itself: 1,309 files checked in 0.5 s, all already on the laptop | |
+| 4 | A send each way, on Wi-Fi: how many seconds | ✅ phone to laptop, 3.2 MB in 7 s, identical; laptop to phone on opening | | ✅ |
+| 4b | A send to a phone with the app in the background (Stay connected, decision 0090) | ❌ before 0090: not collected in 4 min; ✅ after: 11.2 s | | |
 | 5 | A send and browsing on mobile data, away from home | | | |
-| 6 | A preview of a large photo, remotely | | | |
+| 6 | A preview of a large photo, remotely | ✅ the laptop's folder listed in 3.4 s, a photo's viewer open in under 4 s (the image itself not looked at) | | |
 | 7 | Laptop off: a send through Drive, collected when it starts | | | |
-| 8 | The Drive account handed from the phone to the laptop | | | |
+| 8 | The Drive account handed from the phone to the laptop | | ✅ 17:42, 62 s (before it was made instant) | ✅ |
 | 9 | Settings: every control once | | | |
 | 10 | Space the app takes, after a day (testing.md, 2026-11-14) | | | |
 | 11 | Updates: beta.9 updating itself to beta.10, phone and laptop | | | |
 | 12 | A restore drill: the app's data cleared on the OPPO, its files back from the laptop | | | |
 | 13 | Windows: the zip run on a Windows machine, if one can be borrowed | | | |
+
+Also found and fixed in the pass: the laptop had posted the S23 271 packs
+(about 1 GB) through Drive that it never used, collected at 17 MB a pass
+(decision 0088, amended); Settings showed "Google account" rather than the
+address.
 
 Item 11 matters most for the owner's own laptop: its installed app is
 beta.5, which cannot open the current folder (testing.md, *Found, and left*).

@@ -31,6 +31,8 @@ object GoogleDrive {
     private const val ACCOUNT = "account"
     private const val HANDED = "handed_at"
     private const val DRIVE = "https://www.googleapis.com/auth/drive.appdata"
+    /** Kept as the account until its address is known. */
+    private const val PLACEHOLDER = "Google account"
 
     /** The web client the codes are made for (docs/google-drive-setup.md,
      *  step 8). An identifier, not a secret: it is in every copy of the app. */
@@ -71,7 +73,7 @@ object GoogleDrive {
     fun taken(context: Context, result: AuthorizationResult): Boolean {
         val token = result.accessToken ?: return false
         val email = runCatching { result.toGoogleSignInAccount()?.email }.getOrNull()
-        prefs(context).edit().putString(ACCOUNT, email ?: "Google account").apply()
+        prefs(context).edit().putString(ACCOUNT, email ?: PLACEHOLDER).apply()
         Engine.current()?.setDriveToken(token)
         result.serverAuthCode?.let { Engine.current()?.setDriveCode(it) }
         return true
@@ -98,6 +100,24 @@ object GoogleDrive {
             Tasks.await(Identity.getAuthorizationClient(context).authorize(request(code = false)), 20, TimeUnit.SECONDS)
         }.onFailure { Log.w(TAG, "no Google Drive token", it) }.getOrNull() ?: return@withContext
         if (result.hasResolution()) return@withContext
-        result.accessToken?.let { engine.setDriveToken(it) }
+        val token = result.accessToken ?: return@withContext
+        engine.setDriveToken(token)
+        // The address, where the sign-in did not say it: Settings showed
+        // "Google account" on the S23 (the device pass of 2026-11-14).
+        if (account(context) == PLACEHOLDER) address(token)?.let { prefs(context).edit().putString(ACCOUNT, it).apply() }
     }
+
+    /** The account's address, asked of Google with the `email` permission
+     *  the sign-in already has. */
+    private fun address(token: String): String? = runCatching {
+        val connection = java.net.URL("https://www.googleapis.com/oauth2/v3/userinfo").openConnection() as java.net.HttpURLConnection
+        connection.setRequestProperty("Authorization", "Bearer $token")
+        connection.connectTimeout = 10_000
+        connection.readTimeout = 10_000
+        try {
+            org.json.JSONObject(connection.inputStream.bufferedReader().readText()).optString("email").takeIf { it.isNotEmpty() }
+        } finally {
+            connection.disconnect()
+        }
+    }.getOrNull()
 }
