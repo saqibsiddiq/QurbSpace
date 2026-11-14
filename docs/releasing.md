@@ -1,5 +1,8 @@
 # Releasing qurb
 
+**The open beta of 2026-11 is planned in [beta.md](beta.md)**: what testers
+are told, what is done before the tag, and the device pass.
+
 How a release is built, what is in it, who each package is for, and — the part
 that matters most — **what has been run on what, and what has not**. Read the
 last two sections before handing anything to anybody.
