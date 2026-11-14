@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: A security problem
+    url: https://github.com/saqibsiddiq/QurbSpace/security/advisories/new
+    about: Please report it privately, not as an issue.
+  - name: A question
+    url: https://github.com/saqibsiddiq/QurbSpace/discussions
+    about: Ask, or tell us how it is going.

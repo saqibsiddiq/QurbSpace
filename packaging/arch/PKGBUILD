@@ -22,7 +22,7 @@ pkgver=0.1.0
 pkgrel=1
 pkgdesc="Private cloud storage: your files, synced directly between your own devices"
 arch=('x86_64' 'aarch64')
-url="https://github.com/saqibsiddiq/Qurb"
+url="https://github.com/saqibsiddiq/QurbSpace"
 license=('MIT OR Apache-2.0')
 depends=('webkit2gtk-4.1' 'gtk3' 'glibc' 'gcc-libs')
 # The tray icon, for whoever runs qurb-tray; the window needs nothing more.

@@ -17,7 +17,7 @@
 
 [Unit]
 Description=qurb rendezvous service (own certificate)
-Documentation=https://github.com/saqibsiddiq/Qurb
+Documentation=https://github.com/saqibsiddiq/QurbSpace
 After=network-online.target
 Wants=network-online.target
 

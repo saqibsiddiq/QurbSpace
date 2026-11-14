@@ -14,7 +14,7 @@
 # The computer's own qurb uses signal = ws://localhost:9000.
 [Unit]
 Description=qurb rendezvous service, for this computer's own devices
-Documentation=https://github.com/saqibsiddiq/Qurb/blob/main/packaging/server/README.md
+Documentation=https://github.com/saqibsiddiq/QurbSpace/blob/main/packaging/server/README.md
 
 [Service]
 EnvironmentFile=-%h/.config/qurb/rendezvous.env

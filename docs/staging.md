@@ -118,7 +118,7 @@ services' and Caddy's logs and the server's traffic, and make one dashboard:
 traffic in and out, the services up or down, their logs searchable.
 
 **5. Apps — me, then you.** *Done 2026-11-01, for updates:* the first beta,
-[v0.2.0-beta.1](https://github.com/saqibsiddiq/Qurb/releases/tag/v0.2.0-beta.1),
+[v0.2.0-beta.1](https://github.com/saqibsiddiq/QurbSpace/tree/v0.2.0-beta.1) (its release since deleted),
 built and signed by `.github/workflows/release.yml` and updating itself
 ([updates.md](updates.md)); the laptop runs its AppImage, the S23 its APK
 (reinstalled once onto the release key). Still to do here: pointing both at

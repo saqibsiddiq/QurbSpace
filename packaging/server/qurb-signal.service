@@ -6,7 +6,7 @@
 
 [Unit]
 Description=qurb rendezvous service
-Documentation=https://github.com/saqibsiddiq/Qurb
+Documentation=https://github.com/saqibsiddiq/QurbSpace
 After=network-online.target
 Wants=network-online.target
 

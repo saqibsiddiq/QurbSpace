@@ -12,7 +12,7 @@
 
 [Unit]
 Description=qurb rendezvous service (with push wake-up)
-Documentation=https://github.com/saqibsiddiq/Qurb
+Documentation=https://github.com/saqibsiddiq/QurbSpace
 After=network-online.target
 Wants=network-online.target
 

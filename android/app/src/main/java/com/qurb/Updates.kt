@@ -28,7 +28,7 @@ import java.security.MessageDigest
 object Updates {
 
     /** Where the latest release says what it offers the phone. */
-    const val CHANNEL = "https://github.com/saqibsiddiq/Qurb/releases/latest/download/android.json"
+    const val CHANNEL = "https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/android.json"
 
     /** How often it is asked, at most: twice a day is ample for a beta. */
     private const val EVERY_MS = 6 * 60 * 60 * 1000L

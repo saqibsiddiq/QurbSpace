@@ -6,7 +6,7 @@
       "rpm"
     ],
     "publisher": "Qurb",
-    "homepage": "https://github.com/saqibsiddiq/Qurb",
+    "homepage": "https://github.com/saqibsiddiq/QurbSpace",
     "license": "MIT OR Apache-2.0",
     "linux": {
       "deb": {

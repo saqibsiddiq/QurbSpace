@@ -5,7 +5,7 @@ import type { Metadata, Viewport } from 'next'
 export const siteUrl = 'https://www.qurb.cloud'
 
 /** Where the code is. Public, so every page may link into it. */
-export const repoUrl = 'https://github.com/saqibsiddiq/Qurb'
+export const repoUrl = 'https://github.com/saqibsiddiq/QurbSpace'
 
 /** The release the download buttons offer, from GitHub Releases. Until it is
  *  published there, `published` stays false and the buttons say *Coming soon*

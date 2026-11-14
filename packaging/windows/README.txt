@@ -33,4 +33,4 @@ Where Qurb keeps things
   Its key and its index:   the hidden .qurb folder inside the synced folder
   Which folders it runs:   %APPDATA%\qurb
 
-More: https://github.com/saqibsiddiq/Qurb -- docs/releasing.md
+More: https://github.com/saqibsiddiq/QurbSpace -- docs/releasing.md

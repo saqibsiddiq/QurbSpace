@@ -21,7 +21,7 @@
 
 [Unit]
 Description=qurb replica
-Documentation=https://github.com/saqibsiddiq/Qurb
+Documentation=https://github.com/saqibsiddiq/QurbSpace
 After=network-online.target qurb-signal-tls.service
 Wants=network-online.target
 

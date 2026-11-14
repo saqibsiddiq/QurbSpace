@@ -1,44 +1,89 @@
-# qurb
+# QurbSpace
 
-Private cloud storage. Dropbox-like sync where your files stay on your own
-devices — they move directly between them, encrypted end to end, and are never
-stored on our servers.
+**Your phone and your computer, in sync — with nothing in between.**
 
-**Status (2026-10-19): working on Linux and Android, both apps designed, in
-light and dark. A computer backs up a phone's WhatsApp and chosen folders, and
-keeps a folder for each person, opened with a yes on their phone. Release
-0.1.0 is built — Linux, Android on every ABI, and Windows, which has not run
-on Windows — and not yet published ([docs/releasing.md](docs/releasing.md)).**
+QurbSpace keeps files, photo and WhatsApp backups moving between your own
+devices: directly when they can reach each other, encrypted end to end, and
+never stored on a server of ours. Your computer is your cloud.
 
-- The engine is complete and hardened: two devices sync end to end over QUIC,
-  with encryption, conflict handling that never discards an edit, and key
-  management — verified at 100,000 files, and tested against crashes, wrong
-  clocks, long absences, damaged disks and hostile peers.
-- The **desktop window** does everything the command line does: setting up,
-  pairing by QR code or six digits, browsing and freeing files, sending to one
-  device, recently deleted, settling conflicts, sharing a folder with chosen
-  devices, keeping a folder only remotely, and a passphrase on the key. Files
-  opens on *Shared* and a folder for each person — each phone's WhatsApp,
-  backed-up folders and Private Vault — opened only with that person's yes on
-  their phone. Designed to the owner's direction, light and dark. There is an
-  Arch package.
-- The **Android app** syncs with a laptop both ways, from home Wi-Fi or mobile
-  data, is woken by push within seconds, takes shares from any app, and shows
-  its files in the system file picker — verified on a Galaxy S23. It backs up
-  WhatsApp (36,062 files, 10.1 GB on the S23) and chosen folders to the
-  laptop, and reaches its folder there to download or restore a file.
-- Not done yet: the relay running on a server, publishing the release, iOS
-  and macOS, and running Windows at all. **Restoring WhatsApp from the laptop
-  is unproven.** Unmeasured:
-  battery over a day on a phone, and how often a direct connection works
-  across other networks.
+> **Open beta.** It works every day between an Android phone and a Linux
+> laptop. Read [what is not finished yet](#known-gaps) before trusting it with
+> anything you cannot lose, and keep your own copy.
 
-**[docs/features.md](docs/features.md)** lists everything that exists, and how
-far each piece has been checked.
+<!-- Screenshots: docs/screenshots/, taken on a Galaxy S23. -->
+<p align="center">
+  <img src="docs/screenshots/home.png" width="260" alt="Home on the phone: All synced, and Send" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/send.png" width="300" alt="Sharing a photo: save it to the Vault, or send it to the laptop" />
+</p>
+
+## What it does
+
+- **Sends** a file or photo from the phone to the computer, or back, in
+  seconds on the same Wi-Fi.
+- **Backs up** WhatsApp and the folders you choose from the phone to your
+  computer, overnight while charging — not to Google's 15 GB.
+- **Opens your computer's folders from the phone**, from anywhere: browse,
+  preview, download, restore.
+- **Works from anywhere**: home Wi-Fi first, then directly across the
+  internet, then — if you turn it on — through your own Google Drive, sealed
+  so Google cannot read it.
+- **Stays private**: every file is encrypted between your devices. Nothing
+  passes through a server of ours; there is none.
+
+## Get the beta
+
+Download from the **[latest release](https://github.com/saqibsiddiq/QurbSpace/releases/latest)**:
+
+| Device | File | Notes |
+|---|---|---|
+| Android 8 or later | `QurbSpace-…-android.apk` | Allow installing from your browser when asked. It updates itself. |
+| Linux | `qurb_…_amd64.AppImage` | Make it executable and run it. Updates itself. |
+| Debian, Ubuntu | `qurb_…_amd64.deb` | `sudo apt install ./qurb_…_amd64.deb` |
+| Windows 10 and 11 | `qurb_…_x64-setup.exe` | **Never run by us yet.** Tell us how it goes. |
+
+Then:
+
+1. Open QurbSpace on the computer: it sets itself up. Go to **Devices → Add a
+   device**.
+2. Open QurbSpace on the phone and join with the **QR code or the six
+   digits** the computer shows.
+3. On the phone, tap **Tap to connect**. While it says *Connected* in your
+   notifications, anything the computer sends arrives in seconds; tap the
+   notification to disconnect.
+
+Found something wrong? **[Report it](https://github.com/saqibsiddiq/QurbSpace/issues/new/choose)**
+— *Save a report* (Settings → Advanced) saves a file you can attach.
+
+## Known gaps
+
+Stated plainly, because a backup app is only worth what it can be trusted
+with:
+
+- **Deleting is for good.** There is no Recently deleted: a file deleted on
+  one device is deleted on all of them.
+- **Restoring a whole WhatsApp backup to a new phone has not been proven**
+  end to end. Restoring single files and folders has.
+- **Windows** builds, and has never been run by us. There is **no iPhone or
+  Mac** version.
+- **Google Drive** is optional; until Google verifies the app, it is limited
+  to the accounts we add as testers.
+- Tested on a Galaxy S23 and an OPPO CPH2363 (Jio), and one Linux laptop.
+  Other phones, carriers and routers are what this beta is for.
+
+More: what exists and how far each part is checked, [docs/features.md](docs/features.md);
+what testers are told and what is done before each release, [docs/beta.md](docs/beta.md).
+
+## Privacy and security
+
+What leaves your devices, and to whom: [PRIVACY.md](PRIVACY.md). Found a
+security problem? Please report it privately: [SECURITY.md](SECURITY.md).
 
 ---
 
-## Start here
+## For developers
+
+### Start here
 
 **[docs/CODEBASE.md](docs/CODEBASE.md)** — everything needed to understand this
 project from scratch. No prior context assumed.
@@ -56,7 +101,7 @@ Then, depending on what you want:
 | what each phase produced and measured | [docs/phases/](docs/phases/) |
 | how to try it on your own hardware | [docs/trying-it.md](docs/trying-it.md) |
 
-## Layout
+### Layout
 
 ```
 docs/           documentation — start with CODEBASE.md
@@ -72,7 +117,7 @@ The split between `crates/` and `experiments/` is deliberate. Experimental code
 may cut corners provided its README says which. Code in `crates/` is meant to
 last. Nothing migrates silently between them.
 
-## Trying it
+### Building it yourself
 
 From a release (`./scripts/release.sh` builds one into `dist/`; what each file
 is for, and what it has run on, is [docs/releasing.md](docs/releasing.md)):
@@ -104,10 +149,10 @@ qurb join <code or digits> # on the other device: takes the key and pairs
 qurb run                   # on both
 ```
 
-The Android app: `./scripts/android-app.sh install`. Syncing from outside the
-house needs the rendezvous service reachable from both devices —
-[docs/anywhere.md](docs/anywhere.md). Step by step, including the phone:
-[docs/trying-it.md](docs/trying-it.md).
+The Android app: `./scripts/android-app.sh install`. Away from home the
+devices meet through public Nostr relays, with nothing to set up
+([decision 0087](docs/decisions/0087-quic-over-nostr-relays.md)). Step by
+step, including the phone: [docs/trying-it.md](docs/trying-it.md).
 
 To watch the whole system work in one process, servers included:
 
@@ -115,11 +160,11 @@ To watch the whole system work in one process, servers included:
 cargo run --release -p qurb-peer --example demo -- /tmp/device-a /tmp/device-b
 ```
 
-## Building and testing
+### Building and testing
 
 ```bash
 cargo build --release
-cargo test --workspace         # 879 tests in 94 binaries, all passing (2026-10-15)
+cargo test --workspace
 ./scripts/desktop-smoke.sh     # the real window, driven end to end
 ```
 

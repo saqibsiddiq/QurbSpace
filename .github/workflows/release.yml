@@ -143,7 +143,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # The version's own notes where written (docs/release-notes/), else one line.
+          notes="docs/release-notes/$VERSION.md"
+          if [ -f "$notes" ]; then set -- --notes-file "$notes"; else set -- --notes "Beta. Installed apps update themselves to this; see docs/updates.md."; fi
           gh release create "$GITHUB_REF_NAME" assets/* \
             --title "QurbSpace $VERSION" \
-            --notes "Beta. Installed apps update themselves to this; see docs/updates.md." \
+            "$@" \
             --latest
