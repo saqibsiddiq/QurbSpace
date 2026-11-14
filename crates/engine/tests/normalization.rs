@@ -2,7 +2,7 @@
 //!
 //! `é` is one code point (U+00E9) or two (`e` + U+0301). Linux stores whichever
 //! it is given; macOS and iOS decompose on the way in. Left alone, that
-//! disagreement makes sync duplicate files without limit — see
+//! disagreement makes sync duplicate files without limit: see
 //! [`qurb_watcher::normalize`] for the mechanism.
 
 use qurb_engine::{Engine, StoreSource};
@@ -30,8 +30,8 @@ fn the_two_spellings_differ() {
     assert_eq!(qurb_watcher::normalize(DECOMPOSED), COMPOSED);
 }
 
-/// A file written in the decomposed form — as a Mac's filesystem would hand it
-/// back — must be indexed under the composed path, not a second one.
+/// A file written in the decomposed form (as a Mac's filesystem would hand it
+/// back) must be indexed under the composed path, not a second one.
 #[test]
 fn decomposed_names_index_as_composed() {
     let dir = tempfile::tempdir().unwrap();

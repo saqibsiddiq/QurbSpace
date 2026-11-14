@@ -26,7 +26,7 @@ pub enum Side {
 pub enum Outcome {
     /// Both sides already hold the same version. Nothing to do at all.
     InSync,
-    /// Both sides hold the same *content*, but reached it independently — the
+    /// Both sides hold the same *content*, but reached it independently: the
     /// same file copied onto each device, or deleted on each.
     ///
     /// No data needs to move, but the merged history must still be recorded.
@@ -59,7 +59,7 @@ pub struct Resolution {
     /// The vector the resolved state should carry.
     ///
     /// For concurrent cases this is the merge of both sides, which by
-    /// construction dominates each of them — so the resolution is not itself
+    /// construction dominates each of them, so the resolution is not itself
     /// concurrent with what it resolved, and the conflict does not recur.
     pub vector: VersionVector,
 }
@@ -142,7 +142,7 @@ pub fn conflict_path(version: &FileVersion) -> String {
 }
 
 /// What a conflict copy's name says: the path it is a version of, which device
-/// made this version, and when -- the inverse of [`conflict_path`].
+/// made this version, and when, the inverse of [`conflict_path`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ConflictName {
     /// The path the other version kept.
@@ -156,7 +156,7 @@ pub struct ConflictName {
 /// Read a conflict copy's name back, or `None` if `path` is not one.
 ///
 /// Strict, because the answer decides what a screen offers to delete: only
-/// exactly the shape [`conflict_path`] writes -- eight hex digits, a UTC
+/// exactly the shape [`conflict_path`] writes, eight hex digits, a UTC
 /// timestamp, then the extension or nothing. A file somebody named
 /// `plan.conflict-notes.md` is theirs, not a conflict.
 ///
@@ -196,7 +196,7 @@ pub fn conflict_origin(path: &str) -> Option<ConflictName> {
 ///
 /// A send names the file the way the *sender* thinks of it, so a collision
 /// with something the recipient already has is ordinary rather than
-/// exceptional — two people can both have a `report.pdf`. Neither file is
+/// exceptional: two people can both have a `report.pdf`. Neither file is
 /// wrong and neither may be overwritten, so the arriving one is renamed and
 /// both are kept, by the same rule and the same machinery as a conflict.
 ///
@@ -294,7 +294,7 @@ mod tests {
         FileVersion::tombstone(path, vector, by, 1_757_462_400)
     }
 
-    // -- causally ordered: no conflict ---------------------------------------
+    // , causally ordered: no conflict ---------------------------------------
 
     #[test]
     fn identical_versions_are_in_sync() {
@@ -320,7 +320,7 @@ mod tests {
         assert_eq!(resolve(&edit, &delete).outcome, Outcome::TakeRemote);
     }
 
-    // -- concurrent ----------------------------------------------------------
+    // , concurrent ----------------------------------------------------------
 
     #[test]
     fn concurrent_identical_content_is_not_a_conflict() {
@@ -404,7 +404,7 @@ mod tests {
         assert!(res.vector.dominates(&r.vector));
     }
 
-    // -- conflict filenames --------------------------------------------------
+    // , conflict filenames --------------------------------------------------
 
     #[test]
     fn the_suffix_goes_before_the_final_extension() {
@@ -463,7 +463,7 @@ mod tests {
         }
     }
 
-    // -- date formatting -----------------------------------------------------
+    // , date formatting -----------------------------------------------------
 
     #[test]
     fn dates_format_correctly() {

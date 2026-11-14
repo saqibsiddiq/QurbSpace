@@ -16,7 +16,7 @@ use std::sync::Once;
 ///
 /// `setup::create` records the folder so that later commands need no path, and
 /// that list lives under `XDG_CONFIG_HOME`. A test that wrote to the actual
-/// one would leave temporary directories in somebody's application for good —
+/// one would leave temporary directories in somebody's application for good:
 /// which has happened, and is why this exists.
 ///
 /// Set once for the whole binary, before any test touches anything, because

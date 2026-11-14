@@ -1,6 +1,6 @@
-# 0037 — A file sent to a desktop is an ordinary file in Downloads
+# 0037: A file sent to a desktop is an ordinary file in Downloads
 
-**Status:** Accepted — built 2026-09-25
+**Status:** Accepted, built 2026-09-25
 **Date:** 2026-09-25
 
 Amends [0023](0023-one-person-per-account.md) on the default location, and
@@ -39,8 +39,8 @@ by the scan at all.
 
 ## What qurb still remembers
 
-- **That it took the delivery**, keyed by the send -- sender, name and
-  version -- so that a send offered again is not taken twice (0030 rule 2;
+- **That it took the delivery**, keyed by the send (sender, name and
+  version) so that a send offered again is not taken twice (0030 rule 2;
   by content until [0059](0059-a-send-is-not-its-bytes.md), which kept the
   same file sent again from ever arriving). The record survives the file being deleted from Downloads;
   rule 2 counts tombstones for exactly this reason.
@@ -48,7 +48,7 @@ by the scan at all.
   under a temporary name in the same directory, synced to disk, and renamed into
   place. `Got` is sent after that and not before (brief §51.4).
 - **What happened**, in the activity record (0031): arrived, from whom, and
-  where it went. That is what "Received from Phone A — Saved to Downloads/qurb —
+  where it went. That is what "Received from Phone A (Saved to Downloads/qurb)
   Open folder" (§12) is drawn from.
 
 For the sender nothing changes. The desktop's copy is still recorded as private,
@@ -127,10 +127,10 @@ restarted and reconnected, it did not come back.
 
 **Not yet:**
 
-- **From a phone.** A phone cannot send yet — its interface has no send — so the
+- **From a phone.** A phone cannot send yet (its interface has no send) so the
   pair this decision is really about, phone to desktop, is unexercised.
 - **"Open folder" in the notification.** The notification says where the
-  file was saved; the button is in the window instead — *Show in folder* on the
+  file was saved; the button is in the window instead: *Show in folder* on the
   Transfers screen, and *Open that folder* in Settings (2026-09-25). A
   notification action needs the notifier to wait on the notification, which the
   desktop's notifier does not do yet.

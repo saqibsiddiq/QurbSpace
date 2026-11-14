@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The rendezvous service on this computer, as a user service at login -- with
+# The rendezvous service on this computer, as a user service at login: with
 # push, when there is a Firebase key to wake phones with.
 #
 #   ./packaging/install-rendezvous.sh
@@ -10,7 +10,7 @@
 # without push at ~/.local/bin/qurb, and a service started with --push refuses
 # to run on one of those. Push is on when ~/.config/qurb/firebase.json exists:
 # a service-account key from the Firebase project the Android app was built
-# with. Publishing the service is separate -- `tailscale funnel --bg 9000`.
+# with. Publishing the service is separate: `tailscale funnel --bg 9000`.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

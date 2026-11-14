@@ -1,4 +1,4 @@
-# Phase 3 — Networking at scale
+# Phase 3: Networking at scale
 
 **Status:** in progress
 **Target:** months 6–7
@@ -14,7 +14,7 @@ person.
 |---|---|
 | device pairing | ✅ out-of-band invite, trust store, guest list enforced |
 | STUN and hole punching | ✅ STUN client, NAT classification, punched sockets |
-| signalling | ✅ [`qurb-signal`](../../crates/signal/) — in Rust, see 0015 |
+| signalling | ✅ [`qurb-signal`](../../crates/signal/): in Rust, see 0015 |
 | connection policy | ✅ [`connect`](../../crates/peer/src/connect.rs) |
 | relay | ✅ [`qurb-relay`](../../crates/relay/) |
 | signalling hardening | ✅ rate limits and resource caps |
@@ -36,7 +36,7 @@ aloud. Recorded as [decision 0014](../decisions/0014-pairing.md).
 
 **The security is in the out-of-band channel, not the token.** An attacker in
 the network path cannot change what is printed on a screen. Carrying the whole
-fingerprint across that channel is what authenticates the inviter — it is the
+fingerprint across that channel is what authenticates the inviter: it is the
 same pinning every other connection already used, with the pin finally coming
 from somewhere trustworthy.
 
@@ -96,7 +96,7 @@ there is dropped because it belongs to no conversation the router knows about.
 3. both send to the other at the same time                            (punching)
 ```
 
-Step 3 is the trick: neither packet is expected, so the first ones are dropped —
+Step 3 is the trick: neither packet is expected, so the first ones are dropped,
 but each *outbound* packet teaches its own router to expect a reply from that
 address, so what follows gets through.
 
@@ -133,8 +133,8 @@ Also handled properly rather than optimistically: attributes that are not
 `XOR-MAPPED-ADDRESS` are skipped rather than treated as fatal, because servers
 send `SOFTWARE` and others and a parser that gives up on the first unknown
 attribute works against some servers and not others. A declared length longer
-than the packet is refused. Arbitrary traffic on the port — and a UDP port
-receives plenty — is ignored rather than parsed.
+than the packet is refused. Arbitrary traffic on the port (and a UDP port
+receives plenty) is ignored rather than parsed.
 
 ### Measured on this network
 
@@ -147,7 +147,7 @@ verdict  ENDPOINT-INDEPENDENT MAPPING (cone NAT)
 
 The same external port from two different operators, so the mapping does not
 depend on the destination and punching should work. This is the second
-favourable sample of this network — the Phase 0 spike saw a different public
+favourable sample of this network: the Phase 0 spike saw a different public
 address, so the ISP has rotated it since, and the behaviour is unchanged.
 
 **Two samples of one network is not a measurement of the kill criterion.** That
@@ -172,7 +172,7 @@ Recorded as [decision 0015](../decisions/0015-control-plane-in-rust.md). The
 architecture chose Go for the control plane, written before any of this existed
 and never elevated to a decision record.
 
-What changed is that signalling has to speak the same vocabulary as the client —
+What changed is that signalling has to speak the same vocabulary as the client:
 identifiers derived from the key hierarchy in `qurb-keys`. In Go those
 derivations would be reimplemented and kept in step by hand, and a drift between
 two implementations of a key derivation presents as "this device cannot find its
@@ -188,7 +188,7 @@ actual mistake.
 [Decision 0016](../decisions/0016-what-signalling-learns.md). A rendezvous
 service necessarily learns that some addresses belong together. Run naively it
 would also learn *whose* they are, building a map of every user, their devices
-and their locations — a more valuable database than the files it was carefully
+and their locations: a more valuable database than the files it was carefully
 prevented from seeing.
 
 So devices announce under identifiers derived from their master key: every
@@ -202,8 +202,8 @@ goes near it.
 ### Two choices that look arbitrary
 
 **Websockets over TCP, not QUIC.** Reusing the data plane's transport would be
-tidier and would fail exactly when needed: if UDP is blocked — precisely when a
-device most needs coordinating — a UDP control channel cannot tell it that it
+tidier and would fail exactly when needed: if UDP is blocked (precisely when a
+device most needs coordinating) a UDP control channel cannot tell it that it
 needs a relay.
 
 **The connection is held open** rather than being a request and a response,
@@ -217,7 +217,7 @@ own that nobody was listening. One leaked connection per abandoned client, and
 the server going on offering a stale address.
 
 **Cleanup was skipped on abrupt disconnection.** The server's read loop used `?`
-on the incoming message, so a client vanishing — laptop shut, network dropped —
+on the incoming message, so a client vanishing (laptop shut, network dropped)
 propagated an error and returned before the code that removes it from the
 directory. Ungraceful disconnection is the common case, not the exception, so it
 had to leave by the same door as everything else.
@@ -237,7 +237,7 @@ offered.
 ### Both sides dial, and that is not an implementation detail
 
 A router only lets a packet in if it has recently seen one go out to that
-address. So both routers need to send something — and only the device making the
+address. So both routers need to send something, and only the device making the
 call would normally do so. The device sitting idle has sent nothing, so the
 caller's packets arrive at a router that has never heard of them.
 
@@ -246,7 +246,7 @@ are themselves the hole punch, so when the rendezvous service tells two devices
 to punch, each attempts a connection. Whichever handshake completes carries the
 traffic; the other exists only to have sent something.
 
-The responder's dial is deliberately doomed — it pins its own fingerprint, which
+The responder's dial is deliberately doomed: it pins its own fingerprint, which
 the peer does not have, so the handshake cannot succeed. That is fine and worth
 saying out loud: the packets left the building, which was the entire job.
 
@@ -266,7 +266,7 @@ and cannot work.
 In parallel, because a candidate that is simply unreachable fails by timing out,
 and trying three in sequence means waiting three timeouts to discover the last
 one worked. Local addresses are listed first, so when several succeed the
-cheapest path wins — two devices on one network should not route through the
+cheapest path wins: two devices on one network should not route through the
 internet to reach each other.
 
 ### The end-to-end test
@@ -276,7 +276,7 @@ layer runs at once. Two devices that have never spoken: one creates a key, the
 other enrols with its recovery phrase, they pair out of band, announce to the
 rendezvous service, are introduced, race candidates, connect, and sync a file.
 
-It does not prove traversal — there is no NAT on loopback. It proves the
+It does not prove traversal: there is no NAT on loopback. It proves the
 *sequence* is right, which is the part that could be silently wrong.
 
 The second test is the one that matters for the product: a device that is
@@ -290,7 +290,7 @@ component that costs money per byte forever.
 
 ### It carries datagrams, not messages
 
-The obvious design relays application messages — the relay understands "fetch
+The obvious design relays application messages: the relay understands "fetch
 this chunk" and passes it along. It is also the wrong one, because a relay that
 handles application messages is one that can read and alter them. Preventing that
 means encrypting and authenticating at the application layer: a second
@@ -302,7 +302,7 @@ above the transport knows it is there. Recorded as
 [decision 0017](../decisions/0017-relay.md).
 
 The cost is an `AsyncUdpSocket` implementation making a relay connection look
-like a socket — a contained piece of work paid once, against a second protocol
+like a socket: a contained piece of work paid once, against a second protocol
 maintained forever.
 
 `the_relay_never_sees_the_content` is the test that matters: a distinctive string
@@ -320,7 +320,7 @@ back from is not a fallback.
 
 Registration is self-asserted. The identifier is derived from the user's master
 key and therefore unguessable, so claiming someone else's means already knowing
-it — which means being inside a group whose devices have paired.
+it, which means being inside a group whose devices have paired.
 
 Someone who does learn one can receive that device's relayed packets. They cannot
 read them, but they can stop the real device getting them: a denial of service by
@@ -336,7 +336,7 @@ websocket layer before a frame is assembled in memory.
 
 The token bucket refills continuously rather than in steps, because stepwise
 refill lets a caller send a full burst at the end of one window and another at
-the start of the next — twice the configured rate.
+the start of the next: twice the configured rate.
 
 Messages over the limit are **dropped rather than answered**. Replying would let
 a caller spend the server's bandwidth by spending only its own.
@@ -360,7 +360,7 @@ goes the long way round. That join is the last piece of the connection story.
 The change this forced was in the relay rather than in the policy. `RelaySocket`
 was written for one peer: it knew who it was talking to and sent everything
 there. That is enough to *dial* through a relay and useless for being *reached*
-through one — and a device that cannot be reached over the relay makes the
+through one, and a device that cannot be reached over the relay makes the
 fallback useless in exactly the case it exists for, because the peer whose direct
 attempt failed will try the relay and find nobody home.
 
@@ -378,7 +378,7 @@ already failed to reach you.
 The relayed connection uses the same pinned certificate as a direct one. The
 relay carries the handshake without being party to it, so
 `identity_is_pinned_just_as_hard_over_the_relay` asks the relay to forward to a
-stranger's fingerprint and the connection is refused — by the client, not by the
+stranger's fingerprint and the connection is refused: by the client, not by the
 relay, which would have forwarded it quite happily.
 
 ### Testing a fallback that never triggers
@@ -405,7 +405,7 @@ so there was no way to see the system work without reading a test.
 The demo failed at its first attempt, on the second device to call out.
 
 `reach` opened its **own** signalling connection and announced under the
-device's identity. When it returned, that connection dropped — and the server
+device's identity. When it returned, that connection dropped, and the server
 correctly read the disconnection as the device going away. So a device stopped
 being reachable the moment it finished reaching somebody, and the failure
 presented as *the other device* being absent, which is the wrong end entirely.
@@ -427,7 +427,7 @@ to punch.
   method is written down in
   [measuring-connectivity.md](../measuring-connectivity.md); it needs two
   machines on two genuinely different networks and so cannot be done from here. `netcheck` classifies one network at a time; the real figure needs
-  two devices on two genuinely different networks — cellular, office, café —
+  two devices on two genuinely different networks (cellular, office, café)
   trying to reach each other. This cannot be done from one machine, and until it
   is, the direct-connection rate is a guess. It is also the number the relay bill
   depends on, so it is worth doing before there is a bill.
@@ -441,13 +441,13 @@ to punch.
   expect termination by a reverse proxy. That is a normal deployment, but it is
   a requirement rather than an option, and neither refuses to start without it.
 - **DERP relay.** One line in the architecture document and a substantial
-  service in practice — the component that costs money per byte forever.
+  service in practice: the component that costs money per byte forever.
 
 ## The availability gap, closed
 
 [Decision 0006](../decisions/0006-availability-gap.md) had been open since Phase
 1 and is now decided: **the engine supports storage-only replicas**, and where
-one runs — the user's own machine, or ours for a fee — is a deployment question
+one runs (the user's own machine, or ours for a fee) is a deployment question
 rather than an architectural one.
 
 The reasoning that settled it was that the four options it proposed were not
@@ -468,7 +468,7 @@ That is the most dangerous thing in the change and it looks like a no-op:
 is there because a future refactor that "tidies up" that early return would
 destroy data everywhere, quietly, and only on the deployment nobody tests.
 
-Materialising files is the other thing switched off — twice the space for a copy
+Materialising files is the other thing switched off: twice the space for a copy
 nobody reads.
 
 Partial replication is built in rather than deferred: "hold everything" is the

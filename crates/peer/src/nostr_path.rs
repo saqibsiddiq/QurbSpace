@@ -6,9 +6,9 @@
 //! end-to-end encryption as on any path, the relays seeing sealed bytes.
 //!
 //! As the relay socket does (`qurb_relay::RelaySocket`), each device spoken to
-//! is given an address QUIC can use, from a range never routed -- here
+//! is given an address QUIC can use, from a range never routed (here
 //! 198.51.100.0/24, RFC 5737's second, so that one in a log is plainly this
-//! path -- and translated to and from the device's name in the group.
+//! path) and translated to and from the device's name in the group.
 
 use qurb_signal::MemberId;
 use std::collections::HashMap;

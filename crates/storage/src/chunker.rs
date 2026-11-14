@@ -64,8 +64,8 @@ pub fn chunk_file(path: &Path) -> Result<Manifest> {
 /// Chunk whatever `reader` reads, a piece at a time: the same cuts and hashes
 /// as [`chunk_bytes`] over the same bytes, holding at most one chunk.
 ///
-/// For a file that cannot be mapped -- a document an Android app is lent by
-/// file descriptor, which may be a pipe -- and for content that is only being
+/// For a file that cannot be mapped (a document an Android app is lent by
+/// file descriptor, which may be a pipe) and for content that is only being
 /// described, never stored, as a send read from where it is (decision 0060).
 pub fn chunk_reader<R: std::io::Read>(reader: R) -> std::io::Result<Manifest> {
     let mut chunks = Vec::new();

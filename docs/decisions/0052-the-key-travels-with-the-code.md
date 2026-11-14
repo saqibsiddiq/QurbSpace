@@ -1,6 +1,6 @@
-# 0052 — The key travels with the pairing code; nobody writes 24 words down
+# 0052: The key travels with the pairing code; nobody writes 24 words down
 
-**Status:** Accepted — built on the command line, the desktop and Android, and
+**Status:** Accepted, built on the command line, the desktop and Android, and
 watched on the S23 joining the laptop with a code;
 supersedes [0033](0033-the-phrase-on-a-screen.md)'s confirmation step and
 [0012](0012-key-hierarchy-and-recovery.md)'s "the phrase is the only way to

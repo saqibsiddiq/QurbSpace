@@ -3,7 +3,7 @@
 # Faces the internet directly on UDP, unlike the rendezvous service. It has to:
 # it carries QUIC between two devices that could not reach each other, and
 # there is nothing for a reverse proxy to terminate. It needs no TLS of its own
-# because what it carries is already an encrypted session it has no key for --
+# because what it carries is already an encrypted session it has no key for:
 # see crates/relay/README.md and the test `the_relay_never_sees_the_content`.
 #
 # Every byte through it is a byte somebody pays for, so it is the fallback

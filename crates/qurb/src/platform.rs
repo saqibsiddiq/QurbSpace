@@ -29,7 +29,7 @@ pub fn settle() {
     }
 }
 
-/// Open `target` -- a folder, or an address -- with whatever the desktop
+/// Open `target` (a folder, or an address) with whatever the desktop
 /// opens it with: `xdg-open` on Linux, the shell's `start` on Windows.
 /// Reaped on a thread of its own, so it neither blocks nor lingers.
 pub fn open(target: impl AsRef<OsStr>) -> io::Result<()> {

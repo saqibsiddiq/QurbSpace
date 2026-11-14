@@ -1,6 +1,6 @@
 //! A device stays reachable across a rendezvous service restarting.
 //!
-//! Services restart — for a deploy, a reboot, a crash. Before this, a device
+//! Services restart: for a deploy, a reboot, a crash. Before this, a device
 //! whose signalling connection went with it stayed silent until the daemon
 //! itself was restarted: it kept syncing on its timer, so nothing looked
 //! broken, and it simply stopped being reachable and stopped being able to say
@@ -28,7 +28,7 @@ async fn a_device_reconnects_after_the_service_restarts() {
     let identity = Identity::load_or_create(dir.path()).unwrap();
 
     // A port of our choosing, so the service can be stopped and started again
-    // at the same address — which is what a restart looks like to a device.
+    // at the same address, which is what a restart looks like to a device.
     let port = {
         let probe = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         probe.local_addr().unwrap().port()
@@ -79,7 +79,7 @@ async fn a_device_reconnects_after_the_service_restarts() {
 
 /// A relay that cannot be reached costs the fallback, not the device.
 ///
-/// It used to stop a device starting at all -- so with a server of one's own
+/// It used to stop a device starting at all, so with a server of one's own
 /// down, a phone could not sync with the laptop beside it on the same Wi-Fi,
 /// which needs neither the relay nor the server.
 #[tokio::test(flavor = "multi_thread")]

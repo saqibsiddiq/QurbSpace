@@ -1,4 +1,4 @@
-# 0008 — The watcher delivers changes at least once
+# 0008: The watcher delivers changes at least once
 
 **Status:** Accepted
 **Date:** 2026-09-09
@@ -17,7 +17,7 @@ queue overflow re-reports everything it finds, including changes already
 handled.
 
 Suppressing duplicates means deciding that a reported file has not really
-changed, which means knowing what was last stored for it — its size,
+changed, which means knowing what was last stored for it: its size,
 modification time, and content hash. **The index already holds exactly that.**
 A second cache inside the watcher would duplicate that state and could drift
 out of agreement with it, and disagreement between two caches about what has
@@ -35,7 +35,7 @@ only the modification time and writes no chunks.
 file before discovering the content is unchanged. For a duplicate report of a
 large file that is a full read for nothing. The engine should compare size and
 modification time against the index first and skip the read entirely when they
-match — the same check that makes startup reconciliation fast. That is engine
+match: the same check that makes startup reconciliation fast. That is engine
 work, not storage work, and it is not built yet.
 
 **Rescans are safe by construction.** Because consumers must already tolerate
@@ -44,7 +44,7 @@ everything and report it. No bookkeeping is needed to work out what was missed.
 
 ## Alternatives rejected
 
-**Exactly-once delivery.** Not achievable — the operating system is free to
+**Exactly-once delivery.** Not achievable: the operating system is free to
 report the same change twice, and no amount of filtering above it changes that.
 Designing as though it were achievable would produce a system that breaks in
 ways that are hard to reproduce.

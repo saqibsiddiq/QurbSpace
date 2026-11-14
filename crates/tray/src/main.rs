@@ -1,8 +1,8 @@
 //! qurb in the corner of the screen.
 //!
 //! The daemon with somewhere to show itself. It runs exactly the same
-//! [`Daemon`] the `qurb run` command does — an interface should display the
-//! engine, not reimplement it — and subscribes to the status it publishes.
+//! [`Daemon`] the `qurb run` command does (an interface should display the
+//! engine, not reimplement it) and subscribes to the status it publishes.
 //!
 //! # One process, not two
 //!
@@ -10,7 +10,7 @@
 //! socket and a protocol between them, which buys the ability to attach to an
 //! already-running daemon and costs a second surface to design, version and
 //! secure. Two daemons on one store would collide on the SQLite lock anyway, so
-//! the choice is really "which one process runs" — and `qurb run` remains for
+//! the choice is really "which one process runs", and `qurb run` remains for
 //! servers and replicas that have no screen.
 //!
 //! # When there is no tray
@@ -62,7 +62,7 @@ fn run() -> Result<()> {
 
     if !qurb_cli::is_set_up(&root) {
         anyhow::bail!(
-            "{} is not set up yet — run `qurb init {}` first",
+            "{} is not set up yet: run `qurb init {}` first",
             root.display(),
             root.display()
         );

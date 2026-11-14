@@ -16,7 +16,7 @@ use std::path::Path;
 /// reading before the next was asked for, so a file moved at the pace of the
 /// round trip rather than of the link: an 800 MB video from a phone on home
 /// Wi-Fi went at under 5.3 MB/s. Several overlap those waits, at the cost of
-/// holding that many chunks in memory -- 4 MiB at the average chunk size, 16
+/// holding that many chunks in memory: 4 MiB at the average chunk size, 16
 /// MiB at the largest, and the phone's ceiling (decision 0018) is far above
 /// either.
 ///
@@ -121,8 +121,8 @@ impl PeerClient {
 
     /// Whether the connection has ended, from either side or by going quiet.
     ///
-    /// A device that disappears without saying goodbye -- switched off, out of
-    /// range -- is noticed by the idle timeout, within half a minute.
+    /// A device that disappears without saying goodbye (switched off, out of
+    /// range) is noticed by the idle timeout, within half a minute.
     pub fn is_closed(&self) -> bool {
         self.connection.close_reason().is_some()
     }
@@ -280,7 +280,7 @@ impl PeerClient {
     }
 
     /// Make a folder in the peer's shared folder (decision 0073, item 6).
-    /// `Ok(Ok(()))` made; `Ok(Err(why))` not, in words for a person -- a
+    /// `Ok(Ok(()))` made; `Ok(Err(why))` not, in words for a person: a
     /// computer that takes no changes from this device says so too.
     pub async fn shared_mkdir(&self, path: &str) -> Result<std::result::Result<(), String>> {
         self.change(Request::SharedMkdir { path: path.to_string() }).await
@@ -423,7 +423,7 @@ impl PeerClient {
     /// that it tried, and what a storage cap consults before dropping a local
     /// copy.
     ///
-    /// Sent after the content is committed, never before — a report of a
+    /// Sent after the content is committed, never before: a report of a
     /// delivery that then failed is worse than no report, because it is the
     /// evidence someone else may drop their copy on.
     pub async fn got(&self, content: [u8; 32]) -> Result<()> {
@@ -433,7 +433,7 @@ impl PeerClient {
         }
     }
 
-    /// What kind of device the peer is -- `phone`, `computer` or `replica` --
+    /// What kind of device the peer is (`phone`, `computer` or `replica`)
     /// for a device paired before devices said so when pairing (decision
     /// 0053). `None` from a device that does not say: an older build answers
     /// "not found".
@@ -505,7 +505,7 @@ impl PeerClient {
         }
     }
 
-    /// The device's name and picture -- a JPEG, empty for none -- and when it
+    /// The device's name and picture (a JPEG, empty for none) and when it
     /// set them, if they changed after `since` (the owner's list of
     /// 2026-10-26, item 7). None when nothing is newer, and from a device
     /// that does not know the question.
@@ -541,7 +541,7 @@ impl PeerClient {
     /// Wait until the peer's state differs from `since`.
     ///
     /// Returns where the peer has got to, both when something changed and when
-    /// the wait ran out — either way the answer is what to pass next time.
+    /// the wait ran out: either way the answer is what to pass next time.
     ///
     /// This is what turns polling into being told. A device holding this open
     /// costs one idle stream and learns of a change within a round trip,
@@ -557,7 +557,7 @@ impl PeerClient {
     ///
     /// This is where the chunking finally pays off across the network. A large
     /// file with a small edit shares almost all of its chunks with the copy
-    /// already here, so almost nothing crosses the wire — see
+    /// already here, so almost nothing crosses the wire: see
     /// ../../docs/decisions/0004-chunk-parameters.md for the measurement that
     /// justifies the chunk sizes.
     ///
@@ -604,12 +604,12 @@ impl PeerClient {
 
     /// Where to pick up a fetch of `content` into the file at `partial`.
     ///
-    /// An 800 MB file pulled from a phone that stopped answering part-way --
-    /// its window closed, or the platform froze it -- used to start again from
+    /// An 800 MB file pulled from a phone that stopped answering part-way
+    /// (its window closed, or the platform froze it) used to start again from
     /// nothing at the next attempt, and on a phone each attempt gets seconds.
     /// It need not: a partial file is a prefix of the content, and chunk
     /// boundaries are chosen by the bytes, so chunking what is there gives the
-    /// chunks the content starts with -- up to the last, which may be cut
+    /// chunks the content starts with, up to the last, which may be cut
     /// short. Those that match the other device's manifest, in order, are kept;
     /// the file is cut back to the end of the last of them, and only the rest
     /// is fetched. Nothing is kept unchecked, so a file left by an attempt at
@@ -731,9 +731,9 @@ impl PeerClient {
         Ok(*written)
     }
 
-    /// One chunk's bytes: from this device when it already has them -- with
+    /// One chunk's bytes: from this device when it already has them (with
     /// another file, an earlier version of this one, or a copy under another
-    /// name -- and otherwise from the peer, checked against the hash that names
+    /// name) and otherwise from the peer, checked against the hash that names
     /// them, which catches both a lying peer and a damaged transfer.
     async fn chunk_bytes(&self, local: &Store, chunk_hash: [u8; 32]) -> Result<Vec<u8>> {
         let chunk = blake3::Hash::from(chunk_hash);

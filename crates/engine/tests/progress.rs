@@ -1,6 +1,6 @@
 //! What a transfer in flight reports.
 //!
-//! A window showing "photo.jpg — 1.2 GB of 4.0 GB" needs to hear about bytes as
+//! A window showing "photo.jpg: 1.2 GB of 4.0 GB" needs to hear about bytes as
 //! they arrive, and must not be told about work that is not happening: content
 //! already on this device under another name costs a lookup, not a transfer.
 

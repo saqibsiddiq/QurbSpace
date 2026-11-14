@@ -17,7 +17,7 @@ const SALT: &[u8] = b"qurb/kdf/v1";
 ///
 /// An enum rather than a string the caller passes in. Two purposes accidentally
 /// sharing an info string would silently produce the same key for both, which
-/// is the kind of mistake that is invisible until it matters — and a typo
+/// is the kind of mistake that is invisible until it matters, and a typo
 /// should not be able to cause it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Purpose {
@@ -56,7 +56,7 @@ impl Purpose {
 
 /// The root secret. Everything else in the system derives from it.
 ///
-/// Losing this loses the data — not as a policy but as a fact, since nothing
+/// Losing this loses the data, not as a policy but as a fact, since nothing
 /// else can decrypt the chunks. That is what makes the recovery phrase the
 /// highest-stakes part of the product.
 #[derive(Clone, Zeroize, ZeroizeOnDrop)]
@@ -70,7 +70,7 @@ impl MasterKey {
     /// Generate a fresh root secret.
     ///
     /// Uses the operating system's cryptographically secure generator via
-    /// `rand::rngs::OsRng` — named explicitly rather than taken from
+    /// `rand::rngs::OsRng`: named explicitly rather than taken from
     /// `thread_rng`, because the difference between a CSPRNG and a fast PRNG is
     /// the entire security of the system and should not depend on a default.
     pub fn generate() -> Self {
@@ -209,7 +209,7 @@ mod tests {
 
     #[test]
     fn a_derived_key_does_not_reveal_the_master() {
-        // Not a proof -- HKDF's one-wayness is the actual guarantee. This
+        // Not a proof: HKDF's one-wayness is the actual guarantee. This
         // catches the implementation mistake of returning the input.
         let key = MasterKey::from_bytes([9; 32]);
         assert_ne!(&key.derive(Purpose::ChunkEncryption).to_bytes(), key.as_bytes());

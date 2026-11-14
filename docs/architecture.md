@@ -23,11 +23,11 @@ building it chose differently, the decision record is the authority:
 | per-file keys (§7) | keys per purpose from the master key; per-file keys not built | [0012](decisions/0012-key-hierarchy-and-recovery.md) |
 | a CAS holding every chunk (§4) | on a device with a folder, the file *is* its own payload; the CAS keeps only what the folder cannot | [0024](decisions/0024-the-file-is-the-payload-store.md) |
 | chunk GC "not yet designed" (§4) | built in Phase 1, two-stage, running every five minutes | [phases/phase-1-engine.md](phases/phase-1-engine.md) |
-| Merkle DAGs for tree comparison (§5) | the whole tree is exchanged and compared — 3.5 s to sync 1,000 changed files among 100,000 | [phases/phase-1-engine.md](phases/phase-1-engine.md) |
+| Merkle DAGs for tree comparison (§5) | the whole tree is exchanged and compared: 3.5 s to sync 1,000 changed files among 100,000 | [phases/phase-1-engine.md](phases/phase-1-engine.md) |
 | deletions undone from chunks kept a while (§5) | a deleted file kept whole for thirty days in *Recently deleted* | [0042](decisions/0042-recently-deleted.md) |
 | DERP on port 443 (§6) | qurb's own relay, TCP on 443, carrying a QUIC session it cannot read | [0017](decisions/0017-relay.md) |
 | gRPC for signalling (§10) | JSON over a WebSocket, because a readable capture matters more than bytes there | [crates/signal](../crates/signal/README.md) |
-| FTS5 and CLIP search (§8) | names only, by substring; nothing on contents or images | — |
+| FTS5 and CLIP search (§8) | names only, by substring; nothing on contents or images | none |
 | a central device registry (§1, §7) | each device's own trust list, filled by pairing and emptied by removal | [0041](decisions/0041-removing-a-device.md) |
 | signed delta updates with rollback (§11) | no automatic updater; the index is copied before it migrates | [0047](decisions/0047-versions-and-upgrades.md) |
 | an OCI container for a NAS (§12) | `qurb replica` and a systemd unit; no container | [packaging/server](../packaging/server/README.md) |
@@ -73,7 +73,7 @@ iOS, Jetpack Compose on Android. Reasoning:
 
 ## 3. Backend
 
-Go for control-plane APIs — registration, authentication, device registry,
+Go for control-plane APIs: registration, authentication, device registry,
 billing, push routing. STUN and DERP relay nodes are separate services optimised
 for network throughput.
 
@@ -108,7 +108,7 @@ Content-defined chunking with FastCDC, BLAKE3 hashing, and Merkle DAGs for
 tree comparison.
 
 Chunk bounds are 128 KiB / 512 KiB / 2 MiB, chosen by measurement rather than
-by intuition — see [0004](decisions/0004-chunk-parameters.md), which corrects the
+by intuition: see [0004](decisions/0004-chunk-parameters.md), which corrects the
 original proposal.
 
 **State tracking.** Each device keeps a vector clock, `{deviceA: 42, deviceB:
@@ -120,7 +120,7 @@ only which keeps the original filename. Never discards an edit. See
 [0005](decisions/0005-conflict-resolution.md).
 
 **Deletions.** Recorded as tombstones and propagated, because the absence of a
-file is not self-describing — a peer cannot otherwise distinguish "deleted" from
+file is not self-describing: a peer cannot otherwise distinguish "deleted" from
 "not yet received." Underlying chunks survive a retention window so deletions
 can be undone.
 
@@ -135,7 +135,7 @@ NAT traversal:
 ```
 1. each device asks STUN for its public address
 2. addresses exchanged via the coordination plane
-3. both send UDP simultaneously — hole punching
+3. both send UDP simultaneously: hole punching
 4. if that fails, relay through DERP on port 443
 ```
 
@@ -168,7 +168,7 @@ Local only. SQLite FTS5 over filenames, paths, and extracted document text.
 
 Image search runs a quantised CLIP model on-device via `onnxruntime`, producing
 embeddings stored in a local vector index. This gives natural-language image
-search — "dog on a beach" — without any data leaving the machine.
+search ("dog on a beach") without any data leaving the machine.
 
 Rejected: Elasticsearch, which cannot reasonably run inside a desktop tray
 application.
@@ -177,8 +177,8 @@ application.
 
 Tokio async runtime with a prioritised worker pool.
 
-Filesystem events come from native interfaces — `inotify`, `FSEvents`,
-`ReadDirectoryChangesW` — through the `notify` crate, so there is no polling.
+Filesystem events come from native interfaces (`inotify`, `FSEvents`,
+`ReadDirectoryChangesW`) through the `notify` crate, so there is no polling.
 
 ```
 high     path changes, moves, locks, metadata
@@ -211,7 +211,7 @@ within 60 seconds of starting, it is restored automatically.
 
 ## 12. Deployment
 
-Two shapes. A native installer for ordinary users — tray application,
+Two shapes. A native installer for ordinary users: tray application,
 zero configuration, automatic NAT traversal. A headless OCI container for NAS
 and home-lab users, with `/data` and `/config` volumes, targeting under 30 MB
 of RAM at idle on an ARM64 single-board computer.

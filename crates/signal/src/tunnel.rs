@@ -2,7 +2,7 @@
 //!
 //! The relay forwards datagrams over a byte stream (`qurb_relay`). On its own
 //! port that stream is TCP; but a phone off its home network reaches the
-//! rendezvous service and very often nothing else -- a carrier, a hotspot, a
+//! rendezvous service and very often nothing else: a carrier, a hotspot, a
 //! network that lets only web traffic out, or a service published the one
 //! way a proxy will publish it, over TLS by name. On 2026-10-15 the S23 could
 //! not sync on another phone's hotspot, and the relay meant for exactly that
@@ -37,8 +37,8 @@ const CHUNK: usize = 64 * 1024;
 /// What the stream between the WebSocket and its reader may hold.
 const BUFFER: usize = 256 * 1024;
 
-/// How often an idle tunnel is pinged, so that a proxy on the way -- a
-/// Funnel, a load balancer -- does not close a connection that is only
+/// How often an idle tunnel is pinged, so that a proxy on the way (a
+/// Funnel, a load balancer) does not close a connection that is only
 /// quiet. A device's relay connection lasts as long as its connector, which
 /// on a computer is hours.
 const PING_EVERY: std::time::Duration = std::time::Duration::from_secs(30);

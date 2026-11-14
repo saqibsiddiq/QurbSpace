@@ -132,7 +132,7 @@ fn a_device_recovers_everything_from_a_replica() {
     pull(&mut replica, &laptop);
     assert_eq!(replica.live().len(), 20);
 
-    // A new, empty device -- the replacement for one that was lost.
+    // A new, empty device: the replacement for one that was lost.
     let mut replacement = Device::syncing();
     pull(&mut replacement, &replica);
 
@@ -212,7 +212,7 @@ fn a_partial_replica_holds_only_what_it_was_asked_to() {
 #[test]
 fn a_partial_replica_stores_no_chunks_for_what_it_skipped() {
     // Skipping the path but fetching the bytes anyway would make partial
-    // replication pointless -- the space is the whole reason for it.
+    // replication pointless: the space is the whole reason for it.
     let mut laptop = Device::syncing();
     laptop.write("work/small.txt", b"tiny");
     laptop.write("photos/large.bin", &vec![7u8; 900_000]);

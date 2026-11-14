@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install Grafana Alloy on the staging host -- the owner's laptop for now --
+# Install Grafana Alloy on the staging host (the owner's laptop for now)
 # sending its traffic, CPU and memory and the rendezvous service's log to
 # Grafana Cloud (docs/staging.md). Run once, with sudo:
 #
@@ -17,7 +17,7 @@ ALLOY=v1.21.3
 echo "== Alloy $ALLOY, Grafana's own release, checked against its published SHA-256"
 # Grafana's release rather than a distribution's package: on 2026-11-01 every
 # Arch and CachyOS mirror answered 404 for the build the laptop's package
-# list named -- the list was behind -- and a whole-system update to get one
+# list named (the list was behind) and a whole-system update to get one
 # tool is the owner's call, not this script's.
 if [[ ! -x /usr/local/bin/alloy ]] || ! /usr/local/bin/alloy --version 2>/dev/null | grep -q "${ALLOY#v}"; then
     tmp=$(mktemp -d)

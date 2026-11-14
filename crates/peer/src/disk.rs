@@ -3,7 +3,7 @@
 //!
 //! The way to ask lives with the computer's program (`qurb_cli::disk`), which
 //! depends on this crate, so the program hands it over once at start
-//! ([`set`]). Not handed over -- a test, a phone -- the answer is `(0, 0)`,
+//! ([`set`]). Not handed over (a test, a phone) the answer is `(0, 0)`,
 //! which the phone shows as a disk it does not know the size of.
 //!
 //! [`Request::Storage`]: crate::wire::Request::Storage

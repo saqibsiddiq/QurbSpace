@@ -396,7 +396,7 @@ def new_features(window, device):
     with urllib.request.urlopen(request, timeout=10) as answer:
         assert answer.status == 206 and answer.read() == clip[1000:2000], "the range served is not the file's"
 
-    # And the window itself plays from such an address -- its content policy
+    # And the window itself plays from such an address: its content policy
     # lets it, and WebKit takes it: a real clip, the website's, opened in
     # quick preview as a person would, until the player knows its length.
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

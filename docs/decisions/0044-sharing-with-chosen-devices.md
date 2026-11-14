@@ -1,7 +1,7 @@
-# 0044 — Sharing a folder with chosen devices
+# 0044: Sharing a folder with chosen devices
 
 **Status:** Accepted
-**Date:** 2026-09-28 — the semantics chosen by the project owner the same day
+**Date:** 2026-09-28, the semantics chosen by the project owner the same day
 (product plan §4.6, brief §23)
 
 ## Decision
@@ -35,17 +35,17 @@ Family Photos        Available on:  ✓ This computer  ✓ SM-S911B  ☐ Work la
 |---|---|
 | Does it create a copy? | Each chosen device has its own full copy, as with anything synced. |
 | Do changes propagate? | Between chosen devices, yes, both ways. |
-| Does deletion propagate? | Between chosen devices, yes — into each one's Recently deleted ([0042](0042-recently-deleted.md)). |
+| Does deletion propagate? | Between chosen devices, yes: into each one's Recently deleted ([0042](0042-recently-deleted.md)). |
 | Are folders bidirectional? | Yes. No device is the folder's owner. |
 | A device offline? | Catches up when it next meets any chosen device, like any sync. |
 | Conflicts? | As anywhere ([0043](0043-settling-a-conflict.md)). |
-| How is access revoked? | Untick the device: nothing new reaches it, and it keeps what it had. The key is not taken back — see below. |
+| How is access revoked? | Untick the device: nothing new reaches it, and it keeps what it had. The key is not taken back: see below. |
 
 ## How it works
 
 **The rules are files.** Each folder's rule is a small text file,
 `.qurb-sharing/<folder>`, listing member device ids, one per line. It is in the
-shared area, so it reaches every device by the sync that already exists — no
+shared area, so it reaches every device by the sync that already exists: no
 protocol change, no second channel, every device enforcing the same rules. Each
 device derives two index tables from the files (`shares`, `share_members`) and
 rebuilds them when the files change, so that "what may this device see" stays a
@@ -55,7 +55,7 @@ single SQL query.
 out by *its* copy of the rules, which may be behind; and a device left out of a
 folder still has its old copy and still offers it. So a device also filters
 what a peer offers by its own rules before planning: nothing in a folder shared
-without the peer — or without itself — is taken from it.
+without the peer (or without itself) is taken from it.
 
 **A device left out cannot write itself back in.** A change to a folder's rule
 is taken only from a device the folder is shared with, so editing the rule file

@@ -174,8 +174,8 @@ enum Side {
 
 /// This side's start of SPAKE2. The typing device is A, the showing device
 /// B; the identities are the fingerprints each saw in the TLS handshake,
-/// so that two sides that saw different certificates -- a machine between
-/// them -- derive different keys.
+/// so that two sides that saw different certificates (a machine between
+/// them) derive different keys.
 fn start(side: Side, digits: &str, typing: Fingerprint, showing: Fingerprint) -> (Spake2<Ed25519Group>, Vec<u8>) {
     let password = Password::new(format!("qurb six digits v1:{digits}").as_bytes());
     let a = SpakeIdentity::new(typing.as_bytes());

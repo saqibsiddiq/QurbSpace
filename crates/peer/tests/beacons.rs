@@ -122,7 +122,7 @@ async fn a_sighting_becomes_somewhere_to_dial() {
     assert_eq!(found.candidates(), vec!["127.0.0.1:51935".parse().unwrap()]);
 }
 
-/// A device that changes address — a laptop moving from Wi-Fi to a dock — has
+/// A device that changes address (a laptop moving from Wi-Fi to a dock) has
 /// to start saying so without being restarted.
 #[tokio::test(flavor = "multi_thread")]
 async fn a_moved_device_announces_its_new_address() {
@@ -155,8 +155,8 @@ async fn a_moved_device_announces_its_new_address() {
 
 /// The one that was found on hardware.
 ///
-/// A device that runs only for the length of a sync pass — which is what a
-/// phone does — starts with an empty address book and finishes long before the
+/// A device that runs only for the length of a sync pass (which is what a
+/// phone does) starts with an empty address book and finishes long before the
 /// next scheduled beacon. Unless it can *ask*: a probe is answered at once by
 /// everyone who hears it, so the book is full within a moment of starting.
 #[tokio::test(flavor = "multi_thread")]

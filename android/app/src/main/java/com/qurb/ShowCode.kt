@@ -31,7 +31,7 @@ import uniffi.qurb_mobile.qrCode
  * A page of its own, as the Figma redesign draws *Show my code* (item 19 of
  * the owner's list of 2026-10-26; a sheet until then): the way back, the QR
  * code on a white card, the six digits large, a clock with the time left, and
- * *Copy code* and *Stop*. However it is left -- Stop, back, another tab --
+ * *Copy code* and *Stop*. However it is left (Stop, back, another tab)
  * the code stops working with it.
  *
  * The QR code is drawn from a matrix the engine computes, onto a canvas, as
@@ -224,7 +224,7 @@ class ShowCode(app: MainActivity) : Screen(app) {
 
     /**
      * The matrix as Figma draws it: each module a dot, and the three finder
-     * patterns as rounded squares. Still a code any scanner reads -- the
+     * patterns as rounded squares. Still a code any scanner reads: the
      * finders keep their 1:1:3:1:1 proportions, and a dot of 86% covers a
      * module's centre, where a scanner samples it. No quiet zone in the
      * picture: the card's 24 dp of white is more than its four modules.

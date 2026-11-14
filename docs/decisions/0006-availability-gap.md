@@ -1,4 +1,4 @@
-# 0006 — Storage-only replicas, for offline availability
+# 0006: Storage-only replicas, for offline availability
 
 **Status:** Accepted
 **Date:** 2026-09-16 (proposed 2026-09-07)
@@ -10,8 +10,8 @@ is online. Laptop shut, desktop off, and the phone cannot fetch a file that
 exists on neither.
 
 This is the architecture working as designed, and a direct contradiction of what
-the product promises. The Dropbox mental model — *my files are available
-everywhere, always* — is what makes this comprehensible to anyone who is not
+the product promises. The Dropbox mental model (*my files are available
+everywhere, always*) is what makes this comprehensible to anyone who is not
 already thinking in terms of peers. *"I'm at work, where are my files?"* is a
 support conversation without end.
 
@@ -29,7 +29,7 @@ decision that needs no further engine work.
 
 The four options this record originally proposed looked like alternatives. They
 are not. A user-provided node, a paid pin, and peer-assisted replication all need
-the **identical engine capability** — replicating content to something that is
+the **identical engine capability**: replicating content to something that is
 not a person's device. Only accepting the limitation avoids it.
 
 So the architectural question was never *which option*. It was *do we want any of
@@ -38,7 +38,7 @@ between A and B is choosing where to run a container.
 
 **Peer-assisted replication is rejected.** Incentives, abuse, capacity
 accounting, and the fact that people dislike hosting strangers' data even
-encrypted — each is a research project.
+encrypted: each is a research project.
 
 **Accepting the limitation is kept as the honest fallback**, not the plan. It is
 a real product, just a much smaller one, and it should be chosen deliberately
@@ -80,8 +80,8 @@ untouched. The thing 0001 rejected was the default, not the capability.
 
 ## Consequences
 
-**It answers an unsolved business problem.** The project has costs — relays, the
-control plane — and no revenue line except "billing" in Phase 6. Charging for
+**It answers an unsolved business problem.** The project has costs (relays, the
+control plane) and no revenue line except "billing" in Phase 6. Charging for
 sync is hard to justify when the user supplies the storage. Charging for
 always-on availability is a clean thing to sell, because it is a real cost being
 absorbed on their behalf.

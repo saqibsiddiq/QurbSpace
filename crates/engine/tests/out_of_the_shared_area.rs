@@ -1,4 +1,4 @@
-//! A device out of the shared area -- a phone, since decision 0073 -- takes
+//! A device out of the shared area (a phone, since decision 0073) takes
 //! none of another device's shared files, nor changes to them, while what is
 //! sent to it still arrives.
 

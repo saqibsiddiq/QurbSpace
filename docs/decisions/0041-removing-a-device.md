@@ -1,6 +1,6 @@
-# 0041 — Removing a device
+# 0041: Removing a device
 
-**Status:** Accepted — files kept only by a removed device read as *on no
+**Status:** Accepted, files kept only by a removed device read as *on no
 device* since [0055](0055-a-file-on-no-device-says-so.md)
 **Date:** 2026-09-28
 
@@ -12,7 +12,7 @@ it cannot actually do. From the Devices screen on either platform, or
 
 1. **It can no longer connect here or sync with this device.** The trust row
    goes, the daemon closes any connection it holds to it, and a connection the
-   removed device opened is refused at its next request — trust is asked per
+   removed device opened is refused at its next request: trust is asked per
    request, not only at the handshake.
 2. **Nothing on the removed device is touched.** It keeps the master key, its
    files, and whatever this device had given it. The question says so, in
@@ -23,8 +23,8 @@ it cannot actually do. From the Devices screen on either platform, or
    delete it.** Those may be that device's only backup of its own files;
    deleting them is a choice, not a side effect.
 5. **Copies it was known to hold stop counting as copies.** The `replicas` rows
-   for it are marked `private` — "it has these bytes, and this device cannot ask
-   for them" — which is exactly true once it is removed. Freeing a local copy
+   for it are marked `private` ("it has these bytes, and this device cannot ask
+   for them") which is exactly true once it is removed. Freeing a local copy
    is refused on the strength of it from then on. Paired again, it is asked
    about each such copy at its syncs, and what it still holds counts again
    (since 2026-10-08, [0055](0055-a-file-on-no-device-says-so.md)).
@@ -63,7 +63,7 @@ existed for devices with incomplete bookkeeping. Combined with removal, it meant
 a removed device holding a connection open went on being served. The listener
 now asks the live trust list before each request, and closes the connection
 once the answer is no. A long wait for changes already in progress finishes
-first — within its ninety seconds.
+first: within its ninety seconds.
 
 **Only here.** Propagating a removal to the person's other devices needs a
 record every device accepts as the owner's word, synced like a file but
@@ -77,11 +77,11 @@ Two faults in the daemon, both of which would have made removal a statement
 rather than an action:
 
 - `refresh_trust` updated the daemon's own list of peers only when a device was
-  **added**. A removed device stayed in it — still dialled on every sweep and
+  **added**. A removed device stayed in it: still dialled on every sweep and
   synced with, however firmly the listener refused its own connections.
 - Dropping a connection from the peer table did not close it: the peer's change
   watcher holds its own reference. Removal now closes it explicitly, with a
-  method that closes the connection alone — `PeerClient::close` also closes the
+  method that closes the connection alone: `PeerClient::close` also closes the
   endpoint, which in the daemon is the one every other connection shares.
 
 Both have tests: `a_removed_device_is_disconnected` in the daemon, and

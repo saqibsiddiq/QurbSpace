@@ -2,7 +2,7 @@
 //!
 //! A guest holds its own key, so it pairs with a guest invite that gives it
 //! nothing of the computer's, and the two are given a secret to meet under.
-//! What matters most is what each is then shown: only what was sent to it --
+//! What matters most is what each is then shown: only what was sent to it,
 //! never the shared area in the list it syncs, and never a vault kept for
 //! anyone. Since decision 0073 a guest may reach the computer's shared folder
 //! live, one folder at a time (`tests/shared_folder.rs`).
@@ -304,7 +304,7 @@ async fn a_guests_vault_is_kept_sealed() {
     assert!(!stored.windows(32).any(|w| secret.windows(32).next() == Some(w)), "plain text is stored");
 
     // Told it is kept, the guest counts the computer's copy as one it can
-    // fetch back -- and may free its own.
+    // fetch back, and may free its own.
     let content = blake3::hash(&secret);
     assert_eq!(guest.engine.store().db().replica_count(&content).unwrap(), 1, "the guest does not know it is kept");
 }
@@ -321,8 +321,8 @@ async fn a_computer_visited_is_not_a_keeper_by_default() {
     assert!(guest.engine.store().db().holders().unwrap().is_empty(), "made a keeper without being chosen");
 }
 
-/// Kept by the computer, the guest lets go of its own copy -- it chose to keep
-/// nothing on the phone -- and gets the file back, unsealed and checked, when
+/// Kept by the computer, the guest lets go of its own copy (it chose to keep
+/// nothing on the phone) and gets the file back, unsealed and checked, when
 /// it is wanted (decision 0060, step 3).
 #[tokio::test(flavor = "multi_thread")]
 async fn a_guest_frees_its_copy_and_fetches_it_back() {
@@ -340,7 +340,7 @@ async fn a_guest_frees_its_copy_and_fetches_it_back() {
     assert_eq!(guest.engine.store().is_materialised("photos/family.jpg").unwrap(), Some(false));
 
     // When the vault knew it changed: what it should be dated once back, not
-    // when it arrived -- two seconds later, so the two can be told apart.
+    // when it arrived, two seconds later, so the two can be told apart.
     let changed = guest.engine.store().db().own_vault_rows().unwrap()[0].1.modified_at;
     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
     guest.engine.store().db().want("photos/family.jpg").unwrap();
@@ -358,7 +358,7 @@ async fn a_guest_frees_its_copy_and_fetches_it_back() {
     assert!(guest.root.join("photos/family.jpg").exists(), "let go of the moment it came back");
 }
 
-/// A phone set up again with the same key -- from Block Store or a code --
+/// A phone set up again with the same key (from Block Store or a code)
 /// visits as a new device and finds the folder it had: kept under the
 /// person, listed from the computer, and fetched back (decision 0060).
 #[tokio::test(flavor = "multi_thread")]
@@ -474,7 +474,7 @@ async fn a_guests_folder_opens_at_the_computer_only_with_its_key() {
 }
 
 /// A phone's folder of the owner's (decisions 0067, 0085): asked for at the
-/// computer, and opened by a yes from that phone, which sends no key -- the
+/// computer, and opened by a yes from that phone, which sends no key, the
 /// computer holds the same one. Neither a guest's yes nor another of the
 /// owner's phones' opens it, and the owner's phone is not asked about a
 /// guest's folder.
@@ -519,7 +519,7 @@ async fn a_phones_folder_opens_with_a_yes_from_that_phone_only() {
 }
 
 /// Decision 0061: a guest and the computer it visits, reaching each other
-/// through the relay by their meeting's names -- the way a computer reaches a
+/// through the relay by their meeting's names, the way a computer reaches a
 /// guest's phone that it cannot dial, behind a carrier's NAT. Both ways, each
 /// answered under the name it was called by.
 #[tokio::test(flavor = "multi_thread")]

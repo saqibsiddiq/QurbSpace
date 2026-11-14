@@ -1,6 +1,6 @@
-# 0055 — A file on no device says so
+# 0055: A file on no device says so
 
-**Status:** Accepted — built on the desktop, the phone and the command line;
+**Status:** Accepted, built on the desktop, the phone and the command line;
 extends [0032](0032-the-interface-hosts-the-daemon.md) and
 [0054](0054-a-file-the-other-device-does-not-hold.md)
 **Date:** 2026-10-07

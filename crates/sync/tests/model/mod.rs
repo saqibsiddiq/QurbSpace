@@ -26,7 +26,7 @@ pub struct Device {
     pub clock: VersionVector,
     /// How wrong this device's wall clock is, in seconds.
     ///
-    /// Ordering never consults it — that is the version vector's job. It exists
+    /// Ordering never consults it: that is the version vector's job. It exists
     /// so tests can prove that, by setting it absurdly and checking nothing
     /// changes.
     pub skew: i64,

@@ -2,11 +2,11 @@
 //!
 //! Decision 0036. A phone's files go into its own vault, and a device it
 //! chooses holds a copy for it: in the chunk store, never in the folder, and
-//! never released -- so the phone can free its local copy and have it back.
+//! never released, so the phone can free its local copy and have it back.
 //!
 //! Most of what can go wrong here is one rule leaking into another. A held file
 //! sits in the owner's vault exactly like a send does, and the rules for sends
-//! -- release once collected, list as waiting -- would destroy a backup if they
+//! (release once collected, list as waiting) would destroy a backup if they
 //! applied to it. These tests are mostly that line.
 
 use qurb_storage::{ChunkKey, Store};
@@ -250,7 +250,7 @@ fn only_the_listed_devices_are_holders() {
 }
 
 /// A file somebody sent here sits in this device's own vault. It is not a send
-/// waiting for this device to collect it -- which is what the list of things on
+/// waiting for this device to collect it, which is what the list of things on
 /// their way used to say about it, because it looked at every vault.
 #[test]
 fn a_file_sent_here_is_not_waiting_for_this_device() {

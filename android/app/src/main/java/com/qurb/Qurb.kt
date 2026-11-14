@@ -120,8 +120,8 @@ object Engine {
      * person's other devices instead.
      *
      * Before decision 0052 a new key had to have its words typed back before
-     * the app opened, and a phone set up as new by mistake -- after its data
-     * was cleared, say -- sat at that check with a key nobody wanted. Only
+     * the app opened, and a phone set up as new by mistake (after its data
+     * was cleared, say) sat at that check with a key nobody wanted. Only
      * ever that: refused once the folder holds anything, since a key with
      * files under it is one somebody is using.
      */
@@ -137,7 +137,7 @@ object Engine {
     /**
      * Keep the key in Block Store as it is now: for a phone set up before it
      * was kept there at setup (decision 0052), and, since the device pass of
-     * 2026-11-14, whenever Block Store holds another -- a save at setup that
+     * 2026-11-14, whenever Block Store holds another, a save at setup that
      * failed left the OPPO's an older key than its own, which a reset then
      * offered back.
      */
@@ -204,8 +204,8 @@ object Engine {
     suspend fun open(context: Context): Qurb = withContext(Dispatchers.IO) {
         // Already open: the ordinary case, and it has to cost nothing, because
         // every screen asks. Before this returned early, every refresh fetched
-        // the push token first -- a network round trip on a build with
-        // Firebase -- and nothing appeared until it came back.
+        // the push token first (a network round trip on a build with
+        // Firebase) and nothing appeared until it came back.
         handle?.let { return@withContext it }
 
         // Fetched before the lock, because it is a network round trip and the
@@ -285,7 +285,7 @@ object Engine {
      * Staged through the cache rather than streamed straight in: `importFile`
      * takes a path, a `content://` URI is not one, and the resolver's stream is
      * the only way to read what another app is handing over. The staging copy
-     * is deleted whether or not the import works — a failed share must not
+     * is deleted whether or not the import works: a failed share must not
      * leave the cache holding a copy of someone's photo.
      *
      * Needs no network and does not wait for one. The file is written and
@@ -309,8 +309,8 @@ object Engine {
                         requireNotNull(input) { "could not read that file" }.copyTo(output)
                     }
                 }
-                // Into the area being looked at when there is one -- Files or
-                // Private Vault -- and where the privacy setting says otherwise.
+                // Into the area being looked at when there is one (Files or
+                // Private Vault) and where the privacy setting says otherwise.
                 val engine = open(context)
                 if (private == null) engine.importFile(staging.absolutePath, name)
                 else engine.importInto(staging.absolutePath, name, private)
@@ -336,7 +336,7 @@ object Engine {
      *
      * The name comes from another application, which makes it untrusted input:
      * separators and `..` in it would place the file somewhere other than the
-     * folder — outside it, given enough of them. Reduced to its last component
+     * folder, outside it, given enough of them. Reduced to its last component
      * with the remaining awkward characters replaced, and never empty.
      */
     private fun safeName(candidate: String): String {
@@ -349,7 +349,7 @@ object Engine {
      * A name nothing is using yet.
      *
      * Two apps produce files called `IMG_0001.jpg` without either being wrong,
-     * and importing over an existing path does not merge them — it records a
+     * and importing over an existing path does not merge them: it records a
      * new version of that file, and since content is stored once, the old
      * version's bytes go with it. So a share would quietly destroy an unrelated
      * file that happened to share a name.
@@ -505,7 +505,7 @@ object Engine {
      * seconds: what lets Home say a device is off. A pass marks each device
      * that answers as seen (`mark_peer_seen`, after it began), so a device
      * last seen before this was tried and did not answer. Noted only by a pass
-     * that tried someone -- not one that ran out of time before it could.
+     * that tried someone, not one that ran out of time before it could.
      */
     fun lastTried(context: Context): Long? =
         context.getSharedPreferences("qurb", Context.MODE_PRIVATE).getLong("last_tried_at", 0L)

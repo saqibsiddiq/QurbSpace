@@ -98,6 +98,6 @@ fn nothing_is_registered_that_the_page_never_asks_for() {
 /// empty sets and passing.
 #[test]
 fn both_sides_were_actually_found() {
-    assert!(asked_for().len() > 10, "found {} invocations — parsing is wrong", asked_for().len());
-    assert!(registered().len() > 10, "found {} commands — parsing is wrong", registered().len());
+    assert!(asked_for().len() > 10, "found {} invocations: parsing is wrong", asked_for().len());
+    assert!(registered().len() > 10, "found {} commands: parsing is wrong", registered().len());
 }

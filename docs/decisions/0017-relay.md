@@ -1,13 +1,13 @@
-# 0017 — The relay carries datagrams, not messages
+# 0017: The relay carries datagrams, not messages
 
-**Status:** Accepted. Amended 2026-09-27: given by name, and best effort — see [A server of your own](#a-server-of-your-own). Amended 2026-10-11: one connection may hold several names, with two more frames — see [0061](0061-the-relay-carries-meetings.md). Amended 2026-10-15: a rendezvous service carries a relay too, at `/relay` over a WebSocket, and a device with none set uses that one — see [0068](0068-the-rendezvous-service-relays.md)
+**Status:** Accepted. Amended 2026-09-27: given by name, and best effort, see [A server of your own](#a-server-of-your-own). Amended 2026-10-11: one connection may hold several names, with two more frames, see [0061](0061-the-relay-carries-meetings.md). Amended 2026-10-15: a rendezvous service carries a relay too, at `/relay` over a WebSocket, and a device with none set uses that one, see [0068](0068-the-rendezvous-service-relays.md)
 **Date:** 2026-09-16
 
 ## Decision
 
 When two devices cannot reach each other directly, they connect through a relay
-that forwards **opaque datagrams**. An ordinary QUIC session — the same pinned
-certificates, the same handshake, the same encryption — runs inside.
+that forwards **opaque datagrams**. An ordinary QUIC session (the same pinned
+certificates, the same handshake, the same encryption) runs inside.
 
 The relay is reached over TCP, and belongs on port 443 behind TLS.
 
@@ -18,7 +18,7 @@ The obvious design is to relay application messages: the relay understands
 
 A relay that handles application messages is a relay that can **read and alter
 them**. Preventing that means encrypting and authenticating at the application
-layer — which is a second cryptographic protocol, built to solve a problem the
+layer, which is a second cryptographic protocol, built to solve a problem the
 first one already solved, in a codebase that would then have two.
 
 Forwarding datagrams means the existing QUIC session simply runs through the
@@ -43,7 +43,7 @@ ones that allow very little else.
 
 ## Who may use it
 
-A device registers under the identifier the rendezvous service already uses —
+A device registers under the identifier the rendezvous service already uses:
 derived from the user's master key, so the relay learns nothing about whose
 traffic it carries.
 
@@ -53,8 +53,8 @@ user's devices hold. Claiming someone else's therefore requires already knowing
 it, which means being inside a group whose members have paired with each other.
 
 **The residual risk, stated plainly:** anyone who learns a member identifier can
-register as that member and receive its relayed packets. They cannot read them —
-the QUIC session inside is pinned to certificates they do not have — but they can
+register as that member and receive its relayed packets. They cannot read them
+(the QUIC session inside is pinned to certificates they do not have) but they can
 prevent the real device receiving them. A denial of service against one device,
 by someone who already had to be close enough to learn a derived secret.
 
@@ -98,8 +98,8 @@ Nothing above the transport refers to it.
 phone can reach a laptop from anywhere. Three changes, each found by trying it:
 
 - **A relay can be given by name**, on the desktop and the phone, as
-  `host:port`. A name is looked up each time a device starts syncing — on a
-  phone, every pass — and the first of its addresses that answers is used; a
+  `host:port`. A name is looked up each time a device starts syncing (on a
+  phone, every pass) and the first of its addresses that answers is used; a
   name with an IPv6 address the relay does not listen on works. Names were
   refused, while the server guide's example used one.
 - **A relay that cannot be reached costs the fallback, not the device.** It

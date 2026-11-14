@@ -13,7 +13,7 @@
 //!
 //! # What it is not allowed to know
 //!
-//! No filenames, no chunks, no keys — nothing from the data plane passes through
+//! No filenames, no chunks, no keys: nothing from the data plane passes through
 //! here. It does not even learn whose devices these are: the identifiers a
 //! device announces under are derived from a master key the server does not
 //! hold, so it matches opaque values and forwards addresses.

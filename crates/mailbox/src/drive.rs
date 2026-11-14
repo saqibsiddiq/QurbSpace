@@ -296,7 +296,7 @@ pub async fn sign_in(client: &Client, open: impl FnOnce(&str)) -> Result<Refresh
         .and_then(|t| t.as_str())
         .ok_or_else(|| Error::Place(format!("Google gave no refresh token: {}", answer.get("error").and_then(|e| e.as_str()).unwrap_or("no reason"))))?
         .to_string();
-    // Which account: the email in the ID token's middle part, not checked --
+    // Which account: the email in the ID token's middle part, not checked,
     // shown to the person, never trusted for anything.
     let account = answer
         .get("id_token")

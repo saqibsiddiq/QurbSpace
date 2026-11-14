@@ -160,7 +160,7 @@ for app, order, label in (('A', A_order, 'Android'), ('D', D_order, 'The desktop
                 t = title(f, fn, items) if k_kind == 'pop-up' else None
                 name = f'{k_kind}' + (f': “{t}”' if t else '')
                 fname = fn.split('.')[-1] or '(top level)'
-                w(f'**{app}{i}.{j}** {name} — `{f.split("/")[-1]}`, `{fname}`\n')
+                w(f'**{app}{i}.{j}** {name}: `{f.split("/")[-1]}`, `{fname}`\n')
                 for n, s in items:
                     s2 = s.replace('\\n', ' ¶ ').replace('|', '\\|')
                     w(f'- {s2} <sub>{n}</sub>')

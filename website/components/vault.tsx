@@ -10,8 +10,8 @@ import { press, show, tap, type Keys } from './timeline'
 // vault. The laptop asks to open this phone's folder; the phone asks *Open
 // your folder on skib laptop?*, the thumb confirms, and the folder opens on
 // the laptop, to lock itself again after ten minutes unused. On the owner's
-// own computer that is QurbSpace's rule rather than encryption — the computer
-// holds the same key (docs/features.md) — so the words say it opens only when
+// own computer that is QurbSpace's rule rather than encryption (the computer
+// holds the same key (docs/features.md)) so the words say it opens only when
 // you say yes, not that nothing else could read it.
 
 const DURATION = 9500

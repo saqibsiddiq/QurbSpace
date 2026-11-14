@@ -1,7 +1,7 @@
 //! Property-based tests.
 //!
 //! The hand-written tests check cases someone thought of. These check
-//! *properties* over inputs nobody chose — thousands of randomised histories
+//! *properties* over inputs nobody chose: thousands of randomised histories
 //! per run, with shrinking, so a failure arrives as the smallest sequence that
 //! still breaks it rather than as a 30-step transcript.
 //!
@@ -266,7 +266,7 @@ fn arb_ops(devices: usize) -> impl Strategy<Value = Vec<Op>> {
 /// Run a history, then sync everyone until nothing changes.
 ///
 /// Returns the devices and how many rounds settling took, so a test can assert
-/// that it settles *at all* — an engine needing unbounded rounds does not
+/// that it settles *at all*: an engine needing unbounded rounds does not
 /// converge, and in production that is two devices trading files forever.
 fn run(ops: &[Op], count: usize) -> Result<(Vec<Device>, usize), String> {
     let ids = [A, B, C];
@@ -390,7 +390,7 @@ proptest! {
     }
 
     /// A path that ends up visible must hold content, and one that ends up
-    /// deleted must hold a tombstone -- never a half-state where the index
+    /// deleted must hold a tombstone: never a half-state where the index
     /// disagrees with itself.
     #[test]
     fn every_path_is_either_present_or_tombstoned(ops in arb_ops(3)) {

@@ -6,7 +6,7 @@
 //! on-disk format. This tests the whole path.
 //!
 //! It is the highest-stakes property in the product. There is no reset and no
-//! support ticket — if this is wrong, someone's data is gone and nobody finds
+//! support ticket: if this is wrong, someone's data is gone and nobody finds
 //! out until it is far too late.
 
 use qurb_keys::{MasterKey, Opened, Purpose, RecoveryPhrase, Vault};
@@ -99,7 +99,7 @@ fn the_wrong_phrase_cannot_read_the_data() {
 #[test]
 fn a_mistyped_phrase_is_refused_before_it_can_do_harm() {
     // The dangerous version of this bug: a wrong phrase is accepted, installed,
-    // and only later turns out to open nothing -- by which time the correct
+    // and only later turns out to open nothing, by which time the correct
     // phrase may be gone. The checksum has to catch it at the door.
     let (backup, written_down) = Backup::create(b"content");
     backup.lose_the_key();
@@ -167,7 +167,7 @@ fn two_devices_from_one_phrase_can_read_each_others_data() {
     assert_eq!(b.read_file("shared.txt").unwrap(), b"written on the first device");
 }
 
-// -- how the key is kept -----------------------------------------------------
+// , how the key is kept -----------------------------------------------------
 
 use qurb_keys::Protection;
 
@@ -290,7 +290,7 @@ fn a_recovery_phrase_still_works_under_a_passphrase() {
 
 /// The operating system's keystore, where one is usable.
 ///
-/// Skipped rather than failed where there is none — a headless build machine
+/// Skipped rather than failed where there is none: a headless build machine
 /// has no keyring, and a test that cannot run there is not a test that failed.
 #[test]
 fn a_keystore_protected_key_opens_the_data() {

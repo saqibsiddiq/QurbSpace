@@ -2,8 +2,8 @@
 //!
 //! The in-process tests in the engine cover planning. What only a connection
 //! shows is the bookkeeping each side does from the other's `Got`: the phone
-//! must count the desktop's copy as one it can ask back -- or it can never
-//! free anything -- and the desktop must record the phone taking its own file
+//! must count the desktop's copy as one it can ask back (or it can never
+//! free anything) and the desktop must record the phone taking its own file
 //! back without a word of it reaching the desktop's history, where the file's
 //! name would be shown to whoever uses the desktop. Decision 0036.
 
@@ -338,8 +338,8 @@ async fn timing_collecting_many_small_files() {
     println!("collecting {} files: {:.2} ms per file", held.held, t.elapsed().as_secs_f64() * 1000.0 / held.held as f64);
 }
 
-/// A file kept for another device that cannot be fetched -- the phone went
-/// away part-way -- is not named in this device's history (decision 0062).
+/// A file kept for another device that cannot be fetched (the phone went
+/// away part-way) is not named in this device's history (decision 0062).
 #[tokio::test(flavor = "multi_thread")]
 async fn a_held_file_that_fails_is_not_in_the_history() {
     let mut phone = Device::new();
@@ -599,7 +599,7 @@ async fn a_phone_reaches_its_folder_on_the_computer_and_what_it_kept_before() {
 }
 
 /// A file the desktop keeps for the phone, whose `Got` the phone never heard
-/// -- the connection lost between fetching and telling -- is learned of when
+/// (the connection lost between fetching and telling) is learned of when
 /// the phone asks, so the phone stops counting it as still to go. On the S23
 /// on 2026-10-15, 130 WhatsApp files the laptop had kept for hours were still
 /// "to go" on the phone, and their 54 MB made every pass a long one. A file

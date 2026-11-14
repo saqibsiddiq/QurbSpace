@@ -1,4 +1,4 @@
-# 0001 — Hybrid P2P with a central coordination plane
+# 0001: Hybrid P2P with a central coordination plane
 
 **Status:** Accepted
 **Date:** 2026-09-07
@@ -14,7 +14,7 @@ User file data is never stored on our servers.
 
 The two obvious topologies each fail on one of the project's two goals.
 
-**Pure client-server** — storing files in S3 or Backblaze — is what everyone
+**Pure client-server** (storing files in S3 or Backblaze) is what everyone
 else does, and it works. But it makes recurring storage cost scale with usage
 forever, and it puts us in possession of user data, which contradicts the
 premise of the product.
@@ -35,7 +35,7 @@ servers know *that* two devices want to talk and roughly where they are, not
 Availability now depends on our coordination servers for initial pairing and
 reconnection, and on relay servers when hole punching fails. We are not
 eliminating cloud dependency, we are shrinking it to metadata and to a fallback
-path — and giving ourselves a bandwidth bill proportional to how often that
+path, and giving ourselves a bandwidth bill proportional to how often that
 fallback is needed.
 
 ## Reversibility

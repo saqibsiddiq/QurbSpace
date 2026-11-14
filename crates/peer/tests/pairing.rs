@@ -2,13 +2,13 @@
 //!
 //! Every other test in this crate starts from "both devices already know each
 //! other's fingerprint". This is where that knowledge comes from, and it is the
-//! step that makes pinned identity worth anything — a fingerprint only protects
+//! step that makes pinned identity worth anything: a fingerprint only protects
 //! you if you learned the right one.
 //!
 //! The security rests on the invite carrying the inviter's *full* fingerprint
 //! across an out-of-band channel: a QR code on a screen, or a code read over
 //! the phone. An attacker in the network path cannot change what is printed on
-//! a screen. The one-time token is a narrower thing — it does not authenticate
+//! a screen. The one-time token is a narrower thing: it does not authenticate
 //! anyone, it just stops a device that found the port from pairing with one
 //! that never saw the code.
 
@@ -59,7 +59,7 @@ impl Device {
     }
 }
 
-// -- the invite format -------------------------------------------------------
+// , the invite format -------------------------------------------------------
 
 #[test]
 fn an_invite_round_trips() {
@@ -143,7 +143,7 @@ async fn an_invite_never_offers_an_address_nobody_can_dial() {
     assert_eq!(Invite::parse(&host.invite().encode()).unwrap().address, offered);
 }
 
-// -- the exchange ------------------------------------------------------------
+// , the exchange ------------------------------------------------------------
 
 /// Run a full pairing and return what each side learned.
 async fn pair(
@@ -226,7 +226,7 @@ async fn a_device_that_never_saw_the_code_cannot_pair() {
     )
     .await;
 
-    // Refused, one way or another -- never accepted.
+    // Refused, one way or another: never accepted.
     if let Ok(Ok(_)) = attempt {
         panic!("a device without the token was paired");
     }
@@ -368,7 +368,7 @@ async fn a_forgotten_device_is_no_longer_trusted() {
     assert!(!store.db().forget_peer(&joiner.device_id()).unwrap(), "forgetting twice reported work");
 }
 
-// -- what pairing is for -----------------------------------------------------
+// , what pairing is for -----------------------------------------------------
 
 #[tokio::test(flavor = "multi_thread")]
 async fn a_paired_device_can_sync_and_an_unpaired_one_cannot() {
@@ -420,7 +420,7 @@ async fn a_paired_device_can_sync_and_an_unpaired_one_cannot() {
 }
 
 /// A device removed while it is connected stops being answered at once, not
-/// when its connection happens to end -- which for one that keeps a
+/// when its connection happens to end, which for one that keeps a
 /// connection open could be never. The trust list is asked per request.
 #[tokio::test(flavor = "multi_thread")]
 async fn a_device_removed_while_connected_is_no_longer_served() {
@@ -459,7 +459,7 @@ async fn a_device_removed_while_connected_is_no_longer_served() {
 /// invite against it *inside* the accept loop, so the clock it checked was the
 /// one from before the wait began and the check could never fire. A
 /// `qurb pair` nobody answered sat there advertising a code that had stopped
-/// working five minutes in, with the screen still saying "Waiting..." — found
+/// working five minutes in, with the screen still saying "Waiting...": found
 /// after one had been waiting two and a half hours.
 #[tokio::test(flavor = "multi_thread")]
 async fn an_expired_invite_does_not_wait() {
@@ -502,7 +502,7 @@ async fn a_live_invite_stops_when_it_expires() {
     );
 }
 
-// -- a device with no key joins (decision 0052) ------------------------------
+// , a device with no key joins (decision 0052) ------------------------------
 
 /// A device that is not set up yet: a certificate, and somewhere to set up.
 struct Fresh {
@@ -557,7 +557,7 @@ async fn a_device_with_no_key_joins_with_the_code_and_gets_the_key() {
 }
 
 /// A device about to join asks who is showing the code, to say where to
-/// approve it -- *Approve on Desktop* -- and is told; the join goes on after,
+/// approve it (*Approve on Desktop*) and is told; the join goes on after,
 /// on a connection of its own.
 #[tokio::test(flavor = "multi_thread")]
 async fn a_device_about_to_join_is_told_who_shows_the_code_and_joins() {
@@ -707,7 +707,7 @@ async fn a_device_not_approved_before_the_code_expires_is_told_so() {
     assert!(joiner.trusted().is_empty());
 }
 
-// -- approval, the same key, and kinds (decision 0053) ------------------------
+// , approval, the same key, and kinds (decision 0053) ------------------------
 
 /// The person at the device showing the code is shown the number the asking
 /// device shows: the same six digits, from both certificates and the code.

@@ -72,11 +72,11 @@ is. This file says how its parts line up.
     the tray, and the folder in Android's file picker. *qurb* in lower case
     only where it is typed or is an identifier: commands, folders, packages.
 14. **A device is named, or is *another device*.** Never its identifier: a
-    device never paired here -- where a file began, reaching this one
-    through another -- is *another device*, as each app already said when
+    device never paired here (where a file began, reaching this one
+    through another) is *another device*, as each app already said when
     no device was recorded.
-15. **An error says what happened, as a sentence.** A refusal -- different
-    keys, declined, a code that lapsed before anybody approved -- is not
+15. **An error says what happened, as a sentence.** A refusal (different
+    keys, declined, a code that lapsed before anybody approved) is not
     filed under the network. The engine words its errors to follow `error:`
     on a command line; both apps start them with a capital.
 16. **Nothing that holds words has a fixed height.** Checked at 1.3× and at
@@ -132,13 +132,13 @@ is. This file says how its parts line up.
 | 41 | Android, a conflict | with the other version not on the phone, two of the three choices were simply missing; the desktop greys them and says why | a line saying so |
 | 42 | Android, setting up | not in the app's design: Material's display type, 32 dp margins, stock outlined and text buttons, no mark, *qurb* in lower case; a step with no title or way back, and the back key left setting up | the mark and *Qurb*, the 20 dp gutter, the desktop's choice cards and words, a title and *Back* on each step (rule 17) |
 | 43 | desktop, conflicts | a version's device icon guessed from its name (rule 12) | from its kind |
-| 44 | desktop, showing a code | with no code drawn, *Waiting — …* stayed centred under a left-aligned heading | on the left |
+| 44 | desktop, showing a code | with no code drawn, *Waiting: …* stayed centred under a left-aligned heading | on the left |
 | 45 | Android, the pairing question, and every dialog | on the S23 in dark, the QR code behind the question read plainly through it, about 8 levels, under the number to compare; and the number was Material's lilac in the system font | dialogs opaque (and a sheet where nothing blurs); the number in the app's colour, Inter, even figures |
 | 46 | Android, every sheet | on the S23 in dark, text behind a sheet read through it: the phone reported blur off (`mBlurEnabled=false`) and the sheet stayed 97%, the case row 45 had made opaque for dialogs only | every sheet opaque; where the phone blurs, the blur shows around it |
 | 47 | both, Home | the owner's item 4 (2026-10-13): no Recent list on Home, a button for the activity instead | a clock at the top right of Home on both: on the phone the Files header's 44 dp button, on the emulator its right edge on the gutter with *Sync now*'s; on the desktop the `icon-btn` beside the state, its right edge on the content's (1135 px of 1135 in the fixtures page). Each opens Activity; back returns Home |
 | 48 | both, choosing a phone's folders (0063) | first drawn, a folder's *Open* sat after its switch, so the rows with one had their switches further left; and a folder inside a chosen one looked chosen itself | *Open* before the switch, the switches in one column; a covered folder's switch fixed at 45% and its line *Backed up with DCIM*. The phone's sheet is the WhatsApp one's shape: what, over Wi-Fi only, what Android asks next, *Not now* and *Allow* |
 | 49 | Android, Home and *Your folders* | the owner's item 8: *Sync now* and *Send* two buttons, of one size; *Your folders* first drawn with a title over each folder's group, saying its first row's name again, and its first group against the header | *Sync now* (secondary) and *Send* (primary) 54 dp each, 12 dp apart, filling the gutter's width; *Waiting* and *Backups* sections under them, titled as Settings' are. In *Your folders* no title over a folder's group, 16 dp between groups and above the first; a covered folder's switch fixed at 60%, its line *Backed up with Android* |
-| 50 | both, Home | the owner's items 8 and 11: Home's two halves to match | on both: *Sync now* (secondary) beside *Send* (primary), one size — on the desktop 184 × 44 px each, 12 px apart, on the content's edge under the state (369 px in the fixtures page at 1180 wide), filling the width under 760 px; the facts line under them; then *Waiting* and *Backups*, titled as Settings' groups are. *Waiting* says the same things on both, in the same words, three files and three sends by name and the rest counted; *Nothing waiting* in green when there is none. *Backups* on the phone is its own two; on the desktop the two of each phone, *WhatsApp, from …* and *Folders, from …* with *Choose…* or *Change…* |
+| 50 | both, Home | the owner's items 8 and 11: Home's two halves to match | on both: *Sync now* (secondary) beside *Send* (primary), one size, on the desktop 184 × 44 px each, 12 px apart, on the content's edge under the state (369 px in the fixtures page at 1180 wide), filling the width under 760 px; the facts line under them; then *Waiting* and *Backups*, titled as Settings' groups are. *Waiting* says the same things on both, in the same words, three files and three sends by name and the rest counted; *Nothing waiting* in green when there is none. *Backups* on the phone is its own two; on the desktop the two of each phone, *WhatsApp, from …* and *Folders, from …* with *Choose…* or *Change…* |
 | 51 | both, showing and typing a code | the owner's item 7: six digits, and the long code made secondary | showing: the QR, then *Or type these on your phone, on this Wi-Fi* and the digits in the pairing number's style (36, semibold, even figures, spaced `482 913`), centred under it on both, the countdown under them; the whole code folded away on the desktop and small below on the phone. Typed digits wrongly too often, struck through at 35% with *Scan the code instead*. Typing: one field of six, centred, large and spaced, a number pad on the phone; joining as the sixth is typed on both |
 | 52 | desktop, Files | the owner's items 2 and 4: a level above the shared folder | the top's tiles 60 px, a second line under the name (*On all your devices*, *2 phones · 13 GB · Locked*), the icon centred on both lines (first drawn 12 px low: the line's box took the recovery words' `.words` margin, renamed). A locked folder is an empty state's shape: a lock in the orb, one paragraph, *Ask your phone*, and for the owner the note that the lock is Qurb's rule. Open, a green bar the folder's width says it locks itself, *Lock* at its right edge on the content's |
 | 53 | desktop, Storage | the owner's item 9: one card and a list, nothing about what fills the space | the top card as before (big number, one bar, a legend of three); then four cards two by two, each of one size: a 34 px tile, the title, the size at 22 px, its lines in `meta`, and one small button at the bottom right edge; a single column under 760 px. Section titles are Settings' group titles throughout |
@@ -146,7 +146,7 @@ is. This file says how its parts line up.
 | 55 | desktop, Files | looked at in the laptop's window: the owner's tile said *2 phones · 13 GB · Lo…*, counting the S23 and its earlier self, and cut off | the line is what is in it, *1 phone · 21 GB*: phones in use counted, an earlier self being a folder, not a phone; locked or open said by the icon, and in words to a screen reader. Open, the phones in use listed first, as the phone lists its own |
 | 56 | Android, *Your folder on …* and backups | on the S23: a WhatsApp folder stopped the screen 0.8 s drawing 500 rows; counts read *35925 of 36055* where the desktop writes *36,055* | 100 rows at a time and a last row, *Show 100 more* (*100 of 4,210 files shown*), the ellipsis icon in the row's tile; every count of files with its thousands apart, as the desktop writes them (`Words.count`) |
 | 57 | Android, *Your folder on …* | the owner, on the S23: a photo or a song there could only be downloaded or restored, not looked at or played | a file's sheet starts with *Open* (*In an app on this phone, without saving a copy*), Files' own icon for it, then *Download* and *Restore*; opened in the app for its type, fetched once and opened again at once |
-| 58 | both, the relay setting | an empty relay setting read *None — devices must reach each other directly*, which since 0068 is not what empty means | empty reads *Beside your rendezvous service* on the phone and in the window's placeholder; *off* is the way to say none, and the sheet says both |
+| 58 | both, the relay setting | an empty relay setting read *None: devices must reach each other directly*, which since 0068 is not what empty means | empty reads *Beside your rendezvous service* on the phone and in the window's placeholder; *off* is the way to say none, and the sheet says both |
 
 Checked after: the desktop smoke test, in the real window, both modes (*no
 command failed*), and every screen re-measured in the fixtures and on the
@@ -207,7 +207,7 @@ Stated so that nobody mistakes this pass for a complete one:
   sheet at 1.3× and 2×, and the S23. Rows 29 to 46.
 - **The S23, screen by screen**, in dark: the four places, Add a device,
   entering and showing a code, a device's sheet, removing (dismissed, not
-  done), Send to, and the pairing question -- a throwaway device on the
+  done), Send to, and the pairing question, a throwaway device on the
   laptop, named *Test joiner*, asking to join the phone's code, declined.
   Every edge where the emulator puts it, scaled: icons under the header's
   at 32 dp, words at 82, buttons ending 20 dp in. Rows 29 and 45 were found

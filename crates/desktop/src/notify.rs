@@ -5,11 +5,11 @@
 //! ones that stay quiet. So this raises a notification for exactly three kinds
 //! of event and ignores the rest:
 //!
-//! - **somebody sent you a file** — a thing another person did, on purpose, for
+//! - **somebody sent you a file** (a thing another person did, on purpose, for
 //!   you, which is the one case where an interruption is the point;
-//! - **a device collected what you sent it** — the completion of something you
+//! - **a device collected what you sent it**) the completion of something you
 //!   did, which is worth closing the loop on;
-//! - **something failed** — because the alternative is finding out later.
+//! - **something failed**, because the alternative is finding out later.
 //!
 //! Ordinary syncing is silent. So is pairing, so is eviction, so is every file
 //! that arrives because it was in a shared folder: those are the system working,
@@ -213,7 +213,7 @@ fn upper(words: &str) -> String {
 ///
 /// Raising a notification is a blocking D-Bus round trip, and the watcher is a
 /// Tokio task. Blocking one is merely rude; but when zbus is built with its
-/// `tokio` feature -- which any other crate in the build can turn on -- each
+/// `tokio` feature (which any other crate in the build can turn on) each
 /// blocking call starts a runtime of its own, and that panics on a Tokio
 /// thread. It did, 2026-10-05: the first failure worth announcing killed the
 /// watcher, and nothing was announced again until the program restarted.
@@ -226,7 +226,7 @@ fn off_the_runtime(call: impl FnOnce() + Send + 'static) {
 /// A missing notification daemon, a container with no session bus, a
 /// notification refused: all of them mean "this person will not see a popup",
 /// and none of them is a reason to stop syncing. The event is in the Activity
-/// screen regardless, which is the durable record — this is only the nudge.
+/// screen regardless, which is the durable record: this is only the nudge.
 fn show(notice: &Notice, hosted: Option<Arc<Hosted>>) {
     let mut n = notify_rust::Notification::new();
     n.summary(&notice.title).body(&notice.body).appname("QurbSpace").icon("folder-remote");
@@ -379,8 +379,8 @@ mod tests {
     }
 
     /// What zbus does with its `tokio` feature on, for every blocking call:
-    /// start a runtime and block on it. Run inline from the watcher -- a Tokio
-    /// task -- that panics with "Cannot start a runtime from within a
+    /// start a runtime and block on it. Run inline from the watcher (a Tokio
+    /// task) that panics with "Cannot start a runtime from within a
     /// runtime", as it did on 2026-10-05.
     #[tokio::test(flavor = "multi_thread")]
     async fn a_notification_is_raised_where_blocking_is_allowed() {

@@ -1,4 +1,4 @@
-# 0007 — On-disk chunk format
+# 0007: On-disk chunk format
 
 **Status:** Accepted
 **Date:** 2026-09-09
@@ -29,8 +29,8 @@ chunk they own; changing where a key comes from does not. So the expensive half
 is settled now and the cheap half is deferred, rather than the other way round.
 
 **Compress before encrypting**, because ciphertext is incompressible by
-construction. The ordering is not optional. It does leak a little information —
-an attacker observing stored sizes learns roughly how compressible a chunk was —
+construction. The ordering is not optional. It does leak a little information
+(an attacker observing stored sizes learns roughly how compressible a chunk was)
 which is accepted here: the alternative is giving up compression entirely, and
 the leak is over chunks of a user's own files rather than across a trust
 boundary.
@@ -59,7 +59,7 @@ not to shrink chunks much below the current size.
 
 Identical plaintext produces different ciphertext on each device, since nonces
 are random. This does not harm deduplication, which operates on plaintext hashes
-throughout — the ciphertext is only a storage and transport representation.
+throughout: the ciphertext is only a storage and transport representation.
 
 ## Reversibility
 

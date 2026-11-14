@@ -7,7 +7,7 @@
 //! Classifies the router between this machine and the internet, which decides
 //! whether devices can reach each other directly or need a relay. The Phase 3
 //! kill criterion is a direct-connection rate of roughly 70%, and this is the
-//! instrument it is measured with — so run it on every network that matters:
+//! instrument it is measured with, so run it on every network that matters:
 //! home, phone hotspot, office, café. The worst result is the one that sets the
 //! bandwidth bill.
 //!

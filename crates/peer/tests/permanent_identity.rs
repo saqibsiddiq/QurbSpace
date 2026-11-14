@@ -77,7 +77,7 @@ async fn an_installed_phone_becomes_its_permanent_identity() {
 }
 
 /// A phone set up again joins under a passing identity, says the permanent
-/// one -- which the computer knows -- and is told the device it was; the
+/// one (which the computer knows) and is told the device it was; the
 /// passing pairing then counts as that device, not a second one.
 #[tokio::test(flavor = "multi_thread")]
 async fn a_phone_set_up_again_is_told_the_device_it_was() {
@@ -98,7 +98,7 @@ async fn a_phone_set_up_again_is_told_the_device_it_was() {
 }
 
 /// The seed is the same for the same person's key and install, and differs
-/// for another install -- another phone -- or another person.
+/// for another install (another phone) or another person.
 #[test]
 fn a_seed_is_one_install_of_one_person() {
     let key = [5; 32];

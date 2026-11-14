@@ -1,7 +1,7 @@
 //! Measure what a sync actually costs on the wire.
 //!
 //! ```bash
-//! cargo run --release --example transfer -- <dir-a> <dir-b>
+//! cargo run --release --example transfer: <dir-a> <dir-b>
 //! ```
 //!
 //! Serves A, pulls everything into B, and reports how many chunks and bytes
@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // A is the first device: it creates the key. B is a second device the user
     // has enrolled with A's recovery phrase, which is what makes them a set
-    // rather than two strangers -- they derive the same chunk key and can
+    // rather than two strangers: they derive the same chunk key and can
     // therefore read each other's data.
     let (a_key, phrase) = match Vault::at(&a_root.join(".qurb")).open_or_create()? {
         Opened::Created { key, phrase } => {

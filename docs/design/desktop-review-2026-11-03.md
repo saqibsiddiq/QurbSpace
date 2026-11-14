@@ -3,7 +3,7 @@
 The phone app was reviewed page by page on 2026-11-02 (recorded in
 [phase 5](../phases/phase-5-mobile.md#the-owners-page-by-page-review-2026-11-02)).
 The desktop follows, with one rule from the owner: **the same philosophy as
-the phone** -- very minimal, intuitive, and the phone's patterns rather than
+the phone**, very minimal, intuitive, and the phone's patterns rather than
 desktop-only ones. Mockups are in [mockups/](mockups/). **Everything below
 was built on 2026-11-03** (commits 4bb89b0 to 5d3fb79), checked in the
 fixture window and the emulator, and **not yet tried together on the owner's
@@ -48,7 +48,7 @@ devices**, which is next. Where the build differs from the mockup, it says.
 
 **Notifications, as they stand (asked 2026-11-03).** Since Firebase went
 (decision 0082), the phone hears of a send or an ask only on its background
-pass -- every 15 minutes at best, hours while dozing -- or when opened. The
+pass (every 15 minutes at best, hours while dozing) or when opened. The
 notifications themselves exist ("… sent you a file", "… asks to open your
 folder"). UnifiedPush through a public ntfy server would make them instant
 for free, at the cost of a second app on the phone and someone else's server;
@@ -87,8 +87,8 @@ qurb application is not necessary")
 **Settings** ([mockup](mockups/settings-desktop-2026-11-03.html))
 
 - **S-1.** The phone's shape: one profile card (name and picture); *Manage
-  storage* → *This computer*; *App* -- Activity, Notifications, Theme, Start
-  at login, Update; *Connection* -- Speed limit, Advanced; *Quit QurbSpace* a
+  storage* → *This computer*; *App* (Activity, Notifications, Theme, Start
+  at login, Update; *Connection*) Speed limit, Advanced; *Quit QurbSpace* a
   red button at the end.
 - **S-2.** *This computer*'s storage: free space, one bar by what fills it, a
   row for Shared, each person's folder and Recently deleted (which opens to
@@ -176,7 +176,7 @@ real size ([system/desktop.html](system/desktop.html)). Asked and answered:
 
 - **Waiting** is option A on both apps ([system/waiting.html](system/waiting.html)):
   one picture with the other device's face on its corner, a title whose verb
-  says the way, one quiet line -- amber only when it waits on you -- and how
+  says the way, one quiet line (amber only when it waits on you) and how
   far it has got.
 - **Remove, Switch device and Quit** are the phone's solid buttons: red and
   blue fills, white words.

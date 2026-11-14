@@ -1,4 +1,4 @@
-# 0083 — The desktop's Files open in the computer's file manager
+# 0083: The desktop's Files open in the computer's file manager
 
 **Status:** Accepted and built, 2026-11-03, from the owner's review of the
 desktop that day ([desktop-review-2026-11-03](../design/desktop-review-2026-11-03.md),
@@ -28,7 +28,7 @@ keep everything in Shared: yes to both.
   libfuse). The owner's files are read from the store a chunk at a time as
   they are asked for; a guest's, sealed whole, are unsealed on first read into
   memory-backed space (`$XDG_RUNTIME_DIR`), as opening one did before. Locked
-  -- *Lock*, ten minutes unused, the computer asleep -- the folder unmounts and
+  (*Lock*, ten minutes unused, the computer asleep) the folder unmounts and
   the placeholder is back. The placeholder layout leaves a mounted folder
   alone (`layout::mounted`).
 - **One locked folder per person.** This computer's own private files appear

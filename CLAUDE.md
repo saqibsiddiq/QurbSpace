@@ -5,8 +5,8 @@
 Not a follow-up task. Specifically:
 
 - **[docs/CODEBASE.md](docs/CODEBASE.md) is the from-scratch guide.** It must
-  stay current. Any change to how the system fits together — a new subsystem, a
-  changed data flow, a moved directory, a corrected assumption — is updated
+  stay current. Any change to how the system fits together (a new subsystem, a
+  changed data flow, a moved directory, a corrected assumption) is updated
   there in the same piece of work that causes it. Update its "last verified"
   date only after checking the whole file against the code, not after editing
   one section.
@@ -19,15 +19,15 @@ Not a follow-up task. Specifically:
 
 ## Structure
 
-- `crates/` — code meant to last, held to a real standard.
-- `experiments/` — throwaway spikes. May cut corners, provided the README says
+- `crates/`: code meant to last, held to a real standard.
+- `experiments/`: throwaway spikes. May cut corners, provided the README says
   which ones. Nothing migrates silently to `crates/`; code that graduates gets
   rewritten deliberately.
-- `docs/` — see above.
+- `docs/`: see above.
 
 ## Claims
 
-Performance claims carry their measurement and its conditions — machine, corpus,
+Performance claims carry their measurement and its conditions: machine, corpus,
 warm or cold cache. "Fast" is not a specification. A number without conditions is
 not evidence.
 

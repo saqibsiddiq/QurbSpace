@@ -1,5 +1,5 @@
 // Files: one search across the shared folder and the Vault, then this
-// computer's places as cards two to a row — Shared, Vault, Received — and a
+// computer's places as cards two to a row (Shared, Vault, Received) and a
 // folder for each person this computer keeps files
 // for. Inside, folders as cards, files as plain rows, or as a gallery where
 // a folder is mostly pictures. A file's sheet has its actions as round
@@ -249,7 +249,7 @@ function hoverable(el, i) {
 }
 
 /**
- * Files as rows, or as a gallery when most of them are pictures — a phone's
+ * Files as rows, or as a gallery when most of them are pictures: a phone's
  * camera folder, a holiday. The gallery's pictures are the small ones a
  * camera keeps inside each photo, asked for as they scroll into view.
  */

@@ -4,7 +4,7 @@
 //!
 //! The owner, on making QurbSpace work from anywhere: "can we use services
 //! like google drive ... to make the system always work", then "include
-//! backups too". Live paths -- direct, the relay, Tor, the Nostr relays --
+//! backups too". Live paths (direct, the relay, Tor, the Nostr relays)
 //! need both devices awake at once and a way through between them. A shared
 //! folder needs neither: one device posts, the other collects when it can.
 //!
@@ -190,7 +190,7 @@ enum Kind {
     /// posts those and nothing else (2026-11-14): without it a computer
     /// posted every file the phone was not known to hold, shared files the
     /// phone opens from the computer and never keeps among them, again each
-    /// day -- 137 MB waiting on the OPPO, none of it applied.
+    /// day, 137 MB waiting on the OPPO, none of it applied.
     Want,
 }
 
@@ -680,8 +680,8 @@ impl Mailbox {
         Ok(())
     }
 
-    /// What arrived and no plan wants any more -- a file deleted or changed
-    /// again before its contents came, or already had another way -- let go
+    /// What arrived and no plan wants any more (a file deleted or changed
+    /// again before its contents came, or already had another way) let go
     /// of once a day old, whole or in part. Until 2026-11-14 it stayed: 346 MB
     /// of the S23's 916 (the owner: "i want my phone apps to take as little
     /// space as possible"). A day, so a file another device's list still

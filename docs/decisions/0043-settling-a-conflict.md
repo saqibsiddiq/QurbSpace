@@ -1,6 +1,6 @@
-# 0043 — Settling a conflict
+# 0043: Settling a conflict
 
-**Status:** Accepted — each version previewed since 2026-10-08
+**Status:** Accepted, each version previewed since 2026-10-08
 **Date:** 2026-09-28
 
 ## Decision
@@ -10,16 +10,16 @@ are kept, one under a conflict name ([0005](0005-conflict-resolution.md),
 [0009](0009-conflict-edge-cases.md)). A person now settles it, on any device,
 with one of three choices (brief §24):
 
-- **Keep this version** — the one under the file's own name. The other goes to
+- **Keep this version**: the one under the file's own name. The other goes to
   Recently deleted ([0042](0042-recently-deleted.md)).
-- **Keep the other** — it takes the file's name; the version that had it goes
+- **Keep the other**: it takes the file's name; the version that had it goes
   to Recently deleted.
-- **Keep both** — the other is renamed from
+- **Keep both**: the other is renamed from
   `plan.conflict-a1b2c3d4-2026-09-28-101502.md` to `plan (phone).md`, after the
   device that made it.
 
-Each is an ordinary change on the device where it is chosen — a rename, a
-delete, a new version — so it reaches every other device by the usual rules and
+Each is an ordinary change on the device where it is chosen (a rename, a
+delete, a new version) so it reaches every other device by the usual rules and
 the conflict is settled once for all of them. The two that need the other
 version's bytes are offered only where they are.
 
@@ -37,7 +37,7 @@ restorable for thirty days, on the device where the choice was made.
 A conflict is recognised by its file name, read back by
 `qurb_sync::conflict_origin`, the inverse of the function that writes it. The
 activity log has a `conflicted` event, but only on the device that noticed the
-conflict — every other device just receives the copy as a new file, and has to
+conflict: every other device just receives the copy as a new file, and has to
 recognise it too. The name is on every device.
 
 The parser is strict: eight lower-case hex digits, a UTC timestamp, then the
@@ -46,7 +46,7 @@ not a conflict, and is never offered for deletion as one.
 
 **The consequence that lasts:** the conflict-name format is now read as well
 as written. Changing `conflict_path` means changing `conflict_origin` with it,
-and conflict copies already on people's disks keep the old format — a change
+and conflict copies already on people's disks keep the old format: a change
 would have to go on recognising both.
 
 ## A device's name in a path

@@ -27,7 +27,7 @@ pub const IDLE: Duration = Duration::from_secs(10 * 60);
 pub const ASK_LIFETIME: Duration = Duration::from_secs(20 * 60);
 
 /// A moment, on both clocks. The monotonic one alone stops while a computer
-/// sleeps -- Linux's does -- so until 2026-10-18 a folder open when the lid
+/// sleeps (Linux's does) so until 2026-10-18 a folder open when the lid
 /// closed for the night was still open in the morning, with all ten minutes
 /// to go. The wall clock counts the sleep; one set back counts as the time
 /// being up, which errs towards locking.
@@ -83,7 +83,7 @@ pub fn asking(person: &DeviceId) -> Option<[u8; 16]> {
 }
 
 /// The phone approved: open the folder with `key`, if `nonce` is the ask's
-/// and `check` -- which tries the key on something sealed with it -- agrees.
+/// and `check` (which tries the key on something sealed with it) agrees.
 /// Returns whether it opened.
 pub fn unlock(person: &DeviceId, nonce: &[u8; 16], key: [u8; 32], check: impl Fn(&[u8; 32]) -> bool) -> bool {
     let Ok(mut r) = registry().lock() else { return false };

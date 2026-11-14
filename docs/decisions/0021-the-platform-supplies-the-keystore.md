@@ -1,4 +1,4 @@
-# 0021 — The platform supplies the keystore
+# 0021: The platform supplies the keystore
 
 **Status:** Accepted
 **Date:** 2026-09-17
@@ -26,9 +26,9 @@ What is stored is the 32-byte master key itself, not something wrapping it.
 The desktop reaches Keychain, DPAPI and the Secret Service through one crate.
 Neither mobile keystore works that way:
 
-- **Android** — the Keystore is a Java API. Reaching it from Rust means JNI and
+- **Android**: the Keystore is a Java API. Reaching it from Rust means JNI and
   a `Context`, which exists only inside an app.
-- **iOS** — the Keychain needs entitlements, which belong to an app bundle and
+- **iOS**: the Keychain needs entitlements, which belong to an app bundle and
   are checked against its code signature.
 
 Both are a few lines on their own side. Neither is a few lines from here, and a
@@ -55,8 +55,8 @@ holds the master key wrapped under it, and nothing sensitive is handed across
 the boundary except at setup.
 
 Rejected because it buys nothing and costs a second. The existing wrapping path
-uses Argon2id, which is correct for a passphrase — low entropy, needs to be
-expensive to attack — and pointless for a 256-bit random value, which cannot be
+uses Argon2id, which is correct for a passphrase (low entropy, needs to be
+expensive to attack) and pointless for a 256-bit random value, which cannot be
 guessed regardless. Running a deliberately slow key-derivation function at every
 app launch, on a phone, to protect something already unguessable, is a cost with
 no matching benefit.
@@ -85,7 +85,7 @@ Apple defeats the point of a recovery phrase the user holds.
 A vault records how it is kept. Opening a platform-protected vault without a
 keystore fails with a message naming the missing keystore.
 
-It must not fall back to reading the file, because there is no key in the file —
+It must not fall back to reading the file, because there is no key in the file:
 the fallback would produce a confusing error at a later, less obvious point. And
 it must not be mistaken for corruption or a wrong passphrase, because the fix is
 entirely different: pass the keystore.
@@ -94,7 +94,7 @@ entirely different: pass the keystore.
 
 - `Protection::Platform` is format byte 4 in the vault. Adding it broke
   `a_newer_format_is_refused_rather_than_misread`, which had written
-  `FORMAT_PASSPHRASE + 1` as "a format from the future" — that being the number
+  `FORMAT_PASSPHRASE + 1` as "a format from the future": that being the number
   the new format took. The test now anchors to the last format, so it keeps
   testing what it names.
 - A device set up with a keystore and later opened without one is locked out

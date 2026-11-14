@@ -7,7 +7,7 @@ import { TALL_PAIR } from './tall'
 import { show, type Keys } from './timeline'
 
 // Scene 4 of the website brief (docs/design/website-brief.md): nobody in the
-// middle. A cloud, and the way files usually go — up into it and down again —
+// middle. A cloud, and the way files usually go (up into it and down again)
 // is drawn, then fades away; the file goes straight from the phone to the
 // laptop instead, locked on the way and unlocked on arrival. True as
 // docs/features.md has it: files travel encrypted, device to device, and the

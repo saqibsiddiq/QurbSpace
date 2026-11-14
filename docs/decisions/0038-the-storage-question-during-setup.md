@@ -1,6 +1,6 @@
-# 0038 — The storage question is asked during setup
+# 0038: The storage question is asked during setup
 
-**Status:** Accepted — built 2026-09-27
+**Status:** Accepted, built 2026-09-27
 **Date:** 2026-09-25
 
 Amends [0033](0033-the-phrase-on-a-screen.md), which left the storage
@@ -8,7 +8,7 @@ allowance out of setup.
 
 ## Decision
 
-Setting up a desktop — a new qurb or joining an existing one — asks how much
+Setting up a desktop (a new qurb or joining an existing one) asks how much
 disk qurb may use, **before** the identity and the recovery phrase, as the
 brief's onboarding sequence has it (§71).
 
@@ -60,7 +60,7 @@ beneath; a custom amount larger than it is refused the same way. The largest
 of 100 GB and 50 GB that fits is chosen to begin with, so Continue works at once
 for somebody content with a sensible figure.
 
-**The unit.** The brief says GB, and qurb counts in 1024s everywhere else —
+**The unit.** The brief says GB, and qurb counts in 1024s everywhere else:
 `qurb config limit=50G` is 50×2³⁰ bytes, and the Storage screen shows GiB. The
 presets are 50×2³⁰ bytes and so on, the step says "GB" throughout rather than
 offering GB and answering GiB, and the figure chosen is the figure the Storage
@@ -76,7 +76,7 @@ key is made or installed and before anything syncs.
 is written. The screens against the fixture page
 (`experiments/desktop-fixtures/?setup&at=storage`), in a headless browser: the
 preselected figure, the two presets too large for the fixture disk's 188 GB,
-a custom 300 refused and a custom 75 accepted. Not driven in the real window —
-synthetic input does not reach a Tauri window under Wayland — so the first
+a custom 300 refused and a custom 75 accepted. Not driven in the real window
+(synthetic input does not reach a Tauri window under Wayland) so the first
 real setup through it is still to be watched.
 

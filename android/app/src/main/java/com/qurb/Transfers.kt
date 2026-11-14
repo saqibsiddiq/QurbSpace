@@ -20,7 +20,7 @@ import androidx.work.ForegroundInfo
  * A device collecting a large file from this phone needs the phone to keep
  * answering for minutes, and Android freezes an app nobody is looking at
  * within seconds. A worker that declares itself in the foreground is not
- * frozen -- and the price Android asks is a notification for as long as it
+ * frozen, and the price Android asks is a notification for as long as it
  * runs, which is also the honest thing to show: something is being sent.
  * Only while a large collection is in progress; the ordinary background sync
  * stays silent.
@@ -84,8 +84,8 @@ object Transfers {
     /**
      * Who collects, when it can be said: the one other device this phone has,
      * as a phone working with its computer has (decision 0073). With more,
-     * the bytes waiting may go to any of them -- a send to one, shared files
-     * to all -- and the notice says *your devices*.
+     * the bytes waiting may go to any of them (a send to one, shared files
+     * to all) and the notice says *your devices*.
      */
     fun collector(engine: uniffi.qurb_mobile.Qurb): String? =
         runCatching { engine.peers().singleOrNull()?.name }.getOrNull()

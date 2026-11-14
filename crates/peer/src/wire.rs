@@ -61,8 +61,8 @@ pub enum Request {
     /// only message in the protocol that asks for nothing: the sender has
     /// something the receiver wants to know, rather than the other way round.
     ///
-    /// It is what lets a device tell "waiting to be delivered" from "delivered"
-    /// — the difference between a phone that can say your photo reached the
+    /// It is what lets a device tell "waiting to be delivered" from "delivered":
+    /// the difference between a phone that can say your photo reached the
     /// desktop and one that can only say it tried. It is also what makes it
     /// safe for the *sender* to later drop its own copy under a storage cap.
     ///
@@ -150,8 +150,8 @@ pub enum Request {
 
     /// The chunks making up a file, each with its size: answered with
     /// [`Response::Layout`] to whoever may have its manifest, under the same
-    /// rules. What reading part of a file needs -- a player seeking in a
-    /// video kept on a computer -- since a chunk's place in the file is the
+    /// rules. What reading part of a file needs (a player seeking in a
+    /// video kept on a computer) since a chunk's place in the file is the
     /// sum of the sizes before it.
     Layout { content: [u8; 32] },
 
@@ -172,7 +172,7 @@ pub enum Request {
     /// Who the device showing a code is, asked by a device about to join or
     /// visit with it, presenting the code's token: answered with
     /// [`Response::Who`] before anybody approves anything, so the joining
-    /// device can say where to approve it -- *Approve on saqib* -- rather than
+    /// device can say where to approve it (*Approve on saqib*) rather than
     /// "your other device". Asked on a connection of its own: a device from
     /// before this does not know it, answers *not found* and drops that
     /// connection, and the join goes on as before on another.
@@ -182,21 +182,21 @@ pub enum Request {
     /// `since` (milliseconds; 0 for never asked): asked of every paired
     /// device on a sync, so that a device renamed, or given a picture, shows
     /// so everywhere (the owner's list of 2026-10-26, item 7). Answered with
-    /// [`Response::Profile`], or *not found* when nothing is newer -- which is
+    /// [`Response::Profile`], or *not found* when nothing is newer, which is
     /// also what a device from before this answers.
     Profile { since: i64 },
 
     /// The asking device's permanent identity, given as its certificate
     /// (decision 0079): "I am becoming this one." Asked of a computer by one
     /// of its person's own devices. Answered with [`Response::Became`], the
-    /// device id that identity is to have here -- the asker's own, its
+    /// device id that identity is to have here: the asker's own, its
     /// fingerprint now the permanent one's, or, for a device set up again
     /// whose permanent identity this computer already knows, that one's.
     Become { cert: Vec<u8> },
 
     /// What a computer's folder holds at its top, as the asker may see it
     /// (the owner's list of 2026-11-01, items 2 and 3): its shared folder,
-    /// the asker's own folder there -- named after the asker -- and other
+    /// the asker's own folder there (named after the asker) and other
     /// people's, locked to it. What a phone shows when a computer is
     /// opened, the same as the computer's `~/qurb`.
     Places,
@@ -206,7 +206,7 @@ pub enum Request {
     /// app (`qurb_storage::install_marker`). A device set up again comes back
     /// with a new identity and the same marker, and is known for what it
     /// was. Answered with [`Response::Install`], or *not found* by a device
-    /// that has none -- or a build from before this, which cannot read the
+    /// that has none, or a build from before this, which cannot read the
     /// request at all.
     Install,
 
@@ -221,7 +221,7 @@ pub enum Request {
 
     /// Changes to this computer's shared folder, made by the computer on its
     /// own folder when one of its own person's phones or a guest asks
-    /// (decision 0073, item 6) -- the exception to serving read-only, and
+    /// (decision 0073, item 6): the exception to serving read-only, and
     /// only for these. Each is answered [`Response::Noted`] when made,
     /// [`Response::Refused`] with a reason a person can read, or
     /// [`Response::NotFound`] by a computer that takes no changes from the
@@ -267,8 +267,8 @@ pub enum Request {
     /// apart from the folder until [`Request::UploadDone`].
     Upload { id: [u8; 16], offset: u64, bytes: Vec<u8> },
     /// The pieces of upload `id` are all sent: put the file at `path` once
-    /// its bytes hash to `content`. Answered [`Response::Placed`], with where
-    /// -- numbered when the name was taken.
+    /// its bytes hash to `content`. Answered [`Response::Placed`], with where:
+    /// numbered when the name was taken.
     UploadDone { id: [u8; 16], path: String, content: [u8; 32] },
 
     /// The files whose place holds `query`, ignoring case, in this
@@ -390,7 +390,7 @@ pub enum Response {
     /// number both screens show is what is checked.
     Who { name: String, kind: String },
 
-    /// A device's name and picture -- a small JPEG, empty for none -- and
+    /// A device's name and picture (a small JPEG, empty for none) and
     /// when it set them, answering [`Request::Profile`].
     Profile { name: String, picture: Vec<u8>, changed_at: i64 },
 
@@ -401,7 +401,7 @@ pub enum Response {
     /// [`Request::Places`]: each by name, and what it is to the asker.
     Places { places: Vec<(String, Place)> },
     /// [`Request::Storage`]: the space the computer gives QurbSpace (0 for
-    /// no limit) and what QurbSpace uses on it, then each part it keeps --
+    /// no limit) and what QurbSpace uses on it, then each part it keeps,
     /// its kind, a name, its bytes.
     Storage { given: u64, used: u64, parts: Vec<(Part, String, u64)> },
     /// [`Request::Convert`]: the document as a PDF.
@@ -1288,7 +1288,7 @@ pub fn tree_frames(versions: &[FileVersion]) -> Vec<Vec<u8>> {
 
 /// A file list's fingerprint: the hash of its entries in one order, by where
 /// each is listed and then by path ([`listed_order`]), however the list was
-/// put together -- sent whole, or rebuilt from what changed (decision 0072).
+/// put together, sent whole, or rebuilt from what changed (decision 0072).
 pub fn tree_digest(versions: &[FileVersion]) -> [u8; 32] {
     let mut sorted: Vec<&FileVersion> = versions.iter().collect();
     sorted.sort_by(|a, b| listed_order(a).cmp(&listed_order(b)));
@@ -1302,8 +1302,8 @@ pub fn tree_digest(versions: &[FileVersion]) -> [u8; 32] {
     *hasher.finalize().as_bytes()
 }
 
-/// Where an entry is listed -- 0 the shared area, 1 the asker's vault, 2 the
-/// answering device's own -- and its path: what tells one entry of a list
+/// Where an entry is listed (0 the shared area, 1 the asker's vault, 2 the
+/// answering device's own) and its path: what tells one entry of a list
 /// from another, and the order a list is fingerprinted in. An entry's area
 /// within a vault (sent, or held) is not part of it: a file the other device
 /// comes to hold is the same entry, changed.
@@ -1365,7 +1365,7 @@ fn decode_version(r: &mut Reader<'_>) -> Result<FileVersion> {
         .to_string();
     // The receiver joins this onto a directory of its own and writes there, or
     // deletes there. A path that leaves that directory is refused here, at the
-    // edge, rather than trusted because the peer authenticated -- a stolen
+    // edge, rather than trusted because the peer authenticated: a stolen
     // device keeps its identity. The engine checks again before it writes.
     if !qurb_sync::is_safe_path(&path) {
         return Err(Error::Protocol { detail: format!("path {path:?} leaves the folder") });
@@ -1523,8 +1523,8 @@ mod tests {
         FileVersion::file(path, [3; 32], 1234, vector, DeviceId::from_bytes([9; 32]), 1_757_462_400)
     }
 
-    /// The same list fingerprints the same, and any change -- one file's
-    /// content, one file fewer -- fingerprints differently (`trees`).
+    /// The same list fingerprints the same, and any change (one file's
+    /// content, one file fewer) fingerprints differently (`trees`).
     #[test]
     fn a_file_list_has_one_fingerprint() {
         let versions: Vec<FileVersion> = (0..5_000).map(|i| version(&format!("f{i:05}"))).collect();
@@ -1664,8 +1664,8 @@ mod tests {
         }
     }
 
-    /// A phone with more folders than an answer may carry -- every level of
-    /// its storage, since the tree -- has the deepest cut, never one at the
+    /// A phone with more folders than an answer may carry (every level of
+    /// its storage, since the tree) has the deepest cut, never one at the
     /// top: on 2026-10-26 its Android folders could have filled the answer
     /// before DCIM, by path, and the computer would have shown no DCIM.
     #[test]
@@ -1722,7 +1722,7 @@ mod tests {
         }
     }
 
-    // -- hostile input -------------------------------------------------------
+    // , hostile input -------------------------------------------------------
 
     #[test]
     fn truncation_is_an_error_not_a_panic() {

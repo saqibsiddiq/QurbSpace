@@ -12,7 +12,7 @@ export default function DownloadPage() {
   return (
     <DocPage
       title="Get Qurb"
-      intro="There’s no release to download yet. Qurb builds from its source on Linux, and the Android app builds from the same repository — this is how."
+      intro="There’s no release to download yet. Qurb builds from its source on Linux, and the Android app builds from the same repository: this is how."
     >
       <p className="callout">
         <Icon name="circle-check" size={20} />

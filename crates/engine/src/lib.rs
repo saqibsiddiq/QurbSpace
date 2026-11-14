@@ -1,7 +1,7 @@
 //! The sync engine: what a filesystem change means, and what to do about it.
 //!
 //! [`qurb_watcher`] reports that something changed. [`qurb_storage`] can store
-//! and remove files. This crate is the part in between — the decisions.
+//! and remove files. This crate is the part in between: the decisions.
 //!
 //! ```text
 //!   startup ──► reconcile   walk the disk, compare with the index,
@@ -138,7 +138,7 @@ pub struct Engine {
 
 impl Engine {
     /// `root` is the directory being synced. `store` may live inside it, as
-    /// long as `ignore` excludes it — see [`IgnoreRules::with_store_dir`].
+    /// long as `ignore` excludes it: see [`IgnoreRules::with_store_dir`].
     pub fn new(root: impl Into<PathBuf>, store: Store, ignore: IgnoreRules) -> Self {
         let root = root.into();
         // Probed rather than assumed from the platform: macOS can be formatted
@@ -148,7 +148,7 @@ impl Engine {
         // Attach the folder to the store here, so that no caller has to
         // remember to. A syncing device's files *are* its payload store, and a
         // store that does not know its folder keeps a second encrypted copy of
-        // every file — correct, and twice the size it should be. Doing it at
+        // every file: correct, and twice the size it should be. Doing it at
         // the one place that knows both is the difference between a rule and a
         // convention.
         let store = store.in_tree(&root);
@@ -268,7 +268,7 @@ impl Engine {
 
         // A replica has no directory to compare against. Walking one anyway
         // would find nothing and conclude that every file it holds had been
-        // deleted -- then propagate those tombstones to every device that
+        // deleted, then propagate those tombstones to every device that
         // trusts it. Doing nothing is not a shortcut here; it is the whole
         // point of the role.
         if self.role.is_replica() {
@@ -278,14 +278,14 @@ impl Engine {
 
         let mut entries = qurb_watcher::scan(&self.root, &self.ignore)?;
 
-        // Filenames that differ on disk but mean the same path once normalised
-        // -- `café` spelled two ways, which Linux keeps apart and macOS does
+        // Filenames that differ on disk but mean the same path once normalised:
+        // `café` spelled two ways, which Linux keeps apart and macOS does
         // not. The index is keyed by the normalised path and can hold only one,
         // so indexing both would silently drop whichever came second and leave
         // the two devices disagreeing about that path's contents.
         //
         // The already-normalised spelling wins, and byte order breaks any
-        // remaining tie -- see `qurb_watcher::scan`. It has to be a rule that
+        // remaining tie: see `qurb_watcher::scan`. It has to be a rule that
         // depends only on the filenames, because two devices resolving this
         // separately must reach the same answer. The rest are skipped and
         // counted; renaming a user's file is not a decision to make for them.
@@ -314,7 +314,7 @@ impl Engine {
         //
         // Deciding whether a file changed is a stat and an index lookup: cheap,
         // and 100k of them take about a second. Storing one that did change is a
-        // read, a chunking pass, compression, encryption and an fsync -- mostly
+        // read, a chunking pass, compression, encryption and an fsync: mostly
         // waiting on the disk rather than working.
         //
         // So the decision is made here, in order, and the storing is handed to
@@ -351,7 +351,7 @@ impl Engine {
             // Absent because *we* dropped it to stay under the storage cap,
             // not because anyone deleted it. Tombstoning here would turn this
             // device being short of space into a deletion on every other
-            // device — the single worst thing the cap could do.
+            // device: the single worst thing the cap could do.
             if self.store.is_materialised(&logical)? == Some(false) {
                 continue;
             }
@@ -379,7 +379,7 @@ impl Engine {
     /// Free what nothing needs: garbage past `retention`, and chunk-store
     /// copies of bytes the folder already holds.
     ///
-    /// The routine every device runs -- the desktop daemon every few minutes,
+    /// The routine every device runs: the desktop daemon every few minutes,
     /// a phone after each background sync. Before this was shared, only the
     /// daemon collected garbage and nothing ran `reclaim` unless a person typed
     /// it, so a phone kept the chunks of every file it had ever replaced or
@@ -569,7 +569,7 @@ impl Engine {
     ///
     /// Each worker opens its own connection to the same store. SQLite permits
     /// one writer at a time, so the index updates still happen one after
-    /// another — but they are short, and everything around them is not. The
+    /// another, but they are short, and everything around them is not. The
     /// reading, chunking, compressing, encrypting and fsyncing overlap, which is
     /// where the time goes.
     ///
@@ -671,7 +671,7 @@ impl Engine {
     /// Tombstone a removed path and everything the index holds beneath it.
     ///
     /// The watcher cannot say whether a vanished path was a file or a
-    /// directory — it is gone either way, and there is nothing left to
+    /// directory: it is gone either way, and there is nothing left to
     /// inspect. The index is what remembers, so the question becomes "what did
     /// we know about at or under this path", which it can answer.
     fn apply_removal(&mut self, logical: &str) -> Result<SyncStats> {
@@ -699,7 +699,7 @@ impl Engine {
     ///
     /// # Runtime requirement
     ///
-    /// Storage work is synchronous and can take a long time — chunking and
+    /// Storage work is synchronous and can take a long time: chunking and
     /// hashing a large file is seconds of CPU. It runs inside
     /// [`tokio::task::block_in_place`], which needs the multi-threaded
     /// scheduler. On a current-thread runtime this will panic; call
@@ -759,7 +759,7 @@ fn record_put(stats: &mut SyncStats, put: qurb_storage::PutStats) {
 ///   8 workers   864
 /// ```
 ///
-/// The gain comes from overlapping waits, not from computation — chunking,
+/// The gain comes from overlapping waits, not from computation, chunking,
 /// hashing and encryption together are under a tenth of the time. So it stops
 /// improving once the disk has enough requests in flight, and past that the
 /// threads only queue behind the one writer SQLite allows.

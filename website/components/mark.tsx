@@ -7,7 +7,7 @@ import { useId } from 'react'
  */
 export function Mark({ size = 28, className }: { size?: number; className?: string }) {
   // Each mark on a page needs its own gradient id, or the second one would
-  // borrow the first’s -- and lose it if the first is hidden.
+  // borrow the first’s, and lose it if the first is hidden.
   const tile = `qurb-tile-${useId().replace(/:/g, '')}`
   return (
     <svg className={className} width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">

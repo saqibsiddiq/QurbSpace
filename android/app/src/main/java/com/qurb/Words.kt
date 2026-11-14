@@ -13,7 +13,7 @@ import uniffi.qurb_mobile.QurbException
  *
  * The vocabulary is the direction's (docs/design/direction.md §11, §52): *on
  * this phone*, *available elsewhere*, *only copy here*, *free local space*,
- * *send to device* -- never replica, chunk, peer or evict. A screen that
+ * *send to device*, never replica, chunk, peer or evict. A screen that
  * improvised its own wording would drift from it, so every screen asks here.
  */
 object Words {
@@ -102,7 +102,7 @@ object Words {
 
     /**
      * The 24 words laid out to copy onto paper (§47): numbered, in order,
-     * three to a row, each on a tile -- the same as the desktop draws them.
+     * three to a row, each on a tile, the same as the desktop draws them.
      * The realistic failure is losing one's place halfway down the list.
      */
     fun phraseView(context: Context, phrase: String): View {
@@ -135,8 +135,8 @@ object Words {
 
     /** Say a failure, in words a person can act on. */
     fun fail(context: Context, title: String, e: Throwable) {
-        // A coroutine cancelled because its screen went away -- recreated for
-        // a theme change, or left -- is not a failure to tell anybody about.
+        // A coroutine cancelled because its screen went away (recreated for
+        // a theme change, or left) is not a failure to tell anybody about.
         // It was: "Could not read the settings: Job was cancelled", on choosing
         // a theme (2026-10-08).
         if (e is kotlinx.coroutines.CancellationException) return
@@ -151,7 +151,7 @@ object Words {
     }
 
     /**
-     * A passing message. `above` is the view it must not cover -- the tab bar,
+     * A passing message. `above` is the view it must not cover: the tab bar,
      * which a snackbar otherwise sits on top of for its whole three seconds.
      */
     fun say(anchor: View, message: String, above: View? = null) {

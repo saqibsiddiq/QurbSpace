@@ -9,7 +9,7 @@ import uniffi.qurb_mobile.QurbException
  *
  * **UniFFI's generated message is `"detail=${detail}"`.** The field name leaks
  * into every dialog, so a real failure reads `detail=connection lost: timed
- * out` — which looks like a bug in the app even when the app is fine.
+ * out`, which looks like a bug in the app even when the app is fine.
  *
  * **The detail alone rarely says what to do.** "Connection lost: timed out" is
  * accurate and useless: the overwhelmingly likely cause on a home network is a
@@ -43,7 +43,7 @@ fun QurbException.readable(): String = when (this) {
 
     // Not a fault: a refusal that protects the only copy of something.
     is QurbException.OnlyCopy ->
-        "This is the only copy — no other device has it yet, so it cannot be freed here. " +
+        "This is the only copy: no other device has it yet, so it cannot be freed here. " +
             "Choose a device to keep your files, or send it somewhere first."
 
     // The computer's own words for a change it would not make (decision 0073).
@@ -55,7 +55,7 @@ fun QurbException.readable(): String = when (this) {
  * Network failures, which are the ones a person can usually act on.
  *
  * A timeout on a home network almost always means something dropped the UDP
- * packets rather than that the other device is missing — it is worth naming the
+ * packets rather than that the other device is missing: it is worth naming the
  * firewall explicitly, because the alternative is someone concluding the app is
  * broken.
  */
@@ -65,7 +65,7 @@ private fun network(detail: String): String {
         lower.contains("timed out") || lower.contains("timeout") ->
             "Could not reach the other device: it did not answer.\n\n" +
                 "Both devices have to be awake and running at the same moment. " +
-                "If they are, a firewall is the usual cause — sync uses UDP, and " +
+                "If they are, a firewall is the usual cause: sync uses UDP, and " +
                 "a rule that allows ping will still drop it.\n\n" +
                 "On Linux: sudo ufw allow from 192.168.0.0/16 to any proto udp"
 

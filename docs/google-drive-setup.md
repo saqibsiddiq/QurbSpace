@@ -71,8 +71,8 @@ What people see when they tap "Allow".
 5. Save the file as `~/.config/qurb/google-desktop-client.json` on the laptop.
 
 The JSON holds a client ID and a "client secret". For a desktop app Google
-does not treat that secret as secret — it ships inside every copy of the
-program — but keep the file out of the repository anyway: the build will read
+does not treat that secret as secret (it ships inside every copy of the
+program) but keep the file out of the repository anyway: the build will read
 it from there, and it is not committed.
 
 ## 6. The web client: for the phone's account, handed to the computer

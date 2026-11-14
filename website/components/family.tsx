@@ -10,7 +10,7 @@ import { press, show, tap, type Keys } from './timeline'
 // a Shared folder is open to all of them (decisions 0060, 0067, 0073). One
 // phone with several computers: hold the circle on Home, choose another.
 // The words keep two things apart, as docs/features.md does: everyone's
-// folder opens only from their own phone, but only a guest's is sealed —
+// folder opens only from their own phone, but only a guest's is sealed,
 // the owner's computer holds the owner's key. Guests are checked on the
 // emulator, not yet on a real phone, so they are marked as being tested.
 

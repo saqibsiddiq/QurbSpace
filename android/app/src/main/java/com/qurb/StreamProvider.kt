@@ -123,8 +123,8 @@ class StreamProvider : ContentProvider() {
         private var watching = false
 
         /**
-         * When the phone's network changes -- Wi-Fi gone, mobile data taking
-         * over -- the connection an open file is read over is gone with it,
+         * When the phone's network changes (Wi-Fi gone, mobile data taking
+         * over) the connection an open file is read over is gone with it,
          * and a read waiting on it would wait until it timed out: on the S23
          * on 2026-10-19 the player was declared not responding first. So
          * every open stream is closed then, and its reads fail at once; the

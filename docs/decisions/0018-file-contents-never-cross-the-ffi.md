@@ -1,6 +1,6 @@
-# 0018 — File contents never cross the FFI
+# 0018: File contents never cross the FFI
 
-**Status:** Accepted. Amended 2026-10-15: a bounded range may cross, for a player reading a file as it plays — see [A range, for a player](#a-range-for-a-player).
+**Status:** Accepted. Amended 2026-10-15: a bounded range may cross, for a player reading a file as it plays, see [A range, for a player](#a-range-for-a-player).
 **Date:** 2026-09-17
 
 ## Decision
@@ -18,8 +18,8 @@ a chunk at a time from the transport to disk, never assembled in memory.
 
 ## Why
 
-An iOS FileProvider extension — the process that makes files appear in the Files
-app — runs under a memory ceiling in the tens of megabytes. Android is more
+An iOS FileProvider extension (the process that makes files appear in the Files
+app) runs under a memory ceiling in the tens of megabytes. Android is more
 forgiving but still kills processes under pressure, and does it more readily to
 one that has been backgrounded.
 
@@ -36,7 +36,7 @@ Measured on Linux 7.2.2 (CachyOS), release build, warm cache, as growth in
 | 1024 MiB | 1024 MiB of heap | 1 MiB |
 
 And on an Android 14 emulator, receiving over a real QUIC connection rather than
-reading from a local store — which is the case that actually matters:
+reading from a local store, which is the case that actually matters:
 
 | file | heap |
 |---|---|
@@ -54,7 +54,7 @@ serialisation. A whole-file API would have paid for the file twice.
 ## What this costs
 
 **The API is less convenient.** A caller that wants bytes in memory must write
-them to a file and read them back. That is the right trade — the caller then
+them to a file and read them back. That is the right trade: the caller then
 chooses to pay the memory cost explicitly, at a size it knows, rather than
 having it imposed by a function signature.
 
@@ -82,8 +82,8 @@ until it doesn't, and when it doesn't the process is killed rather than given an
 error, so there is nothing to catch and nothing to report.
 
 **Return a byte range at a time, and let the caller loop.** Correct on memory,
-but it puts the loop — and therefore the hash verification, and the decision
-about when content is complete — on the far side of an FFI boundary, in two
+but it puts the loop (and therefore the hash verification, and the decision
+about when content is complete) on the far side of an FFI boundary, in two
 languages, written twice. The verification would be the first thing to be
 skipped.
 
@@ -100,11 +100,11 @@ profiling on a real device says the extra write matters.
   The buffering ones remain because tests and the replica path use them.
 - `ContentSource::fetch_into` has a default implementation that buffers, so a
   source that cannot stream still compiles. A source that can stream overrides
-  it. This is a seam where a mistake is silent — a source that forgets to
+  it. This is a seam where a mistake is silent: a source that forgets to
   override gets correctness and loses the ceiling.
 
-  **That happened, in the same week this was written.** `NetworkSource` — the
-  one that matters, since it is how a phone receives a file — implemented only
+  **That happened, in the same week this was written.** `NetworkSource` (the
+  one that matters, since it is how a phone receives a file) implemented only
   `fetch` and inherited the buffering default. The network path held whole files
   in memory for a release, and nothing failed, because buffering is correct and
   merely expensive.
@@ -112,7 +112,7 @@ profiling on a real device says the extra write matters.
   The lesson is not "write a better warning": the warning was here, in this
   document, and it did not help. A default that is correct and slow cannot be
   caught by review or by the compiler. It is caught by measuring, which is now
-  what `crates/mobile-ffi/tests/syncing.rs` does — receiving a 128 MiB file and
+  what `crates/mobile-ffi/tests/syncing.rs` does: receiving a 128 MiB file and
   failing if the heap grows by more than a fixed bound. Any future source that
   forgets the override fails that test.
 - The memory promise is asserted by a test in `crates/mobile-ffi`, not by a
@@ -125,10 +125,10 @@ fetched whole into the app's cache before it could play: 1.6 GB for one
 episode on the S23, which then struggled, and the cache grew with each.
 Android lets an app hand another a file descriptor whose reads it answers
 itself (`openProxyFileDescriptor`), which is what playing as it arrives,
-seeking included, needs -- and the answers are bytes, from the engine.
+seeking included, needs, and the answers are bytes, from the engine.
 
 So one call returns bytes: `KeptStream::read_at`, at most a megabyte, of a
 file read from the computer a chunk at a time (`qurb_peer::Ranged`), each
-chunk checked against its hash, a few kept. What this decision protects --
-memory that does not grow with the file -- holds: the S23 played and sought
+chunk checked against its hash, a few kept. What this decision protects
+(memory that does not grow with the file) holds: the S23 played and sought
 in that episode with Qurb at 123 MB in all. Nothing returns a whole file.

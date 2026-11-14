@@ -10,7 +10,7 @@ mode is losing someone's work.
 
 ## The problem
 
-With a central server, "which version is current?" has an easy answer —
+With a central server, "which version is current?" has an easy answer:
 whatever the server says. There is no server here. Each device has its own
 opinion and they have to converge without one.
 
@@ -23,14 +23,14 @@ remote state ─┘
 ## Three ideas, in order of importance
 
 **Version vectors, not timestamps.** A vector records how many changes from each
-device a version has seen — `{laptop: 42, phone: 12}`. Comparing two answers the
+device a version has seen: `{laptop: 42, phone: 12}`. Comparing two answers the
 only question that matters: did one happen after the other, or did they happen
 without either knowing? Device clocks disagree, sometimes badly; causality does
 not. Wall-clock time appears in this crate only inside conflict filenames.
 
 **Concurrent means conflict.** When neither version has seen the other, no
 amount of comparing decides which one the user meant. The content-hash tiebreak
-decides only which keeps the original filename — it is arbitrary, which is
+decides only which keeps the original filename: it is arbitrary, which is
 exactly why the loser is kept rather than discarded.
 
 **Never silently discard an edit.** The one promise the system makes about
@@ -55,7 +55,7 @@ won". Both devices compute identical end states from identical inputs, which is
 what lets them converge with no negotiation protocol.
 
 Every resolution of a concurrent case carries the **merged** vector. That is
-what makes resolution terminate — a merged vector dominates both inputs, so the
+what makes resolution terminate: a merged vector dominates both inputs, so the
 resolved state is strictly later than what it resolved and the next comparison
 finds a settled file. Without it, two devices re-detect the same conflict
 forever.
@@ -68,7 +68,7 @@ cargo test -p qurb-sync
 
 The unit tests pin each rule. The convergence simulation in
 `tests/convergence.rs` is what pins the *system*: two and three devices making
-random edits, deletes, and syncs, which must all end agreeing — on content and
+random edits, deletes, and syncs, which must all end agreeing, on content and
 on history.
 
 That distinction is not academic. It caught a bug every unit test missed: when
@@ -80,7 +80,7 @@ correct the whole time.
 `tests/properties.rs` now does this with `proptest`: twenty-one properties over
 generated histories, with shrinking, so a failure arrives as the smallest
 sequence that still breaks it. Failing cases are persisted as regressions.
-`tests/adversarial.rs` covers clock skew and month-long absences — ordering
+`tests/adversarial.rs` covers clock skew and month-long absences: ordering
 never consults wall-clock time, and those tests prove it rather than asserting
 it.
 

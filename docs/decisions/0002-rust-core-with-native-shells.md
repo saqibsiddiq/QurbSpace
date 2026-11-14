@@ -1,12 +1,12 @@
-# 0002 — Rust core with native UI shells
+# 0002: Rust core with native UI shells
 
 **Status:** Accepted
 **Date:** 2026-09-07
 
 ## Decision
 
-All logic that is not user interface — chunking, storage, cryptography,
-synchronisation state, networking — lives in one Rust library compiled for every
+All logic that is not user interface (chunking, storage, cryptography,
+synchronisation state, networking) lives in one Rust library compiled for every
 target. User interfaces are thin and platform-specific: Tauri on desktop,
 SwiftUI on iOS, Jetpack Compose on Android.
 
@@ -31,12 +31,12 @@ existing web view instead of shipping a browser.
 
 ## Rejected
 
-- **Electron** — resource cost unacceptable for an always-running daemon.
-- **C++/Qt** — memory safety risk in file parsers, and high maintenance burden
+- **Electron**: resource cost unacceptable for an always-running daemon.
+- **C++/Qt**: memory safety risk in file parsers, and high maintenance burden
   for one developer.
-- **React Native / Flutter** — no adequate access to background execution,
+- **React Native / Flutter**: no adequate access to background execution,
   file provider extensions, or long-lived sockets.
-- **Go for the client** — garbage collection pauses during large scans, and a
+- **Go for the client**: garbage collection pauses during large scans, and a
   weaker story for embedding in an iOS extension under a tight memory ceiling.
 
 ## Tradeoff accepted

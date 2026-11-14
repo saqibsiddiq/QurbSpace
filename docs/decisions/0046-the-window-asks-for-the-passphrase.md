@@ -1,6 +1,6 @@
-# 0046 — The window asks for the passphrase, and has a Security section
+# 0046: The window asks for the passphrase, and has a Security section
 
-**Status:** Accepted — amends [0033](0033-the-phrase-on-a-screen.md)'s "no
+**Status:** Accepted, amends [0033](0033-the-phrase-on-a-screen.md)'s "no
 passphrase prompt in the window"
 **Date:** 2026-09-28 (brief §33)
 
@@ -12,19 +12,19 @@ folder is set up and its key is wrapped with a passphrase, the window opens on
 is open. Started hidden at login, the window shows itself for this, because
 nothing syncs until the passphrase is typed. A wrong passphrase says so and
 changes nothing; the field is cleared whatever the answer, and the passphrase
-goes to the key-derivation function and nowhere else — not kept, not logged.
+goes to the key-derivation function and nowhere else, not kept, not logged.
 
 `qurb run` still asks on its terminal, as it always has.
 
 **Settings has a Security section:**
 
-- this device's identity — the fingerprint its paired devices pinned;
+- this device's identity: the fingerprint its paired devices pinned;
 - how the key is kept, in plain words, with what each option does and does not
-  protect against — a file only you can read; the system keystore; a
+  protect against: a file only you can read; the system keystore; a
   passphrase;
 - changing that: protect with a passphrase (at least eight characters, typed
   twice), change the passphrase, or move to the system keystore. The key is
-  untouched — this changes the lock, not what it protects — and the running
+  untouched (this changes the lock, not what it protects) and the running
   daemon carries on;
 - pairings and removals, newest first;
 - the recovery phrase, as before, and a pointer to the Devices screen for
@@ -34,8 +34,8 @@ goes to the key-derivation function and nowhere else — not kept, not logged.
 
 0033: "The window cannot ask, because opening the key is what decides whether
 there is anything to show." True when the window refused to open without a
-key. It has since learned to open in two situations — nothing set up, and
-running — and a third, *locked*, is the same shape: set up, not running, and
+key. It has since learned to open in two situations (nothing set up, and
+running) and a third, *locked*, is the same shape: set up, not running, and
 the reason known. The page asks for what is missing, the way it asks for 24
 words when setting up.
 

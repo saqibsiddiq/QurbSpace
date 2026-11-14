@@ -1,6 +1,6 @@
-# 0056 — Dark mode, on the same tokens
+# 0056: Dark mode, on the same tokens
 
-**Status:** Accepted — built on the desktop and Android; the desktop looked at
+**Status:** Accepted, built on the desktop and Android; the desktop looked at
 against its fixtures and the real window seen following the desktop's
 preference; watched on the S23
 **Date:** 2026-10-08

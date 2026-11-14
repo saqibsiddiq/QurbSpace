@@ -7,7 +7,7 @@
 //!
 //! Buying a domain to run a rendezvous is a requirement this product should not
 //! impose. So the service can present a self-signed certificate and the client
-//! checks it against a fingerprint given in advance — exactly how every other
+//! checks it against a fingerprint given in advance: exactly how every other
 //! identity in qurb is checked, and for the same reason: an authority adds a
 //! third party to a decision two devices can make between themselves. See
 //! [decision 0011](../../../docs/decisions/0011-peer-identity-pinning.md).
@@ -22,7 +22,7 @@
 //!
 //! One string to copy from the server that printed it into the setting on each
 //! device, which is the whole of the deployment. A fragment because it is not
-//! sent to the server — it is a fact *about* the server, and putting it in the
+//! sent to the server: it is a fact *about* the server, and putting it in the
 //! query string would send the thing being checked to the thing being checked.
 //!
 //! # A certificate authority still works
@@ -84,7 +84,7 @@ impl Certificate {
     /// certificate each time it restarted would lock out every device it had.
     ///
     /// `names` are what the certificate is issued for. They are not checked by
-    /// a pinning client — the fingerprint is the identity — but they matter to
+    /// a pinning client (the fingerprint is the identity) but they matter to
     /// anything else that might look, and to a future deployment that puts a
     /// real name in front of this one.
     pub fn kept_in(dir: &Path, names: Vec<String>) -> Result<Self> {
@@ -181,7 +181,7 @@ impl Pinned {
     fn check(&self, offered: &CertificateDer<'_>) -> std::result::Result<(), rustls::Error> {
         // Constant-time, because a fingerprint comparison that returns early
         // leaks where it stopped matching. The value is public, so this is
-        // belt and braces rather than a defence anything depends on — and it
+        // belt and braces rather than a defence anything depends on, and it
         // is one line.
         let found = fingerprint_of(offered);
         let same = found.iter().zip(self.expected.iter()).fold(0u8, |a, (x, y)| a | (x ^ y));

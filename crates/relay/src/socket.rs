@@ -1,8 +1,8 @@
 //! A relay connection, pretending to be a UDP socket.
 //!
 //! This is what makes the relay safe. Rather than forwarding application
-//! messages — which would mean the relay handling data it could tamper with, and
-//! us inventing a second encryption layer to stop it — the relay carries
+//! messages (which would mean the relay handling data it could tamper with, and
+//! us inventing a second encryption layer to stop it) the relay carries
 //! **datagrams**, and an ordinary QUIC session runs inside.
 //!
 //! Everything above is unchanged: the same pinned certificates, the same
@@ -15,7 +15,7 @@
 //!
 //! QUIC addresses peers by `SocketAddr`, and a relayed peer has none that means
 //! anything. So the socket hands each peer an address from the documentation
-//! range — never routed, so one appearing in a log is unambiguously relayed —
+//! range (never routed, so one appearing in a log is unambiguously relayed)
 //! and translates between that and the peer's relay identifier.
 //!
 //! The mapping is two-way and allocated on demand, because a device does not
@@ -28,12 +28,12 @@
 //! A device registers under its own identifier, and may [`register`] more:
 //! one for each meeting with another person's device (decision 0061), whose
 //! name for it is not its own. Each synthetic address then stands for a pair
-//! -- the peer, and which of this device's names the two use -- so a reply
+//! (the peer, and which of this device's names the two use) so a reply
 //! goes out under the name it was called by.
 //!
 //! # Staying on
 //!
-//! A relay restarts -- for a deploy, a reboot, a crash -- and the rendezvous
+//! A relay restarts (for a deploy, a reboot, a crash) and the rendezvous
 //! service carrying one does too (decision 0068). Until 2026-10-18 a socket
 //! whose connection went stayed gone, and told QUIC so, which ends a whole
 //! endpoint: a laptop whose relay restarted, or which started before it at
@@ -288,7 +288,7 @@ impl quinn::AsyncUdpSocket for RelaySocket {
         // The address QUIC is sending to is one this socket handed out, so it
         // names a peer. Anything else is a packet for somewhere we have never
         // been, which cannot be relayed and must not be silently discarded
-        // either -- QUIC deserves to know it did not go.
+        // either: QUIC deserves to know it did not go.
         let (peer, as_me) = self
             .peers
             .lock()

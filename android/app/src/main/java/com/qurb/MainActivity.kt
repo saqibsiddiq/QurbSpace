@@ -36,7 +36,7 @@ import java.io.File
  * Home says whether this phone's Qurb space is okay; Files is what is in it,
  * with Private Vault a step inside; Devices is who it knows; Settings is the
  * rest. The screens are in their own files. What lives here is what they
- * share -- pairing, syncing, adding, opening, saving, sending, transfers --
+ * share (pairing, syncing, adding, opening, saving, sending, transfers)
  * because each needs an activity to launch a picker or a camera from, and
  * there is one.
  */
@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
     private val afterThisSync = mutableListOf<suspend (Synced) -> Unit>()
     private val afterNextSync = mutableListOf<suspend (Synced) -> Unit>()
 
-    /** How a sync went: its outcome, or null if it failed -- or that it was
+    /** How a sync went: its outcome, or null if it failed, or that it was
      *  handed to the worker to run in the foreground (decision 0050). */
     class Synced(val outcome: SyncOutcome?, val inBackground: Boolean)
 
@@ -208,7 +208,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Files handed to another app -- WhatsApp, mail, anything -- through
+    /** Files handed to another app (WhatsApp, mail, anything) through
      *  Android's share sheet (S7). */
     fun share(uris: List<Uri>, type: String) {
         if (uris.isEmpty()) return
@@ -412,7 +412,7 @@ class MainActivity : AppCompatActivity() {
             current?.refresh()
         }
         views.transfersBar.setOnClickListener { openTransfers() }
-        // The screen first -- a folder goes up -- then a place reached from
+        // The screen first (a folder goes up) then a place reached from
         // another goes back to it, then the usual.
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -447,7 +447,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * Straight from setup's Connected: Photos chosen there is backed up once
      * Android allows reading the phone's folders, and WhatsApp once its
-     * folder is picked -- each asked here, where those flows live. Google
+     * folder is picked, each asked here, where those flows live. Google
      * Drive first, its account sheet on its own: the computer is handed the
      * account on the next connection, so it never asks there.
      */
@@ -518,7 +518,7 @@ class MainActivity : AppCompatActivity() {
         changed()
         // A computer's ask, heard by the worker's pass: the worker leaves it
         // to the screen when the app is on it (Notices.asked), so it is asked
-        // here -- looked for while the pass runs, since a long one asks the
+        // here, looked for while the pass runs, since a long one asks the
         // computer again every ten seconds and lasts up to half an hour, and
         // once more at its end. Until 2026-10-15 nothing here looked, and the
         // laptop waited on a phone that had heard it and sat on Home
@@ -735,8 +735,8 @@ class MainActivity : AppCompatActivity() {
      * fingerprint prompt, the file picker or a glance at another app each
      * bring the app back, and on the S23 each scan held the engine, and every
      * screen behind it, for 0.5 to 0.75 s (2026-10-15). Then, once per
-     * launch, freeing what nothing needs -- the routine the background worker
-     * runs after each sync -- when the worker has not lately, and after the
+     * launch, freeing what nothing needs (the routine the background worker
+     * runs after each sync) when the worker has not lately, and after the
      * first screen has had its answers.
      */
     private fun catchUp() {
@@ -789,7 +789,7 @@ class MainActivity : AppCompatActivity() {
      *
      * A phone has no daemon to notice a change and tell the others, the way
      * the desktop does. Without this, a change made in the app waited for the
-     * next background pass -- an hour away once push is working -- or for
+     * next background pass (an hour away once push is working) or for
      * somebody to press Sync now, which is what people found themselves doing
      * after every send.
      */
@@ -934,7 +934,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * Ask, once, to show notifications: the first time a long transfer is
      * handed to the worker, whose notification says how far it has got. Not
-     * at install -- a permission asked for before it means anything is a
+     * at install: a permission asked for before it means anything is a
      * permission refused. The transfer runs either way.
      */
     fun askToNotify() {
@@ -950,7 +950,7 @@ class MainActivity : AppCompatActivity() {
      * Sync with every paired device that answers. `quiet` when it was started
      * by a change rather than by somebody asking: the Transfers bar shows it
      * moving, and its outcome is not announced. `then` runs when the pass that
-     * includes this request has ended -- with its outcome, or null if it
+     * includes this request has ended: with its outcome, or null if it
      * failed.
      */
     fun sync(quiet: Boolean = false, then: (suspend (Synced) -> Unit)? = null) {
@@ -990,7 +990,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 // 25 seconds: generous for someone watching, and still inside
                 // what a background window would grant. The deadline is the
-                // point of `syncWithin` -- see decision 0020.
+                // point of `syncWithin`: see decision 0020.
                 // A backup going while it runs: the notice names it, and says
                 // *Backed up* if this sync sees it done (the owner's list of
                 // 2026-10-25).
@@ -1044,7 +1044,7 @@ class MainActivity : AppCompatActivity() {
                         if (outcome.conflicts > 0u) {
                             append(", ${outcome.conflicts} with two versions")
                         }
-                        if (outcome.timedOut) append(" — ran out of time, sync again")
+                        if (outcome.timedOut) append(": ran out of time, sync again")
                     }
                 }
                 if (!quiet && said != null) say(said)
@@ -1064,7 +1064,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * A pass has ended, here or in the worker: run the one asked for while it
-     * ran. Not while the other is still running -- its end calls this again.
+     * ran. Not while the other is still running: its end calls this again.
      */
     private fun askedMeanwhile() {
         if (!again || syncing) return
@@ -1078,7 +1078,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Files just sent to one device: start a sync, and say how it went (brief
-     * §2) -- *Sent to Laptop* if the device collected them during the pass,
+     * §2), *Sent to Laptop* if the device collected them during the pass,
      * which waits up to ten seconds for that, or *Waiting for Laptop* if it is
      * switched off or out of reach.
      */
@@ -1097,8 +1097,8 @@ class MainActivity : AppCompatActivity() {
                     left == 0 -> "Sent to ${to.name}"
                     // Read from where it is when collected: no copy is kept
                     // (decision 0060).
-                    names.size == 1 -> "Waiting for ${to.name}. It collects it the next time it’s online — keep the file as it is until then."
-                    else -> "Waiting for ${to.name}: $left of ${names.size} not collected yet. It gets them the next time it’s online — keep the files as they are until then."
+                    names.size == 1 -> "Waiting for ${to.name}. It collects it the next time it’s online: keep the file as it is until then."
+                    else -> "Waiting for ${to.name}: $left of ${names.size} not collected yet. It gets them the next time it’s online; keep the files as they are until then."
                 }
             )
         }
@@ -1171,7 +1171,7 @@ class MainActivity : AppCompatActivity() {
      */
     /**
      * The chosen device's page, as Home's circle opens it, from wherever a
-     * device is to be chosen or set up -- the Devices tab, which did this,
+     * device is to be chosen or set up: the Devices tab, which did this,
      * went (the owner's list of 2026-10-26, item 15). With none paired, the
      * way to pair one.
      */
@@ -1248,7 +1248,7 @@ class MainActivity : AppCompatActivity() {
     // --------------------------------------------------------------- files
 
     /** Add files, into `into` in the area being looked at: Files, or Private
-     *  Vault -- whatever Keep new files private says. */
+     *  Vault: whatever Keep new files private says. */
     fun pickFilesToAdd(into: String, private: Boolean) {
         addingInto = into
         addingPrivate = private
@@ -1257,7 +1257,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Copy files from elsewhere on the phone into it. Through the cache rather
-     * than memory -- see [Engine.importUri] -- so a long video never has to fit
+     * than memory (see [Engine.importUri]) so a long video never has to fit
      * in the heap.
      */
     private fun addFiles(uris: List<Uri>) {
@@ -1367,7 +1367,7 @@ class MainActivity : AppCompatActivity() {
      * (decision 0059): rather than send a second copy unasked, or drop it
      * without a word, which is what used to happen.
      *
-     * Returns the files to leave out -- none, to send them all again -- or
+     * Returns the files to leave out (none, to send them all again) or
      * null to send nothing. `everything` is whether every file being sent is
      * one of them, when leaving them out leaves nothing to send.
      */
@@ -1388,7 +1388,7 @@ class MainActivity : AppCompatActivity() {
             }
             val one = earlier.size == 1
             val sheet = kit.sheet().header(R.drawable.ic_send, "Sent to ${to.name} before")
-            for (e in earlier) sheet.text("${nameOf(e.source)} — as ${e.sentAs}, ${Words.ago(e.at)}", R.style.Text_Body)
+            for (e in earlier) sheet.text("${nameOf(e.source)}, as ${e.sentAs}, ${Words.ago(e.at)}", R.style.Text_Body)
             sheet.text(
                 if (one) "${to.name} may still have it. Sending it again puts another copy there."
                 else "${to.name} may still have them. Sending them again puts another copy there."

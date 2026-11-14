@@ -13,7 +13,7 @@
 //! interface's needs reach back and reshape the index, which is the wrong
 //! direction for that pressure to travel.
 //!
-//! `u64` becomes a string for anything that could exceed 2^53 — a byte count on
+//! `u64` becomes a string for anything that could exceed 2^53: a byte count on
 //! a large disk does. JavaScript has one number type and it is a double;
 //! sending a terabyte as a number silently loses the low bits.
 
@@ -61,7 +61,7 @@ pub struct Summary {
     /// exists while its bytes are moving and is gone the moment they stop.
     incoming: Vec<InFlight>,
     /// Files this device is serving to a device that asked for them. Not
-    /// removed when they finish -- see `updated`.
+    /// removed when they finish: see `updated`.
     outgoing: Vec<InFlight>,
     /// Paused until this Unix time, `i64::MAX` for until resumed.
     paused_until: Option<i64>,
@@ -336,7 +336,7 @@ pub fn security(hosted: Host<'_>) -> Answer<Security> {
 }
 
 /// Change how the key is kept: "keystore", "passphrase" or "file". The key
-/// itself is untouched -- this changes the lock, not what it protects -- and
+/// itself is untouched (this changes the lock, not what it protects) and
 /// the running daemon, which already holds it, carries on.
 #[tauri::command(async)]
 pub fn protect_key(
@@ -382,7 +382,7 @@ pub fn create_device(hosted: Host<'_>, path: String, allowance: String) -> Answe
     Ok(())
 }
 
-/// A device just set up starts at login from now on -- which the install
+/// A device just set up starts at login from now on, which the install
 /// script used to arrange, and a package installed for every user cannot: the
 /// phone can only reach this computer while qurb is running here. Settings
 /// turns it off like any other time. A failure costs only the convenience.
@@ -415,7 +415,7 @@ pub fn enrol_device(
 ) -> Answer<()> {
     let bytes = bytes_of(&allowance)?;
     let parsed = qurb_keys::RecoveryPhrase::parse(&phrase).map_err(|_| {
-        "those are not 24 valid words — check the spelling and the order".to_string()
+        "those are not 24 valid words: check the spelling and the order".to_string()
     })?;
     let root = expand(&path);
     hosted.aim_at(root.clone()).map_err(failed)?;
@@ -446,10 +446,10 @@ pub async fn join_new_device(
         .downcast_ref::<qurb_peer::Error>()
     {
         Some(qurb_peer::Error::InviteExpired) => {
-            "that code has expired — ask the other device for a new one".to_string()
+            "that code has expired: ask the other device for a new one".to_string()
         }
         Some(qurb_peer::Error::NoKeyGiven) => {
-            "the other device did not give its key — the code may already have been used, or that device needs updating".to_string()
+            "the other device did not give its key: the code may already have been used, or that device needs updating".to_string()
         }
         _ => format!("{e:#}"),
     })?;
@@ -536,8 +536,8 @@ fn picture_address(bytes: &[u8]) -> String {
     format!("data:image/{kind};base64,{}", base64::engine::general_purpose::STANDARD.encode(bytes))
 }
 
-/// Give this computer a picture -- a small JPEG the window made from the
-/// one chosen -- or take it away with none. Every paired device is shown it
+/// Give this computer a picture (a small JPEG the window made from the
+/// one chosen) or take it away with none. Every paired device is shown it
 /// from its next sync (the owner's list of 2026-10-26, item 7).
 #[tauri::command(async)]
 pub fn set_picture(hosted: Host<'_>, picture: Option<Vec<u8>>) -> Answer<()> {
@@ -577,7 +577,7 @@ pub fn save_settings(
     config.downloads = downloads;
 
     if name.trim().is_empty() {
-        return Err("a device needs a name — it is what the others will call it".to_string());
+        return Err("a device needs a name: it is what the others will call it".to_string());
     }
     config.name = name.trim().to_string();
     // Told to every paired device at its next sync, not only to the next
@@ -613,7 +613,7 @@ pub fn open_downloads(hosted: Host<'_>) -> Answer<()> {
 ///
 /// Takes the entry, not a path. The page never names somewhere to open: the
 /// path comes from what the daemon recorded, and is opened only if it is
-/// inside the downloads directory -- so nothing the page says can make this
+/// inside the downloads directory, so nothing the page says can make this
 /// open anywhere else on the disk.
 #[tauri::command(async)]
 pub fn show_received(hosted: Host<'_>, id: i64) -> Answer<()> {
@@ -720,7 +720,7 @@ pub struct PairingState {
     /// The six digits were tried wrongly too often and no longer work.
     digits_withdrawn: bool,
     /// While "asking": a device removed here coming back, as the same
-    /// install -- what is kept here for it, in bytes, its again once
+    /// install, what is kept here for it, in bytes, its again once
     /// approved (D23). A phone set up again since is known only after.
     back: Option<String>,
 }
@@ -813,7 +813,7 @@ pub fn sent_before(hosted: Host<'_>, paths: Vec<String>, to: String) -> Answer<V
 /// peers while this runs, and a large file must not stop it.
 ///
 /// The recipient is named by its short fingerprint, which is what the devices
-/// screen shows — a device id would be the right key and the wrong thing to put
+/// screen shows: a device id would be the right key and the wrong thing to put
 /// in front of somebody.
 ///
 /// `leave_out` names files the person chose not to send again, having been
@@ -889,7 +889,7 @@ pub async fn start_pairing(hosted: Host<'_>, guest: Option<bool>) -> Answer<Invi
 
     // Port zero, not the configured one. The daemon in this process is already
     // listening on that, and a pairing host that failed to bind would be a
-    // pairing screen that could not open while syncing was working — which is
+    // pairing screen that could not open while syncing was working, which is
     // every time somebody would use it. The invite carries whatever port this
     // gets, so the far end dials the right one either way.
     let bind = "0.0.0.0:0".parse().unwrap();
@@ -915,7 +915,7 @@ pub async fn start_pairing(hosted: Host<'_>, guest: Option<bool>) -> Answer<Invi
     let nudge = hosted.nudger();
     attempt.watch(tauri::async_runtime::spawn(async move {
         // A device with no key joining with this code is given this one's
-        // (decision 0052): adding a phone is scanning, not typing 24 words --
+        // (decision 0052): adding a phone is scanning, not typing 24 words,
         // once the person here approves it, comparing the number it shows
         // (decision 0053). The window shows the request and answers.
         let ours = qurb_peer::Ours { name: &name, kind: "computer", key: &master };
@@ -1023,7 +1023,7 @@ pub async fn pairing_number(hosted: Host<'_>, code: String) -> Answer<String> {
 async fn typed(code: &str, identity: &qurb_peer::Identity) -> Answer<qurb_peer::Invite> {
     qurb_peer::short::resolve(code.trim(), identity).await.map_err(|e| match e {
         qurb_peer::Error::BadInvite { .. } => {
-            "that is not a pairing code — type the six digits, or the whole code".to_string()
+            "that is not a pairing code: type the six digits, or the whole code".to_string()
         }
         other => other.to_string(),
     })
@@ -1065,7 +1065,7 @@ pub async fn join_device(hosted: Host<'_>, code: String) -> Answer<PairingState>
         .await
         .map_err(|e| match e {
             qurb_peer::Error::InviteExpired => {
-                "that code has expired — ask the other device for a new one".to_string()
+                "that code has expired: ask the other device for a new one".to_string()
             }
             other => other.to_string(),
         })?;
@@ -1080,7 +1080,7 @@ pub async fn join_device(hosted: Host<'_>, code: String) -> Answer<PairingState>
 }
 
 /// Unix seconds. Pairing is bounded by wall-clock time on both sides, which is
-/// the one place in this system a clock is load-bearing — an invite has to
+/// the one place in this system a clock is load-bearing: an invite has to
 /// expire whether or not anybody is looking at it.
 fn now() -> i64 {
     std::time::SystemTime::now()
@@ -1283,7 +1283,7 @@ pub fn removed_devices(hosted: Host<'_>) -> Answer<Vec<RemovedDevice>> {
 }
 
 /// What is kept here for a removed device, deleted: to Recently deleted,
-/// like any deletion here. It is still known if it comes back -- with
+/// like any deletion here. It is still known if it comes back: with
 /// nothing kept for it.
 #[tauri::command(async)]
 pub fn delete_removed(hosted: Host<'_>, id: String) -> Answer<usize> {
@@ -1305,7 +1305,7 @@ pub struct Entry {
     size: String,
     /// Unix seconds, when the file was last changed.
     modified: i64,
-    /// "here", "elsewhere", "only here" or "nowhere" -- decision 0032's three,
+    /// "here", "elsewhere", "only here" or "nowhere": decision 0032's three,
     /// which the window words as *On this device*, *Available elsewhere* and
     /// *Only copy here*, and decision 0055's *On no device*.
     availability: &'static str,
@@ -1339,7 +1339,7 @@ pub struct Directory {
 /// A folder's contents, in the shared area or this device's Private Vault.
 ///
 /// From the index, not the disk, so a file freed from here is still one of
-/// its files -- which is the point of *Available elsewhere*. The index is
+/// its files, which is the point of *Available elsewhere*. The index is
 /// flat, so a folder is what the paths beneath it say it is. The same query
 /// the phone's Files screen uses.
 #[tauri::command(async)]
@@ -1478,7 +1478,7 @@ fn on_disk(hosted: &Hosted, path: &str) -> Answer<std::path::PathBuf> {
         .ok_or("that file is not in qurb any more")?;
     match here.availability {
         Availability::Elsewhere => {
-            return Err("that file is not on this device — keep it here first".to_string())
+            return Err("that file is not on this device: keep it here first".to_string())
         }
         Availability::Nowhere => {
             return Err("no device this one syncs with has that file any more".to_string())
@@ -1490,7 +1490,7 @@ fn on_disk(hosted: &Hosted, path: &str) -> Answer<std::path::PathBuf> {
 
 /// A look at one version of a file with two (brief §2): an image, or the
 /// start of a text, read from the folder. `kind` is "image" (`data` a data
-/// URL, which the window's content policy allows), "text", or "none" -- for a
+/// URL, which the window's content policy allows), "text", or "none": for a
 /// version not here, an image too large to carry over, or neither.
 #[derive(Serialize)]
 pub struct Preview {
@@ -1716,7 +1716,7 @@ const THUMBNAIL_FROM: usize = 128 << 10;
 /// `person_folder` lists it (`path` as it gives it). `small` for the gallery
 /// (the redesign's item 11): the thumbnail a camera embeds in its JPEG, a few
 /// kilobytes, so a page of photos crosses to the window in less than one
-/// photo would. Otherwise, or for a picture with none -- a screenshot, say --
+/// photo would. Otherwise, or for a picture with none (a screenshot, say)
 /// the picture itself, if it is small enough to preview at all.
 #[tauri::command(async)]
 pub fn backed_up_preview(hosted: Host<'_>, phone: String, path: String, small: bool) -> Answer<Preview> {
@@ -1939,7 +1939,7 @@ fn person_of(hosted: &Hosted, id: &str) -> Result<qurb_sync::DeviceId, String> {
 }
 
 /// The phone whose yes opens a folder of the owner's: the one in use now, the
-/// folder's newest identity or whatever has replaced it since -- a phone set
+/// folder's newest identity or whatever has replaced it since, a phone set
 /// up again that has had nothing kept here yet is not in the folder, but it
 /// is the phone (decision 0085).
 fn approver(hosted: &Hosted, folder: &qurb_storage::person::DeviceFolder) -> Result<qurb_sync::DeviceId, String> {
@@ -1954,7 +1954,7 @@ fn approver(hosted: &Hosted, folder: &qurb_storage::person::DeviceFolder) -> Res
     Ok(at)
 }
 
-/// The phone whose yes opens `phone`'s folder, if it is open now -- its
+/// The phone whose yes opens `phone`'s folder, if it is open now: its
 /// backups are seen only then (decisions 0067, 0085).
 fn phone_folder_open(hosted: &Hosted, phone: &qurb_sync::DeviceId) -> Result<qurb_sync::DeviceId, String> {
     let folder = owner_folders(&owner_phones(hosted)?)
@@ -2238,8 +2238,8 @@ pub struct FoundKept {
 /// The most files a search of people's folders answers with.
 const FOUND_MOST: usize = 500;
 
-/// Search every person's folder that is open now -- the owner's phones'
-/// backups, a guest's sealed folder while they have opened it -- for files
+/// Search every person's folder that is open now (the owner's phones'
+/// backups, a guest's sealed folder while they have opened it) for files
 /// whose place holds `text`, ignoring case. A locked folder is not searched:
 /// its names are as much its own as its files.
 #[tauri::command(async)]
@@ -2374,9 +2374,9 @@ pub fn open_person_file(hosted: Host<'_>, person: String, device: Option<String>
         }
     }
 
-    // Anything else is written into memory-backed space -- only if it fits
+    // Anything else is written into memory-backed space (only if it fits
     // there with room to spare, since the desktop's own sessions keep their
-    // sockets in it -- under its own path, which `is_safe_path` keeps
+    // sockets in it) under its own path, which `is_safe_path` keeps
     // inside: two files of one name in different folders are two files.
     let free = free_space(&opened_dir(&id));
     if row.size.saturating_add(KEEP_FREE) > free {
@@ -2442,7 +2442,7 @@ fn open_sealed(hosted: &Host<'_>, person: &qurb_sync::DeviceId, key: [u8; 32], p
 
 /// Open one of this computer's places in the file manager (the owner's review
 /// of 2026-11-03, F-1): `shared`, the synced folder; `received`, where files
-/// sent here go -- inside the QurbSpace folder when that is how it is set.
+/// sent here go, inside the QurbSpace folder when that is how it is set.
 #[tauri::command(async)]
 pub fn open_place(hosted: Host<'_>, which: String) -> Answer<()> {
     let root = hosted.root();
@@ -2537,8 +2537,8 @@ fn change_config(hosted: &Hosted, change: impl FnOnce(&mut qurb_cli::Config)) ->
 /// pass, and the server closes other devices' connections from now.
 #[tauri::command(async)]
 pub fn set_paused(hosted: Host<'_>, until: i64) -> Answer<()> {
-    // A time past a century from now -- the window's "until I resume", as
-    // large a number as it can carry -- is until resumed.
+    // A time past a century from now (the window's "until I resume", as
+    // large a number as it can carry) is until resumed.
     let until = match until {
         u if u > 4_000_000_000 => qurb_peer::pause::UNTIL_RESUMED,
         u => u.max(0),
@@ -2574,7 +2574,7 @@ pub fn set_ask_before_update(hosted: Host<'_>, on: bool) -> Answer<()> {
 
 /// Reset this computer (decision 0086): every paired device told it was
 /// removed, then the window restarts, and the start finishes it before
-/// anything opens the index -- the key forgotten, the store and its backups
+/// anything opens the index, the key forgotten, the store and its backups
 /// deleted (`qurb_cli::reset`). The shared folder's files stay.
 #[tauri::command(async)]
 pub async fn reset_device(app: tauri::AppHandle, hosted: Host<'_>) -> Answer<()> {
@@ -2730,8 +2730,8 @@ pub fn activity(
             path: r.path,
             size: r.size.map(big),
             // A device since removed is named as it was when it was here. One
-            // never paired here -- where a file began, reaching this one
-            // through another -- has no name, and is left unnamed rather than
+            // never paired here (where a file began, reaching this one
+            // through another) has no name, and is left unnamed rather than
             // shown as a code: the window says "another device".
             device: r.device.and_then(|id| named.get(&id).cloned()),
             detail: r.detail,
@@ -3045,7 +3045,7 @@ pub fn set_limit(hosted: Host<'_>, bytes: String) -> Answer<()> {
     config.save(&dir).map_err(failed)
 }
 
-/// What somebody typed as a limit -- "200 GB", "1.5 TB" -- in bytes, or why
+/// What somebody typed as a limit ("200 GB", "1.5 TB") in bytes, or why
 /// it is not one.
 #[tauri::command(async)]
 pub fn read_allowance(text: String) -> Answer<String> {
@@ -3147,7 +3147,7 @@ pub fn set_backup_folders(hosted: Host<'_>, folders: Vec<String>) -> Answer<()> 
     Ok(())
 }
 
-/// Whether one of this person's computers keeps this one's own files -- its
+/// Whether one of this person's computers keeps this one's own files: its
 /// Vault and its backed-up folders (`qurb holders`).
 #[tauri::command(async)]
 pub fn set_keeper(hosted: Host<'_>, device: String, on: bool) -> Answer<()> {
@@ -3167,7 +3167,7 @@ pub fn set_keeper(hosted: Host<'_>, device: String, on: bool) -> Answer<()> {
     Ok(())
 }
 
-/// The person's word that `older` -- a device of theirs paired before -- is
+/// The person's word that `older` (a device of theirs paired before) is
 /// `newer` set up again under another name: one device from then on, the
 /// newer standing for both and reaching what is kept for the older. `newer`
 /// absent takes the word back.
@@ -3210,7 +3210,7 @@ pub fn set_bandwidth(hosted: Host<'_>, up: String, down: String) -> Answer<()> {
 }
 
 /// A `SystemTime` as unix seconds, or nothing if the clock says it is before
-/// 1970 — which is not worth propagating an error over.
+/// 1970, which is not worth propagating an error over.
 fn unix(at: std::time::SystemTime) -> Option<i64> {
     at.duration_since(std::time::UNIX_EPOCH).ok().map(|d| d.as_secs() as i64)
 }

@@ -1,7 +1,7 @@
 //! The FFI exercised the way a phone would use it.
 //!
 //! These are plain Rust calls to the exported functions. They do not test the
-//! generated Kotlin or Swift, which needs a device or emulator — see
+//! generated Kotlin or Swift, which needs a device or emulator: see
 //! `docs/phases/phase-5-mobile.md` for what that leaves unverified. What they
 //! do test is everything on this side of the boundary: that the sequence an app
 //! actually performs works, and that the memory promise holds.
@@ -74,7 +74,7 @@ fn a_second_device_restores_from_the_phrase() {
     // The index and the content both have to arrive, and since single-copy
     // storage they are two different things: a device that materialises a file
     // keeps the payload in the file itself, not as chunks. So standing in for
-    // the network means moving the folder as well as the store -- copying
+    // the network means moving the folder as well as the store: copying
     // `.qurb` alone would move an index pointing at bytes that never left.
     let out = second_dir.path().join("fetched.txt");
     copy_store(first_dir.path(), second_dir.path());
@@ -91,7 +91,7 @@ fn a_second_device_restores_from_the_phrase() {
 
     // And the part that copying cannot show, because a materialised file is
     // read without ever using the key: that the phrase really did restore the
-    // same chunk key. Checked where encrypted chunks actually live -- a store
+    // same chunk key. Checked where encrypted chunks actually live: a store
     // with no folder behind it, which is what a storage-only replica is.
     // Written with the first device's key, read with the second's.
     let elsewhere = scratch();
@@ -126,7 +126,7 @@ fn a_wrong_phrase_is_refused() {
     assert!(matches!(err, QurbError::BadPhrase { .. }), "{err:?}");
 }
 
-/// Import, list, export, remove — the whole set of things a file browser does.
+/// Import, list, export, remove: the whole set of things a file browser does.
 #[test]
 fn the_file_operations_round_trip() {
     let dir = scratch();
@@ -262,8 +262,8 @@ fn export_does_not_hold_the_file_in_memory() {
 
 /// Usage says what is actually on the disk.
 ///
-/// This test used to assert the opposite -- three copies of one file, "near one
-/// copy on disk" -- which was true of the chunk store and false of the phone:
+/// This test used to assert the opposite (three copies of one file, "near one
+/// copy on disk") which was true of the chunk store and false of the phone:
 /// since single-copy storage the folder holds each file itself, three real
 /// files, and the chunk store keeps no fourth. The number now counts both, and
 /// this checks it neither hides the folder nor counts a copy that is not there.
@@ -578,14 +578,18 @@ fn the_phrase_is_confirmed_and_shown_again_from_the_key() {
 
     assert!(qurb.phrase_matches(vec![answer(3, &words[2]), answer(17, &words[16])]));
     assert!(qurb.phrase_matches(vec![answer(24, &format!(" {} ", words[23].to_uppercase()))]));
-    assert!(!qurb.phrase_matches(vec![answer(3, &words[3])]), "a right word in the wrong place");
+    // A word of the phrase that is not the third: a random phrase repeats a
+    // word now and then, and the fourth alone failed this one in 2,048 runs
+    // (2026-11-15).
+    let elsewhere = words.iter().find(|w| **w != words[2]).expect("24 words, not all the same");
+    assert!(!qurb.phrase_matches(vec![answer(3, elsewhere)]), "a right word in the wrong place");
     assert!(!qurb.phrase_matches(vec![]), "answering nothing");
 
     assert_eq!(qurb.recovery_phrase(), setup.recovery_phrase, "shown again differently");
 }
 
 /// What a file browser asks: a directory's folders and files, one file, and a
-/// search -- answered from the index, so a file freed from the phone is still
+/// search, answered from the index, so a file freed from the phone is still
 /// there, marked as not here, instead of missing.
 #[test]
 fn a_file_browser_sees_the_index_including_what_was_freed() {
@@ -638,7 +642,7 @@ fn a_file_browser_sees_the_index_including_what_was_freed() {
 
 /// Files and Private Vault are the same browser over two areas: *Add files*
 /// puts a file in the one being looked at, whatever the privacy setting says,
-/// and each lists only its own -- folders included.
+/// and each lists only its own, folders included.
 #[test]
 fn each_area_lists_its_own_and_adds_into_itself() {
     let dir = scratch();
@@ -781,8 +785,8 @@ fn whatsapp_is_backed_up_where_it_lies() {
     assert_eq!(run.unchanged, 0, "files read in this run counted as unchanged");
 }
 
-/// A file WhatsApp moved or deleted between the listing and the reading --
-/// which a minute's listing makes ordinary -- is skipped for the rest of the
+/// A file WhatsApp moved or deleted between the listing and the reading
+/// (which a minute's listing makes ordinary) is skipped for the rest of the
 /// run, and the others are kept (decision 0062). On the S23 one such file
 /// stopped every run after the first.
 #[test]
@@ -937,7 +941,7 @@ fn folders_are_chosen_as_a_tree() {
     assert_eq!((waiting.files_left, waiting.bytes_left), (3, 5 << 20));
     let named: Vec<(String, String, u64)> = waiting.files.into_iter().map(|f| (f.folder, f.name, f.size)).collect();
     assert_eq!(named, vec![("Download/ADM/2025".into(), "a.mkv".into(), 3 << 20), ("Download/Telegram".into(), "c.pdf".into(), 1 << 20)]);
-    // And waiting for the computer, which keeps a pass serving it -- on Wi-Fi.
+    // And waiting for the computer, which keeps a pass serving it: on Wi-Fi.
     qurb.set_unmetered(true).unwrap();
     assert_eq!(qurb.waiting_for_others_bytes().unwrap(), 5 << 20, "a folder backup is not waited for");
 

@@ -1,7 +1,7 @@
 //! A computer's shared folder as a phone reaches it, live (decision 0073,
-//! item 6): one folder of it at a time -- the files the index has there with
+//! item 6): one folder of it at a time (the files the index has there with
 //! their bytes on this disk, and the empty folders on disk, which the index
-//! cannot know -- leaving out every folder shared without the asking device
+//! cannot know) leaving out every folder shared without the asking device
 //! (decision 0044). A file listed with no bytes here is not in the folder,
 //! and not shown (the owner's list of 2026-10-26, item 14).
 
@@ -110,8 +110,8 @@ pub fn search(db: &Db, here: &DeviceId, device: &DeviceId, text: &str, limit: us
 const NUMBERED_UP_TO: u32 = 1000;
 
 /// `path`, as a place a phone may change in the shared folder: a name a file
-/// can have, nothing hidden -- which keeps the store's own folder and the
-/// sharing rules out of reach -- and outside every folder shared without it.
+/// can have, nothing hidden (which keeps the store's own folder and the
+/// sharing rules out of reach) and outside every folder shared without it.
 fn checked(store: &Store, device: &DeviceId, path: &str) -> Result<String> {
     // Relative to the shared folder: one that starts at the root of the disk
     // is refused, not quietly taken as inside it.
@@ -279,7 +279,7 @@ pub fn delete_path(store: &mut Store, device: &DeviceId, path: &str) -> Result<(
 }
 
 /// Put a file a phone sent, whole in `staged`, at `path` in the shared
-/// folder -- once its bytes are what the phone said they are -- and index it
+/// folder (once its bytes are what the phone said they are) and index it
 /// as a change made here. Numbered when the name is taken, never put over
 /// another file. Returns where it was put.
 pub fn place(store: &mut Store, device: &DeviceId, staged: &Path, path: &str, content: &blake3::Hash) -> Result<String> {

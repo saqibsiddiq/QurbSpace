@@ -1,6 +1,6 @@
-# 0012 — One root secret, derived keys, and a 24-word phrase
+# 0012: One root secret, derived keys, and a 24-word phrase
 
-**Status:** Accepted — with key storage explicitly weak; "the only way to recover it" superseded by [0052](0052-the-key-travels-with-the-code.md), where the key travels with the pairing code and a phone keeps it in Block Store
+**Status:** Accepted, with key storage explicitly weak; "the only way to recover it" superseded by [0052](0052-the-key-travels-with-the-code.md), where the key travels with the pairing code and a phone keeps it in Block Store
 **Date:** 2026-09-16
 
 ## Decision
@@ -21,7 +21,7 @@ versioned so a future change to what a key protects can be a new label rather
 than a silent change of meaning.
 
 **Purposes are a closed enum**, not a caller-supplied string. Two purposes
-accidentally sharing a label would produce the same key for both — undetectable
+accidentally sharing a label would produce the same key for both: undetectable
 by any test that does not specifically look for it, and exactly the sort of
 thing a typo causes.
 
@@ -32,7 +32,7 @@ here, because there is no second chance.
 
 **24 words, not 12.** 12 words is 128 bits, which is ample against brute force.
 24 carries the full 256 bits of the key, so the phrase is the key rather than a
-seed stretched into one — a simpler thing to reason about and to document.
+seed stretched into one: a simpler thing to reason about and to document.
 
 **The checksum is load-bearing.** The realistic failure is a person transposing
 two words while copying from paper. Without a checksum that produces a valid but
@@ -44,7 +44,7 @@ the correct phrase is presumably still to hand.
 **The phrase can be shown exactly once.** `Vault::open_or_create` returns
 `Opened::Created { key, phrase }` on first use and `Opened::Existing(key)`
 after. There is deliberately no method that returns the phrase later, because
-offering one would imply it could be recovered — it cannot, without the key it
+offering one would imply it could be recovered: it cannot, without the key it
 came from.
 
 **Restore will not overwrite.** Installing a different key over an existing one
@@ -63,7 +63,7 @@ A file with owner-only permissions is not key protection. It defends against
 other users on the machine and against a backup that excludes it. It does not
 defend against anything that can read the disk.
 
-The real answer is the platform keystore — Keychain, DPAPI, Secret Service —
+The real answer is the platform keystore (Keychain, DPAPI, Secret Service)
 which is three separate integrations and is not built. This is recorded as a
 known gap rather than presented as a design, because the difference matters: a
 user reading "end-to-end encrypted" would reasonably assume more than this
@@ -72,14 +72,14 @@ provides on a compromised machine.
 ## Still open
 
 **What happens when someone loses their phrase.** Every consumer product in this
-space eventually adds an escape hatch — social recovery, an escrowed key, a
+space eventually adds an escape hatch: social recovery, an escrowed key, a
 printed recovery kit. Each trades away some of the zero-knowledge property.
 Choosing which compromise to make is better done on paper, now, than under
 pressure from an upset user. Nothing here decides it.
 
 ## Reversibility
 
-**The derivation is cheap to extend** — a new purpose is a new label — and
+**The derivation is cheap to extend** (a new purpose is a new label) and
 **expensive to change**, since altering an existing label changes the key and
 orphans everything encrypted under the old one. The phrase format is fixed by
 BIP-39 and should be treated as permanent.

@@ -20,7 +20,7 @@ import androidx.core.content.res.ResourcesCompat
  */
 object DigitBoxes {
 
-    /** Fill `boxes` -- an empty horizontal row -- and keep it showing `field`. */
+    /** Fill `boxes` (an empty horizontal row) and keep it showing `field`. */
     fun attach(context: Context, boxes: LinearLayout, field: EditText, sixth: (String) -> Unit) {
         val density = context.resources.displayMetrics.density
         fun dp(v: Int) = (v * density).toInt()

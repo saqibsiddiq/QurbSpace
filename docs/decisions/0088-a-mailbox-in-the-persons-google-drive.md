@@ -1,4 +1,4 @@
-# 0088 — A mailbox in the person's Google Drive
+# 0088: A mailbox in the person's Google Drive
 
 **Status:** Accepted and built, 2026-11-13. Tested through a plain folder
 (`crates/mailbox/tests/exchange.rs`), and once between the S23 and the laptop
@@ -108,15 +108,15 @@ one handed to a computer that is off is wasted until the next day's.
 
 Found measuring the phones' space (testing.md, 2026-11-14): the computer
 posted every file in a phone's list that the phone was not known to hold, so
-the phone collected packs of files its plan never fetches -- shared files it
-opens from the computer, for one -- and posted again each day. The OPPO had
+the phone collected packs of files its plan never fetches (shared files it
+opens from the computer, for one) and posted again each day. The OPPO had
 137 MB of them waiting, none applied ("applied=0 waiting=0"); the S23 346 MB.
 
 - After planning from a list, a device leaves a **`want`** letter: the
   contents its plan still waits for from the other, sealed, one letter, the
   older taken away, and written again only when it changed.
-- The other posts **only those**. A device that has never left one -- a build
-  before this -- is posted to as before.
+- The other posts **only those**. A device that has never left one (a build
+  before this) is posted to as before.
 - Arrivals no plan wants are let go of a day after they came
   (`Mailbox::tidy_inbox`).
 

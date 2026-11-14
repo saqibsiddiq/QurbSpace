@@ -2,7 +2,7 @@
 //!
 //! The garbage collection tests carry most of the weight here. Deduplication
 //! means a chunk can belong to several files, so a collector that is even
-//! slightly wrong destroys data in a file nobody touched — and does it without
+//! slightly wrong destroys data in a file nobody touched, and does it without
 //! any error being raised. These tests exist to make that failure loud.
 
 use qurb_storage::{ChunkKey, Store};
@@ -31,7 +31,7 @@ fn data(seed: u32, len: usize) -> Vec<u8> {
     out
 }
 
-// -- basics ------------------------------------------------------------------
+// , basics ------------------------------------------------------------------
 
 #[test]
 fn round_trip_preserves_bytes() {
@@ -113,7 +113,7 @@ fn walkdir(root: &std::path::Path) -> Vec<std::path::PathBuf> {
     out
 }
 
-// -- reference counting ------------------------------------------------------
+// , reference counting ------------------------------------------------------
 
 #[test]
 fn refcounts_track_shared_chunks() {
@@ -180,7 +180,7 @@ fn a_file_repeating_a_chunk_internally_stores_it_once() {
     assert!(s.db().audit_refcounts().unwrap().is_empty());
 }
 
-// -- deletion and retention --------------------------------------------------
+// , deletion and retention --------------------------------------------------
 
 #[test]
 fn delete_is_a_tombstone_and_is_reversible() {
@@ -314,7 +314,7 @@ fn superseded_chunks_are_reclaimed_once_retention_passes() {
     assert!(s.verify(true).unwrap().is_healthy(), "the live version must be intact");
 }
 
-// -- verification ------------------------------------------------------------
+// , verification ------------------------------------------------------------
 
 #[test]
 fn verify_detects_a_missing_chunk() {
@@ -376,7 +376,7 @@ fn orphaned_payloads_are_found_and_swept() {
     assert_eq!(s.read_file("a.bin").unwrap(), data(17, 1 << 20), "the live file is untouched");
 }
 
-// -- persistence -------------------------------------------------------------
+// , persistence -------------------------------------------------------------
 
 #[test]
 fn a_store_reopens_with_its_contents_intact() {
@@ -408,7 +408,7 @@ fn the_wrong_key_cannot_read_a_store() {
     assert!(s.read_file("a.bin").is_err());
 }
 
-// -- prefix queries ----------------------------------------------------------
+// , prefix queries ----------------------------------------------------------
 
 #[test]
 fn live_paths_under_resolves_a_directory_removal() {

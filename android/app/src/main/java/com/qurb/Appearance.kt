@@ -14,7 +14,7 @@ import androidx.core.content.ContextCompat
 /**
  * Light, dark, or as the system is set (decision 0056). Applied when the
  * process starts, before any screen draws, and again the moment it is chosen
- * in Settings -- AppCompat then recreates what is on screen in the new one.
+ * in Settings: AppCompat then recreates what is on screen in the new one.
  *
  * Kept in this phone's preferences: it is how this screen looks, not
  * something the person's other devices need to know.
@@ -45,8 +45,8 @@ object Appearance {
      * The environment behind the glass (`drawable/environment`) as `activity`'s
      * window background, drawn once.
      *
-     * Drawn as it is written -- a fill and four radial gradients, each across
-     * the whole screen -- it was painted under every frame: on 2026-10-15 the
+     * Drawn as it is written (a fill and four radial gradients, each across
+     * the whole screen) it was painted under every frame: on 2026-10-15 the
      * S23's overdraw view showed every pixel painted four times or more, and
      * its GPU took 14 ms for one frame in ten, against the 8.3 ms a frame has
      * at 120 Hz. Drawn once into a bitmap a quarter of the screen across and

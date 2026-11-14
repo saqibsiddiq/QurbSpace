@@ -4,8 +4,8 @@
 //! In two halves, because the daemon has the index open while it runs. The
 //! window says goodbye to every paired device and marks the folder
 //! ([`mark`]); the next start, before anything opens the index, finishes
-//! ([`finish_pending`]): the key forgotten, the store deleted -- the index,
-//! and every chunk, the phones' backups kept here among them -- and the
+//! ([`finish_pending`]): the key forgotten, the store deleted (the index,
+//! and every chunk, the phones' backups kept here among them) and the
 //! read-only placeholders in `~/qurb` removed.
 //!
 //! Not deleted: the files in the shared folder, which stay as ordinary

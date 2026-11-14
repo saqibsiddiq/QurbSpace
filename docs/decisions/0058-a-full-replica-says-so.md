@@ -1,6 +1,6 @@
-# 0058 — A full replica keeps everything and says so
+# 0058: A full replica keeps everything and says so
 
-**Status:** Accepted — the behaviour the code already has, now decided;
+**Status:** Accepted, the behaviour the code already has, now decided;
 settles product plan §4.7
 **Date:** 2026-10-08
 

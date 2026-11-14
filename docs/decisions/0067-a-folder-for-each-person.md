@@ -1,4 +1,4 @@
-# 0067 — A folder for each person, opened with their phone
+# 0067: A folder for each person, opened with their phone
 
 **Status:** Accepted as a design and an order of work, 2026-10-14, from the
 owner's items 2 to 5 of that day and his answers. All four steps built the
@@ -85,7 +85,7 @@ there.
    *Send to saqib's Downloads*, which the computer's person opens freely, or
    *Save to my folder on saqib*, which goes into the phone's folder there and
    is opened only with the phone's yes. (Designed as not kept on the phone
-   once the computer has it; built keeping it -- see *Progress*.)
+   once the computer has it; built keeping it: see *Progress*.)
 4. **The phone reaches its folder on the computer** (item 5). In the phone's
    Files, *On saqib* while the computer is reachable: the folder as the
    computer keeps it, deleted files included, each file *Download*ed to the
@@ -137,7 +137,7 @@ in the window where it matters, and recorded here.
 
 ## Progress
 
-### Step 1, Files shows the people — built 2026-10-14
+### Step 1, Files shows the people: built 2026-10-14
 
 - **Files' top** is *Shared* (*On all your devices*) and a folder for each
   person: the owner's, named from the login (*Saqib*), with how many phones
@@ -199,10 +199,10 @@ the owner opened three camera photos the same way. The tile said *2 phones* for 
 and cut off its last word; it now counts phones in use, lists them first,
 and leaves locked or open to its icon.
 
-### Step 2, `~/qurb` holds people — built 2026-10-14
+### Step 2, `~/qurb` holds people: built 2026-10-14
 
 `qurb_cli::layout`. A folder at the default place, `~/qurb`, still of the
-old shape -- set up, its index at its top -- is moved into `~/qurb/Shared`
+old shape (set up, its index at its top) is moved into `~/qurb/Shared`
 when the window, the tray or `qurb run` starts, before anything watches it:
 every entry, the index last, each a rename, undone as far as it got if one
 fails; the list of known folders then names `Shared`. A folder somebody
@@ -221,7 +221,7 @@ nothing stored or deleted. Nothing in the index or the config named
 had to change. Tests: `a_folder_moves_into_shared_once`,
 `placeholders_follow_the_people`.
 
-### Step 3, sending, two places — built 2026-10-14
+### Step 3, sending, two places: built 2026-10-14
 
 On the phone, Home's *Send* lists, for each computer that keeps the phone's
 folder, *My folder on saqib* (*Opens there only with a yes on this phone*)
@@ -238,7 +238,7 @@ local space* does it by hand.
 
 **Not seen** on the S23.
 
-### Step 4, the phone reaches its folder — built 2026-10-14
+### Step 4, the phone reaches its folder: built 2026-10-14
 
 **A phone sees its own, not its person's.** A phone's Private Vault is
 private to that phone (0036), so from the phone the folder is what the
@@ -294,7 +294,7 @@ Step 2 is the one with a lasting effect on disk, undone by moving
 `~/qurb/Shared` back with Qurb stopped. The rest is how the window and the
 phone present what is already kept.
 
-### Opened as it plays, on both -- 2026-10-15
+### Opened as it plays, on both: 2026-10-15
 
 **On the laptop**, a 1.6 GB episode opened from the owner's folder did not
 fit the memory-backed space files are opened into (1.6 GB on the laptop):

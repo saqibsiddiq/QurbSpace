@@ -1,6 +1,6 @@
-# 0077 — One device is counted once, by its install
+# 0077: One device is counted once, by its install
 
-**Status:** Accepted — built 2026-10-31 and installed on the owner's laptop
+**Status:** Accepted, built 2026-10-31 and installed on the owner's laptop
 and S23 the same evening (the S23's app updated in place, its data and
 identity kept). Seen working on the laptop: within a minute of the phone
 app opening, the laptop held its own marker and had learned skib phone's.
@@ -23,16 +23,16 @@ release this for public and this is a big bug."
 
 A device's identity is a key pair made when the app is set up. Clearing the
 app's data or reinstalling it loses the key, and the next pairing is a new
-device to everyone else. Nothing the other device saw — a name, a kind —
+device to everyone else. Nothing the other device saw (a name, a kind)
 tells the same phone set up again from a second phone.
 
 ## Decision
 
 1. **Every device has an install marker**: what its platform keeps for the
-   app across a reinstall or cleared data — Android's `ANDROID_ID` (per app
+   app across a reinstall or cleared data (Android's `ANDROID_ID` (per app
    signing key, user and device; it changes only on a factory reset), a
    computer's machine id (`/etc/machine-id`, Windows' `MachineGuid`, a Mac's
-   platform UUID) — made one way into 16 bytes
+   platform UUID)) made one way into 16 bytes
    (`qurb_storage::db::install_marker`), and never sent as it is.
 2. **Told on request** (`Request::Install`), to a device it trusts, asked
    once by each side on a sync. A new request rather than a field in
@@ -41,7 +41,7 @@ tells the same phone set up again from a second phone.
 3. **One rule**, `Db::became`, which the computer's list, a phone's folder
    on a computer, and the phone's own list (`peers()` leaves out a device
    that became another) all ask, so none can count one device twice:
-   - the person's word first, either way — *the same as*, or *not the same*;
+   - the person's word first, either way: *the same as*, or *not the same*;
    - then the same install;
    - then the same name and kind, for devices from before installs were told.
    Either rule also wants both the person's own, the newer paired after the

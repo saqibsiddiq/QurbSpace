@@ -10,7 +10,7 @@ qurb-tray ~/Sync       # or another
 An icon showing whether things are in step, a menu with recent files and paired
 devices, and a way to open the folder or quit. Where there is no tray, a window
 with the same information **and the one setting people want to change**: how
-much disk qurb may use. It **runs the daemon** — the same one `qurb run` does.
+much disk qurb may use. It **runs the daemon**: the same one `qurb run` does.
 Like the window and `qurb run`, it moves a folder of the old shape at `~/qurb`
 into `~/qurb/Shared` before it starts watching
 ([decision 0067](../../docs/decisions/0067-a-folder-for-each-person.md)).
@@ -21,7 +21,7 @@ This runs the daemon rather than talking to one. The alternative is a socket and
 a protocol between them, which buys the ability to attach to an already-running
 daemon and costs a second surface to design, version and secure. Two daemons on
 one store collide on the SQLite lock anyway, so the real choice is *which one
-process runs* — and `qurb run` stays for servers and replicas with no screen.
+process runs*, and `qurb run` stays for servers and replicas with no screen.
 
 The daemon publishes a [`Status`](../qurb/src/status.rs) on a `watch` channel.
 Watch rather than broadcast because a display only wants the *current* state: an
@@ -48,7 +48,7 @@ stale.
 ## When there is no tray
 
 **GNOME has no system tray.** It was removed, and GNOME ships no
-StatusNotifier host, so a tray icon there is not ugly — it is *invisible*.
+StatusNotifier host, so a tray icon there is not ugly: it is *invisible*.
 
 Worse, creating one still succeeds. Nothing returns an error; the icon is simply
 never drawn. A program that trusted the return value would be running, unseen
@@ -56,12 +56,12 @@ and unquittable, which is the worst outcome available.
 
 So [`host::available`](src/host.rs) asks the session bus whether anything has
 registered `org.kde.StatusNotifierWatcher` *before* anything is built. With no
-watcher it **opens a window instead** — [`window.rs`](src/window.rs), in GTK 3
+watcher it **opens a window instead**: [`window.rs`](src/window.rs), in GTK 3
 because that is what `tray-icon` already links.
 
 The window matters more than it sounds. Printing to stderr is fine for someone
 who started the program in a terminal and useless for someone who launched it
-from the applications menu, which is how a program is normally started — and
+from the applications menu, which is how a program is normally started, and
 which would otherwise show nothing at all. Falling back to stderr only would
 have made the menu entry above worse than useless on the one desktop this
 machine runs.
@@ -78,14 +78,14 @@ size of the filesystem the folder is on. Offering more than the disk holds
 would be offering a number that cannot mean anything.
 
 **It writes the settings file and nothing else.** Not a socket to the daemon,
-not shared state — the same file `qurb config` writes and the daemon re-reads
+not shared state: the same file `qurb config` writes and the daemon re-reads
 on every maintenance pass. So the command and the slider are literally the same
 act, a change applies without a restart, and neither can leave the other showing
 something stale.
 
 **It reads that file too**, rather than the daemon's published status. The
 daemon only republishes on a sync pass, so a slider driven from the status would
-sit at its old value for up to two minutes after somebody moved it — visibly
+sit at its old value for up to two minutes after somebody moved it: visibly
 snapping back under their finger.
 
 ## One daemon per folder
@@ -93,7 +93,7 @@ snapping back under their finger.
 The desktop app and `qurb run` in a terminal are the same daemon with different
 faces, and it used to be possible to run both. Two on one store contend on the
 SQLite write lock, answer as the same device on the network, and both enforce
-the same storage cap — none of which reports an error. It is slow and confusing
+the same storage cap, none of which reports an error. It is slow and confusing
 rather than broken, which is worse.
 
 An advisory `flock` on the store, taken for the life of the daemon, now makes
@@ -103,7 +103,7 @@ crash.
 
 ## The icon
 
-Drawn at startup rather than shipped — a handful of RGBA pixels, because the
+Drawn at startup rather than shipped: a handful of RGBA pixels, because the
 alternative is carrying PNGs and a decoder for an image sixteen pixels across.
 It is the mark ([decision 0048](../../docs/decisions/0048-the-design-direction.md)),
 drawn from the same coordinates as `packaging/qurb.svg` and the window's, so
@@ -137,8 +137,8 @@ none of the following is planned for it.
 - **A passphrase prompt.** A passphrase-protected store cannot be opened here;
   it says so and points at `qurb run` or `qurb protect`. A graphical prompt for
   a secret deserves more care than a text field.
-- **Verified on a machine with a tray.** The fallback path is exercised — it is
-  what this desktop does — but the icon and menu have never been seen. That
+- **Verified on a machine with a tray.** The fallback path is exercised (it is
+  what this desktop does) but the icon and menu have never been seen. That
   needs KDE, XFCE, Windows, macOS, or the GNOME extension above.
 - **Clicking a recent file.** The list is shown, not actionable.
 - **Pairing a device.** Still `qurb pair` in a terminal, which is the step a

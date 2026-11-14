@@ -1,10 +1,10 @@
-//! qurb — private cloud storage.
+//! qurb: private cloud storage.
 //!
 //! The terminal front end. The daemon itself lives in the library beside this,
-//! so that something other than a terminal can run the same one — an interface
+//! so that something other than a terminal can run the same one: an interface
 //! should display the engine rather than reimplement it.
 
-// Reaching a peer races its paths -- local, introduced, Tor -- and the
+// Reaching a peer races its paths (local, introduced, Tor) and the
 // future that builds is deeper than the compiler looks by default.
 #![recursion_limit = "256"]
 
@@ -18,7 +18,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 const USAGE: &str = "\
-qurb — private cloud storage
+qurb: private cloud storage
 
   qurb init [dir]                     set up a device and create a key
                                         (defaults to ~/qurb/Shared)
@@ -186,7 +186,7 @@ fn run() -> Result<()> {
         "send" => {
             // `qurb send report.pdf Photos to laptop`, optionally with the qurb
             // folder first. The word `to` ends the list of things to send, and
-            // the first of them is the folder only if it has a store in it --
+            // the first of them is the folder only if it has a store in it:
             // counting arguments could not tell `qurb send a.pdf to x` from
             // `qurb send ~/qurb a.pdf to x`, and used to open `a.pdf` as the
             // folder. `--again` anywhere sends what went to that device before
@@ -323,7 +323,7 @@ fn run() -> Result<()> {
             let text = text.context("give something to look for")?;
             find(&root, &text)
         }
-        // `qurb config`, `qurb config limit=10G`, or with the folder first --
+        // `qurb config`, `qurb config limit=10G`, or with the folder first:
         // which used to be required, and `qurb config` alone panicked.
         "config" => {
             let (root, settings) = folder_first(&args)?;
@@ -369,7 +369,7 @@ fn run() -> Result<()> {
 /// Which folder a command should act on.
 ///
 /// A path if one was given. Otherwise the folder this person last used, or the
-/// default location if it is set up — so the common case is `qurb status` with
+/// default location if it is set up, so the common case is `qurb status` with
 /// no arguments rather than retyping a path every time.
 fn directory(args: &[String]) -> Result<PathBuf> {
     if let Some(dir) = args.get(1) {
@@ -415,7 +415,7 @@ fn new_directory(args: &[String]) -> Result<PathBuf> {
 /// Let `qurb ls | head` end quietly instead of panicking.
 ///
 /// Rust ignores `SIGPIPE` at startup so that a write to a closed pipe returns
-/// an error rather than killing the process — which is right for a library and
+/// an error rather than killing the process, which is right for a library and
 /// wrong for a command-line program, because `println!` then panics on that
 /// error. Piping any of these listings into `head` or `less` and closing it
 /// early produced a backtrace, which reads as a crash.
@@ -452,7 +452,7 @@ fn open(root: &Path) -> Result<(MasterKey, Identity, Store, Config)> {
     let vault = Vault::at(&store_dir);
     if !vault.exists() {
         bail!(
-            "{} is not set up yet — run `qurb init {}` first",
+            "{} is not set up yet: run `qurb init {}` first",
             root.display(),
             root.display()
         );
@@ -469,14 +469,14 @@ fn open(root: &Path) -> Result<(MasterKey, Identity, Store, Config)> {
     let chunk_key = ChunkKey::from_bytes(master.derive(Purpose::ChunkEncryption).to_bytes());
     // Attach the sync folder, not just the store inside it. The folder holds
     // the payloads for every file it materialises, so a store opened without
-    // it cannot read that content at all -- `verify` would call it missing and
+    // it cannot read that content at all: `verify` would call it missing and
     // `reclaim` would find nothing to free.
     let store = Store::open(&store_dir, chunk_key)?.in_tree(root);
     let config = Config::load(&store_dir)?;
     Ok((master, identity, store, config))
 }
 
-// -- commands ----------------------------------------------------------------
+// , commands ----------------------------------------------------------------
 
 fn init(root: &Path) -> Result<()> {
     if qurb_cli::is_set_up(root) {
@@ -553,14 +553,14 @@ async fn pair(root: PathBuf, guest: bool) -> Result<()> {
     println!("Or read this out:\n");
     println!("  {}\n", host.invite().for_humans());
     println!("The code carries this device's full identity, which is why it has to");
-    println!("travel outside the network — someone able to change what is on your");
+    println!("travel outside the network: someone able to change what is on your");
     println!("screen has already won. The digits fetch it, and only for whoever");
     println!("knows them.\n");
     println!("It expires in 5 minutes and works once. Waiting...");
 
     // A device with no key that joins with this code gets this one's
-    // (decision 0052), so setting up another computer is `qurb join <code>`
-    // -- once the person here approves it, comparing numbers (decision 0053).
+    // (decision 0052), so setting up another computer is `qurb join <code>`:
+    // once the person here approves it, comparing numbers (decision 0053).
     let kind = kind_of(&store);
     let ours = qurb_peer::Ours { name: &config.name, kind: &kind, key: &master };
     match host.wait(Arc::clone(&store), &ours, now(), approve_in_terminal).await {
@@ -683,7 +683,7 @@ async fn start(root: PathBuf) -> Result<()> {
     println!("  signal    {}", config.signal);
     match &config.relay {
         Some(relay) => println!("  relay     {relay}"),
-        None => println!("  relay     none — devices must reach each other directly"),
+        None => println!("  relay     none: devices must reach each other directly"),
     }
     println!();
 
@@ -698,7 +698,7 @@ async fn start(root: PathBuf) -> Result<()> {
 /// [decision 0006](../../docs/decisions/0006-availability-gap.md).
 ///
 /// It has no folder. The directory given is where its store lives, and nothing
-/// is ever materialised inside it — a replica that wrote files out would be a
+/// is ever materialised inside it: a replica that wrote files out would be a
 /// second copy of someone's library on a machine they do not sit at, which is
 /// the opposite of the point.
 async fn replica(root: PathBuf, only: Vec<String>) -> Result<()> {
@@ -743,7 +743,7 @@ fn status(root: &Path) -> Result<()> {
     match config.downloads.resolve(root) {
         Ok(Some(dir)) => println!("  sent here  saved to {}", dir.display()),
         Ok(None) => println!("  sent here  kept in the folder"),
-        Err(_) => println!("  sent here  refused — see `qurb config`"),
+        Err(_) => println!("  sent here  refused: see `qurb config`"),
     }
     println!("  files      {}", live.len());
     println!("  chunks     {chunks}");
@@ -752,7 +752,7 @@ fn status(root: &Path) -> Result<()> {
     let usage = store.usage()?;
     let evicted = store.evicted()?;
     if config.limit == 0 {
-        println!("  using      {} — no limit set", human(usage.total()));
+        println!("  using      {}: no limit set", human(usage.total()));
     } else {
         let percent = (usage.total() as f64 / config.limit as f64 * 100.0).round();
         println!(
@@ -761,12 +761,12 @@ fn status(root: &Path) -> Result<()> {
             human(config.limit)
         );
         if usage.total() > config.limit {
-            println!("    over the limit, and holding content nothing else has —");
+            println!("    over the limit, and holding content nothing else has: ");
             println!("    qurb keeps the only copy of a file rather than honour a number");
         }
     }
     if !evicted.is_empty() {
-        println!("  not here   {} file(s) — contents dropped, `qurb fetch` to get one back", evicted.len());
+        println!("  not here   {} file(s): contents dropped, `qurb fetch` to get one back", evicted.len());
     }
 
     // Files this device made that no other device is known to hold. Worth
@@ -774,7 +774,7 @@ fn status(root: &Path) -> Result<()> {
     let waiting = store.undelivered()?;
     if !waiting.is_empty() {
         let bytes: u64 = waiting.iter().map(|(_, size)| size).sum();
-        println!("  only here  {} file(s), {} — no other device has these yet", waiting.len(), human(bytes));
+        println!("  only here  {} file(s), {}: no other device has these yet", waiting.len(), human(bytes));
         for (path, _) in waiting.iter().take(3) {
             println!("               {path}");
         }
@@ -791,7 +791,7 @@ fn status(root: &Path) -> Result<()> {
     let sent = store.pending_deliveries()?;
     if !sent.is_empty() {
         let bytes: u64 = sent.iter().map(|(_, size, _)| size).sum();
-        println!("  sending    {} file(s), {} — not collected yet", sent.len(), human(bytes));
+        println!("  sending    {} file(s), {}, not collected yet", sent.len(), human(bytes));
         for (path, _, to) in sent.iter().take(3) {
             let name = peers
                 .iter()
@@ -806,7 +806,7 @@ fn status(root: &Path) -> Result<()> {
     }
 
     if peers.is_empty() {
-        println!("\n  no paired devices — run `qurb pair` here and `qurb join` there");
+        println!("\n  no paired devices: run `qurb pair` here and `qurb join` there");
     } else {
         println!("\n  paired with:");
         // Which were set up again, and as what (item 6): the window shows each
@@ -844,7 +844,7 @@ fn status(root: &Path) -> Result<()> {
     }
 
     // Accented names written two different ways. Only visible on a filesystem
-    // that keeps them apart -- which is to say, only on the device where they
+    // that keeps them apart, which is to say, only on the device where they
     // can still be renamed.
     let ignore = qurb_watcher::IgnoreRules::new().with_store_dir(store_dir(root));
     if let Ok(entries) = qurb_watcher::scan(root, &ignore) {
@@ -867,7 +867,7 @@ fn status(root: &Path) -> Result<()> {
 ///
 /// Records the request rather than performing it. The daemon is a different
 /// process and may not be running, and even if it is, no peer may be reachable
-/// right now. A request written to the index is acted on whenever one next is —
+/// right now. A request written to the index is acted on whenever one next is:
 /// which is also what makes it work to ask for a file while offline.
 fn fetch(root: &Path, logical: &str) -> Result<()> {
     let (_, _, store, _) = open(root)?;
@@ -895,7 +895,7 @@ fn fetch(root: &Path, logical: &str) -> Result<()> {
 /// bytes are held here until the recipient confirms it arrived, which is what
 /// makes sending to a phone that is switched off work at all.
 ///
-/// The recipient is named the way the user names it — `qurb status` shows the
+/// The recipient is named the way the user names it: `qurb status` shows the
 /// list. A short id is accepted too, so that two devices sharing a name can
 /// still be told apart; both the fingerprint shown by `qurb status` and the
 /// device id work, because a person reading either should not have to know
@@ -911,11 +911,11 @@ fn send(root: &Path, picked: &[PathBuf], recipient: &str, again: bool) -> Result
         qurb_cli::Recipient::Unknown { known } => {
             let names: Vec<String> =
                 known.iter().map(|d| format!("{} ({})", d.name, d.fingerprint)).collect();
-            bail!("no paired device called {recipient} — known: {}", names.join(", "));
+            bail!("no paired device called {recipient}. Known: {}", names.join(", "));
         }
         qurb_cli::Recipient::Several(devices) => {
             let ids: Vec<String> = devices.iter().map(|d| d.fingerprint.clone()).collect();
-            bail!("more than one device is called {recipient} — use one of: {}", ids.join(", "));
+            bail!("more than one device is called {recipient}. Use one of: {}", ids.join(", "));
         }
     };
 
@@ -935,7 +935,7 @@ fn send(root: &Path, picked: &[PathBuf], recipient: &str, again: bool) -> Result
     if !before.is_empty() {
         println!("sent to {} before:", peer.name);
         for earlier in &before {
-            println!("  {} — as {}, {}", earlier.source, earlier.sent_as, ago(earlier.at));
+            println!("  {}: as {}, {}", earlier.source, earlier.sent_as, ago(earlier.at));
         }
         let yes = again || {
             use std::io::IsTerminal;
@@ -981,7 +981,7 @@ fn send(root: &Path, picked: &[PathBuf], recipient: &str, again: bool) -> Result
 }
 
 /// Free a file's local copy: the file stays known, and `qurb fetch` brings it
-/// back. Refused when no other device is known to hold these bytes -- the same
+/// back. Refused when no other device is known to hold these bytes: the same
 /// rule the storage cap follows, and the difference between freeing space and
 /// deleting the only copy.
 /// Move a file into this device's Private Vault, or out of it to every device
@@ -1105,9 +1105,9 @@ fn share(root: &Path, rest: &[String]) -> Result<()> {
             }
             for (folder, members) in folders {
                 match members {
-                    None => println!("  {folder}  — every device"),
+                    None => println!("  {folder}: every device"),
                     Some(members) => println!(
-                        "  {folder}  — {}",
+                        "  {folder}: {}",
                         members.iter().map(name).collect::<Vec<_>>().join(", ")
                     ),
                 }
@@ -1130,7 +1130,7 @@ fn share(root: &Path, rest: &[String]) -> Result<()> {
                 }
                 match view.device_named(text)? {
                     qurb_cli::Recipient::One(device) => members.insert(device.id),
-                    _ => bail!("no single paired device called {text} — see `qurb status`"),
+                    _ => bail!("no single paired device called {text}: see `qurb status`"),
                 };
             }
             store.set_sharing(folder, &members)?;
@@ -1152,7 +1152,7 @@ fn holders(root: &Path, rest: &[String]) -> Result<()> {
     let named = |text: &str| -> Result<qurb_cli::Device> {
         match view.device_named(text)? {
             qurb_cli::Recipient::One(device) => Ok(*device),
-            _ => bail!("no single paired device called {text} — see `qurb status`"),
+            _ => bail!("no single paired device called {text}: see `qurb status`"),
         }
     };
     match rest {
@@ -1195,7 +1195,7 @@ fn same(root: &Path, rest: &[String]) -> Result<()> {
     let named = |text: &str| -> Result<qurb_cli::Device> {
         match view.device_named(text)? {
             qurb_cli::Recipient::One(device) => Ok(*device),
-            _ => bail!("no single paired device called {text} — see `qurb status`"),
+            _ => bail!("no single paired device called {text}: see `qurb status`"),
         }
     };
     match rest {
@@ -1220,7 +1220,7 @@ fn same(root: &Path, rest: &[String]) -> Result<()> {
     Ok(())
 }
 
-/// Say what removing a device does, then -- with `--yes` -- do it.
+/// Say what removing a device does, then (with `--yes`) do it.
 ///
 /// Said first because two of its consequences cannot be undone from here: a
 /// file freed on the strength of a copy that device keeps has nowhere else to
@@ -1229,13 +1229,13 @@ fn remove_device(root: &Path, text: &str, delete_kept: bool, yes: bool) -> Resul
     let (_, _, mut store, _) = open(root)?;
     let device = match qurb_cli::View::new(&store, 0).device_named(text)? {
         qurb_cli::Recipient::One(device) => *device,
-        _ => bail!("no single paired device called {text} — see `qurb status`"),
+        _ => bail!("no single paired device called {text}: see `qurb status`"),
     };
     let plan = store.removal_plan(&device.id)?;
 
     println!("Removing {} stops this device trusting it: it can no longer connect", device.name);
     println!("here or sync with this device. It keeps its key and everything already");
-    println!("on it — removing it deletes nothing there.");
+    println!("on it: removing it deletes nothing there.");
     if !plan.waiting.is_empty() {
         println!("
   {} waiting for it to collect will be cancelled.", files(plan.waiting.len()));
@@ -1294,7 +1294,7 @@ fn cancel(root: &Path, name: &str, recipient: &str) -> Result<()> {
     let (_, _, mut store, _) = open(root)?;
     let peer = match qurb_cli::View::new(&store, 0).device_named(recipient)? {
         qurb_cli::Recipient::One(device) => *device,
-        _ => bail!("no single paired device called {recipient} — see `qurb status`"),
+        _ => bail!("no single paired device called {recipient}: see `qurb status`"),
     };
     store.cancel_send(name, &peer.id).map_err(|e| match e {
         qurb_storage::Error::NotFound { .. } => {
@@ -1308,8 +1308,8 @@ fn cancel(root: &Path, name: &str, recipient: &str) -> Result<()> {
 
 /// Split `<command> [dir] [argument]` into the two, without a flag to say which.
 ///
-/// A single argument is ambiguous — `qurb ls photos` could mean a directory to
-/// open or a folder inside one — and asking people to remember an order they
+/// A single argument is ambiguous (`qurb ls photos` could mean a directory to
+/// open or a folder inside one) and asking people to remember an order they
 /// never think about is worse than looking. A directory is a directory on disk
 /// that has a store in it; anything else is the argument.
 ///
@@ -1345,7 +1345,7 @@ fn list(root: &Path, under: Option<&str>) -> Result<()> {
 
     let total = view.storage()?.file_count;
     if under.is_none() && total > files.len() {
-        println!("\n  showing {} of {total} — name a folder to narrow it", files.len());
+        println!("\n  showing {} of {total}: name a folder to narrow it", files.len());
     }
     Ok(())
 }
@@ -1359,14 +1359,14 @@ fn find(root: &Path, text: &str) -> Result<()> {
     let hits = view.search(text, SHOWN)?;
     if hits.is_empty() {
         println!("nothing matching {text}");
-        println!("  names only, and case is folded for ASCII — `CAFÉ` will not find `café`");
+        println!("  names only, and case is folded for ASCII: `CAFÉ` will not find `café`");
         return Ok(());
     }
     for file in &hits {
         println!("  {:<9} {:>10}  {}", mark(file.availability), human(file.size), file.path);
     }
     if hits.len() == SHOWN {
-        println!("\n  stopped at {SHOWN} — narrow it to see the rest");
+        println!("\n  stopped at {SHOWN}: narrow it to see the rest");
     }
     Ok(())
 }
@@ -1390,7 +1390,7 @@ fn mark(availability: qurb_cli::Availability) -> &'static str {
 ///
 /// The daemon's account of itself used to be its log, which is gone the moment
 /// the process is. This reads the history the index keeps, so it answers after
-/// a restart — and with a path, it answers the question the log never could:
+/// a restart, and with a path, it answers the question the log never could:
 /// why is this file not here?
 fn activity(root: &Path, about: Option<&str>) -> Result<()> {
     const SHOWN: usize = 40;
@@ -1447,7 +1447,7 @@ fn reclaim(root: &Path) -> Result<()> {
     let freed = store.reclaim()?;
 
     if freed.chunks_removed == 0 {
-        println!("  nothing to free — no second copies found");
+        println!("  nothing to free: no second copies found");
     } else {
         println!(
             "  freed {} across {} chunk(s)",
@@ -1478,7 +1478,7 @@ fn verify(root: &Path, deep: bool) -> Result<()> {
         println!("    same: a peer holding the same content can replace them");
     }
     if !report.refcount_drift.is_empty() {
-        println!("  {} reference count(s) disagree — please report this", report.refcount_drift.len());
+        println!("  {} reference count(s) disagree: please report this", report.refcount_drift.len());
     }
     if !report.orphaned.is_empty() {
         println!("  {} chunk(s) on disk that nothing references (wasted space, not damage)", report.orphaned.len());
@@ -1492,7 +1492,7 @@ fn verify(root: &Path, deep: bool) -> Result<()> {
 
 /// Change how the key is kept.
 ///
-/// The key itself does not change, so nothing it protects becomes unreadable —
+/// The key itself does not change, so nothing it protects becomes unreadable:
 /// this changes the lock, not the contents.
 fn protect(root: &Path, how: Option<&str>) -> Result<()> {
     use qurb_keys::Protection;
@@ -1509,7 +1509,7 @@ fn protect(root: &Path, how: Option<&str>) -> Result<()> {
         println!();
         println!("  file        a file only you can read. Protects against other users");
         println!("              of this machine, and against nothing that can read the");
-        println!("              disk — a stolen laptop, an unencrypted backup.");
+        println!("              disk: a stolen laptop, an unencrypted backup.");
         println!("  keystore    the operating system's own store. {}",
             if qurb_keys::keystore_available() { "Available here." } else { "NOT available here." });
         println!("  passphrase  wrapped with something only you know. The only option");
@@ -1528,7 +1528,7 @@ fn protect(root: &Path, how: Option<&str>) -> Result<()> {
 
     if wanted == Protection::Keystore && !qurb_keys::keystore_available() {
         bail!(
-            "this machine has no usable keystore — a device that cannot unlock \
+            "this machine has no usable keystore: a device that cannot unlock \
              itself is worse than one whose key sits in a file"
         );
     }
@@ -1572,7 +1572,7 @@ fn protect(root: &Path, how: Option<&str>) -> Result<()> {
     if wanted.needs_passphrase() {
         println!();
         println!("`qurb run` will ask for it at startup, so this device can no longer");
-        println!("start unattended. Your recovery phrase is unaffected — it recovers the");
+        println!("start unattended. Your recovery phrase is unaffected: it recovers the");
         println!("key, while the passphrase guards the copy on this disk.");
     }
     Ok(())
@@ -1648,7 +1648,7 @@ fn configure(root: &Path, settings: &[String]) -> Result<()> {
             "downloads = {}",
             match config.downloads.resolve(root) {
                 Ok(Some(dir)) => dir.display().to_string(),
-                Ok(None) => "off — kept in the folder".to_string(),
+                Ok(None) => "off: kept in the folder".to_string(),
                 Err(e) => format!("refused: {e}"),
             }
         );
@@ -1708,8 +1708,8 @@ fn configure(root: &Path, settings: &[String]) -> Result<()> {
 /// Classify the router between this machine and the internet.
 ///
 /// Whether devices can reach each other directly, or whether their traffic has
-/// to be paid for on a relay. Worth running on every network that matters —
-/// home, phone hotspot, office, café — because the worst answer is the one that
+/// to be paid for on a relay. Worth running on every network that matters
+/// (home, phone hotspot, office, café) because the worst answer is the one that
 /// sets the bill.
 fn netcheck() -> Result<()> {
     use qurb_peer::nat::{self, NatBehaviour};
@@ -1765,12 +1765,12 @@ fn netcheck() -> Result<()> {
             println!("  survivable if the other is not; two is not.");
         }
         NatBehaviour::Blocked => {
-            println!("Nothing answered — UDP may be blocked outbound.");
+            println!("Nothing answered: UDP may be blocked outbound.");
             println!("  Every connection from here would need a relay. Worth retrying:");
             println!("  an outage looks exactly the same.");
         }
         NatBehaviour::Inconclusive => {
-            println!("Inconclusive — only one server answered.");
+            println!("Inconclusive: only one server answered.");
             println!("  One answer cannot say whether the mapping depends on the");
             println!("  destination. Retry.");
         }
@@ -1976,7 +1976,7 @@ async fn relay(addr: Option<String>) -> Result<()> {
     Ok(())
 }
 
-// -- odds and ends -----------------------------------------------------------
+// , odds and ends -----------------------------------------------------------
 
 fn now() -> i64 {
     std::time::SystemTime::now()

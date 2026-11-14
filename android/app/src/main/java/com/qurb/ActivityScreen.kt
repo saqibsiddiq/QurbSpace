@@ -196,8 +196,8 @@ class ActivityScreen(app: MainActivity) : Screen(app) {
 
 /**
  * One entry of Activity opened (the owner's review of 2026-11-02): a big job
- * -- when, how many, how much, the names kept, then how many more -- or a
- * failure -- what, why, how many tries, when, and *Try again*.
+ * (when, how many, how much, the names kept, then how many more) or a
+ * failure, what, why, how many tries, when, and *Try again*.
  */
 class ActivityEntryScreen(app: MainActivity, private val h: Happening, private val name: String) : Screen(app) {
 

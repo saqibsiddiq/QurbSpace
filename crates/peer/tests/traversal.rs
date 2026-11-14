@@ -14,7 +14,7 @@
 //! listening on.
 //!
 //! Whether traversal itself works is the Phase 3 kill criterion, and it can only
-//! be measured across real networks — see the `netcheck` example.
+//! be measured across real networks: see the `netcheck` example.
 
 use qurb_peer::nat;
 use qurb_peer::{Identity, PeerClient};
@@ -48,7 +48,7 @@ async fn a_socket_keeps_its_port_across_every_stage() {
 
 #[test]
 fn punching_a_peer_that_is_not_there_is_not_an_error() {
-    // The first packets are supposed to be dropped -- that is the mechanism, not
+    // The first packets are supposed to be dropped: that is the mechanism, not
     // a failure. Treating it as one would abort every connection before it
     // started.
     let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
@@ -58,7 +58,7 @@ fn punching_a_peer_that_is_not_there_is_not_an_error() {
 #[tokio::test(flavor = "multi_thread")]
 async fn two_devices_connect_over_punched_sockets() {
     // Both sides punch towards each other, then run QUIC on the very sockets
-    // that did it -- the sequence a real traversal follows, minus the NAT.
+    // that did it: the sequence a real traversal follows, minus the NAT.
     let (_host_dir, host_identity) = identity();
     let (_joiner_dir, joiner_identity) = identity();
 

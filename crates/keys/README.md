@@ -17,14 +17,14 @@ MasterKey ──HKDF──► chunk encryption
 ## What makes this different from ordinary key handling
 
 The servers hold nothing. There is no reset, no support ticket, no escrow. If a
-user loses both the key and the phrase, the data is gone — not by policy, but as
+user loses both the key and the phrase, the data is gone, not by policy, but as
 a fact about the mathematics, because nothing else can decrypt their chunks.
 
 Every choice here follows from that:
 
 - **The phrase carries a checksum**, so a mistyped or transposed word is caught
   at the door. Without one, a wrong phrase would be accepted, installed, and
-  found to open nothing only much later — by which time the correct phrase may
+  found to open nothing only much later: by which time the correct phrase may
   be gone.
 - **`Vault::restore` refuses to overwrite** an existing key. Overwriting would
   orphan every chunk already stored: still on disk, encrypted under a key that
@@ -64,7 +64,7 @@ because a user reading "end-to-end encrypted" will assume the strongest.
 may have neither a keystore nor anybody to type a passphrase, and a device that
 cannot unlock itself is worse than one whose key sits in a file.
 
-**Keystore** is the operating system's own — Keychain, the Windows Credential
+**Keystore** is the operating system's own: Keychain, the Windows Credential
 Manager, the Secret Service. `keystore_available()` probes whether this machine
 actually has a usable one, because a headless server has one in name only.
 
@@ -118,13 +118,13 @@ cargo run -p qurb-keys --example enrol -- /tmp/device-a
   Linux. Keychain and the Credential Manager are exercised by nothing, and a
   claim about them would be a guess.
 - **A `SecretStore` for iOS.** `Protection::Platform` is tested here against
-  a fake, and the Android app supplies the real one — the Android Keystore,
+  a fake, and the Android app supplies the real one: the Android Keystore,
   verified on a Galaxy S23. Nothing has been written for the iOS Keychain.
 - **Key rotation.** Changing the master key means re-encrypting every chunk, and
   there is no mechanism for it.
 - **Per-file keys.** The architecture describes deriving a key per file so that
   one leaked key exposes one file. Currently every chunk uses the same derived
   key, which is simpler and weaker.
-- **Escape hatches for lost phrases** — social recovery, an escrowed key, a
+- **Escape hatches for lost phrases**: social recovery, an escrowed key, a
   printed kit. Every consumer product in this space eventually adds one. Which
   compromise to make is still an open product decision.

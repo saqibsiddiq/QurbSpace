@@ -1,4 +1,4 @@
-# 0087 — QUIC over the public Nostr relays, when no other path reaches
+# 0087: QUIC over the public Nostr relays, when no other path reaches
 
 **Status:** Accepted and built, 2026-11-13. Measured between two processes on
 the owner's laptop across the live default relays; **not yet tried between
@@ -9,7 +9,7 @@ ours and Tor as the last resort.
 ## What was asked
 
 The owner, 2026-11-13: "we have to find a way to make it work from anywhere"
-— on Jio, Vi, Airtel, any network — "i do not want our users to download 2
+(on Jio, Vi, Airtel, any network) "i do not want our users to download 2
 applications and the setup must be simple as hell". No VPS. Asked whether the
 laptop could be its own relay, then whether Syncthing's relays could carry
 it, then: "go ahead, build the nostr path".

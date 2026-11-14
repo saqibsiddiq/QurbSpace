@@ -1,8 +1,8 @@
 //! Phase 0 networking spike.
 //!
-//!   quictest stun              -- discover public endpoint + classify NAT mapping
-//!   quictest serve [bind]      -- accept a QUIC stream, measure receive throughput
-//!   quictest send <addr> [MiB] -- connect and push data
+//!   quictest stun (discover public endpoint + classify NAT mapping
+//!   quictest serve [bind]) accept a QUIC stream, measure receive throughput
+//!   quictest send <addr> [MiB]: connect and push data
 //!
 //! `stun` is the one that matters. It answers whether UDP hole punching can
 //! work from this network at all, which decides how much traffic ends up on

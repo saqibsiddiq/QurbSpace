@@ -2,7 +2,7 @@
 //!
 //! A path in a tree is a *logical* path: relative to the synced folder,
 //! components separated by `/`. Every device that receives one joins it onto
-//! a directory of its own and writes there. So a path is not just a name -- it
+//! a directory of its own and writes there. So a path is not just a name: it
 //! is an instruction about where on this disk to write, or what to delete, and
 //! it comes from another machine.
 //!

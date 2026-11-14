@@ -4,22 +4,22 @@
 //! the path a real sync takes: plan against a peer's tree, fetch the content,
 //! write it, adopt the version. That path is what an iOS FileProvider extension
 //! would run inside, under a ceiling in the tens of megabytes, so the number
-//! that matters is peak heap against file size — it should be flat.
+//! that matters is peak heap against file size: it should be flat.
 //!
 //! Two modes, for comparison. `stream` is what the engine does now. `buffered`
-//! reconstructs what it did before — fetch the whole file, write it, hand the
-//! same buffer to `adopt` — so the cost of the old shape stays measurable
+//! reconstructs what it did before (fetch the whole file, write it, hand the
+//! same buffer to `adopt`) so the cost of the old shape stays measurable
 //! rather than becoming a claim in a document nobody can check.
 //!
 //! Each runs in its own process: peak is a high-water mark, so whichever mode
 //! costs more would otherwise set the number for both.
 //!
 //! ```bash
-//! cargo run --release -p qurb-engine --example peak_memory -- stream 1024
-//! cargo run --release -p qurb-engine --example peak_memory -- buffered 1024
+//! cargo run --release -p qurb-engine --example peak_memory (stream 1024
+//! cargo run --release -p qurb-engine --example peak_memory) buffered 1024
 //! ```
 //!
-//! [`crates/storage`'s example]: ../../storage/examples/peak_memory.rs
+//! [`crates/storage`'s example]../../storage/examples/peak_memory.rs
 
 use qurb_engine::{ContentSource, Engine, StoreSource};
 use qurb_storage::{ChunkKey, Store};

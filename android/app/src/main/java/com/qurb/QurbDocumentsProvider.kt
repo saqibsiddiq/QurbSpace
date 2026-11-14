@@ -21,7 +21,7 @@ import java.io.FileNotFoundException
  * The synced files, visible to the rest of the phone.
  *
  * Without this, everything lives in the app's private directory and only the
- * app's own screen can see it — which makes a file sync product that no other
+ * app's own screen can see it, which makes a file sync product that no other
  * app can open. This puts qurb in the system file picker and the Files app.
  *
  * ## Why this is the shape it is
@@ -40,7 +40,7 @@ import java.io.FileNotFoundException
  *
  * What is listed is what the engine knows, not what happens to be in the
  * directory. It used to walk the directory, which lost every file freed from
- * this phone -- its bytes are elsewhere, so there was nothing on disk to find --
+ * this phone (its bytes are elsewhere, so there was nothing on disk to find)
  * and meant the picker and the app could disagree about what the folder held.
  * A freed file is listed, says it is not on this phone, and is downloaded when
  * opened. The one thing still read from disk is an empty directory somebody
@@ -53,7 +53,7 @@ import java.io.FileNotFoundException
  * exists. The system hands back a file descriptor and the reading app may pull
  * gigabytes through it. So no path here holds a file in memory: a file in the
  * folder is opened where it lies; bytes the engine holds without a copy in the
- * folder are exported to a cache file a chunk at a time — peak memory one
+ * folder are exported to a cache file a chunk at a time, peak memory one
  * chunk, at most 2 MiB; and a freed file is brought back by a sync, which
  * writes it into the folder the same way. Assembling a whole file in memory
  * here is what gets an iOS FileProvider extension killed, and would get this
@@ -63,7 +63,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
 
     override fun onCreate(): Boolean = true
 
-    // -- roots ---------------------------------------------------------------
+    // , roots ---------------------------------------------------------------
 
     override fun queryRoots(projection: Array<out String>?): Cursor {
         val cursor = MatrixCursor(projection ?: ROOT_COLUMNS)
@@ -94,7 +94,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
         return cursor
     }
 
-    // -- listing -------------------------------------------------------------
+    // , listing -------------------------------------------------------------
 
     override fun queryDocument(documentId: String, projection: Array<out String>?): Cursor {
         val cursor = MatrixCursor(projection ?: DOCUMENT_COLUMNS)
@@ -121,7 +121,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
     /**
      * The folders and files directly under `parentDocumentId`, from the index.
      *
-     * The index is flat -- it stores `album/photo.jpg` as one path -- and the
+     * The index is flat (it stores `album/photo.jpg` as one path) and the
      * engine turns that into the folders a person expects to open. Folders
      * first, then files, each by name.
      */
@@ -165,7 +165,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
         return cursor
     }
 
-    // -- content -------------------------------------------------------------
+    // , content -------------------------------------------------------------
 
     /**
      * Hand back a descriptor onto the file's contents.
@@ -176,7 +176,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
      * spinner. If no device that has it answers, the open fails and says so;
      * the request stands, and it arrives at the next sync.
      *
-     * Writing is allowed onto a file that is on this phone -- which is what a
+     * Writing is allowed onto a file that is on this phone, which is what a
      * "Save to qurb" from another app needs, having just made one with
      * [createDocument]. When the writer closes it, the folder is scanned and
      * synced, so the new file is indexed and on its way without waiting for
@@ -211,7 +211,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
                 )
             }
             if (entry.available != Available.ELSEWHERE) {
-                // The bytes are here without a copy in the folder -- a file
+                // The bytes are here without a copy in the folder: a file
                 // removed from it that the next scan has not noticed yet.
                 // Exported a chunk at a time; see the class comment on memory.
                 val staging = File(context.cacheDir, "open-${path.hashCode()}-${file.name}")
@@ -238,7 +238,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
         signal: CancellationSignal?,
     ): android.content.res.AssetFileDescriptor? = null
 
-    // -- writing -------------------------------------------------------------
+    // , writing -------------------------------------------------------------
 
     /**
      * Save a file into the synced tree from another app.
@@ -294,7 +294,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
     override fun isChildDocument(parentDocumentId: String, documentId: String): Boolean =
         documentId.startsWith(if (parentDocumentId == ROOT_ID) ROOT_ID else "$parentDocumentId/")
 
-    // -- helpers -------------------------------------------------------------
+    // , helpers -------------------------------------------------------------
 
     private fun pathOf(documentId: String): String = documentId.removePrefix("$ROOT_ID/").trim('/')
 
@@ -337,7 +337,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
             add(Document.COLUMN_LAST_MODIFIED, entry.modifiedAt / 1_000_000)
             add(Document.COLUMN_FLAGS, if (here) Document.FLAG_SUPPORTS_WRITE else 0)
             if (entry.available == Available.ELSEWHERE) {
-                add(Document.COLUMN_SUMMARY, "Not on this phone — downloads when opened")
+                add(Document.COLUMN_SUMMARY, "Not on this phone: downloads when opened")
             }
             if (entry.available == Available.NOWHERE) {
                 add(Document.COLUMN_SUMMARY, "On no device")

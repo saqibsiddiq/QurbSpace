@@ -4,8 +4,8 @@ What the website at qurb.cloud is for and how it should feel, agreed with the
 owner in conversation on 2026-10-27, before any of it is drawn. It replaces
 the landing page on `main` (2026-10-03) and the one waiting on the
 `website-redesign` branch (2026-10-11) as the reference for the next design,
-which is made in Figma first — the file *QurbSpace — website*,
-<https://www.figma.com/design/9DQiFyvLWy0BlVtllA4pIk> — and built only once
+which is made in Figma first (the file *QurbSpace) website*,
+<https://www.figma.com/design/9DQiFyvLWy0BlVtllA4pIk>, and built only once
 the owner has approved it there.
 
 **Status: the home page of qurb.cloud since 2026-10-27,** built scene by
@@ -27,33 +27,33 @@ away (Docs, GitHub, Security), not on the landing page.
 ## The name
 
 **QurbSpace**, as the app now calls itself; the address stays qurb.cloud.
-*Qurb* (قرب) means **nearness** — confirmed by the owner — and that is the
+*Qurb* (قرب) means **nearness** (confirmed by the owner) and that is the
 page's idea. In his words: the files you have stored on your desktop are
 "symbolically near you, all the time".
 
 ## The hero: remote access
 
 **Opening your computer's files from your phone, wherever you are**, is the
-heart of the page — chosen by the owner over sending. It is nearness made
+heart of the page: chosen by the owner over sending. It is nearness made
 literal: the computer stays at home, its files come with you. Sending, the
 Private vault and having nobody in the middle follow it, as smaller moments.
 
 ## How it should feel
 
 - **Easy, never overwhelming.** One thing to look at per screen. The
-  rejected mockups had too much competing at once — badges, chips, cards,
-  stats — and that is the failure to avoid.
+  rejected mockups had too much competing at once (badges, chips, cards,
+  stats) and that is the failure to avoid.
 - **Visual, not verbal.** As in the app, animation and pictures carry the
   meaning and the words are few: a short line per idea, not paragraphs.
-- **Fun moments inside a calm, luxurious frame.** The frame — space, type,
-  pace — is quiet and premium; inside it, motion is allowed to delight and
+- **Fun moments inside a calm, luxurious frame.** The frame (space, type,
+  pace) is quiet and premium; inside it, motion is allowed to delight and
   surprise. Where the two pull apart, the frame wins and the fun stays in its
   moment.
 - **Light, with dark rooms.** One light look, no dark mode; since
   2026-10-27, at the owner's word, a few scenes are deep green "night
   rooms" inside it (see *Richer*, below).
-- **References:** Google's Antigravity site — one idea to a screen, very
-  large confident moments, motion that shows — and luxury brand pages, with
+- **References:** Google's Antigravity site (one idea to a screen, very
+  large confident moments, motion that shows) and luxury brand pages, with
   some fun designs alongside.
 
 ## What the page ends in
@@ -64,24 +64,24 @@ Three actions:
    once 0.1.0 is published, which the owner has agreed to; Windows is built
    but has never been run on Windows, and says so; macOS and iPhone have no
    app and get the waitlist instead.
-2. **Join the waitlist** — an email address, kept by a small service added
+2. **Join the waitlist**: an email address, kept by a small service added
    for it. The site asks for and stores nothing today, so this changes what
    the privacy page says, and the page must change with it.
-3. **GitHub** — the code.
+3. **GitHub**: the code.
 
 ## The six scenes
 
 Six scenes, as proposed in the conversation and kept by the owner:
 
-1. *Your files. Always near.* — the phrase and one living animation: a
+1. *Your files. Always near.*: the phrase and one living animation: a
    laptop at home, you somewhere else, the distance closing.
 2. Away from home, the phone opens the computer's folders as if you were at
-   it — the hero.
-3. Send in one tap — a photo leaves the phone and lands on the laptop.
-4. Only yours — straight from one device to the other, the cloud in the
+   it: the hero.
+3. Send in one tap: a photo leaves the phone and lands on the laptop.
+4. Only yours: straight from one device to the other, the cloud in the
    middle simply absent.
-5. The Private vault — a lock, a fingerprint.
-6. Get it — the device-aware button, the waitlist, GitHub.
+5. The Private vault: a lock, a fingerprint.
+6. Get it: the device-aware button, the waitlist, GitHub.
 
 ## Anywhere, labelled as coming
 
@@ -91,10 +91,10 @@ for the owner's own devices ([features.md](../features.md): syncing from
 mobile data ✅; the relay 🧪, running on the owner's laptop since
 2026-10-15). But someone who downloads QurbSpace has no rendezvous or relay
 of their own, so for them remote access works on the same Wi-Fi only, until
-both run on a server anyone can reach — roadmap item 2.
+both run on a server anyone can reach: roadmap item 2.
 
 Asked how the hero should handle this, the owner chose to **promise
-"anywhere" and label it as coming** until that server is up — over promising
+"anywhere" and label it as coming** until that server is up: over promising
 only the home, or putting the server before the site. The label comes off
 the day a stranger's phone can reach their own computer from another
 network, and not before.
@@ -113,7 +113,7 @@ until he asked for the numbering to go. Each plays once when it comes into
 view, and plays again when clicked once it has finished (a replay button was
 tried and taken out at his asking):
 
-- **Hero** (`always-near.tsx`): *Your files. Always near.* — the laptop at
+- **Hero** (`always-near.tsx`): *Your files. Always near.*: the laptop at
   home, the phone leaving, the folders following like ducklings. Plays once
   on load, about four seconds.
 - **The walkthrough, three scenes** (`walkthrough.tsx`, one component with
@@ -132,8 +132,8 @@ tried and taken out at his asking):
   Camera and Documents ticked in the folder tree, carried to the computer,
   new photos following on their own, and WhatsApp restored to a phone from
   the computer.
-- **Private vault** (`vault.tsx`): *A folder only your phone can open*
-  — the laptop asks, the phone confirms behind the fingerprint, the folder
+- **Private vault** (`vault.tsx`): *A folder only your phone can open*,
+  the laptop asks, the phone confirms behind the fingerprint, the folder
   opens and locks itself after ten minutes unused. On the owner's own
   computer this is QurbSpace's rule, not encryption, so the words say it
   opens only when you say yes.
@@ -148,13 +148,13 @@ tried and taken out at his asking):
   across, locked on the way.
 - **Get it** (`get-it.tsx`): *Get QurbSpace.*, the device-aware button, the
   waitlist and GitHub
-  ([decision 0075](../decisions/0075-the-website-keeps-a-waitlist.md)) —
+  ([decision 0075](../decisions/0075-the-website-keeps-a-waitlist.md)),
   plain, without the hero's drawing or words, which the owner found
   repeated.
 
 *Your computer, in your pocket.* also plays a video from the laptop on the
 phone while it is still arriving, then opens a photo and a PDF, at the
-owner's asking — true as features.md has it (a 1.6 GB episode playing six
+owner's asking: true as features.md has it (a 1.6 GB episode playing six
 seconds after *Open* on the S23). The video is real, as he asked: *Ocean
 surface waves 06* by Mostafameraji, CC0, from Wikimedia Commons, cut to
 480 pixels and no sound in `website/public/media/` (67 KB as MP4, 125 KB as
@@ -181,8 +181,8 @@ of page, for two readers he named:
   in the design records it rests on, and says what the security page and
   those records say, no more.
 
-The owner asked for no privacy link in the footer; what the site keeps — the
-waitlist's addresses and nothing else — is said on *What this website keeps*.
+The owner asked for no privacy link in the footer; what the site keeps (the
+waitlist's addresses and nothing else) is said on *What this website keeps*.
 
 Laid out after the documentation sites he pointed to, looked at on
 2026-10-27 (Stripe's, Vercel's, Tailwind's): their own top bar, with a
@@ -206,7 +206,7 @@ five changes, each made from QurbSpace's own idea, nearness:
 1. **A living field** (`near-field.tsx`): tiny green dots drifting behind
    the whole page on one canvas, gathering near the pointer or the finger.
 2. **Smooth, deep scrolling** (`depth.tsx`, `rise.tsx`): the wheel glides
-   to a stop, by Lenis (MIT), which tells a trackpad from a wheel — a first
+   to a stop, by Lenis (MIT), which tells a trackpad from a wheel, a first
    version of our own smoothed both alike, and the owner could not scroll
    smoothly with it; checked by sending real wheel input to a headless
    Chromium (three notches: 461 to 900 pixels, easing out over a second); headlines rise word by word; the words under them and each
@@ -254,8 +254,8 @@ animations redone for the phone, and a site that looks good at every size.
 - **Phones.** Every scene scales down to fit a phone's width, which leaves
   the devices too small to read in every scene with a phone and a laptop; each
   needs a layout of its own for narrow screens.
-- **The other October pages** — security, reporting a vulnerability,
-  licences, cookies, terms, status, notes, contact, download — are still in
+- **The other October pages** (security, reporting a vulnerability,
+  licences, cookies, terms, status, notes, contact, download) are still in
   the October design and still say *Qurb*; the privacy page now sends its
   visitors to `/docs/this-website`.
 - **The image a shared link shows** (`app/opengraph-image.png`) is still the

@@ -1,7 +1,7 @@
 //! The engine writes down what it did, as it does it.
 //!
-//! Every assertion here is about a question a person asks *later* — after the
-//! process that did the work has exited — which is exactly the question a log
+//! Every assertion here is about a question a person asks *later* (after the
+//! process that did the work has exited) which is exactly the question a log
 //! cannot answer.
 
 use qurb_engine::Engine;

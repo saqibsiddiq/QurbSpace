@@ -1,6 +1,6 @@
 //! A guest's files, as the computer keeping them sees them (decision 0060).
 //!
-//! A guest -- another person's device visiting a computer -- may have that
+//! A guest (another person's device visiting a computer) may have that
 //! computer keep its Private Vault, and the computer must not be able to read
 //! it. So what the computer is shown is sealed under a key only the guest
 //! holds, derived from the guest's own key for that computer:
@@ -21,7 +21,7 @@
 //!
 //! The sealed file is read back as one stream: the computer cuts what it
 //! keeps into chunks of its own, as it does any file, so nothing can rely on
-//! where its chunks begin. Hence the layout -- the header's length in four
+//! where its chunks begin. Hence the layout: the header's length in four
 //! bytes, the sealed header, then each sealed chunk, whose lengths the header
 //! gives.
 //!
@@ -47,8 +47,8 @@ pub const MAX_SEALED_PATH: usize = 2000;
 pub struct FolderKey([u8; 32]);
 
 impl FolderKey {
-    /// Derived from this device's chunk key -- itself from the person's own
-    /// key -- and the computer's device id: one computer's key gives nothing
+    /// Derived from this device's chunk key (itself from the person's own
+    /// key) and the computer's device id: one computer's key gives nothing
     /// for another.
     pub fn for_host(chunk_key: &ChunkKey, host: &DeviceId) -> Self {
         Self(chunk_key.derive(b"qurb/sealed-folder/v1", host.as_bytes()))
@@ -119,7 +119,7 @@ pub fn open_name(key: &FolderKey, sealed: &str) -> Option<String> {
 }
 
 /// The start of a sealed file: the sealed header's length, then the sealed
-/// header -- the real path, size, content hash, time and chunk lengths.
+/// header, the real path, size, content hash, time and chunk lengths.
 pub fn seal_header(key: &FolderKey, meta: &Meta) -> Vec<u8> {
     let mut plain = Vec::with_capacity(meta.path.len() + 60 + 4 * meta.chunks.len());
     plain.extend_from_slice(b"QRBH");
@@ -224,7 +224,7 @@ impl Unsealer {
     }
 }
 
-/// Whether a path is a sealed name -- something a guest sealed -- whatever
+/// Whether a path is a sealed name (something a guest sealed) whatever
 /// the key.
 pub fn is_sealed_name(path: &str) -> bool {
     path.starts_with(MARK) && !path.contains('/')
@@ -373,8 +373,8 @@ mod tests {
         assert!(open_header(&key(1), &seal_chunk(&key(1), b"not a header")).is_none());
     }
 
-    /// Read back from pieces cut anywhere -- as the computer keeping it cuts
-    /// it -- a sealed file opens to what was sealed.
+    /// Read back from pieces cut anywhere (as the computer keeping it cuts
+    /// it) a sealed file opens to what was sealed.
     #[test]
     fn a_sealed_file_reads_back_from_pieces_cut_anywhere() {
         let chunks: Vec<Vec<u8>> = vec![vec![1u8; 3000], vec![2u8; 70], vec![3u8; 5000]];

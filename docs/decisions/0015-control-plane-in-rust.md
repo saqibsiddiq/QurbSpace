@@ -1,6 +1,6 @@
-# 0015 — Signalling and the relay are written in Rust
+# 0015: Signalling and the relay are written in Rust
 
-**Status:** Accepted — revisit for accounts and billing
+**Status:** Accepted, revisit for accounts and billing
 **Date:** 2026-09-16
 **Revises:** the Go control plane described in
 [architecture.md](../architecture.md) section 3, which was a plan rather than a
@@ -17,7 +17,7 @@ when that work starts and its libraries matter.
 The architecture chose Go for the control plane on grounds of development
 velocity and cheap concurrency. That was written before any of this existed. The
 evidence has since changed: there are now six Rust crates, and a signalling
-service needs to speak the same vocabulary as the client — endpoints, device
+service needs to speak the same vocabulary as the client, endpoints, device
 identity, the error types that describe why a connection failed.
 
 The choice also never became a decision record, so it was a plan rather than
@@ -40,7 +40,7 @@ client already uses. Splitting it across a language boundary buys nothing.
 
 ## What Go is still better at, and where that matters
 
-Go's libraries for the things Phase 6 needs — Stripe, WebAuthn — are more
+Go's libraries for the things Phase 6 needs (Stripe, WebAuthn) are more
 mature and more widely used than Rust's. That is a real advantage, and it
 applies to accounts and billing rather than to rendezvous and packet forwarding.
 
@@ -61,4 +61,4 @@ builds, against no runtime to install and no second toolchain in CI.
 
 **Moderate.** The protocol is JSON over websockets, which any language speaks,
 so a server could be rewritten without touching a client. What would be lost is
-the shared derivation code — which is precisely the thing that motivated this.
+the shared derivation code, which is precisely the thing that motivated this.

@@ -35,7 +35,7 @@ export function Depth() {
       .forEach((el) => arrive.observe(el))
 
     // Each scene's devices drift against the scroll and lean to the pointer,
-    // written straight to the transform each frame — one write a scene, no
+    // written straight to the transform each frame: one write a scene, no
     // CSS transition restarted on every frame.
     const fine = matchMedia('(pointer: fine)').matches
     const rooms = [...document.querySelectorAll<HTMLElement>('.scene-room')].map((el) => ({ el, rx: 0, ry: 0, tx: 0, ty: 0 }))

@@ -2,7 +2,7 @@
 //!
 //! This is the property a sync engine lives or dies by, and it is not implied
 //! by any of the unit tests. Each decision can be individually correct while
-//! the system as a whole oscillates — two devices politely renaming each
+//! the system as a whole oscillates: two devices politely renaming each
 //! other's files forever, or re-detecting the same conflict on every pass.
 //!
 //! The simulation here is deliberately crude: an in-memory map per device, and
@@ -19,7 +19,7 @@ mod model;
 use model::{assert_converged, sync_once, sync_until_stable, Device, A, B, C};
 use qurb_sync::reconcile;
 
-// -- basic propagation -------------------------------------------------------
+// , basic propagation -------------------------------------------------------
 
 #[test]
 fn a_new_file_reaches_the_other_device() {
@@ -73,7 +73,7 @@ fn syncing_an_unchanged_pair_does_nothing() {
     assert!(reconcile(&a.versions(), &b.versions()).is_empty(), "no work should remain");
 }
 
-// -- conflicts ---------------------------------------------------------------
+// , conflicts ---------------------------------------------------------------
 
 #[test]
 fn concurrent_edits_converge_with_both_versions_kept() {
@@ -172,7 +172,7 @@ fn concurrent_deletes_converge_without_a_conflict() {
     assert!(a.visible().is_empty());
 }
 
-// -- the general property ----------------------------------------------------
+// , the general property ----------------------------------------------------
 
 /// Deterministic pseudo-random sequences of edits, deletes and syncs.
 ///
@@ -238,7 +238,7 @@ fn syncing_is_idempotent() {
     assert_eq!((a.files.clone(), b.files.clone()), settled, "repeated syncing changed state");
 }
 
-// -- three devices -----------------------------------------------------------
+// , three devices -----------------------------------------------------------
 
 /// Sync every pair until the whole set stops changing.
 fn sync_all_until_stable(devices: &mut [Device]) -> usize {

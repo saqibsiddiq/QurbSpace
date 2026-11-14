@@ -1,6 +1,6 @@
-# 0032 — The interface hosts the daemon, and asks it nouns
+# 0032: The interface hosts the daemon, and asks it nouns
 
-**Status:** Accepted — availability gained a fourth value, *on no device*, in
+**Status:** Accepted, availability gained a fourth value, *on no device*, in
 [0055](0055-a-file-on-no-device-says-so.md)
 **Date:** 2026-09-23
 
@@ -14,8 +14,8 @@ than talking to one over a socket. `qurb-tray` already did this;
 
 **Two mechanisms for two kinds of question.** The daemon publishes its live
 state on a `watch` channel ([`status`](../../crates/qurb/src/status.rs)).
-Everything else — what devices, what files, what is available where, what
-happened, what is still on its way — is a query against the index, and those
+Everything else (what devices, what files, what is available where, what
+happened, what is still on its way) is a query against the index, and those
 queries live in [`view`](../../crates/qurb/src/view.rs).
 
 ## Why one process
@@ -29,7 +29,7 @@ one before anybody wants it is paid immediately.
 The advisory lock on the store ([`lock`](../../crates/qurb/src/lock.rs))
 already means one daemon per folder, so "the interface hosts the daemon" and
 "the terminal hosts the daemon" are alternatives rather than things to run at
-once — which is the honest shape of it either way.
+once, which is the honest shape of it either way.
 
 What this does *not* prevent is a read-only interface alongside a running
 daemon. SQLite in WAL mode allows exactly that, `qurb status` has relied on it
@@ -42,7 +42,7 @@ So a window can show a folder while another process syncs it. It simply cannot
 They change at different rates and are wanted in different shapes.
 
 "Syncing, three devices, 40% through" changes many times a second, and only the
-latest value is ever useful — a display that fell behind and had to catch up
+latest value is ever useful: a display that fell behind and had to catch up
 through a queue of stale summaries would be showing the past. That is a `watch`
 channel, and it already exists.
 
@@ -65,7 +65,7 @@ window binds port zero and the invite carries whatever it gets.
 The cost: a pairing code from the window cannot be reached through a port
 somebody forwarded on purpose, where one from `qurb pair` can. That matters
 only for pairing across the internet without a rendezvous, which is not how
-anybody pairs — the code has to cross the room as light anyway.
+anybody pairs: the code has to cross the room as light anyway.
 
 Cancelling has to stop *both* halves. A code taken off the screen that still
 answers would be the opposite of what pressing cancel asks for, so the task
@@ -86,7 +86,7 @@ This is the same distinction the storage cap enforces
 visible is what lets an interface be honest about what "free up space" will do.
 
 *(2026-10-07: a fourth, `Nowhere`, for a file not here that no device this
-one can ask has -- the other side of the same honesty. Before it, every file
+one can ask has, the other side of the same honesty. Before it, every file
 not here read as available elsewhere, and 18 lost files did. See
 [0055](0055-a-file-on-no-device-says-so.md).)*
 
@@ -107,7 +107,7 @@ so `CAFÉ` does not find `café`; and what somebody typed is treated as text, so
 - **No transfer progress in the view.** A transfer in flight is live state, not
   history, so it belongs on the status channel and never in the index. Since
   2026-09-25 a file arriving is published there as it moves.
-- **No writes.** Acting on a file — fetch, send, evict — goes through the store
+- **No writes.** Acting on a file (fetch, send, evict) goes through the store
   and the daemon as it always did.
 - **No vault listing.** `files()` is the shared area. What a device holds in
   its own vault is a different list with a different meaning, and putting

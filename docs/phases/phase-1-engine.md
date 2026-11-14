@@ -1,6 +1,6 @@
-# Phase 1 — The engine
+# Phase 1: The engine
 
-**Status:** complete — kill criterion passed 2026-09-16
+**Status:** complete, kill criterion passed 2026-09-16
 **Target:** months 1–3
 **Kill criterion:** cannot sync 100k files cleanly without a reproducible
 correctness bug.
@@ -36,7 +36,7 @@ the storage crate was built around it rather than adding it afterwards.
 
 Deduplication is what makes deletion hard. A chunk can belong to many files and
 to many versions of one file, so "delete this file" cannot mean "delete its
-chunks" — some other file may still need them. A collector that is slightly
+chunks": some other file may still need them. A collector that is slightly
 wrong destroys data in a file the user never touched, and raises no error while
 doing it. That is the worst failure class a storage product has, so it was
 designed first and everything else arranged around it.
@@ -51,7 +51,7 @@ Two invariants hold the crate together, both documented in
 [the crate README](../../crates/storage/README.md):
 
 1. A chunk referenced by the index always exists on disk. Writes go
-   payload-first, so a crash leaves an orphan — wasted space — rather than a
+   payload-first, so a crash leaves an orphan (wasted space) rather than a
    dangling reference, which is unrecoverable.
 2. Reference counts equal the links that exist.
 
@@ -66,7 +66,7 @@ key comes from does not.
 **Perfectly periodic test data defeats content-defined chunking entirely.** A
 generator like `i * K as u8` looks random but repeats every 256 bytes. With
 periodic input every cut lands at the same phase, so shifting the input by one
-byte changes every chunk — the boundary-stability test measured 0% reuse.
+byte changes every chunk: the boundary-stability test measured 0% reuse.
 Switching to xorshift fixed it. Worth remembering: any future test that
 generates content needs a real generator, or it will quietly measure nothing.
 
@@ -88,7 +88,7 @@ deduplication can do for small files and is another reason the chunk sizes in
 
 **Retention windows compose rather than overlap.** A deleted file's payloads are
 held for the retention period as a tombstone, then for the retention period
-again as unreferenced chunks — up to twice the configured window before space
+again as unreferenced chunks: up to twice the configured window before space
 comes back. A comment in the garbage collector originally claimed otherwise;
 the code was right and the comment was wrong. Erring toward keeping data is
 correct here, but it is a real disk cost when choosing the window.
@@ -112,7 +112,7 @@ unhandled:
 3. **Kernel queue overflow** during a large operation drops events, after which
    the stream no longer describes reality. Reported as `RescanRequired` rather
    than continuing as if nothing was missed.
-4. **The recursive watch race** — described below, and the one that would have
+4. **The recursive watch race**: described below, and the one that would have
    actually lost data.
 
 The debouncer takes the current time as a parameter instead of reading a clock,
@@ -121,8 +121,8 @@ tests that sleep. Integration tests cover only the wiring.
 
 ### The bug worth recording
 
-The first integration run reported `-a` — a newly created *directory* surfacing
-as a deletion — and the file inside it, `a/b/deep.txt`, not at all.
+The first integration run reported `-a` (a newly created *directory* surfacing
+as a deletion) and the file inside it, `a/b/deep.txt`, not at all.
 
 Two defects. The lesser one: the code treated "cannot stat this as a file" as
 evidence of deletion, which is wrong for a directory that plainly exists.
@@ -131,7 +131,7 @@ The serious one: **a platform watch for a new subdirectory is installed only
 after that directory exists, so anything written into it in that window
 produces no event whatsoever.** Cloning a repository or unpacking an archive
 into the synced folder does exactly this, dozens of files at a time, and the
-failure is completely silent — the files simply never sync, and nothing anywhere
+failure is completely silent, the files simply never sync, and nothing anywhere
 reports a problem.
 
 The fix is to walk any directory the watcher is told about, feeding what it
@@ -152,7 +152,7 @@ directory walk and from its own event arriving afterwards. Rather than suppress
 them, the watcher documents that delivery is at-least-once
 ([decision 0008](../decisions/0008-watcher-delivery-guarantee.md)).
 
-Exactly-once is not achievable — platforms duplicate events on their own — and
+Exactly-once is not achievable (platforms duplicate events on their own) and
 deduplicating properly means knowing what was last stored for a path, which the
 index already knows. A second cache in the watcher would duplicate that state
 and could disagree with it, and disagreement about what has been stored is
@@ -161,7 +161,7 @@ exactly how data gets lost.
 **This leaves a follow-up.** The storage layer is idempotent but not yet cheap
 about it: `put_file` chunks and hashes a whole file before discovering the
 content is unchanged. The engine should compare size and modification time
-against the index first and skip the read entirely — the same check that makes
+against the index first and skip the read entirely: the same check that makes
 startup reconciliation fast. Engine work, not storage work, and not built.
 
 ## The engine
@@ -170,7 +170,7 @@ startup reconciliation fast. Engine work, not storage work, and not built.
 means. It has three entry points: reconcile at startup, apply while running, and
 reconcile again when the watcher reports dropped events.
 
-Reconciliation is deliberately blunt — it re-examines every file rather than
+Reconciliation is deliberately blunt: it re-examines every file rather than
 working out what it missed. That is what makes it a safe recovery path: it needs
 no record of where the gap began, so it cannot get that record wrong.
 
@@ -182,7 +182,7 @@ everything, the same file arrives repeatedly with nothing changed. Comparing
 size and modification time against the index before reading turns that into a
 stat.
 
-On a real directory — 2437 files, 979 MiB:
+On a real directory: 2437 files, 979 MiB:
 
 | run | result | elapsed |
 |---|---|---|
@@ -200,7 +200,7 @@ the same window. `Store::verify` is the backstop.
 
 979 MiB in 13 seconds is about 75 MiB/s end to end, against 665 MiB/s for
 chunking alone. The gap is zstd, encryption, thousands of small file writes, and
-SQLite transactions — and it is all single-threaded. Storage came to 426 MiB, or
+SQLite transactions, and it is all single-threaded. Storage came to 426 MiB, or
 43.5% of plaintext.
 
 75 MiB/s is fine for ongoing sync and slow for initial import: a 1 TiB library
@@ -217,7 +217,7 @@ itself.
 ## Vector clocks and conflict resolution
 
 The fourth crate, [`qurb-sync`](../../crates/sync/), is the part that has to be
-*right*. It holds no data, touches no disk, and reads no clock — it takes two
+*right*. It holds no data, touches no disk, and reads no clock: it takes two
 views of the world and says what should happen. That makes it exhaustively
 testable, which matters more here than anywhere else, because the failure mode
 is losing someone's work.
@@ -225,7 +225,7 @@ is losing someone's work.
 Version vectors record how many changes from each device a version has seen, so
 comparing two answers the only question that matters: did one happen after the
 other, or did neither see the other? Wall-clock time is deliberately absent from
-every ordering decision — device clocks disagree, and ordering by timestamp lets
+every ordering decision: device clocks disagree, and ordering by timestamp lets
 a device with a wrong clock win or lose every conflict systematically. It
 appears only inside conflict filenames, where it helps a person identify a
 version.
@@ -239,15 +239,15 @@ produce identical content, and the version vector a resolution must carry.
 
 The first has an asymmetry worth stating plainly. Keeping both is not available
 when one side's contribution is an absence, so one of them loses. A deletion
-that loses is recoverable — the tombstone and its chunks survive the retention
+that loses is recoverable: the tombstone and its chunks survive the retention
 window. An edit that loses is gone. So the edit wins.
 
 ### The bug the convergence test caught
 
 The unit tests all passed. The simulation did not.
 
-When two devices reach identical content independently — the same file copied
-onto each — the versions are concurrent but there is nothing to disagree about,
+When two devices reach identical content independently (the same file copied
+onto each) the versions are concurrent but there is nothing to disagree about,
 so resolution reported "in sync" and produced no action. Correct as far as the
 user could see. But the merged history was never recorded, so the two versions
 stayed permanently concurrent, and **the next edit on either device raised a
@@ -263,7 +263,7 @@ Hence `Action::Merge`, which moves no data and exists purely to converge history
 ### Convergence is a different property from correctness
 
 `tests/convergence.rs` simulates two and three devices making random edits,
-deletes and syncs, and asserts they all end agreeing — on content *and* on
+deletes and syncs, and asserts they all end agreeing: on content *and* on
 history, with no work left over. 320 random seeds across both sizes.
 
 Three devices matter separately from two. Two can be reconciled by much simpler
@@ -287,18 +287,18 @@ stamps onto local changes. Migrations now run in order and are recorded in
 device's counter; a version adopted from a peer keeps the vector it arrived
 with. Getting that backwards would claim this device had seen changes it has
 not, and make its history dominate versions it should have conflicted with.
-Writing identical bytes deliberately does not advance the clock — otherwise a
+Writing identical bytes deliberately does not advance the clock: otherwise a
 touched file would start beating a peer's genuinely newer version.
 
 **The engine learned to compare.** `tree()` is what it would tell a peer;
 `plan_against()` runs the reconciliation; `apply_plan()` carries out the local
-half — writing files, recording vectors, and fetching what it does not have.
+half: writing files, recording vectors, and fetching what it does not have.
 
 ### Content is fetched by hash, not by path
 
 Recorded as [decision 0010](../decisions/0010-content-by-hash.md). A plan
 routinely calls for content that lives under a different name on the device that
-has it — a conflict rename produces a path no device has ever held — so asking
+has it (a conflict rename produces a path no device has ever held) so asking
 by path fails where asking by content succeeds.
 
 It also makes renames and copies free: the engine checks whether any live path
@@ -319,7 +319,7 @@ successfully. Forever.
 
 What prevents it is `apply_plan` recording the modification time the file
 actually ended up with, so the size-and-mtime fast path recognises its own work.
-Three tests pin it — adopted files, adopted tombstones, and conflict files —
+Three tests pin it (adopted files, adopted tombstones, and conflict files)
 because the failure would look like the system working until suddenly it did not.
 
 ### It works on real directories
@@ -337,7 +337,7 @@ converged after 1 round
 ```
 
 Both directories then hold the same two files, under the same conflict
-filename — computed independently on each side with no negotiation — and neither
+filename (computed independently on each side with no negotiation) and neither
 edit was lost.
 
 ## Peer transfer over QUIC
@@ -348,7 +348,7 @@ engine knows nothing about networks, and this adapts it to one.
 
 ### Transfer is incremental, and it is measurable
 
-Fetching a file asks first for its manifest — the chunk list — and then only for
+Fetching a file asks first for its manifest (the chunk list) and then only for
 the chunks this device does not already hold.
 
 Measured on this machine over loopback, a 200 MB file with 16 bytes inserted at
@@ -369,7 +369,7 @@ argument.
 Conditions: loopback on one machine, warm cache, 12-core Linux desktop. It says
 nothing about behaviour across a NAT or a slow link.
 
-**The saving is on the wire only.** Reassembly is still whole-file — the client
+**The saving is on the wire only.** Reassembly is still whole-file: the client
 concatenates chunks, hands the result to the engine, and the engine re-chunks it
 to store. Network cost scales with the edit; local CPU still scales with the
 file. The first sync moved 190 MiB in 1.79s; the second moved 248 KiB but still
@@ -378,7 +378,7 @@ took 884ms, almost all of it re-chunking locally.
 ### Identity, and the gap under it
 
 Both ends present a self-signed certificate, check the other's fingerprint
-against a list given in advance, and **verify the handshake signature** — so a
+against a list given in advance, and **verify the handshake signature**, so a
 peer must hold the matching private key rather than replay a public certificate.
 Recorded as [decision 0011](../decisions/0011-peer-identity-pinning.md).
 
@@ -390,8 +390,8 @@ omit it. An API where it were optional would make "trust whoever answers" the
 easy path, which is the whole attack.
 
 **But pairing is not built**, and that is the honest limit of what this achieves.
-How a device learns which fingerprint to expect — the QR-code exchange, the
-device trust graph — is Phase 3. The transport is sound; the thing that decides
+How a device learns which fingerprint to expect (the QR-code exchange, the
+device trust graph) is Phase 3. The transport is sound; the thing that decides
 what to feed it is missing. `DeviceId` in the index and `Fingerprint` on the
 network are also still separate identifiers, and binding them is pairing's job.
 
@@ -407,7 +407,7 @@ deciding it should be.
 Every field on the wire is length-prefixed and bounded. Without a cap, one
 four-byte length field is an out-of-memory attack. Decoding is tested against
 truncation at every offset, trailing bytes, absurd lengths, unknown tags, and
-invalid UTF-8 — the decoder has no panicking path.
+invalid UTF-8: the decoder has no panicking path.
 
 ## Key management
 
@@ -418,7 +418,7 @@ HKDF-SHA256 under versioned, purpose-specific labels; the master encoded as a
 [decision 0012](../decisions/0012-key-hierarchy-and-recovery.md).
 
 What makes this unlike ordinary key handling is that there is no reset. The
-servers hold nothing, so a lost key and a lost phrase means the data is gone —
+servers hold nothing, so a lost key and a lost phrase means the data is gone:
 not by policy but as a fact about the mathematics. Several choices follow
 directly:
 
@@ -426,7 +426,7 @@ directly:
   moment it can be produced. There is deliberately no `phrase()` method, because
   offering one would imply it could be asked for later.
 - `Vault::restore` refuses to overwrite an existing key, which would orphan
-  every chunk already stored — still on disk, encrypted under a key that exists
+  every chunk already stored: still on disk, encrypted under a key that exists
   nowhere.
 - Purposes are a closed enum rather than a caller-supplied string, because two
   purposes sharing a label would silently produce the same key for both.
@@ -441,7 +441,7 @@ silently change what an existing phrase means.
 
 The unit tests prove a phrase rebuilds a key. That is a weaker statement than
 the one users depend on, which is that the words on their paper turn back into
-their *files* — through derivation, the chunk cipher, and the on-disk format.
+their *files*: through derivation, the chunk cipher, and the on-disk format.
 `tests/recovery.rs` tests that path end to end, including the wrong phrase
 failing to decrypt rather than producing plausible rubbish.
 
@@ -456,8 +456,8 @@ between them, with both key files at mode 0600.
 
 The master key is in a file readable only by its owner. That is not key
 protection: it defends against other users on the machine, not against anything
-that can read the disk. The platform keystore — Keychain, DPAPI, Secret
-Service — is three separate integrations and is not built.
+that can read the disk. The platform keystore (Keychain, DPAPI, Secret
+Service) is three separate integrations and is not built.
 
 This is recorded as a known gap rather than presented as a design, because a
 user reading "end-to-end encrypted" would reasonably assume more than it
@@ -468,7 +468,7 @@ provides on a compromised machine.
 - **Key storage.** The master key sits in an owner-only file rather than the
   platform keystore. The largest security gap in the project.
 - **Per-file keys.** The architecture describes deriving a key per file so one
-  leaked key exposes one file. Every chunk currently uses the same derived key —
+  leaked key exposes one file. Every chunk currently uses the same derived key:
   simpler, and weaker.
 - **Key rotation.** Changing the master key means re-encrypting every chunk, and
   there is no mechanism for it.
@@ -508,16 +508,16 @@ provides on a compromised machine.
 Run with `cargo run --release -p qurb-peer --example scale -- <dir> 100000`.
 Conditions: one Linux desktop, 12 cores, 15 GiB RAM, NVMe, both devices in one
 process over loopback. 100,000 files across a two-level tree, 4.40 GiB,
-distributed like a real sync folder — 80% under 8 KiB, 1% between 1 and 4 MiB.
+distributed like a real sync folder: 80% under 8 KiB, 1% between 1 and 4 MiB.
 
 | stage | result |
 |---|---|
-| index, cold | 236.8s — 422 files/s, 19 MiB/s |
-| re-index, warm | **1.13s** — 88,500 files/s, nothing re-read |
+| index, cold | 236.8s: 422 files/s, 19 MiB/s |
+| re-index, warm | **1.13s**: 88,500 files/s, nothing re-read |
 | tree exchange | 100,000 paths in 196ms |
 | first sync | 476s, 103,709 chunks, 4.13 GiB, all 100,000 adopted |
-| deep verify | 43.4s — no missing chunks, no corrupt chunks, no refcount drift |
-| edit 1,000 files, re-index | 4.93s — exactly 1,000 re-read |
+| deep verify | 43.4s: no missing chunks, no corrupt chunks, no refcount drift |
+| edit 1,000 files, re-index | 4.93s: exactly 1,000 re-read |
 | incremental sync | **3.50s**, 24.1 MiB on the wire |
 | verify again | clean |
 
@@ -545,7 +545,7 @@ Per file, at 1.98ms:
 | compress + encrypt (`seal`) | 0.10ms | 5% |
 | chunk + hash | 0.07ms | 3% |
 | SQLite transaction | 0.06ms | 3% |
-| **unattributed — filesystem syscalls** | **1.13ms** | **58%** |
+| **unattributed: filesystem syscalls** | **1.13ms** | **58%** |
 
 The measurements: `fsync` costs 0.616ms on this filesystem against 0.029ms for
 an unsynced write; 20,000 per-file SQLite transactions cost 0.059ms each;
@@ -560,7 +560,7 @@ syscalls.
 
 ### A bug this found in our own code
 
-`Store::put_file` chunked the file and then read it *again* into a heap buffer —
+`Store::put_file` chunked the file and then read it *again* into a heap buffer:
 every byte read twice, and the whole file held in memory. Invisible at test
 sizes.
 
@@ -577,11 +577,11 @@ is the one above.
 ### What to do about it, in order of value
 
 1. **Parallelism.** The engine stores one file at a time on a 12-core machine.
-   This is the largest available win and nothing about the design prevents it —
+   This is the largest available win and nothing about the design prevents it:
    chunks are content-addressed and independent.
 2. **Batch the fsyncs.** One per chunk is 31% of the time. Syncing once per
-   batch of chunks keeps the crash-safety property that matters — no index entry
-   pointing at an unwritten payload — because the index is written after.
+   batch of chunks keeps the crash-safety property that matters (no index entry
+   pointing at an unwritten payload) because the index is written after.
 3. **Skip `create_dir_all` for shard directories that already exist.** There are
    256 of them and they are created once; checking every chunk write is waste.
 4. **Request chunks concurrently.** The client asks for one at a time while the
@@ -610,7 +610,7 @@ Pairing, NAT traversal and relays are Phase 3 and should stay there.
 Still owed from Phase 0: `quictest stun` on cellular, office, and public wifi.
 
 Also due this phase, per the roadmap: a decision on
-[0006 — availability](../decisions/0006-availability-gap.md). Not necessarily
+[0006, availability](../decisions/0006-availability-gap.md). Not necessarily
 which option ships, but whether the engine must replicate chunks to a node that
 is not the user's own device. The data model now exists, so this is the last
 comfortable moment to answer it.

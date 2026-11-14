@@ -21,18 +21,18 @@ one frosted stage the content floats in:
 
 | place | what it answers |
 |---|---|
-| Home | is my Qurb space okay? One state (synced, syncing, devices away, add your first device, needs attention); *Sync now* and *Send* side by side — *Sync now* drops every device's backoff, tells each there is news (which wakes a phone asleep) and syncs; a line of secondary facts; attention only when something needs a decision; *Waiting* — what has not reached another device, sends not collected, a phone's backups still to come; *Backups* — WhatsApp and the folders kept here for each phone, with *Choose…* |
-| Files | at the top, *Shared* and a folder for each person this computer keeps files for, the owner's included, locked until a yes on one of that person's phones ([0067](../../docs/decisions/0067-a-folder-for-each-person.md)): *Ask your phone*, then each phone's *WhatsApp*, backed-up folders and *Private Vault*, a file opened written into `$XDG_RUNTIME_DIR/qurb-open/` and deleted on *Lock*, ten minutes unused or quitting. Inside *Shared*, the shared area as a file browser: search, breadcrumbs, folders apart from files, and for every file **where its bytes are** — *On this device*, *Available elsewhere*, *Only copy here*, *On no device* — with *Keep here*, *Free local space*, *Send*, *Delete* in its menu. Conflicts at the top ([0043](../../docs/decisions/0043-settling-a-conflict.md)); a folder's options — which devices have it, whether this computer keeps it ([0044](../../docs/decisions/0044-sharing-with-chosen-devices.md), [0045](../../docs/decisions/0045-a-folder-kept-remotely.md)) — from its right-click menu |
+| Home | is my Qurb space okay? One state (synced, syncing, devices away, add your first device, needs attention); *Sync now* and *Send* side by side (*Sync now* drops every device's backoff, tells each there is news (which wakes a phone asleep) and syncs; a line of secondary facts; attention only when something needs a decision; *Waiting*) what has not reached another device, sends not collected, a phone's backups still to come; *Backups*: WhatsApp and the folders kept here for each phone, with *Choose…* |
+| Files | at the top, *Shared* and a folder for each person this computer keeps files for, the owner's included, locked until a yes on one of that person's phones ([0067](../../docs/decisions/0067-a-folder-for-each-person.md)): *Ask your phone*, then each phone's *WhatsApp*, backed-up folders and *Private Vault*, a file opened written into `$XDG_RUNTIME_DIR/qurb-open/` and deleted on *Lock*, ten minutes unused or quitting. Inside *Shared*, the shared area as a file browser: search, breadcrumbs, folders apart from files, and for every file **where its bytes are** (*On this device*, *Available elsewhere*, *Only copy here*, *On no device*) with *Keep here*, *Free local space*, *Send*, *Delete* in its menu. Conflicts at the top ([0043](../../docs/decisions/0043-settling-a-conflict.md)); a folder's options (which devices have it, whether this computer keeps it ([0044](../../docs/decisions/0044-sharing-with-chosen-devices.md), [0045](../../docs/decisions/0045-a-folder-kept-remotely.md))) from its right-click menu |
 | file details | a panel over the list: type, size, location, which devices hold it, when it changed, its history, and what can be done to it |
-| Devices | this computer and each paired device, whether each is here now, a phone set up again as one; a device's details (send to it, its backups, remove it after saying what that does — [0041](../../docs/decisions/0041-removing-a-device.md)); *Add a device* by showing a code — a QR code and six digits ([0066](../../docs/decisions/0066-six-digits-to-pair.md)) — or entering one |
-| Storage | what Qurb takes against the limit or the disk; *What is kept here* — your phones' backups, shared files, guests' folders, each with where to go for it; the largest files that could be freed without losing anything; and the allowance |
+| Devices | this computer and each paired device, whether each is here now, a phone set up again as one; a device's details (send to it, its backups, remove it after saying what that does ([0041](../../docs/decisions/0041-removing-a-device.md)); *Add a device* by showing a code) a QR code and six digits ([0066](../../docs/decisions/0066-six-digits-to-pair.md)), or entering one |
+| Storage | what Qurb takes against the limit or the disk; *What is kept here*: your phones' backups, shared files, guests' folders, each with where to go for it; the largest files that could be freed without losing anything; and the allowance |
 | Private Vault | this computer's own files, in the same browser as Files |
 | Settings | grouped lists: this device and its key's protection, devices and pairings, storage, privacy, notifications, recovery, appearance, advanced |
-| Activity | reached from Home: everything this device did — the answer to "why is my file not here?" |
+| Activity | reached from Home: everything this device did, the answer to "why is my file not here?" |
 | Transfers | a panel that appears while something moves or waits: progress with the time left, sends waiting to be collected (cancellable), and what finished |
 
-Sending is a sheet — what, to which device, then the file travelling there and
-landing — opened from Home, from a file or a device, or by dropping files
+Sending is a sheet (what, to which device, then the file travelling there and
+landing) opened from Home, from a file or a device, or by dropping files
 anywhere on the window.
 
 A folder with no device in it opens the setting-up flow instead: make a new
@@ -41,7 +41,7 @@ a screen, so it cannot be a precondition of the screen existing.
 
 The distinction the Files screen exists for is three-way. A file that is here
 and also on the phone, and a file that is here and nowhere else in the world,
-look identical to anything that only checks whether the bytes are on disk — and
+look identical to anything that only checks whether the bytes are on disk, and
 offering to free the second is offering to delete it. So: *On this device*,
 *Available elsewhere*, *Only copy here*, each an icon and words, and only the
 last in a colour that asks for attention. *Free local space* is never drawn as
@@ -94,7 +94,7 @@ deciding something, that is a bug in the layering.
 
 ## Two rhythms
 
-The daemon's live state — syncing, devices reachable — is polled every 1.5
+The daemon's live state (syncing, devices reachable) is polled every 1.5
 seconds, because it changes many times a second and only the latest value is
 useful. Lists are fetched when their screen is opened and refreshed on a much
 slower beat, because redrawing a list somebody is reading is a cost rather than
@@ -103,9 +103,9 @@ a feature. See
 
 **Off the window's thread, and never piled up** (2026-10-28). The owner found
 that opening the window froze his computer and GNOME offered to force it to
-quit. Measured on his laptop with his own folder — 122,132 files in the
+quit. Measured on his laptop with his own folder (122,132 files in the
 index, 41,150 of them shared (31,733 an Android toolchain nobody else holds)
-and 74,274 kept for his S23, two phones paired — the polled commands each
+and 74,274 kept for his S23, two phones paired) the polled commands each
 took seconds, called from the page as the page calls them (WebDriver, below):
 `storage` 1.0–1.4 s every 1.5 s, `phone_folders` 2.5–3.7 s per phone and
 `not_elsewhere` about 3 s every 5 s, `summary` up to 2.7 s waiting behind
@@ -134,7 +134,7 @@ view's at about 200 MB. Not measured yet: a day of it running.
 (2026-10-28). The same log showed a full pass with the S23 every 18 seconds
 or so, for hours: 34 in ten minutes. Each time the phone announced itself
 through the rendezvous service, the daemon took it for news, though it was
-already connected to the phone and holding a request open for its changes —
+already connected to the phone and holding a request open for its changes:
 the way news travels now. `Peers::listening` (connected, watched, the
 connection not closed) now filters those arrivals out; a phone that has just
 come back, or whose connection has gone, still syncs on arriving.
@@ -143,7 +143,7 @@ come back, or whose connection has gone, still syncs on arriving.
 
 [`experiments/desktop-fixtures`](../../experiments/desktop-fixtures) serves this
 window's real markup, stylesheet and scripts against made-up data, so layout can
-be worked on without a folder, a paired device or a running daemon — with
+be worked on without a folder, a paired device or a running daemon: with
 `?state=` for each of Home's states and `?screen=` to open a place.
 
 ## Driving the real window
@@ -151,9 +151,9 @@ be worked on without a folder, a paired device or a running daemon — with
 `./scripts/desktop-smoke.sh` runs the real application, commands and engine
 included, and drives it through WebKit's WebDriver on a display of its own: it
 sets a device up through the window, opens every place, adds a second device by
-the code the window shows -- a folder not set up, which takes the key, and is
+the code the window shows (a folder not set up, which takes the key, and is
 approved in the window once the number it prints matches the window's
-(decision 0053) -- sends it a file and sees it under Transfers, removes it, and
+(decision 0053)) sends it a file and sees it under Transfers, removes it, and
 protects the key with a passphrase and unlocks it again. `SMOKE_THINK=90` waits
 that many seconds before approving, as a person comparing numbers might.
 `SMOKE_MODE=join` instead sets the window up by joining another device's code,
@@ -164,15 +164,15 @@ which Tauri's toolkit reads from the desktop's settings portal: the smoke test
 gives the window a bus of its own with a stand-in portal on it
 (`scripts/smoke_portal.py`), opens the window dark, switches the desktop light
 and dark again, and checks a choice made in Settings holds over either. It fails if any command the
-page calls returns an error — the page keeps the last fifty as
+page calls returns an error: the page keeps the last fifty as
 `window.qurbFailures` for that, and for reading from the web inspector.
 
 The same WebDriver can drive the **real** window on the owner's display,
 with his own folder: run `WebKitWebDriver` with
 `TAURI_WEBVIEW_AUTOMATION=true` and open a session on
 `~/.local/bin/qurb-desktop`. That is how the laptop's side of the
-2026-10-15 run with the S23 was done — asking the phone to open the owner's
-folder, opening a file from it, *Sync now* — with the commands called as the
+2026-10-15 run with the S23 was done (asking the phone to open the owner's
+folder, opening a file from it, *Sync now*) with the commands called as the
 page calls them (`window.__TAURI__.core.invoke`). It quits the running
 window first, since there is one qurb per person.
 
@@ -198,10 +198,10 @@ in debugging output.
 
 ## Pairing
 
-Show a code — a QR to scan, six digits for a device on the same Wi-Fi to
+Show a code (a QR to scan, six digits for a device on the same Wi-Fi to
 type ([decision 0066](../../docs/decisions/0066-six-digits-to-pair.md)), and,
 folded away, the same code to type and a spoken form to read down a
-telephone — or enter one from another device, the long code or its digits.
+telephone) or enter one from another device, the long code or its digits.
 Typed wrongly five times, the digits stop working and say *Scan the code
 instead*. The screen counts down to
 the code's expiry rather than saying "waiting" under a code that stopped
@@ -214,7 +214,7 @@ Two things worth knowing. The QR is drawn black on white whatever colour scheme
 the desktop is in, because a scanner finds a code by its finder patterns
 against a light ground and a code drawn dark-on-dark is not a code. And the
 window binds port zero rather than the configured port, because the daemon in
-this process already has that one — see
+this process already has that one: see
 [decision 0032](../../docs/decisions/0032-the-interface-hosts-the-daemon.md).
 
 ## Sending
@@ -234,7 +234,7 @@ and a send whose file changed or went first is called off and says so
 A file sent to that device before asks whether to send it again
 ([decision 0059](../../docs/decisions/0059-a-send-is-not-its-bytes.md)).
 
-Dragging is the better gesture and needs no plugin — Tauri reports the drop to
+Dragging is the better gesture and needs no plugin: Tauri reports the drop to
 the window, and only the *path* crosses into the page, never the contents. The
 two buttons do the same for anybody who cannot drag: one for files and one for a
 folder, because no platform's dialog picks both at once.
@@ -262,8 +262,8 @@ while it is sending a backup. Open, the owner's folder lists each phone
 (`person_folder`, `qurb_storage::person`), and a file opened is written,
 checked chunk by chunk and whole, into `$XDG_RUNTIME_DIR/qurb-open/`
 (`open_person_file`). A phone's backups no longer open from Devices without
-that yes. The owner's folder is not sealed — this computer holds the same
-key — and the locked screen says the lock is Qurb's rule; a guest's is.
+that yes. The owner's folder is not sealed (this computer holds the same
+key) and the locked screen says the lock is Qurb's rule; a guest's is.
 Beside the shared folder on disk, `~/qurb/<person>` is a read-only
 placeholder for each (`place_people`).
 
@@ -277,7 +277,7 @@ space with 256 MB to spare; a 1.6 GB episode once filled it.
 
 Three things, and nothing else:
 
-- somebody sent you a file — a thing another person did, on purpose, for you;
+- somebody sent you a file: a thing another person did, on purpose, for you;
 - a device collected what you sent it;
 - something failed.
 
@@ -305,13 +305,13 @@ Settings turns off. See [decision 0040](../../docs/decisions/0040-the-menu-opens
 ## What it does not do yet
 
 - **No pause, and no stopping a transfer already moving.** A send nobody has
-  collected yet can be cancelled — pressed twice, since it cannot be undone.
+  collected yet can be cancelled: pressed twice, since it cannot be undone.
   One the other device is collecting may still finish, and a file arriving
   cannot be stopped from this end. A failed file is retried at the next sync
   on its own; there is no button for it.
 - **No folder picker.** A text field, read from the home folder:
   `~/qurb/Shared`, `qurb/Shared` and `Documents/qurb` all mean folders in it. Beneath it, what is
-  already there — and the full path whenever it differs from what was typed,
+  already there, and the full path whenever it differs from what was typed,
   since a relative path once made a second, empty device the window then ran
   at every login (see [phase 4](../../docs/phases/phase-4-product.md#a-folder-typed-without-a-slash)).
 - **Linux only, in practice.** Since 2026-10-18 it is built for Windows too,

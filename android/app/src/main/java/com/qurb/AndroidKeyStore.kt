@@ -22,8 +22,8 @@ import javax.crypto.spec.GCMParameterSpec
  * Two layers, because the Keystore does not store arbitrary bytes. It holds
  * *keys* and performs operations with them, so:
  *
- *  - a 256-bit AES key lives in the Keystore, generated once, never exported —
- *    on a device with a secure element it never enters this process at all;
+ *  - a 256-bit AES key lives in the Keystore, generated once, never exported,
+ * on a device with a secure element it never enters this process at all;
  *  - the 32-byte master key is encrypted under it and the ciphertext goes in
  *    ordinary SharedPreferences, where it is useless on its own.
  *
@@ -74,7 +74,7 @@ class AndroidKeyStore(context: Context) : KeyStore {
             cipher.doFinal(Base64.decode(sealed, Base64.NO_WRAP))
         } catch (e: Exception) {
             // Distinct from "nothing stored", which returns null. Something IS
-            // stored and cannot be read — the Keystore key was invalidated, or
+            // stored and cannot be read: the Keystore key was invalidated, or
             // the data was restored from another device. Reporting it as absent
             // would look like a fresh install and lose the user's files.
             throw QurbException.Other("the stored key could not be decrypted: ${e.message}")

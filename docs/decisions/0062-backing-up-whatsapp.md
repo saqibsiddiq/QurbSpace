@@ -1,4 +1,4 @@
-# 0062 — Backing up WhatsApp to a computer, not to the Google account
+# 0062: Backing up WhatsApp to a computer, not to the Google account
 
 **Status:** Accepted, 2026-10-12, with the owner's answers at the end, which
 moved where the backup is kept from an ordinary folder to the phone's Private
@@ -76,11 +76,11 @@ documents are ordinary files, and come back whatever the answer.
    it changes rather than arriving as a second copy. The photos open on the
    laptop like any others, and nothing needs qurb to read them.
 6. **What is kept** (question 2). The chat backups exactly as the phone has
-   them now, since a restore needs one consistent set -- the full backup and
+   them now, since a restore needs one consistent set: the full backup and
    its increments, nothing stale beside them. Media kept even after it is
    deleted on the phone, which also lets WhatsApp's media be cleared off the
    phone to free space while the computer keeps it.
-7. **Restoring -- unproven.** On a new phone, once WhatsApp is installed and
+7. **Restoring: unproven.** On a new phone, once WhatsApp is installed and
    before its restore step, *Restore WhatsApp* in qurb writes the folder back
    into `Android/media/com.whatsapp/WhatsApp`, and WhatsApp is expected to
    offer the local backup. Built once the question above has an answer.
@@ -121,7 +121,7 @@ documents are ordinary files, and come back whatever the answer.
    kept by path, replaced in place, carried as one; the computer writing it
    into its folder.
 2. **The phone**: setting up, the nightly run, *Back up now*, its progress.
-3. **The desktop**: the backup shown under the phone in Devices -- last run,
+3. **The desktop**: the backup shown under the phone in Devices, last run,
    size, *Open folder*.
 4. **Restoring**: putting it back on a phone, and watching WhatsApp restore
    from it, with a spare number.
@@ -144,10 +144,10 @@ Answer 1 replaces points 5 and 6 above, and undoes the first reason under
 
 - **The phone's vault, read where it lies.** Each file of WhatsApp's folder
   is a file in the phone's own vault, under `.qurb-outside/whatsapp/`
-  followed by its path in WhatsApp's folder -- a name the person's own files
+  followed by its path in WhatsApp's folder: a name the person's own files
   cannot have, kept out of every list as the sharing rules are. Its chunks are recorded and none stored:
   its bytes stay in WhatsApp's folder and are read from there, through the
-  grant, whenever they are asked for and checked against its hashes -- as a
+  grant, whenever they are asked for and checked against its hashes, as a
   send's are (0060), but for as long as the file is there, not until it is
   collected. Recorded in a table of their own, `outside_sources`.
 - **The laptop keeps it as it keeps the vault**: in its chunk store, never
@@ -156,14 +156,14 @@ Answer 1 replaces points 5 and 6 above, and undoes the first reason under
 - **A file changed in WhatsApp's folder is a new version** of its vault
   file, found by size and time when the folder is next listed.
 - **A file gone from WhatsApp's folder**: under `Media`, it is *freed* on
-  the phone -- as *Free local space* frees a file -- once the laptop is known
+  the phone (as *Free local space* frees a file) once the laptop is known
   to hold it, and so stays in the vault and on the laptop (answer 2); a
   medium the laptop never got is simply gone. Under `Databases` and
   `Backups`, it is deleted, so that the laptop keeps one consistent set of
   chat backups.
 - **Never listed, never a deletion by the folder scan.** The phone's Files
-  and Private Vault do not show it; Settings shows the backup
-  -- when it last ran, how much, on which computer. The scan of qurb's own
+  and Private Vault do not show it; Settings shows the backup:
+  when it last ran, how much, on which computer. The scan of qurb's own
   folder leaves these rows alone, as it leaves a freed file.
 - **A run may stop part-way.** Indexing reads each new file once, to chunk
   it: about 9.65 GB the first time on the S23. A run stops at its time
@@ -174,7 +174,7 @@ Answer 1 replaces points 5 and 6 above, and undoes the first reason under
 
 ## Progress
 
-### Step 1, the engine — built 2026-10-12
+### Step 1, the engine: built 2026-10-12
 
 `outside_sources` (schema 22) records where each file is read from;
 `Store::keep_outside` reads a file once to chunk it, into this device's own
@@ -185,15 +185,15 @@ Chunks are served from the file through `chunk_from_disk`, which `read_chunk`,
 `held_chunks` and `verify` already ask. Nothing changed on the device keeping
 the vault: it collects these rows as it collects any.
 
-Tests: nine in `storage/tests/outside.rs` -- kept with no copy and offered to
+Tests: nine in `storage/tests/outside.rs` (kept with no copy and offered to
 the holder; not taken for a deletion by the folder scan; new, changed and
 unchanged; a photo gone and kept, gone and never held, a chat backup gone;
 a run stopped at its deadline; a file changed behind the listing not served
-as the old one; a file that comes back -- and, over a real connection,
+as the old one; a file that comes back) and, over a real connection,
 `a_folder_kept_where_it_lies_is_held_by_the_desktop` in
 `peer/tests/holding.rs`.
 
-### Step 2, the phone — built 2026-10-12
+### Step 2, the phone: built 2026-10-12
 
 - **The engine's side.** `back_up_whatsapp(files, seconds)` takes the app's
   listing, leaves out WhatsApp's caches (any path with a part starting with
@@ -213,14 +213,14 @@ as the old one; a file that comes back -- and, over a real connection,
 - **The app.** Settings → WhatsApp → *Back up WhatsApp*: what it does, that
   restoring is untried and the Google backup should stay on, then Android's
   picker at WhatsApp's folder. Only that folder is accepted, read only. Each
-  night, charging and on Wi-Fi, a worker lists it -- skipping its caches --
+  night, charging and on Wi-Fi, a worker lists it (skipping its caches)
   and hands the listing over, then syncs; *Back up now* does the same at
   once. *Stop backing up* gives the grant back; what the computer keeps
   stays.
 
 Checked on the emulator, against a stand-in folder of 305 files (38 MB): set
 up through Settings and the picker, the first run listed 304 files in 0.4 s
--- the `.Statuses` cache left out -- and read 38 MB through WhatsApp's
+(the `.Statuses` cache left out) and read 38 MB through WhatsApp's
 documents; a second, after a photo was added and a chat increment removed,
 added one, deleted one, and left 303 unchanged. Settings said *0 of 304
 files on test-laptop so far*, test-laptop being a device that is never
@@ -230,15 +230,15 @@ on. Tests: `whatsapp_is_backed_up_where_it_lies` (the FFI);
 
 **Not yet:** the S23 backing up to the laptop for real; restoring (step 4).
 
-### Step 3, the desktop — built 2026-10-12
+### Step 3, the desktop: built 2026-10-12
 
 The phone's panel in Devices says what the computer keeps of its WhatsApp:
-*WhatsApp — 37,722 files, 9.6 GB, kept here for it, out of sight* (in the
+*WhatsApp, 37,722 files, 9.6 GB, kept here for it, out of sight* (in the
 fixtures). Nothing more: the files stay in the chunk store, never in a
 folder, as answer 1 asked (`Db::held_outside_for`, `view::Device::whatsapp`).
 The workspace's 845 tests pass.
 
-### On the S23, the first time — 2026-10-12
+### On the S23, the first time: 2026-10-12
 
 Set up from Settings on the owner's S23 (Android 16, One UI 8.5), charging,
 on the home Wi-Fi, with the laptop keeping its vault.
@@ -272,7 +272,7 @@ waiting. Changed:
 
 **And a bug the run found.** When the phone went away part-way through, at
 14:07, every file the laptop was fetching for it failed, and each was
-written into the laptop's history by name -- 5,027 of them, which the
+written into the laptop's history by name, 5,027 of them, which the
 desktop's Activity and its *could not finish* notifications read. A file
 kept for another device is now only logged when it fails
 (`a_held_file_that_fails_is_not_in_the_history`), and the history leaves out
@@ -282,13 +282,13 @@ notification also said *qurb* in lower case; it says *Qurb*.
 **Not finished.** The phone has not connected since 14:08: its wireless
 debugging went off, which Android does when a phone leaves Wi-Fi, so it is
 probably away from home. The backup carries on when it is back on Wi-Fi.
-Collection still happens only while the phone serves -- a pass in the
-foreground of up to half an hour after each run (decision 0050) -- and
+Collection still happens only while the phone serves (a pass in the
+foreground of up to half an hour after each run (decision 0050)) and
 between passes, nothing.
 
 **Why nothing came after the first run** (2026-10-13). The laptop held
 6,631 files, exactly what the first run read. A run stopped at the first
-file it could not read, and a run that had failed did not carry on -- and a
+file it could not read, and a run that had failed did not carry on, and a
 file WhatsApp moves or deletes in the minute the listing takes is ordinary.
 So every run after the first stopped at once. A file that cannot be read is
 now skipped for the rest of the run and tried again in the next, and the
@@ -300,12 +300,12 @@ The times in the laptop's log are UTC: collecting went on until 19:38 IST,
 not 14:08 as first read above, and at 21:14 the phone synced over mobile
 data, where the backup is held back, as designed.
 
-### The S23 set up again — 2026-10-13
+### The S23 set up again: 2026-10-13
 
 The owner had cleared Qurb's data on the S23 on the evening of 2026-10-12, to
 start over. What that took with it, and what it did not:
 
-- **Gone on the phone:** its index, its key, its settings -- the WhatsApp
+- **Gone on the phone:** its index, its key, its settings, the WhatsApp
   grant among them, and the rendezvous address, back to the emulator's
   default.
 - **Kept on the laptop:** everything it held for the phone, the 6,631 files
@@ -321,7 +321,7 @@ back to the laptop's (`wss://saqib.tail86283c.ts.net`, the laptop's service
 through Tailscale Funnel); the WhatsApp backup set up again from Settings at
 18:57. It starts from nothing.
 
-**Found: the phone could not reach the laptop on its own** -- every attempt
+**Found: the phone could not reach the laptop on its own**, every attempt
 to the laptop's address timed out (`192.168.1.4:37716 timed out`), while the
 laptop reached the phone each time. The backup does not need that
 direction, since the laptop collects, but Home on the phone said *Not synced
@@ -332,7 +332,7 @@ Not the firewall, though it looked like it. A UDP packet sent from the phone
 `192.168.1.2` did. The laptop's Wi-Fi had reconnected at 18:38:46 IST and
 come back with a new lease, `.2` instead of `.4` (NetworkManager's log).
 The laptop's qurb had started the evening before and read its addresses once,
-at startup, so it went on offering `.4` -- in its beacons, in what the
+at startup, so it went on offering `.4`: in its beacons, in what the
 rendezvous service held for it, and in its answer each time the phone asked
 to meet. Nothing answered there.
 
@@ -361,7 +361,7 @@ seconds (NetworkManager re-associated and took the same lease back). qurb
 logged both changes on its next look, `192.168.1.2` gone at 21:00:45 and
 back at 21:00:50, and was connected to the phone again at 21:00:54.
 
-### Faster, measured on the S23 — 2026-10-13
+### Faster, measured on the S23: 2026-10-13
 
 The same phone and laptop, the phone on battery at 17% and on the home
 Wi-Fi, the backup started again from nothing at 18:57 IST:
@@ -370,13 +370,13 @@ Wi-Fi, the backup started again from nothing at 18:57 IST:
 |---|---|---|
 | listing WhatsApp's folder | 36,010 files in 76 s | 36,031 in 43 s |
 | the phone reading new files | 8.3 MB/s, 63 ms a file, one at a time | **23 MB/s, 12 ms a file**, four at a time |
-| the first run, in its 7 minutes | 6,631 files, 3.5 GB | 35,472 files, 9.69 GB -- all but 559 |
+| the first run, in its 7 minutes | 6,631 files, 3.5 GB | 35,472 files, 9.69 GB: all but 559 |
 | the laptop collecting small files | 4 to 8 a second | 17 to 28 a second, fetched 32 at a time |
 
 The first 6,631 files cost the laptop a copy, not a transfer: it already
 held their content from the first backup, under the old phone's identity.
 
-### Slower while the phone is in use -- 2026-10-13
+### Slower while the phone is in use: 2026-10-13
 
 From about 19:13 IST the laptop's collection fell from 600 to 2,000 files
 a minute to between 64 and 160. It rose in steps of exactly 32, the
@@ -392,7 +392,7 @@ named `abnormal`. Qurb was the only process in it. Read from `/proc` and
 |---|---|---|---|
 | CPUs it may run on | 0-2, the three little cores | 0-6 | 0-7 |
 | CPU group | `background` | `foreground` | `top-app` |
-| disk priority (blkio) | `low` | -- | -- |
+| disk priority (blkio) | `low` |, |, |
 
 Its busiest thread was waiting on the disk (state D). Android itself had it
 in the *active* standby bucket (10) and allowed to run in the background.
@@ -465,7 +465,7 @@ the phone not frozen. WhatsApp's next six new files arrived at 13:51 on an
 ordinary pass. Wall time from start to finish: 15.5 hours, of which the
 laptop was asleep for 12.
 
-### Files kept and not known to be -- 2026-10-15
+### Files kept and not known to be: 2026-10-15
 
 All morning the S23's Home said 130 WhatsApp files were still to go to the
 laptop (97 in *WhatsApp Documents/Private*, 31 excluded stickers, a sent

@@ -4,8 +4,8 @@
 #   packaging/server/deploy.sh ubuntu@203.0.113.5
 #
 # Needs SSH access to the server with sudo. Sends this computer's qurb when the
-# server can run it -- an x86-64 machine with a C library at least as new as the
-# one it was built against -- and otherwise the source, to build there. Then
+# server can run it (an x86-64 machine with a C library at least as new as the
+# one it was built against) and otherwise the source, to build there. Then
 # runs setup.sh there, and checks from here, across the internet, that the
 # rendezvous service introduces two devices and that the relay carries a
 # transfer. Run from the repository root after

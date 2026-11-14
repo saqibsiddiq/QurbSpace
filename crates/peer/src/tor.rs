@@ -1,12 +1,12 @@
 //! Tor as the slow last resort (decision 0082): a phone that cannot reach its
-//! computer directly -- a home connection behind a shared address that lets
-//! nothing in, and no IPv6 -- reaches it through the computer's onion service.
+//! computer directly (a home connection behind a shared address that lets
+//! nothing in, and no IPv6) reaches it through the computer's onion service.
 //!
 //! Tor carries streams and qurb speaks QUIC, which is datagrams; so each end
 //! runs a bridge that packs datagrams into the stream, each behind its length.
 //! The computer's bridge hands them to its own QUIC endpoint from a local
 //! socket, the phone's takes them from its QUIC endpoint at a local address,
-//! and nothing above this -- the handshake, the identities, the protocol --
+//! and nothing above this (the handshake, the identities, the protocol)
 //! knows Tor was there. Slow: measured on the owner's laptop on 2026-11-02 at
 //! 0.15–0.31 MB/s each way, 7–18 s to reach the service; for opening files
 //! away from home, never for backups.
@@ -150,7 +150,7 @@ impl Drop for Open {
             if OPEN.load(Ordering::SeqCst) == 0 && !HOSTING.load(Ordering::SeqCst) {
                 // The client exists: a bridge was open. Read where it is kept
                 // rather than awaiting `client()`, whose bootstrap the compiler
-                // copied into this task -- 1.6 MB of the phone's engine.
+                // copied into this task: 1.6 MB of the phone's engine.
                 if let Some(tor) = CLIENT.get() {
                     tracing::debug!("Tor idle; asleep until wanted");
                     tor.set_dormant(arti_client::DormantMode::Soft);

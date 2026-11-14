@@ -25,9 +25,9 @@ use std::path::Path;
 /// Supplies file content by hash.
 ///
 /// Keyed on content rather than path deliberately. The content a plan calls for
-/// may live under a different name on the device that has it — that is exactly
+/// may live under a different name on the device that has it (that is exactly
 /// the case when a conflict renames a file, or when something was renamed
-/// locally — and asking for a path would fail where asking for bytes succeeds.
+/// locally) and asking for a path would fail where asking for bytes succeeds.
 pub trait ContentSource {
     /// Produce the bytes with this BLAKE3 hash.
     fn fetch(&mut self, hash: &[u8; 32], size: u64) -> Result<Vec<u8>>;
@@ -36,7 +36,7 @@ pub trait ContentSource {
     ///
     /// The default assembles the whole thing first, which is correct and costs
     /// memory proportional to the file. A source that can stream should say so
-    /// by overriding this — on a phone the difference is whether a large file
+    /// by overriding this: on a phone the difference is whether a large file
     /// syncs at all.
     fn fetch_into(&mut self, hash: &[u8; 32], size: u64, out: &mut dyn Write) -> Result<u64> {
         let bytes = self.fetch(hash, size)?;
@@ -46,7 +46,7 @@ pub trait ContentSource {
 
     /// Fetch into the file at `partial`, keeping whatever of the content an
     /// earlier attempt that was cut off left there, and reporting the bytes
-    /// written -- kept ones included -- to `progress`.
+    /// written (kept ones included) to `progress`.
     ///
     /// The default starts again from nothing, which is right for a source that
     /// cannot tell what the partial file holds. A network source can, and
@@ -68,7 +68,7 @@ pub trait ContentSource {
     /// Told once content has been committed here, so the source can stop
     /// counting it as undelivered.
     ///
-    /// Nothing depends on it arriving — it is a courtesy to the other end, and
+    /// Nothing depends on it arriving: it is a courtesy to the other end, and
     /// a source with nobody to tell does nothing. The default is therefore to
     /// do nothing, which is right for a local store: reading from a directory
     /// on this disk delivers nothing to anyone.
@@ -93,7 +93,7 @@ pub trait ContentSource {
     fn coming(&mut self, _contents: &[([u8; 32], u64)]) {}
 
     /// Told once the plan has been applied, so that a source can finish
-    /// whatever it put off -- telling the other end what arrived, in one go.
+    /// whatever it put off: telling the other end what arrived, in one go.
     fn finished(&mut self) {}
 
     /// Whether the source can supply nothing more: a device whose connection
@@ -107,8 +107,8 @@ pub trait ContentSource {
 /// can show a transfer moving.
 ///
 /// Only content that actually crosses from the source is reported. A file
-/// whose bytes were already here under another name -- a rename, a copy, an
-/// earlier version -- costs a lookup, not a transfer, and showing it as one
+/// whose bytes were already here under another name (a rename, a copy, an
+/// earlier version) costs a lookup, not a transfer, and showing it as one
 /// would be showing work that is not happening.
 ///
 /// `finished` is called whether or not the fetch succeeded, and before the
@@ -270,8 +270,8 @@ impl Engine {
         // Running it through the same machinery would have the recipient offer
         // the sender their own file back, and a deletion on either side argue
         // with the other.
-        // None of it on a device out of the shared area -- a phone, since
-        // decision 0073 -- which reaches a computer's shared folder live.
+        // None of it on a device out of the shared area (a phone, since
+        // decision 0073) which reaches a computer's shared folder live.
         let shared: Vec<FileVersion> = match self.shared_area() {
             true => remote.iter().filter(|v| v.area == Area::Shared).cloned().collect(),
             false => Vec::new(),
@@ -291,7 +291,7 @@ impl Engine {
     ///
     /// Holding needs to know: an entry marked *hold* is that device's own file,
     /// kept here in its vault, and nothing in the entry says whose vault that
-    /// is -- the file's author need not be its owner. And this device's own
+    /// is, the file's author need not be its owner. And this device's own
     /// freed files are fetched back from the device holding them, which only
     /// its entries marked *held* say. See decision 0036.
     ///
@@ -301,8 +301,8 @@ impl Engine {
     /// calls this too, never added it: asking for a freed shared file back on
     /// a phone did nothing, pass after pass. One planning function for both.
     pub fn plan_with(&self, remote: &[FileVersion], peer: Option<&DeviceId>) -> Result<Vec<Action>> {
-        // Another person's device -- a guest of this computer, or a computer
-        // this device visits -- is a source of deliveries and of nothing else
+        // Another person's device (a guest of this computer, or a computer
+        // this device visits) is a source of deliveries and of nothing else
         // (decision 0060). Its server shows it nothing more; this device takes
         // nothing more either, so that a shared file of another person's is
         // never adopted into this person's folder, whatever is offered.
@@ -343,7 +343,7 @@ impl Engine {
     /// device, but by its copy of the rules, which may be behind; and a device
     /// left out of a folder still has its old copy, and still offers it. So
     /// this device checks by its own rules too: nothing under a folder shared
-    /// without the peer, or without this device, is taken from it -- and a
+    /// without the peer, or without this device, is taken from it, and a
     /// change to a folder's rule is taken only from a device the folder is
     /// shared with, so a device left out cannot write itself back in.
     ///
@@ -472,8 +472,8 @@ impl Engine {
     /// Actions that bring back files whose local copy was dropped.
     ///
     /// These are not part of a reconciliation plan and could not be: this
-    /// device and the peer agree completely about such a file — same path,
-    /// same content hash, same vector — so there is nothing to reconcile. What
+    /// device and the peer agree completely about such a file (same path,
+    /// same content hash, same vector) so there is nothing to reconcile. What
     /// differs is only whether the bytes are here, which is a local matter the
     /// sync protocol has no opinion about.
     ///
@@ -523,7 +523,7 @@ impl Engine {
 
         // Additions before removals. Within one plan a rename is both, and
         // applying the removal first would throw away content the addition is
-        // about to want -- turning a free rename into a full re-transfer. It
+        // about to want: turning a free rename into a full re-transfer. It
         // also shortens the window in which a renamed file exists at neither
         // path.
         // A replica holding a subset ignores what it was not asked to hold.
@@ -620,9 +620,9 @@ impl Engine {
             if let Err(e) = outcome {
                 let path = self.root().join(action.path());
                 tracing::warn!(path = %path.display(), error = %e, "plan step failed, continuing");
-                // Said once. A failure that will happen again next sync -- a
+                // Said once. A failure that will happen again next sync (a
                 // name taken by a file sent here, a file no device it meets
-                // has -- was recorded on every one, and a phone's Home showed
+                // has) was recorded on every one, and a phone's Home showed
                 // nothing else (2026-10-07). Still a failure of this sync.
                 //
                 // Not for a file kept for another device: its name has no
@@ -678,7 +678,7 @@ impl Engine {
         // Content sent to this device's vault is filed under a name that is
         // free here. The sender named it the way *they* think of it, so a
         // clash with something the recipient already has is ordinary rather
-        // than exceptional -- two people can both have a `report.pdf` -- and
+        // than exceptional (two people can both have a `report.pdf`) and
         // neither file may be overwritten.
         // As sent, whatever it is filed as here: what the next sync looks a
         // delivery up by.
@@ -700,7 +700,7 @@ impl Engine {
 
         // Whether the file at this path is one somebody sent here, rather than
         // the shared file of the same name. Shared paths and received ones sit
-        // in one folder, so a name can mean either -- and a version arriving
+        // in one folder, so a name can mean either, and a version arriving
         // for the shared area is never about the private one.
         let private_here = version.area == Area::Shared
             && matches!(self.store().db().folder_row(&version.path)?, Some((_, Some(_))));
@@ -776,7 +776,7 @@ impl Engine {
                         // The sender is holding this *for us*, and will stop as
                         // soon as we confirm we have it. Recorded as the vault
                         // delivery it is, so the storage cap never treats the
-                        // sender as a copy this device can fall back on -- the
+                        // sender as a copy this device can fall back on: the
                         // two of us releasing in turn would lose the file.
                         self.store().note_replica_in_vault(&content, &version.modified_by)?;
                     } else {
@@ -786,7 +786,7 @@ impl Engine {
 
                 // Refuse a shared file whose name a received one already has.
                 // Writing it would overwrite the private file, whose bytes live
-                // nowhere else here -- the folder *is* its payload store. The
+                // nowhere else here: the folder *is* its payload store. The
                 // shared file is not lost by waiting: it arrives once the
                 // received one is renamed or deleted.
                 if private_here {
@@ -796,7 +796,7 @@ impl Engine {
                 // Refuse a path this filesystem cannot keep separate from one
                 // already here. Writing it would destroy the existing file, and
                 // the next reconciliation would report that loss as a deletion
-                // and push it to every other device -- one confusing sync
+                // and push it to every other device: one confusing sync
                 // turning into data loss everywhere.
                 if self.folds_case() {
                     if let Some(existing) =
@@ -813,7 +813,7 @@ impl Engine {
                 // to write and nothing to stream to. It still has to avoid
                 // holding the file in memory, which is what `adopt` would do,
                 // so it takes the buffered path only because there is no file
-                // to map -- a gap worth closing when replicas meet large files.
+                // to map: a gap worth closing when replicas meet large files.
                 if self.role().is_replica() {
                     let bytes = match self.store().read_content(&blake3::Hash::from(*hash))? {
                         Some(held) => held,
@@ -873,7 +873,7 @@ impl Engine {
                     Ok(()) => {}
                     // The other device does not hold these bytes: it freed
                     // them, or keeps them for somebody else, or they are gone.
-                    // A shared file not here is then recorded as it is --
+                    // A shared file not here is then recorded as it is:
                     // listed, and elsewhere, the state freeing leaves. Before
                     // 2026-10-07 it was asked for again on every sync and
                     // failed every time: a phone showed *Didn't finish* for 18
@@ -936,13 +936,13 @@ impl Engine {
 
                 // A file this device had dropped to stay under its limit is
                 // coming *back*, which is a different thing to tell somebody
-                // than a file arriving for the first time -- especially since
+                // than a file arriving for the first time: especially since
                 // they are the ones who asked for it.
                 let kind = match was_evicted {
                     true => db::Event::Restored,
                     false => db::Event::Received,
                 };
-                // Who from: the author of the version -- except for this
+                // Who from: the author of the version, except for this
                 // device's own file fetched back, whose author is this device.
                 // History naming it as the sender reads as a stranger.
                 let from = (version.area != Area::Held).then_some(&version.modified_by);
@@ -990,8 +990,8 @@ impl Engine {
         // Named by the content, so an attempt cut off part-way is picked up by
         // the next one rather than started again.
         let staging = self.store().root().join(format!("holding-{}.incoming", content.to_hex()));
-        // Already here -- a send the owner collected, or the same bytes under
-        // another name -- costs a copy, not a transfer.
+        // Already here (a send the owner collected, or the same bytes under
+        // another name) costs a copy, not a transfer.
         self.bring_in(hash, *size, &staging, &version.path, source, stats, &mut NoProgress)?;
         let held = self.store_mut().hold_file(version, owner, &staging).map_err(Error::from);
         let _ = std::fs::remove_file(&staging);
@@ -1027,7 +1027,7 @@ impl Engine {
         // name that is taken gets the same treatment as in the folder.
         //
         // A file already there with exactly these bytes is this delivery, put
-        // in place by an earlier attempt that stopped before recording it --
+        // in place by an earlier attempt that stopped before recording it:
         // a crash between the rename and the record. Recorded now rather than
         // written a second time under another name.
         let mut target = None;
@@ -1143,7 +1143,7 @@ fn prune_empty_parents(removed: &Path, root: &Path) {
 /// would be a copy, which reintroduces the half-written file this avoids.
 impl Engine {
     /// Put `hash`'s content in the file at `staging`: from what this device
-    /// already holds if it can, or else from `source` -- which carries on from
+    /// already holds if it can, or else from `source`, which carries on from
     /// whatever an earlier attempt that was cut off left in the file.
     ///
     /// Whether the content is here is asked before the file is touched:
@@ -1196,9 +1196,9 @@ fn hex(bytes: &[u8]) -> String {
 }
 
 /// A failure as a person reads it in Activity. Most say what they are; one
-/// said a hash: a file the other device no longer had -- changed or deleted
+/// said a hash: a file the other device no longer had (changed or deleted
 /// there before it came, as a send whose file went before it was collected
-/// does -- read "fetching content failed: peer does not have content e5d6..."
+/// does) read "fetching content failed: peer does not have content e5d6..."
 /// on the owner's S23 (2026-11-10). The log keeps the error as it was.
 fn said(e: &crate::Error) -> String {
     let gone = match e {

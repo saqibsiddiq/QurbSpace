@@ -1,13 +1,13 @@
 //! What a crash leaves behind.
 //!
 //! A real child process writes into a store and is killed with SIGKILL at an
-//! unpredictable point — no unwinding, no destructors, no flush of anything not
+//! unpredictable point: no unwinding, no destructors, no flush of anything not
 //! already fsynced. The store is then opened and checked.
 //!
 //! # The invariant being defended
 //!
 //! **A chunk referenced by the index always exists on disk.** Writes go
-//! payload-first, so a crash can leave a chunk nothing points at — wasted space,
+//! payload-first, so a crash can leave a chunk nothing points at: wasted space,
 //! reclaimed later. The opposite order would leave the index pointing at a
 //! payload that was never written, which no amount of local repair can fix.
 //!
@@ -142,7 +142,7 @@ fn a_crash_may_orphan_chunks_but_they_are_reclaimable() {
 
     assert_eq!(store.db().live_paths().unwrap(), before, "sweeping removed live files");
     assert_intact(&store, confirmed);
-    // Orphans are expected but not guaranteed -- the kill may have landed
+    // Orphans are expected but not guaranteed: the kill may have landed
     // between files rather than mid-write.
     let _ = swept;
 }

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 
 // The page's living ground (docs/design/website-brief.md, *Richer*): a field
-// of tiny dots — files, if you like — drifting slowly behind everything and
+// of tiny dots (files, if you like) drifting slowly behind everything and
 // gathering near the mouse pointer, nearness made something you can feel.
 // Near the end of the page a second set flies in and settles into the
 // wordmark of the element marked data-settle.

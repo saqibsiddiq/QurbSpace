@@ -23,7 +23,7 @@ import uniffi.qurb_mobile.Waiting
  * one row per file (the owner's review of 2026-11-03, H-1), drawn as option
  * A (docs/design/system/waiting.html, chosen that evening): one picture with
  * the other device's face on its corner, a title whose verb says the way,
- * one quiet line -- amber only when it waits on you -- and how far it has
+ * one quiet line (amber only when it waits on you) and how far it has
  * got. Backups and the files only this phone has go to the same computer and
  * are one row: "only here" is not a category of its own.
  */

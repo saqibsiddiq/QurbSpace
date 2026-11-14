@@ -6,7 +6,7 @@
 //! a phone on the same Wi-Fi could not sync without something on the internet
 //! being reachable and up.
 //!
-//! That is a dependency the product should not have, and a fragile one — it was
+//! That is a dependency the product should not have, and a fragile one: it was
 //! removed after a phone spent three hours unable to sync because the overlay
 //! network carrying the rendezvous had quietly dropped off.
 //!
@@ -20,7 +20,7 @@
 //! Random bytes.
 //!
 //! The beacon is encrypted under a key derived from the master key, so only a
-//! device that already shares the key can read one — and since the ciphertext
+//! device that already shares the key can read one, and since the ciphertext
 //! and its nonce are indistinguishable from noise, an eavesdropper on a café
 //! network cannot even tell that qurb is running, let alone how many devices
 //! are present or what they are called.
@@ -35,7 +35,7 @@
 //! It does not replace the rendezvous service. Two devices on *different*
 //! networks still need somebody to introduce them, and nothing here helps with
 //! that. What it removes is the requirement for one when the devices can
-//! already see each other — which, for most people, is most of the time.
+//! already see each other, which, for most people, is most of the time.
 
 use crate::error::{Error, Result};
 use chacha20poly1305::aead::{Aead, KeyInit};
@@ -63,15 +63,15 @@ pub const PORT: u16 = 47317;
 ///
 /// Long enough to be invisible on a network and on a battery, short enough that
 /// a device joining a network is found in well under a minute. Arrival is not
-/// what this interval decides — a device announces immediately on starting, and
-/// again when it has news — so this only bounds how long a *missed* beacon
+/// what this interval decides (a device announces immediately on starting, and
+/// again when it has news) so this only bounds how long a *missed* beacon
 /// costs.
 pub const INTERVAL: Duration = Duration::from_secs(20);
 
 /// How long a sighting is worth acting on.
 ///
-/// Three intervals, so a single dropped packet — which multicast makes ordinary
-/// — does not make a device that is sitting right there look absent.
+/// Three intervals, so a single dropped packet (which multicast makes ordinary)
+/// does not make a device that is sitting right there look absent.
 pub const FRESH_FOR: Duration = Duration::from_secs(60);
 
 /// How far out of step a beacon's clock may be and still be believed.
@@ -84,8 +84,8 @@ const CLOCK_SLACK: i64 = 120;
 
 /// The most addresses a beacon will carry.
 ///
-/// A machine with many interfaces — an overlay network, a container bridge, a
-/// virtual adapter per hypervisor — can have a surprising number, and a beacon
+/// A machine with many interfaces (an overlay network, a container bridge, a
+/// virtual adapter per hypervisor) can have a surprising number, and a beacon
 /// has to fit comfortably in one datagram.
 const MAX_ADDRESSES: usize = 8;
 
@@ -107,12 +107,12 @@ pub struct Beacon {
     /// on one device into a sync on the other within a second, rather than at
     /// the next scheduled pass.
     pub news: bool,
-    /// "I have just arrived — is anybody there?"
+    /// "I have just arrived: is anybody there?"
     ///
     /// Answered immediately by everyone who hears it, which is what makes
     /// discovery take a moment rather than up to a full interval. Without it a
-    /// device that runs only for the length of a sync pass — which is what a
-    /// phone does — would start with an empty address book and usually finish
+    /// device that runs only for the length of a sync pass (which is what a
+    /// phone does) would start with an empty address book and usually finish
     /// before the next scheduled beacon arrived. Found on hardware, where it
     /// failed every time.
     ///
@@ -150,7 +150,7 @@ impl Beacon {
     /// meant to: the decryption either works, in which case the sender holds
     /// the master key, or it does not, in which case there is nothing to
     /// distinguish an unrelated packet from a corrupted one and no reason to
-    /// try. Failure is cheap and silent by design — on a busy network this runs
+    /// try. Failure is cheap and silent by design: on a busy network this runs
     /// against every multicast packet that happens to use the port.
     pub fn open(master: &MasterKey, packet: &[u8], now: i64) -> Result<Self> {
         if packet.len() < 24 {
@@ -286,8 +286,8 @@ impl Reader<'_> {
 /// every change is a state machine nobody needs. The group is joined on every
 /// address the machine has for the same reason.
 ///
-/// `SO_REUSEADDR` because two qurb processes on one machine — a daemon and a
-/// test, or two accounts — must both be able to listen. Multicast loopback is
+/// `SO_REUSEADDR` because two qurb processes on one machine (a daemon and a
+/// test, or two accounts) must both be able to listen. Multicast loopback is
 /// left on so they can also hear each other, which is what makes this testable
 /// without two machines.
 pub fn open_socket(port: u16) -> Result<UdpSocket> {
@@ -332,7 +332,7 @@ pub fn open_socket(port: u16) -> Result<UdpSocket> {
     //
     // Enumeration is not reliable everywhere. Android 11 and later restrict the
     // NETLINK access that listing interfaces needs, so `if_addrs` can return
-    // nothing at all — and a device that joined no group receives nothing,
+    // nothing at all, and a device that joined no group receives nothing,
     // while still sending perfectly. That asymmetry is exactly how this failed
     // on a phone: the laptop saw it every time and it saw nothing.
     if let Some(ip) = kernels_choice() {
@@ -359,7 +359,7 @@ pub fn open_socket(port: u16) -> Result<UdpSocket> {
 /// The address the kernel would send to this group from.
 ///
 /// Found by connecting a throwaway socket to the group and asking what local
-/// address it chose. No packet is sent — connecting a UDP socket only fixes the
+/// address it chose. No packet is sent: connecting a UDP socket only fixes the
 /// destination, and the routing decision it forces is the answer.
 ///
 /// This is the one way of naming the right interface that needs no permission
@@ -377,8 +377,8 @@ fn kernels_choice() -> Option<Ipv4Addr> {
 /// Every IPv4 address this machine has, loopback included.
 ///
 /// Loopback is included on purpose: it is how two processes on one machine find
-/// each other, which is both a real case — two accounts, or a daemon and a
-/// second folder — and the only way this is testable without two machines.
+/// each other, which is both a real case (two accounts, or a daemon and a
+/// second folder) and the only way this is testable without two machines.
 fn interfaces() -> Vec<Ipv4Addr> {
     let mut found: Vec<Ipv4Addr> = if_addrs::get_if_addrs()
         .unwrap_or_default()
@@ -403,7 +403,7 @@ pub fn destination(port: u16) -> SocketAddr {
 /// Kept separate from the rendezvous service's answers rather than merged into
 /// them, because the two are known with different confidence. A beacon means "a
 /// device holding our key sent this from a network we are on, moments ago",
-/// which is stronger evidence of reachability than a rendezvous record — that
+/// which is stronger evidence of reachability than a rendezvous record: that
 /// only says where a device *claimed* to be when it last announced, possibly
 /// from a network with no path to this one.
 #[derive(Clone, Default)]
@@ -457,7 +457,7 @@ impl Neighbours {
 ///
 /// Two loops on one socket: a sender on a timer, and a receiver that never
 /// stops on its own. Both are cheap enough to run for the life of the device,
-/// which is what they do — discovery that only ran at startup would miss every
+/// which is what they do: discovery that only ran at startup would miss every
 /// device that joined the network afterwards, which is most of them. What ends
 /// them is [`stop`](Self::stop): each loop holds the beacons it runs, so
 /// nothing else can.
@@ -576,8 +576,8 @@ impl Beacons {
 
 async fn announce(beacons: std::sync::Arc<Beacons>) {
     // Three quick probes first. Multicast is lossy, a device joining a network
-    // wants to be found now rather than in twenty seconds, and — more
-    // importantly — it wants to *find* now. Each probe is answered by everyone
+    // wants to be found now rather than in twenty seconds, and (more
+    // importantly) it wants to *find* now. Each probe is answered by everyone
     // who hears it, so the address book is full within a moment of starting
     // instead of filling over the next interval.
     for _ in 0..3 {
@@ -615,8 +615,8 @@ async fn listen(
         // would be a log nobody could read.
         let Ok(beacon) = Beacon::open(&beacons.master, &buffer[..read], now()) else { continue };
 
-        // Multicast loopback means we hear ourselves, which is wanted — it is
-        // how two processes on one machine find each other — and means our own
+        // Multicast loopback means we hear ourselves, which is wanted (it is
+        // how two processes on one machine find each other) and means our own
         // beacon has to be recognised and dropped.
         if beacon.member == beacons.member {
             continue;
@@ -680,7 +680,7 @@ mod tests {
     }
 
     /// The whole privacy claim. Somebody on the same café network holds no key,
-    /// and must learn nothing at all — not the device identifier, not the
+    /// and must learn nothing at all, not the device identifier, not the
     /// addresses, not that this is qurb.
     #[test]
     fn a_stranger_on_the_network_cannot_read_one() {

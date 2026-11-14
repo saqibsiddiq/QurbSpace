@@ -473,7 +473,7 @@ class FolderPage(
     }
 
     /** ⋮ (S4, S5): how this folder is sorted and shown, remembered for it,
-     *  in three sections as the mockup has them -- Sort by, Order, View. */
+     *  in three sections as the mockup has them: Sort by, Order, View. */
     private fun menu(anchor: View) {
         val box = LinearLayout(app).apply {
             orientation = LinearLayout.VERTICAL

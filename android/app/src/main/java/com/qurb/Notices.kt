@@ -21,11 +21,11 @@ import uniffi.qurb_mobile.Qurb
  * reasons, in the words of the redesign's Notifications draft 1, which the
  * desktop's are not yet.
  *
- * - **somebody sent you a file** -- a thing another person did, on purpose,
+ * - **somebody sent you a file** (a thing another person did, on purpose,
  *   for you;
- * - **a device collected what you sent it** -- closing the loop on something
+ * - **a device collected what you sent it**) closing the loop on something
  *   you did;
- * - **something failed** -- because the alternative is finding out later.
+ * - **something failed**, because the alternative is finding out later.
  *
  * Ordinary syncing is silent, and so is everything else. Read from the
  * history after each sync, so nothing new has to be kept: the last entry

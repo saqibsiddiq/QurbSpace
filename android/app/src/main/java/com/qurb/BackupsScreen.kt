@@ -15,7 +15,7 @@ import uniffi.qurb_mobile.PeerInfo
  * Backups, from the button at the top of Home (the owner's item 5,
  * 2026-10-23), as redesigned (docs/design/redesign.md, Backups and Activity,
  * draft 1): the device chosen on Home, switched the same way, and what goes
- * to it -- WhatsApp, the folders, the Private Vault -- each a card with a
+ * to it (WhatsApp, the folders, the Private Vault) each a card with a
  * tick and the size when up to date, a bar and how many are left while one
  * runs, a switch when it is off.
  *

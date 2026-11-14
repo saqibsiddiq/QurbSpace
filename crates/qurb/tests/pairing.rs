@@ -1,8 +1,8 @@
 //! Pairing the way an interface does it, rather than the way a command does.
 //!
 //! The difference is small and load-bearing. A command opens the store, pairs,
-//! and exits. A window is already running a daemon on that folder — holding the
-//! configured port and writing to the index — and has to pair *alongside* it.
+//! and exits. A window is already running a daemon on that folder (holding the
+//! configured port and writing to the index) and has to pair *alongside* it.
 //! These check the two things that makes necessary: a second store handle, and
 //! a port of its own.
 

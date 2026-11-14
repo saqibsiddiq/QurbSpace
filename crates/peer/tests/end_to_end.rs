@@ -5,7 +5,7 @@
 //! Every layer the project has built is involved, and this is the first test in
 //! which they all run together.
 //!
-//! What it does *not* prove is traversal — there is no NAT on loopback. What it
+//! What it does *not* prove is traversal: there is no NAT on loopback. What it
 //! proves is that the sequence is right: discovery, rendezvous, simultaneous
 //! dialling, candidate racing, pinned identity, and then the data plane.
 
@@ -208,7 +208,7 @@ async fn two_strangers_pair_find_each_other_and_sync() {
 #[tokio::test(flavor = "multi_thread")]
 async fn a_peer_that_is_not_announced_is_reported_rather_than_hung_on() {
     // A device that is switched off. The caller must find out, not wait for
-    // ever -- this is the case a relay and an always-on replica exist for.
+    // ever: this is the case a relay and an always-on replica exist for.
     let signal = Arc::new(SignalServer::bind("127.0.0.1:0".parse().unwrap()).await.unwrap());
     let url = format!("ws://{}", signal.local_addr().unwrap());
     let running = Arc::clone(&signal);
@@ -256,7 +256,7 @@ async fn a_local_address_is_preferred_over_a_public_one() {
     assert_eq!(candidates[0], "192.168.1.40:4500".parse().unwrap());
 }
 
-// -- the long way round ------------------------------------------------------
+// , the long way round ------------------------------------------------------
 
 /// A relay, running in the background.
 async fn relay() -> std::net::SocketAddr {
@@ -313,8 +313,8 @@ async fn connected_via(device: &Device, signal_url: &str, relay: Option<qurb_pee
 
 #[tokio::test(flavor = "multi_thread")]
 async fn a_file_syncs_through_the_relay_when_there_is_no_direct_path() {
-    // The fallback, end to end. Everything the direct path does — pinned
-    // identity, the wire protocol, chunk transfer — has to work unchanged when
+    // The fallback, end to end. Everything the direct path does (pinned
+    // identity, the wire protocol, chunk transfer) has to work unchanged when
     // the bytes take the long way round, because the relay carries the QUIC
     // session rather than the messages inside it.
     let signal = Arc::new(SignalServer::bind("127.0.0.1:0".parse().unwrap()).await.unwrap());
@@ -433,7 +433,7 @@ async fn falling_back_needs_a_relay_to_fall_back_to() {
 /// The point of local discovery: two devices on one network, and nothing else
 /// in the world.
 ///
-/// No rendezvous service running — not down, not unreachable, not configured
+/// No rendezvous service running, not down, not unreachable, not configured
 /// wrong. Absent. Before this, `Connector::start` failed outright and a laptop
 /// and a phone sitting on the same Wi-Fi could not sync at all without
 /// something on the internet being up. That is a dependency this product
@@ -600,8 +600,8 @@ async fn one_persons_devices_do_not_see_anothers() {
 /// A device that has only just started has an empty address book, and the
 /// answers to its own arrival probe are still in flight.
 ///
-/// This is what a phone does on every sync pass — it builds a fresh connector,
-/// reaches, and exits — so it is always in that window. Before `reach` waited
+/// This is what a phone does on every sync pass (it builds a fresh connector,
+/// reaches, and exits) so it is always in that window. Before `reach` waited
 /// for an answer, it heard the other device a few hundred milliseconds after
 /// giving up, every single time.
 #[tokio::test(flavor = "multi_thread")]
@@ -768,7 +768,7 @@ async fn no_relay_beside_a_rendezvous_that_carries_none() {
 /// another phone's hotspot was on 2026-10-19: the direct attempts wait out
 /// their timeout rather than failing. The relay is tried alongside once they
 /// have had a head start, and the device reached through it well before they
-/// would have given up -- not after, as when the relay came only last.
+/// would have given up, not after, as when the relay came only last.
 #[tokio::test(flavor = "multi_thread")]
 async fn the_relay_is_tried_alongside_direct_paths_that_do_not_answer() {
     let signal = Arc::new(SignalServer::bind("127.0.0.1:0".parse().unwrap()).await.unwrap());

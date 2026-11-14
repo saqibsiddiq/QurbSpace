@@ -1,4 +1,4 @@
-# 0090 — Stay connected: the phone listens, instead of push
+# 0090: Stay connected: the phone listens, instead of push
 
 **Status:** Accepted and built, 2026-11-14. Amends
 [0082](0082-each-users-computer-is-their-server.md), which dropped push and
@@ -29,9 +29,9 @@ also optional".
   beacons, and the meeting point from anywhere), and runs a sync pass when
   one does. Ten minutes a wait, then afresh, so a phone that moved networks
   listens from where it is.
-- **Its notification**: its own channel at the lowest importance -- silent,
+- **Its notification**: its own channel at the lowest importance (silent,
   no vibration, no status-bar icon on most phones, folded at the foot of the
-  shade -- the word *Connected* in the app's green, hidden on the lock
+  shade) the word *Connected* in the app's green, hidden on the lock
   screen. Turning the switch off removes it.
 - Started when the app opens, after every background pass, when the phone
   starts, and when the app has updated itself (`StartAgain.kt`): an update

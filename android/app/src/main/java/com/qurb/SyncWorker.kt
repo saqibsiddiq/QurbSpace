@@ -41,12 +41,12 @@ import java.util.concurrent.TimeUnit
  *
  * With one exception, decision 0050: a pass with a large file waiting to be
  * collected from this phone runs in the foreground, under a notification that
- * says how far it has got, for as long as a device is collecting -- because
+ * says how far it has got, for as long as a device is collecting, because
  * Android freezes an app it cannot see, and an 800 MB video collected by the
  * laptop stopped part-way every time. Not permanent: the notification goes
  * when the pass does.
  *
- * [decision 0020]: ../../../../../docs/decisions/0020-sync-takes-a-deadline.md
+ * [decision 0020]../../../../../docs/decisions/0020-sync-takes-a-deadline.md
  */
 class SyncWorker(context: Context, params: WorkerParameters) :
     CoroutineWorker(context, params) {
@@ -72,7 +72,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             // A large collection waiting: run in the foreground and keep
             // answering while a device collects (decision 0050). Refused when
             // Android will not let this app start a foreground service from
-            // where it is -- then the ordinary pass, and resuming carries the
+            // where it is, then the ordinary pass, and resuming carries the
             // file on next time.
             // Wi-Fi or not first: the WhatsApp backup waits for Wi-Fi, and is
             // counted only then (decision 0062).
@@ -162,7 +162,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             // Recorded because a background worker is otherwise invisible.
             // Nobody is watching when it runs, so if it does not leave a trace
             // there is no way to tell a sync that is working from one that has
-            // silently stopped happening -- and "silently stopped" is the
+            // silently stopped happening, and "silently stopped" is the
             // failure mode a sync app actually dies of.
             record(
                 applicationContext,
@@ -182,13 +182,13 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             if (outcome.reached > 0u) Engine.noteSynced(applicationContext)
             if (outcome.reached > 0u || outcome.unreachable > 0u) Engine.noteTried(applicationContext, started)
             Folders.startChosen(applicationContext, engine)
-            // A kept file found changed when the computer asked for it --
+            // A kept file found changed when the computer asked for it:
             // WhatsApp rewrites its chat backups each night: listed again
             // now, on Wi-Fi, rather than the next night it charges.
             if (runCatching { engine.keptFilesChanged() }.getOrDefault(false)) WhatsApp.relist(applicationContext)
 
             // Refused the foreground with a large collection waiting, while a
-            // device was there for it -- reached, or collecting on its own
+            // device was there for it: reached, or collecting on its own
             // connection: say so, with the way to carry on.
             // What is worth telling the person, now nobody is looking.
             Notices.tell(applicationContext, engine)
@@ -235,7 +235,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
                 //
                 // Backoff is for transient errors. "Nobody is awake yet" is
                 // not an error, it is the steady state, and the answer to it
-                // is the ordinary fifteen-minute period -- which only applies
+                // is the ordinary fifteen-minute period, which only applies
                 // if this reports success. Success also resets the attempt
                 // count, so a long backoff already accumulated unwinds on the
                 // first run after this.
@@ -251,8 +251,8 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             //
             // A locked keystore or a store that will not open is not going to
             // fix itself by being retried in fifteen minutes, and retrying
-            // burns battery to reach the same conclusion. Anything else -- a
-            // refused connection, a service that is down -- is worth another go.
+            // burns battery to reach the same conclusion. Anything else (a
+            // refused connection, a service that is down) is worth another go.
             if (e is uniffi.qurb_mobile.QurbException.Locked ||
                 e is uniffi.qurb_mobile.QurbException.NotSetUp
             ) {
@@ -281,7 +281,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
      * separate queues and ran together: on the S23 on 2026-10-13 both were
      * long passes for the same backup, each posting the one notification
      * every two seconds with its own figures, so it flicked between them.
-     * The second has nothing to add -- the first is already answering.
+     * The second has nothing to add: the first is already answering.
      */
     private suspend fun startLong(total: ULong, since: Long, to: String?): Boolean {
         if (!LONG_PASS.compareAndSet(false, true)) return false
@@ -324,7 +324,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
          * The schedule's name, versioned.
          *
          * A periodic schedule registered with `KEEP` survives reinstalls, and
-         * so does the exponential backoff it accumulated — a phone that had
+         * so does the exponential backoff it accumulated: a phone that had
          * backed off to three hours would keep that delay across an update
          * carrying the fix for it. Changing the name retires the old schedule
          * once, for everyone, which is the only way to be sure.
@@ -405,7 +405,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
 
         /**
          * Another device woke this one. Remembered, because it is the proof
-         * that pushes reach this phone -- which is what lets the scheduled
+         * that pushes reach this phone, which is what lets the scheduled
          * pass run less often.
          */
         fun noteWoken(context: Context) {
@@ -424,7 +424,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
          * was added here some other way, and telling a rendezvous service that
          * lost its memory how to wake this phone. An hour covers those at a
          * quarter of the wake-ups. Without push the pass is the only way news
-         * arrives, and fifteen -- the shortest WorkManager allows -- stays.
+         * arrives, and fifteen (the shortest WorkManager allows) stays.
          *
          * "Demonstrably" is a push in the last seven days, not the app having
          * been built with Firebase: a rendezvous service with no push
@@ -479,7 +479,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
                     "Stopped after a failure it cannot retry past. Open the app and sync once."
                 androidx.work.WorkInfo.State.SUCCEEDED -> "Last run finished cleanly."
             } + if (info.runAttemptCount > 1) {
-                "\n\nRetried ${info.runAttemptCount} times — the other device may be asleep."
+                "\n\nRetried ${info.runAttemptCount} times: the other device may be asleep."
             } else ""
         }
 
@@ -489,7 +489,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
          * Distinct from the Sync button, which calls the engine directly and
          * holds the screen while it works. This goes through WorkManager, so it
          * survives the app being closed mid-sync and exercises exactly the path
-         * the periodic schedule uses — which is the only way to find out that
+         * the periodic schedule uses, which is the only way to find out that
          * path works without waiting fifteen minutes for it to not.
          */
         fun runNow(context: Context) {
@@ -508,7 +508,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
 
             // Appended, not replacing. A pass already running may be a long
             // one, a device collecting a large file (decision 0050), and
-            // replacing it cancelled it part-way -- which a second Sync now,
+            // replacing it cancelled it part-way, which a second Sync now,
             // or the sync after any change made in the app, would do. Queued
             // behind it instead, this one runs when it ends.
             val operation = WorkManager.getInstance(context).enqueueUniqueWork(
@@ -519,7 +519,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
 
             // Waited on, off the main thread. Enqueuing is asynchronous, and
             // the caller is usually a share screen that finishes immediately
-            // afterwards -- and a process with no remaining components can be
+            // afterwards, and a process with no remaining components can be
             // killed straight away, losing an enqueue that had not yet been
             // written down. A share that silently schedules nothing is the
             // failure this whole feature is supposed to not have.

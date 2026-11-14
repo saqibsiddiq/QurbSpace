@@ -10,7 +10,7 @@ plugins {
 // `google-services.json` left in this folder is ignored.
 //
 // `-Pqurb.idSuffix=.x` installs a second copy beside the real one, under its
-// own package -- its own data, its own Block Store -- so that what clearing an
+// own package (its own data, its own Block Store) so that what clearing an
 // app's data does can be tried on a phone without clearing the person's
 // (2026-10-08).
 val idSuffix = (findProperty("qurb.idSuffix") as String?).orEmpty()
@@ -20,14 +20,14 @@ val idSuffix = (findProperty("qurb.idSuffix") as String?).orEmpty()
 // which must never be committed and never be lost. Where it is:
 // $QURB_SIGNING, or ~/.config/qurb/signing.properties, holding storeFile,
 // storePassword, keyAlias and keyPassword. Without it a release builds
-// unsigned, exactly as before -- see android/README.md, "Signing".
+// unsigned, exactly as before: see android/README.md, "Signing".
 val signingFile = file(
     System.getenv("QURB_SIGNING") ?: "${System.getProperty("user.home")}/.config/qurb/signing.properties"
 )
 /**
  * A version as Android counts it, from the version a person reads: major,
  * minor and patch in two digits each, then the beta number, or 99 for a
- * release -- 0.2.0-beta.1 is 2_00_01, 0.2.0 is 2_00_99 -- so every later
+ * release (0.2.0-beta.1 is 2_00_01, 0.2.0 is 2_00_99) so every later
  * version installs over every earlier one. 0.1.0, before this, was 1.
  */
 fun versionCodeOf(name: String): Int {
@@ -44,7 +44,7 @@ val signing = Properties().apply {
 // Every ABI Android has, for a formal release (`-Pqurb.allAbis=true`, which
 // scripts/android-app.sh's `release-all` passes): one APK for each and one
 // holding all four, and a bundle that a store splits itself. Not the everyday
-// build, which is what the phones here are -- arm64 -- see the build types.
+// build, which is what the phones here are (arm64) see the build types.
 // Which of the four have run, and on what, is in docs/releasing.md.
 val allAbis = (findProperty("qurb.allAbis") as String?) == "true"
 // The bundle is built apart from the APKs: Gradle will not make both from one
@@ -89,7 +89,7 @@ android {
         release {
             // What a phone installs: arm64 only, the code shrunk and optimised
             // by R8, and unused resources dropped. Together, most of the
-            // difference between a heavy app and a light one -- see decision
+            // difference between a heavy app and a light one: see decision
             // 0039 for the measurements.
             // With every ABI the splits below choose instead: Gradle refuses
             // a filter and splits together.
@@ -110,7 +110,7 @@ android {
         }
         // A release in everything but its key: shrunk and optimised by R8,
         // not debuggable, and signed with the debug key, so it installs over
-        // a phone that has run debug builds without uninstalling -- which
+        // a phone that has run debug builds without uninstalling, which
         // would delete that phone's key and index. Android runs a debuggable
         // app with much of ART's optimisation off; the S23 ran nothing else
         // until 2026-10-15. Profileable, so its frames and start can still be
@@ -125,8 +125,8 @@ android {
         }
     }
 
-    // JNA's own libraries for ABIs Android no longer runs -- armeabi (ARMv5),
-    // MIPS -- would otherwise ride in the universal APK and the bundle.
+    // JNA's own libraries for ABIs Android no longer runs (armeabi (ARMv5),
+    // MIPS) would otherwise ride in the universal APK and the bundle.
     packaging {
         jniLibs {
             excludes += listOf("lib/armeabi/**", "lib/mips/**", "lib/mips64/**")
@@ -196,7 +196,7 @@ dependencies {
 
     // Background sync. WorkManager rather than a bare AlarmManager or a
     // foreground service: it is the only scheduler that survives reboots,
-    // respects Doze, and backs off on its own when the system is busy — which
+    // respects Doze, and backs off on its own when the system is busy, which
     // is exactly the negotiation a sync app has to win to keep running at all.
     //
     // 2.10 at least: it stops a foreground worker when Android 15 says its

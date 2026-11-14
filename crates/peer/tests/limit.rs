@@ -50,9 +50,9 @@ async fn fetch_all(client: &PeerClient, chunks: &[[u8; 32]]) -> (Vec<u8>, f64) {
     (got, start.elapsed().as_secs_f64())
 }
 
-/// 4 MB fetched with a 1 MB/s download limit takes three seconds or more --
-/// the first second's worth goes at once -- and with none, well under one.
-/// The times it took are printed: `cargo test -p qurb-peer --test limit --
+/// 4 MB fetched with a 1 MB/s download limit takes three seconds or more
+/// (the first second's worth goes at once) and with none, well under one.
+/// The times it took are printed: `cargo test -p qurb-peer --test limit,
 /// --nocapture`.
 #[tokio::test(flavor = "multi_thread")]
 async fn a_download_limit_holds_a_fetch_to_its_rate() {

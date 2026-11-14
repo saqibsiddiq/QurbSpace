@@ -20,11 +20,11 @@ experiments/service-capacity/idle-daemon.sh <a set-up, paired folder>
 ## Conditions
 
 2026-09-27. The development laptop: Intel i5-13420H (12 threads), 16 GB, Linux
-7.2 (CachyOS). Release builds. **Everything over loopback, on one machine** —
+7.2 (CachyOS). Release builds. **Everything over loopback, on one machine**:
 the load generator and the service share the CPU, and there is no network in
 between: these are the services' own costs, not what a real network adds.
 
-Devices come in pairs, one group per pair — one person's phone and laptop —
+Devices come in pairs, one group per pair (one person's phone and laptop)
 each connected and announced. An *introduction* is one device asking for the
 other and both being told to connect (`connect_to` until `Punch`), timed from
 the asking device, 200 of them, while every device stays connected.
@@ -35,7 +35,7 @@ the asking device, 200 of them, while every device stays connected.
 
 | devices connected | resident memory | per device, marginal | introduction p50 / p95 |
 |---|---|---|---|
-| none | 6.2 MB | — | — |
+| none | 6.2 MB | none | none |
 | 1,000 | 30.9 MB | | 0.09 / 0.12 ms |
 | 4,000 | 97.2 MB | 22 KiB | 0.09 / 0.11 ms |
 | 9,000 | 207.6 MB | 22 KiB | 0.10 / 0.12 ms |
@@ -55,8 +55,8 @@ server with no domain name runs; devices pin its fingerprint):
 
 A TLS handshake cost the service about 0.26 ms of CPU.
 
-**The relay**, idle: 1,000 devices registered and sending nothing — every
-device that is on and configured to fall back to it — took it from 6.4 MB to
+**The relay**, idle: 1,000 devices registered and sending nothing (every
+device that is on and configured to fall back to it) took it from 6.4 MB to
 25.4 MB, about 19 KiB each.
 
 **The relay**, carrying QUIC sessions the way a sync through it would:
@@ -91,7 +91,7 @@ twenty-second local-network beacon and the two-minute backstop sweep.
 
 - **Memory is not the limit for anyone's own devices.** Two devices cost the
   rendezvous service about 60 KiB. A 1 GB server would hold tens of thousands
-  of devices by memory — the service's own default cap, `max_connections`,
+  of devices by memory: the service's own default cap, `max_connections`,
   is 10,000.
 - **The relay's limit is bandwidth, not the machine.** It carried hundreds of
   MiB/s using a few CPU-seconds per GiB; a small server's network link, and its

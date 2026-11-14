@@ -95,7 +95,7 @@ fn a_deletion_from_another_device_is_kept_here() {
 }
 
 /// Restored as a change made there, so it comes back on the device that
-/// deleted it too -- which had no copy left to restore from.
+/// deleted it too, which had no copy left to restore from.
 #[test]
 fn restoring_brings_it_back_everywhere() {
     let (mut laptop, mut phone) = (Device::new(), Device::new());
@@ -132,7 +132,7 @@ fn a_restore_never_overwrites_what_is_there_now() {
     assert_eq!(laptop.read("plan (restored).txt").as_deref(), Some("the old plan"));
 }
 
-/// Deleted through qurb itself -- the phone's Vault, a settled conflict -- the
+/// Deleted through qurb itself (the phone's Vault, a settled conflict) the
 /// device doing it keeps a copy too.
 #[test]
 fn deleting_through_qurb_keeps_a_copy_here() {
@@ -194,7 +194,7 @@ fn content_deleted_here_can_arrive_again() {
     assert_eq!(laptop.read("b.txt").as_deref(), Some("the same bytes"));
 }
 
-/// Restored on a phone, a shared file comes back shared -- not into the
+/// Restored on a phone, a shared file comes back shared, not into the
 /// phone's own vault, which to the laptop would look like it never returned.
 #[test]
 fn a_shared_file_restored_on_a_phone_comes_back_shared() {

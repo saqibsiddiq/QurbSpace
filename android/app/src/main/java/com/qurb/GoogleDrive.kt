@@ -22,8 +22,8 @@ import java.util.concurrent.TimeUnit
  * (`Request::DriveCode`). The computer exchanges it for a lasting sign-in to
  * this phone's account, so the person never signs in there: the phone may use
  * another Google account than the computer's, as the owner's new phone does.
- * Allowed `drive.appdata` -- QurbSpace's hidden folder, never the person's
- * files -- and the address, to show which account.
+ * Allowed `drive.appdata` (QurbSpace's hidden folder, never the person's
+ * files) and the address, to show which account.
  */
 object GoogleDrive {
     private const val TAG = "QurbDrive"

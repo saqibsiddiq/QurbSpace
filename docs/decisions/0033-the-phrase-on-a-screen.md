@@ -1,4 +1,4 @@
-# 0033 — The recovery phrase on a screen
+# 0033: The recovery phrase on a screen
 
 **Status:** Superseded for setup by [0052](0052-the-key-travels-with-the-code.md) (2026-10-05): no phrase is shown or checked when a device is set up. Rule 4, showing it again from the stored key, stands. Before that: the storage clause amended by [0038](0038-the-storage-question-during-setup.md); applied to the phone 2026-09-27; "no passphrase prompt in the window" amended by [0046](0046-the-window-asks-for-the-passphrase.md)
 **Date:** 2026-09-23
@@ -19,7 +19,7 @@ screen. Four rules govern how:
 
 ## Why the session holds it
 
-The phrase has to cross into the window — there is no way to show somebody
+The phrase has to cross into the window: there is no way to show somebody
 their key without showing it to them. What can be avoided is the page *keeping*
 it.
 
@@ -36,7 +36,7 @@ dropping it is a real erasure and no incidental `{:?}` can leak it.
 ## Why confirmation exists at all
 
 Somebody who has not actually written the words down cannot answer, and finding
-that out now — while the phrase is still on the screen — is the entire point.
+that out now (while the phrase is still on the screen) is the entire point.
 Three words at random positions, re-randomised each time, so that pressing
 "show me them again" and coming back is not a way to learn the answer to the
 same question.
@@ -66,7 +66,7 @@ the key.
 
 Setting a device up is the job of a screen, so it cannot be a precondition of
 the screen existing. The earlier version opened the key on the way up and
-refused to start without one — correct for a terminal, useless for the window
+refused to start without one: correct for a terminal, useless for the window
 whose job is to create the key.
 
 So the window opens in one of two situations and moves from the first to the
@@ -84,7 +84,7 @@ only shows up much later, on the device that was set up the unusual way.
 
 ## What this does not do
 
-- **No passphrase prompt in the window** — *amended 2026-09-28 by
+- **No passphrase prompt in the window**: *amended 2026-09-28 by
   [0046](0046-the-window-asks-for-the-passphrase.md): the window asks.* A
   passphrase-protected key is asked for on the terminal the application was
   launched from. The window cannot ask,

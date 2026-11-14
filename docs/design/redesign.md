@@ -17,7 +17,7 @@ replaces.
 
 ## Where it is
 
-The Figma file *Qurb — redesign*, in the owner's drafts:
+The Figma file *Qurb: redesign*, in the owner's drafts:
 <https://www.figma.com/design/tUcZJoTac4123UAfLNF115>. Its three pages, the
 most a free Figma plan allows:
 
@@ -322,7 +322,7 @@ phone with a phone; it had shown a laptop for every device.
    folders, files, a new folder and a plus. Decision 0073 is amended: item 6,
    and the widening of what a guest can reach, bounded later the same day:
    "shared folder can be accessed by all the users of the desktop and its
-   read-write" -- every guest, and each may change it.
+   read-write", every guest, and each may change it.
 2. "we forgot to redesign the qr code scanner". **QR scanner**: the camera
    filling the screen with a frame in the middle and the rest dimmed; close and
    the torch at the top; *Point at the code*; found turns the frame green and
@@ -776,7 +776,7 @@ setup and in Devices, and for *Visit a computer*:
   on a camera with a light.
 - **Found *saqib***: the corners green, and in a white pill a tick, the
   device's icon and its name, which the scanner asks the device showing the
-  code (`pairingWith`, decision 0074) -- a few seconds at most, *Found* until
+  code (`pairingWith`, decision 0074), a few seconds at most, *Found* until
   it answers. Then back to setup or Devices, which join.
 - **Not a Qurb code**: the corners red, the words in a pill of the error's own
   colour over *Type 6 digits*, until the code has been out of sight a moment
@@ -818,8 +818,8 @@ scanner had looked past before. Screenshots were kept every second over
 wireless debugging while the scanner was up.
 
 The same code scanned again, after it had been used, said *Found* and
-*Approve on your other device* -- the device showing it no longer listens, so
-it cannot say who it is -- and then the old *Could not connect* dialog,
+*Approve on your other device* (the device showing it no longer listens, so
+it cannot say who it is) and then the old *Could not connect* dialog,
 blaming a firewall. A code used once reads as a device not there. Not fixed
 here: the phone cannot tell the two apart from what the network gives it.
 
@@ -830,8 +830,8 @@ of it.
 ## Built: Android, the Shared page (2026-10-24)
 
 The Shared page of Files draft 4 is in the app (`SharedScreen.kt`), reached
-from Files as *Shared, On saqib* -- one for each of the owner's computers and
-each computer visited -- and backed by decision 0073's steps 1 to 3:
+from Files as *Shared, On saqib* (one for each of the owner's computers and
+each computer visited) and backed by decision 0073's steps 1 to 3:
 
 - **The page**: *Files* to go back; *Shared* with a new-folder button and the
   round plus; which computer, its laptop and its dot; *Search Shared*; the
@@ -857,8 +857,8 @@ each computer visited -- and backed by decision 0073's steps 1 to 3:
 running on it as the phone's own computer (`qurb run`), with two folders and a
 file in its shared folder: the page as drawn, the empty folder on its disk
 listed; *Trips* made, there on its disk; a 6.3 MB picture added from the
-picker, the same bytes there; renamed *sea.png*, the stem chosen in the field
--- which the first build did not do, the name typed after `.png`; *PASTA*
+picker, the same bytes there; renamed *sea.png*, the stem chosen in the field,
+which the first build did not do, the name typed after `.png`; *PASTA*
 finding *Recipes/pasta.txt*; *Trips* held and deleted, and `qurb deleted` on
 the computer listing it *deleted on* the phone; a text file opened.
 
@@ -897,7 +897,7 @@ The rest of Files draft 4, around the Shared page, with decision 0073's steps
   there, *Add*, from the phone's picker into the folder on screen. A file of
   the phone's own has *Rename*, *Move to folder* and *Delete* below Open,
   Download and Restore; a backup's file only *Delete*. Deleting asks first, in
-  the centred form, *In Recently deleted for 30 days* -- the phone's own, which
+  the centred form, *In Recently deleted for 30 days*: the phone's own, which
   puts it back from the copy the computer keeps as long.
 - **Files' rows lost their `·` joins**: a file is its name and its size; the
   Vault's has the place icon before the size.
@@ -931,8 +931,8 @@ and found there; Back clearing the search; *soup.txt* added inside *Private
 Vault › Notes*, there on the computer.
 
 That last check found a fault, fixed the same day: deleting a file from the
-phone's folder whose bytes were not on the phone -- freed to the computer, as
-most there are -- put nothing in Recently deleted, though the sheet promised
+phone's folder whose bytes were not on the phone (freed to the computer, as
+most there are) put nothing in Recently deleted, though the sheet promised
 it, and the computer let go of its copy within two weeks. Such a file now
 goes into the phone's Recently deleted costing nothing on the phone, and
 restoring it puts it back from the chunks the computer still holds; the
@@ -957,14 +957,14 @@ amendment of 2026-10-25:
 
 - **The page**: the way back, *Folders* with the computer's chip beside it,
   then the tree on one card. Each row an arrow that opens it when there are
-  folders inside, its checkbox, the folder's icon -- green at the top,
-  quiet inside -- its name and size; each level 26dp further in.
+  folders inside, its checkbox, the folder's icon (green at the top,
+  quiet inside) its name and size; each level 26dp further in.
 - **The checkbox**, the redesign's own: ticked for all of a folder, a dash
   for some of what is inside, empty for none (`checkbox_on`, `checkbox_off`,
   and its two marks exactly as exported). Ticking takes everything inside,
   folders added later too; unticking a folder inside a ticked one sets it
   apart, and its folder takes a dash.
-- **What is chosen** -- its size, the Wi-Fi mark, *Wi-Fi only* -- kept above
+- **What is chosen** (its size, the Wi-Fi mark, *Wi-Fi only*) kept above
   the tab bar, in a slot the shell keeps for a page's own bar
   (`Screen.dockBar`), the tree scrolling under it.
 
@@ -984,7 +984,7 @@ amendment of 2026-10-25:
 **Checked** on the emulator (`qurb-34g`, the debug build) with a folder tree
 made on its storage after the design's second screen: the tree as drawn,
 light and dark; *Download* ticked, *ADM* unticked inside it, *2025* ticked
-again inside that, *DCIM* ticked -- the marks as drawn, *3.6 MB chosen*; the
+again inside that, *DCIM* ticked, the marks as drawn, *3.6 MB chosen*; the
 run on the phone queuing five files for the computer, *old*'s left out; the
 bar gone back on Backups. On the S23 since 11:34 the same day, the laptop
 on the same commit, and a backup of its chosen folders carried through
@@ -1000,8 +1000,8 @@ many folders.
 
 1. **Say exactly what is backing up.** Home's *Waiting* said *Folders, 18
    files*.
-2. **A progress bar.** There was one, measured against the whole backup --
-   on the S23, 38,057 of 38,075 files -- so it was always full.
+2. **A progress bar.** There was one, measured against the whole backup
+   (on the S23, 38,057 of 38,075 files) so it was always full.
 3. **File sizes.**
 4. **A notification.** A backup had none unless it was over 32 MB, and then
    it said *Sending*; a folder backup had none at all (decision 0063,
@@ -1015,7 +1015,7 @@ The owner's list of 2026-10-25, all four (`BackingUp.kt`, `HomeScreen.kt`,
 `Transfers.kt`):
 
 - **Home's *Waiting***, while a backup is going: *Backing up to* the
-  computer keeping it; under it the file going now and how many more -- the
+  computer keeping it; under it the file going now and how many more, the
   file named from the last piece this phone handed over, which a computer
   takes in turn; a bar, and *X of Y* under it; then the files themselves,
   the first three by folder and name, each its folder and size, and *N more*
@@ -1120,7 +1120,7 @@ every other; and **build directly**, not Figma first. Item by item:
 - **5-7, the circle.** The chosen device at the top right as a circle: its
   picture or the first
   letter of its name, and a dot on its edge, blue when it is on and red when
-  it is off -- the dot app-wide is blue and red now, as item 12 asks of
+  it is off, the dot app-wide is blue and red now, as item 12 asks of
   Files. Tapped, the device's page, without Send, its Remove in red; held,
   the list of devices to choose from, with *Add a device*. The list and the
   page show each device as its circle too.
@@ -1138,8 +1138,8 @@ every other; and **build directly**, not Figma first. Item by item:
   command line as well.
 - **9-12, Files.** *This phone* is Vault and Received; Deleted is in
   Settings, and the Shared section is gone. *Remote access* lists each
-  computer as the rectangular card it was -- not a circle, which the owner
-  asked for when he saw the first build -- its dot blue on and red off;
+  computer as the rectangular card it was (not a circle, which the owner
+  asked for when he saw the first build) its dot blue on and red off;
   tapped, a sheet of two, *Shared* and *Private*, Private being this phone's
   own folder there. A computer this phone only visits opens to Shared.
 - **13, Private.** In the Private Vault part, a file's sheet has *Copy* as
@@ -1205,7 +1205,7 @@ design as for single clicking the files".
 - **2, Background sync.** The sheet says when it last ran and how often, and
   has two buttons: *Set*, opening a timer (hours and quarter-hours on two
   wheels, 15 minutes to a day), and *Off*, red. *Auto* stays what a phone
-  that never set one runs, and **cannot be chosen again once a time is set** --
+  that never set one runs, and **cannot be chosen again once a time is set**:
   a gap, since his two buttons leave no place for it.
 - **3, the desktop offline.** Not the build: at 05:23 the laptop ran out of
   memory and swap during a build, and `systemd-oomd` killed the terminal's
@@ -1222,7 +1222,7 @@ design as for single clicking the files".
   (`DigitBoxes`); *Same Wi-Fi*; Join at the foot.
 - **Files, as Figma's.** Vault, Received, and a computer's Shared and
   Private: folders as white cards two to a row, files as 64 dp rows with no
-  card (a 44 dp tile, a badge on it -- here, elsewhere, or who sent it --
+  card (a 44 dp tile, a badge on it (here, elsewhere, or who sent it)
   the name, the size); no *Folders* and *Files* headings; Vault titled
   *Vault*, its paragraph gone, a subfolder titled by its name. A file's sheet,
   tapped or held, is Figma's: its kind in a 56 dp tile, its name, a chip for
@@ -1234,8 +1234,8 @@ design as for single clicking the files".
 **Checked on the S23**, light theme: Home's circle; Show my code; Type 6
 digits; Vault, a file's sheet, a folder held; Received; Shared (empty, so its
 cards not seen). Private on the laptop, after a fix: the first build drew it
-blank -- folder cards sized to their row's height collapsed to nothing inside
-the scrolling page, and Private's top is all folders -- so `Kit.folderGrid`'s
+blank (folder cards sized to their row's height collapsed to nothing inside
+the scrolling page, and Private's top is all folders) so `Kit.folderGrid`'s
 cards wrap their own height. **Not checked:** dark mode, and any of the sheets'
 actions carried out from the new buttons. **Not built:** item 20's animations,
 which the owner put off.
@@ -1246,7 +1246,7 @@ which the owner put off.
 The owner, after the browser mockups (`system/*.html`, 2026-11-03) were built
 into both apps: "the browser design is not good enough", and the look should
 be the phone's and the website's. On the *Foundations* page of the same file,
-section *Foundations — 2026-11-09*:
+section *Foundations: 2026-11-09*:
 
 - **Colours** brought to the apps' values (`system/tokens.css`, `colors.xml`)
   in place, so drafts bound to them refresh; added `green-strong`, `online`,
@@ -1266,7 +1266,7 @@ Not yet approved; nothing built from it.
 
 ### Every desktop screen, in Figma (2026-11-09, unfinished)
 
-On the *Desktop* page, section *Desktop — every screen*, built from those
+On the *Desktop* page, section *Desktop: every screen*, built from those
 foundations at 1120 × 720, 63 so far: the new sidebar and QR parts; 1 Setup
 and unlocking (12); 2 Home (16: every state, drop to send, sent before,
 Switch device, two versions); 3 Waiting (2); 4 Devices (8); 5 Add a device
@@ -1303,8 +1303,8 @@ The owner, on the glass: "its not good enough … we follow the design
 language of desktop redesign draft 1 (2026-10-24) instead, but all the
 functions should be of current app, we are only following the aesthetics".
 The window now has draft 1's look, its functions unchanged: two floating
-white panels -- the sidebar, this computer's name at its foot, and the page
--- on a mint-to-cream ground; compact type (titles 20, rows 13.5, labels
+white panels (the sidebar, this computer's name at its foot, and the page)
+on a mint-to-cream ground; compact type (titles 20, rows 13.5, labels
 10.5); icons in small grey tiles; pages wide and to the left; Settings in two
 columns; Files as small square tiles; Home's thin green ring, a small Send,
 "Drop files here to send"; a destructive act as a red link (Remove, Quit

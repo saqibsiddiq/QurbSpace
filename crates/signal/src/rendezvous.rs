@@ -6,7 +6,7 @@
 //!
 //! Both identifiers here are derived from the user's master key, which only
 //! their own devices hold. The server sees opaque 32-byte values it cannot link
-//! to a person, an account, or a device's real identity — it matches them and
+//! to a person, an account, or a device's real identity: it matches them and
 //! forwards, and that is all it is able to do.
 //!
 //! See ../../docs/decisions/0016-what-signalling-learns.md.
@@ -27,7 +27,7 @@ pub struct GroupId(#[serde(with = "hex_bytes")] [u8; 32]);
 /// Which device within the group.
 ///
 /// Derived from the master key *and* the device's fingerprint, so a peer that
-/// already knows a fingerprint — which is what pairing establishes — can work
+/// already knows a fingerprint (which is what pairing establishes) can work
 /// out where to look, while the server sees only an opaque value. It never
 /// learns a real device identity, so it cannot recognise the same device
 /// appearing under two groups.

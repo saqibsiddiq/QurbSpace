@@ -1,6 +1,6 @@
-# 0076 — A computer backs up its own folders as a phone does, and can hold back its speed
+# 0076: A computer backs up its own folders as a phone does, and can hold back its speed
 
-**Status:** Accepted — built on 2026-10-31 and installed on the owner's
+**Status:** Accepted, built on 2026-10-31 and installed on the owner's
 laptop the same day. Run in the real window by `scripts/desktop-smoke.sh`
 (a folder backed up and kept by a second device); the speed limit measured
 on a loopback connection. Not yet run between two of the owner's own
@@ -16,13 +16,13 @@ and a bandwidth limit. On 2026-10-31: "build all the still not built".
 ## Decision
 
 1. **A computer's own folders go into its own vault, read where they lie,**
-   under `.qurb-outside/folders/<name>/` — exactly what a phone's chosen
+   under `.qurb-outside/folders/<name>/`: exactly what a phone's chosen
    folders do under `.qurb-outside/storage/` (decision 0063), with the same
    store call (`keep_outside_folder`), by reference, nothing copied
    (decision 0062). The folders are a setting, `backup-folders`, paths
    separated by `;`; each is kept under its own name, made unique by a
    number. A folder inside the synced one is refused: it is synced already.
-2. **Kept by the devices that keep this computer's vault** — `qurb holders`,
+2. **Kept by the devices that keep this computer's vault**: `qurb holders`,
    chosen in the window as *Kept on*, one switch per of the person's other
    computers. No new kind of keeping: a computer keeping another's vault is
    the bookkeeping a computer keeping a phone's already does.
@@ -52,7 +52,7 @@ and a bandwidth limit. On 2026-10-31: "build all the still not built".
 
 - **The limit holds:** 4 MB fetched over a QUIC connection on this laptop
   (loopback, `crates/peer/tests/limit.rs`): 0.23 s with no limit, 3.05 s at
-  1 MB/s download — the first second's worth at once, the rest at the rate.
+  1 MB/s download, the first second's worth at once, the rest at the rate.
   Run 2026-10-31.
 - **A computer's folder reaches another and stays:**
   `crates/peer/tests/holding.rs`,
@@ -68,7 +68,7 @@ and a bandwidth limit. On 2026-10-31: "build all the still not built".
 - **Not run between two real computers.** The owner has one; the second
   device in the smoke test is the command line on the same machine, which
   never collects.
-- **How much of a folder has reached the keeper is not shown** — only what
+- **How much of a folder has reached the keeper is not shown**: only what
   this computer has read of it. Counting each file's copies elsewhere per
   look was judged too slow for a large folder; a count kept by the index
   would do it.

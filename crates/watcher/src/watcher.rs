@@ -20,7 +20,7 @@ pub enum Event {
     ///
     /// A `Removed` path may name a file or a directory that no longer exists,
     /// and there is no way to tell which after the fact. The caller must treat
-    /// removal as covering everything it knows about beneath that path — the
+    /// removal as covering everything it knows about beneath that path: the
     /// index is what remembers which files those were.
     Changes(Vec<Change>),
 
@@ -34,7 +34,7 @@ pub enum Event {
 /// # Delivery guarantee
 ///
 /// **At least once, not exactly once.** A path can be reported more than once
-/// for the same underlying change — most often when a file surfaces both from
+/// for the same underlying change: most often when a file surfaces both from
 /// walking a newly created directory and from its own event arriving
 /// afterwards, but also because platforms themselves duplicate events.
 ///
@@ -172,7 +172,7 @@ async fn run(
 
                     // A directory. Two things are true and both need handling.
                     //
-                    // It is not a file, so it must not be reported as one --
+                    // It is not a file, so it must not be reported as one:
                     // and certainly not as a removal, which is what treating
                     // "cannot stat as a file" as deletion would do.
                     //

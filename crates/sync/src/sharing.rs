@@ -69,7 +69,7 @@ pub fn encode_members(members: &BTreeSet<DeviceId>) -> String {
 }
 
 /// The members a rule file names. Lines that are not a device id are ignored,
-/// so a person editing the file by hand cannot make it unreadable -- only
+/// so a person editing the file by hand cannot make it unreadable: only
 /// shorter.
 pub fn parse_members(text: &str) -> BTreeSet<DeviceId> {
     text.lines().filter_map(|line| DeviceId::from_hex(line.trim())).collect()

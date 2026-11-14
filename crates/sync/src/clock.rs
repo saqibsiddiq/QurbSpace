@@ -5,7 +5,7 @@
 //! it out between themselves from what they each know.
 //!
 //! A version vector records, for each device, how many changes from that device
-//! this version is aware of — `{laptop: 42, phone: 12}`. Comparing two vectors
+//! this version is aware of: `{laptop: 42, phone: 12}`. Comparing two vectors
 //! answers the only question that matters: did one of these changes happen
 //! *after* the other, or did they happen without either knowing about the
 //! other?

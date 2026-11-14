@@ -36,7 +36,7 @@ pub type RelayId = [u8; 32];
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Frame {
-    /// I am here, under this identifier -- as well as any given before on
+    /// I am here, under this identifier: as well as any given before on
     /// this connection.
     Register { member: RelayId },
     /// Pass this to that identifier, from the first I registered.
@@ -152,7 +152,7 @@ mod tests {
         let encoded = Frame::Forward { to: [7; 32], payload: vec![9; 40] }.encode();
         let body = &encoded[4..];
         for cut in 0..body.len() {
-            // A short frame must fail or decode to something smaller -- never to
+            // A short frame must fail or decode to something smaller: never to
             // the original.
             if let Ok(decoded) = Frame::decode(&body[..cut]) {
                 assert_ne!(

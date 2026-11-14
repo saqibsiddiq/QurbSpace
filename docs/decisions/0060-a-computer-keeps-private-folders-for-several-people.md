@@ -1,6 +1,6 @@
-# 0060 — A computer keeps private folders for several people, and qurb keeps no copy of what it sends
+# 0060: A computer keeps private folders for several people, and qurb keeps no copy of what it sends
 
-**Status:** Accepted, 2026-10-10, with the owner's answers at the end — steps
+**Status:** Accepted, 2026-10-10, with the owner's answers at the end, steps
 1 (no copies kept), 2 (guests), 3 (a guest's folder, sealed), 4 (the phone)
 and 5 (opening a folder at the computer) built; step 6 run on the Android
 emulator as the guest, not yet with a second person's phone; supersedes [0023](0023-one-person-per-account.md) for people who
@@ -90,8 +90,8 @@ reverse of [0052](0052-the-key-travels-with-the-code.md).
 
 From a phone, a guest chooses where a file goes:
 
-- **My folder on Saqib's laptop** — private, as above;
-- **Saqib's laptop's Downloads** — to the owner, as a send is today
+- **My folder on Saqib's laptop**: private, as above;
+- **Saqib's laptop's Downloads**: to the owner, as a send is today
   ([0037](0037-a-file-sent-to-a-desktop-is-an-ordinary-file.md)).
 
 **qurb keeps no copy of what it sends.** Today the sender stores the bytes
@@ -156,7 +156,7 @@ carry over.
 
 ## Order of work, each piece shippable
 
-1. **No copies kept** (item 2) — on its own; useful now.
+1. **No copies kept** (item 2): on its own; useful now.
 2. **Guests**: joining a computer without its key; per-person keys side by
    side on one computer.
 3. **A guest's folder**: storing, listing and fetching, names hidden; the
@@ -202,7 +202,7 @@ phase document as the work goes.
 
 ## Progress
 
-### Step 1, no copies kept — built 2026-10-10
+### Step 1, no copies kept: built 2026-10-10
 
 - **The engine.** A send records where its file is (`send_sources`, schema
   19) and stores nothing (`Placement::by_reference`). Its chunks are read
@@ -254,7 +254,7 @@ asserted the old rule were rewritten.
   S23 after the app was closed and opened again, and a send from the phone
   called off when its file was deleted.
 
-### Step 2, guests — the design, 2026-10-10
+### Step 2, guests: the design, 2026-10-10
 
 **A guest is a peer of another person.** The peers table gains who a peer
 is to this device: one of the same person's devices, as every peer has been;
@@ -298,7 +298,7 @@ refuses a guest invite, which is safe, so the protocol stays `qurb/2` for
 this step. Step 3's hidden-name folders are what change the meaning of
 existing messages and move it to `qurb/3`.
 
-### Step 2, guests — built 2026-10-10
+### Step 2, guests: built 2026-10-10
 
 As designed above, with two changes found while building it:
 
@@ -345,7 +345,7 @@ test passed.
 - **Not watched on hardware.** A second person's phone is needed; until one
   is borrowed, the emulator can play the guest.
 
-### Step 3, a guest's folder — the design, 2026-10-10
+### Step 3, a guest's folder: the design, 2026-10-10
 
 **Built from what exists.** A phone's Private Vault can already be kept by a
 computer (0036). The phone frees its own copies, lists them as *available
@@ -389,7 +389,7 @@ opened.
 phone's Private Vault, kept by that computer; *Saqib's laptop's Downloads*
 is a send.
 
-### Step 3, a guest's folder — built 2026-10-11
+### Step 3, a guest's folder: built 2026-10-11
 
 As designed, with three changes found while building it:
 
@@ -454,7 +454,7 @@ bytes for a 300,000-byte file. `qurb free` let go of the guest's copy,
 `qurb fetch` asked for it, and the next sync brought it back with the same
 SHA-256. **Not watched**: any of it on a phone.
 
-### Step 4, the phone — built 2026-10-11
+### Step 4, the phone: built 2026-10-11
 
 Smaller than planned: the folder *is* the phone's Private Vault, kept by a
 computer of another person (step 3). There is no second place to browse.
@@ -475,7 +475,7 @@ computer of another person (step 3). There is no second place to browse.
 the phone having its own record. A phone set up again learns the folder from
 the computer's list (`learn_kept`), which covers the case that matters.
 
-### Step 5, opening a folder at the computer — built 2026-10-11
+### Step 5, opening a folder at the computer: built 2026-10-11
 
 As designed, apart from the points under *Changed* below.
 
@@ -517,7 +517,7 @@ As designed, apart from the points under *Changed* below.
   unlock would stop that, but not as designed: the same folder key seals
   every new file in the background, with nobody there to answer a prompt.
   Guarding the key itself needs the sealing and the opening to use
-  different keys -- a key pair, sealing with the public half -- which is a
+  different keys (a key pair, sealing with the public half) which is a
   change to step 3's format, not a setting. Corrected 2026-10-11: this
   record first called it simply left for later.
 - **The phone cannot say *Lock*.** Locking is at the computer, or by idling.
@@ -544,7 +544,7 @@ The window's sheet in its three states against the fixtures.
 **Not watched**: any of it on hardware. That is step 6, and needs a phone
 playing the guest.
 
-### Step 6, on the emulator — 2026-10-11
+### Step 6, on the emulator: 2026-10-11
 
 The emulator played the guest, as the order of work allowed until a second
 person's phone is borrowed. The computer was a scratch one on the laptop:
@@ -588,6 +588,6 @@ file, freed on the phone once kept, coming back when asked for.
 **Not checked here:** a real phone (Block Store, push, the fingerprint
 sensor rather than a PIN, the S23's network); two people's devices on two
 networks; and a guest and computer that use different rendezvous services
-or relays, which do not meet — nothing tells a guest which the computer
+or relays, which do not meet, nothing tells a guest which the computer
 uses. That last one is a gap, stated here.
 

@@ -1,4 +1,4 @@
-# 0074 — A device about to join is told who shows the code
+# 0074: A device about to join is told who shows the code
 
 **Status:** Accepted. Built in `crates/peer`, the phone's engine, the command
 line and the Android app's setup; tested in the peer crate and the phone's
@@ -98,7 +98,7 @@ already calls itself on every other screen.
 - **Not checked:** setup's page on the S23; an older Android app or desktop window showing
   the code, which run the same pairing loop as the command line; and the page
   for a device that does not answer at all, which waits the three seconds and
-  says *your other device* -- from reading `who`, and the wrong-token test.
+  says *your other device*, from reading `who`, and the wrong-token test.
 
 ## How hard to reverse
 

@@ -81,7 +81,7 @@ pub const NOTICE_KINDS: [&str; 3] = ["received", "delivered", "problems"];
 /// [decision 0037](../../docs/decisions/0037-a-file-sent-to-a-desktop-is-an-ordinary-file.md).
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum Downloads {
-    /// `qurb` in the person's Downloads folder -- or `qurb-received` there,
+    /// `qurb` in the person's Downloads folder, or `qurb-received` there,
     /// when the synced folder is already `Downloads/qurb`.
     #[default]
     Default,
@@ -116,8 +116,8 @@ impl Downloads {
     ///
     /// Refuses a directory that overlaps the folder, in either direction. A
     /// delivery written inside the folder would be scanned into the shared
-    /// area and advertised to every device -- the leak that sending privately
-    /// exists to prevent -- and the folder inside the downloads directory is
+    /// area and advertised to every device (the leak that sending privately
+    /// exists to prevent) and the folder inside the downloads directory is
     /// the same overlap the other way round.
     pub fn resolve(&self, root: &Path) -> Result<Option<PathBuf>> {
         let dir = match self {
@@ -360,7 +360,7 @@ impl Config {
              # How much disk this folder may use. 0 means no limit.\n\
              # Accepts a plain number of bytes or a suffix: 500M, 10G, 1T.\n\
              # When over the limit, qurb drops local copies of the files it has\n\
-             # not touched in longest -- but only ones another device is known\n\
+             # not touched in longest, but only ones another device is known\n\
              # to hold. It never drops the only copy, even to stay under.\n\
              limit = {}\n\
              \n\
@@ -446,7 +446,7 @@ pub fn parse_size(text: &str) -> Result<u64> {
     let value: f64 = number
         .trim()
         .parse()
-        .with_context(|| format!("`{text}` is not a size — try 10G, 500M, or a byte count"))?;
+        .with_context(|| format!("`{text}` is not a size: try 10G, 500M, or a byte count"))?;
     if value < 0.0 || !value.is_finite() {
         anyhow::bail!("`{text}` is not a size");
     }

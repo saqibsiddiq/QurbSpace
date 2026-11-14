@@ -1,11 +1,11 @@
 //! Reconcile a directory into a store once, and report what it cost.
 //!
 //! ```text
-//! cargo run --release --example sync_once -- <directory> <store>
+//! cargo run --release --example sync_once: <directory> <store>
 //! ```
 //!
 //! Run it twice on the same pair. The second run should store nothing and
-//! finish in a fraction of the time — that difference is the size-and-mtime
+//! finish in a fraction of the time: that difference is the size-and-mtime
 //! fast path, which is what makes startup on a large library bearable.
 //!
 //! Development tool. The key is generated fresh each run, so a store written by

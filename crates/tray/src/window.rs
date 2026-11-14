@@ -3,12 +3,12 @@
 //! GNOME removed the system tray, so on the most common Linux desktop there is
 //! nowhere to put an icon. Printing to stderr is fine when someone started the
 //! program in a terminal and useless when they launched it from the
-//! applications menu — which is the normal way to start a program, and the way
+//! applications menu, which is the normal way to start a program, and the way
 //! that would otherwise produce nothing visible at all.
 //!
 //! So: the same information, in a small window. Deliberately plain. This is a
 //! status readout, not a file manager, and every line answers a question people
-//! actually ask — is it working, how much is here, can it reach my devices.
+//! actually ask: is it working, how much is here, can it reach my devices.
 //!
 //! GTK 3, because that is what `tray-icon` already links on Linux. A second
 //! toolkit for one window would double the dependency for no gain.
@@ -39,8 +39,8 @@ pub fn show(root: PathBuf, watcher: Watcher) -> anyhow::Result<()> {
     path.set_markup(&format!("<span size='small'>{}</span>", escape(&root.display().to_string())));
     path.set_opacity(0.55);
 
-    // Shown because the daemon can fail while the window is up -- an
-    // unreachable rendezvous service, most often -- and a window that goes on
+    // Shown because the daemon can fail while the window is up (an
+    // unreachable rendezvous service, most often) and a window that goes on
     // reporting files and folders while the thing underneath has stopped is
     // worse than one that says nothing. Found exactly that way: the daemon
     // stopped on startup and the window showed no sign of it.
@@ -59,7 +59,7 @@ pub fn show(root: PathBuf, watcher: Watcher) -> anyhow::Result<()> {
     column.pack_start(&recent_title, false, false, 12);
     column.pack_start(&recent, true, true, 0);
 
-    // -- the storage allowance -----------------------------------------------
+    // , the storage allowance -----------------------------------------------
 
     let allowance_title = label();
     allowance_title.set_markup("<b>Storage allowance</b>");
@@ -160,7 +160,7 @@ pub fn show(root: PathBuf, watcher: Watcher) -> anyhow::Result<()> {
         let status = watcher.borrow_and_update().clone();
 
         state.set_markup(&format!(
-            "<span size='xx-large' weight='bold'>qurb — {}</span>",
+            "<span size='xx-large' weight='bold'>qurb: {}</span>",
             escape(status.state.summary())
         ));
         detail.set_text(&format!(
@@ -201,7 +201,7 @@ pub fn show(root: PathBuf, watcher: Watcher) -> anyhow::Result<()> {
         // Read from the settings file rather than from the daemon's published
         // status. The daemon only republishes on a sync pass, so a slider
         // driven from the status would sit at the old value for up to two
-        // minutes after someone moved it -- visibly snapping back under their
+        // minutes after someone moved it: visibly snapping back under their
         // finger. The file is what this window writes and what the daemon
         // reads, so taking it as the source of truth makes the window agree
         // with itself immediately and with a change made in a terminal within
@@ -215,7 +215,7 @@ pub fn show(root: PathBuf, watcher: Watcher) -> anyhow::Result<()> {
             }
             usage_bar.set_fraction(0.0);
             usage_bar.set_text(Some(&format!("{} used", crate::ui::human(status.used))));
-            chosen.set_text("No limit — qurb will use what it needs.");
+            chosen.set_text("No limit: qurb will use what it needs.");
         } else {
             if !cap.is_active() {
                 cap.set_active(true);
@@ -278,7 +278,7 @@ fn label() -> gtk::Label {
 ///
 /// Filenames reach these labels, and a file called `a<b` would otherwise turn
 /// the rest of the label into a parse error and blank it. Not a security
-/// boundary -- the text is the user's own -- but a correctness one.
+/// boundary (the text is the user's own) but a correctness one.
 fn escape(text: &str) -> String {
     gtk::glib::markup_escape_text(text).to_string()
 }

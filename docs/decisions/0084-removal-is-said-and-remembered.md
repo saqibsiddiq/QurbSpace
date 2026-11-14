@@ -1,4 +1,4 @@
-# 0084 — Removing a device is said to it, and remembered
+# 0084: Removing a device is said to it, and remembered
 
 **Status:** Accepted, 2026-11-03. Engine built and tested (builds 1 to 4 of
 [connections.html](../design/system/connections.html)); the desktop's screens
@@ -20,8 +20,8 @@ the whole flow of connecting and disconnecting with its edge cases
 `Store::remove_device` forgot the device here and nothing else. The removed
 device was never told: it went on dialling, was refused at the TLS handshake,
 and showed "unreachable" for ever. What this computer kept for it stayed under
-its device id, but nothing remembered which device that was: added again — a
-fresh pairing, a new row — it was a second device, and its files here were
+its device id, but nothing remembered which device that was: added again (a
+fresh pairing, a new row) it was a second device, and its files here were
 orphaned.
 
 ## Decided
@@ -65,7 +65,7 @@ orphaned.
 
 Nothing on hardware yet. Tests, on the owner's laptop (Ryzen, CachyOS),
 `cargo test --workspace --exclude qurb-desktop`, all passing:
-`crates/peer/tests/removal.rs` — a removed device is told so; a stranger is
+`crates/peer/tests/removal.rs`, a removed device is told so; a stranger is
 still refused; a goodbye is heard and remembered as `by_them`; a removed phone
 set up again is the device it was, its kind kept and nothing left removed; the
 same install paired again is removed no longer.

@@ -21,7 +21,7 @@
 #
 # The mechanism is deliberately crude. Cargo builds the test binaries, adb
 # pushes them somewhere executable, and they run. There is no app, no Gradle,
-# and no JVM involved -- the FFI is a C ABI, and a test binary exercises the
+# and no JVM involved: the FFI is a C ABI, and a test binary exercises the
 # same Rust an app would call through it.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -128,7 +128,7 @@ for binary in "${BINARIES[@]}"; do
     # unstripped would not fit in /data/local/tmp at all.
     #
     # Backtraces lose their symbols, which is the cost. Reproduce a failure on
-    # the host to get them back -- and if it only fails on the device, re-push
+    # the host to get them back, and if it only fails on the device, re-push
     # that one binary unstripped with STRIP=0.
     if [[ ${STRIP:-1} = 1 && -x $BIN/llvm-strip ]]; then
         cp "$binary" "$STAGING/$name"
@@ -141,7 +141,7 @@ for binary in "${BINARIES[@]}"; do
     # for a reason that has nothing to do with the code under test.
     #
     # Captured rather than piped straight into grep: `grep -q` exits on its
-    # first match, which closes the pipe and loses the rest of the output --
+    # first match, which closes the pipe and loses the rest of the output,
     # so a run would report a pass and show almost none of the results.
     output=$("$ADB" shell "cd $REMOTE && TMPDIR=$REMOTE RUST_BACKTRACE=1 ./$name --test-threads=2" 2>&1 || true)
     printf '%s\n' "$output" | tr -d '\r'

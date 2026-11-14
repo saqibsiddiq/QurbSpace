@@ -72,7 +72,7 @@ pub fn move_into_shared(root: &Path) -> Result<PathBuf> {
 
 /// The folder to run, once laid out: `~/qurb` of the old shape is moved
 /// into `~/qurb/Shared` and that returned; anything else is returned as it
-/// is. Only the default place moves -- a folder somebody chose elsewhere is
+/// is. Only the default place moves: a folder somebody chose elsewhere is
 /// theirs to arrange. A move that fails is logged, and the folder runs where
 /// it was.
 pub fn settle(root: PathBuf) -> PathBuf {
@@ -106,7 +106,7 @@ pub fn folder_name(name: &str) -> String {
     }
 }
 
-/// A placeholder for each of `people` -- `(name, what the note says)` -- in
+/// A placeholder for each of `people` (`(name, what the note says)`) in
 /// `dir`, and none for anyone gone: a placeholder holding nothing but its
 /// note is removed when its person is no longer listed. Nothing else in `dir`
 /// is touched.

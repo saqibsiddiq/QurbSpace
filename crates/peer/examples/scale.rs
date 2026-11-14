@@ -1,7 +1,7 @@
 //! The Phase 1 kill criterion: can two devices sync 100k files cleanly?
 //!
 //! ```bash
-//! cargo run --release --example scale -- /path/to/workdir [file-count]
+//! cargo run --release --example scale: /path/to/workdir [file-count]
 //! ```
 //!
 //! Generates a tree, syncs it between two devices over a real QUIC connection,
@@ -23,7 +23,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 /// Roughly the shape of a real sync folder: mostly small files, a few large
-/// ones. The kill criterion is about file *count* -- the metadata path -- so
+/// ones. The kill criterion is about file *count* (the metadata path) so
 /// this deliberately keeps total bytes modest while making the count real.
 fn size_for(index: usize) -> usize {
     match index % 100 {
@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let generated = generate(&a_root, count)?;
     println!("  {count} files, {} on disk", human(generated));
 
-    // -- keys ---------------------------------------------------------------
+    // , keys ---------------------------------------------------------------
     let (a_key, phrase) = match Vault::at(&a_root.join(".qurb")).open_or_create()? {
         Opened::Created { key, phrase } => (key, phrase.to_string()),
         Opened::Existing(_) => {
@@ -60,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let b_key = Vault::at(&b_root.join(".qurb")).restore(&RecoveryPhrase::parse(&phrase)?)?;
 
-    // -- first index --------------------------------------------------------
+    // , first index --------------------------------------------------------
     rule("INDEX (device A, cold)");
     let (mut a, a_identity) = open(&a_root, &a_key)?;
     let t = Instant::now();
@@ -77,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  stored {} unchanged {} in {:.2?}", again.stored, again.unchanged, t.elapsed());
     check("nothing re-read", again.stored == 0, &format!("{} re-read", again.stored));
 
-    // -- sync ---------------------------------------------------------------
+    // , sync ---------------------------------------------------------------
     let (mut b, b_identity) = open(&b_root, &b_key)?;
     b.reconcile()?;
 
@@ -104,14 +104,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     rule("VERIFY");
     verify(&b, &b_key, &a_root, &b_root, count)?;
 
-    // -- incremental --------------------------------------------------------
+    // , incremental --------------------------------------------------------
     let touched = (count / 100).max(1);
     rule(&format!("EDIT {touched} FILES AND SYNC AGAIN"));
     for i in 0..touched {
         let index = i * 97 % count;
         let path = a_root.join(relative(index));
         let mut content = std::fs::read(&path)?;
-        // Insert near the front, which shifts every following byte -- the case
+        // Insert near the front, which shifts every following byte: the case
         // fixed-size blocks handle worst.
         content.splice(100..100, *b"EDITED-BY-SCALE-");
         std::fs::write(&path, &content)?;

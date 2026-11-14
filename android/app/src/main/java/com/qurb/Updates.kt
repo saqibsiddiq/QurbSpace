@@ -88,7 +88,7 @@ object Updates {
 
     /**
      * Look for a newer build, at most every [EVERY_MS] unless [now], fetch it
-     * if there is one, and install it when [install] -- from the background
+     * if there is one, and install it when [install]: from the background
      * worker, so that an update lands while nobody is using the app. Returns
      * where it stands. Never throws: an update that fails is said in Settings,
      * and the sync it ran beside is not touched.

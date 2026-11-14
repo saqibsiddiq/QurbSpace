@@ -1,6 +1,6 @@
 # qurb-watcher
 
-Watches a directory and reports the changes a *user* made — not the events a
+Watches a directory and reports the changes a *user* made, not the events a
 filesystem emitted. Those are very different things.
 
 One editor save produces a dozen events across two paths. Copying a large file
@@ -38,7 +38,7 @@ if nothing was missed.
 
 **The recursive watch race.** A platform watch for a new subdirectory is
 installed only after that directory exists. Anything written in that window
-produces no event at all — which is what `git clone` and unpacking an archive do
+produces no event at all, which is what `git clone` and unpacking an archive do
 constantly. The watcher walks any directory it is told about, so those files are
 found rather than silently never synced.
 
@@ -46,7 +46,7 @@ found rather than silently never synced.
 
 `é` is one code point (U+00E9) or two (`e` + U+0301). Linux and Windows store
 whichever they are given; macOS and iOS decompose on the way in. Left alone,
-that disagreement makes sync duplicate a file without limit — see
+that disagreement makes sync duplicate a file without limit: see
 [decision 0019](../../docs/decisions/0019-filenames-are-nfc.md) for the loop.
 
 `logical_path` normalises to NFC, at the same seam and for the same reason it
@@ -64,7 +64,7 @@ from its own event arriving afterwards.
 
 Exactly-once is not achievable and not worth chasing. Knowing a reported file
 has not really changed means knowing what was last stored for it, and the index
-already knows that — a second cache here would duplicate that knowledge and
+already knows that: a second cache here would duplicate that knowledge and
 could disagree with it. Consumers must be idempotent.
 
 ## Layers

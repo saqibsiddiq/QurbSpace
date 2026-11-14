@@ -4,7 +4,7 @@
  * below are the desktop window's (crates/desktop/ui/app.css), which takes them
  * from docs/design/direction.md section by section. Kept in step by hand: a
  * change to a token there is a change here. What is new is only what a page
- * needs and a window does not -- a header, sections, long-form text -- built
+ * needs and a window does not (a header, sections, long-form text) built
  * from the same tokens.
  */
 
@@ -599,7 +599,7 @@ svg.i {
   text-align: center;
 }
 .cta.glass-frosted {
-  /* The Qurb light, faint, from above (§28) -- over the frosted fill. */
+  /* The Qurb light, faint, from above (§28): over the frosted fill. */
   background: radial-gradient(70% 90% at 50% -10%, rgba(var(--glow), 0.2), transparent 70%), var(--frosted);
 }
 .cta > svg { margin: 0 auto; }

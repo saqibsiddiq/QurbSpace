@@ -50,7 +50,7 @@ impl qurb_mobile::PairingApprover for No {
 ///
 /// `receiving_a_large_file_does_not_hold_it_in_memory` reads the *process's*
 /// anonymous memory, and cargo runs the tests in one binary as threads of one
-/// process — so another test syncing a file at the same moment is counted as
+/// process, so another test syncing a file at the same moment is counted as
 /// the heap growing, and the measurement blames it on buffering. Seven tests
 /// share this process and the reading moved by 70 MiB depending on what else
 /// happened to be running.
@@ -156,14 +156,14 @@ fn a_phone_pairs_with_a_desktop_and_takes_its_files() {
 
     // Both must be announced and listening at the same moment: a QUIC
     // handshake's opening packets are the hole punch, so a device that only
-    // listens has punched nothing. Neither knows the other's address — the
+    // listens has punched nothing. Neither knows the other's address: the
     // rendezvous service introduces them.
     //
     // The desktop loops rather than syncing once, which is what a desktop
     // daemon does. A single pass on each side is a race: whichever starts
     // first gives up on an unannounced peer and drops its connector before the
     // other is listening. That race is real on a phone too, and is why two
-    // devices that are both only briefly awake may never meet — see the
+    // devices that are both only briefly awake may never meet: see the
     // crate README.
     let desktop = Arc::new(desktop);
     let stop = Arc::new(std::sync::atomic::AtomicBool::new(false));
@@ -177,7 +177,7 @@ fn a_phone_pairs_with_a_desktop_and_takes_its_files() {
 
     // Retried to a deadline rather than once. A single attempt is a coin flip:
     // the desktop is between passes about as often as it is inside one, and on
-    // a slow machine -- an emulator, say -- it is worse than that. An app does
+    // a slow machine (an emulator, say) it is worse than that. An app does
     // the same thing, by asking the platform for another background window.
     let outcome = until_reached(&phone, std::time::Duration::from_secs(60));
     stop.store(true, std::sync::atomic::Ordering::Relaxed);
@@ -277,7 +277,7 @@ fn a_phone_the_desktop_declines_is_told_so_and_not_set_up() {
 /// not, and that turned out to matter: `NetworkSource` implemented only the
 /// buffering half of `ContentSource` and silently inherited the default for the
 /// streaming one. Nothing failed, because buffering is correct and merely
-/// expensive — which is why this is a test rather than a comment.
+/// expensive, which is why this is a test rather than a comment.
 #[test]
 fn receiving_a_large_file_does_not_hold_it_in_memory() {
     let _alone = ALONE.write().unwrap_or_else(|e| e.into_inner());
@@ -292,7 +292,7 @@ fn receiving_a_large_file_does_not_hold_it_in_memory() {
     restore(phone_root.clone(), setup.recovery_phrase).unwrap();
 
     // 128 MiB: small for a phone's storage, and four times any plausible
-    // FileProvider memory ceiling. The size is chosen to discriminate — a
+    // FileProvider memory ceiling. The size is chosen to discriminate: a
     // buffering implementation grows the heap by 128 MiB here and cannot
     // squeeze under the bound below by luck.
     let size: usize = std::env::var("QURB_TEST_MIB")
@@ -341,7 +341,7 @@ fn receiving_a_large_file_does_not_hold_it_in_memory() {
     // 128 -> 32. Quadrupling the file leaves it flat, which is the property
     // under test. The ~30 MiB floor is two tokio runtimes, QUIC send and
     // receive buffers, SQLite page caches and an allocator that does not hand
-    // pages back — all of it in *one* process, because this test runs both
+    // pages back: all of it in *one* process, because this test runs both
     // devices here. A phone runs only the receiving half.
     //
     // Set QURB_TEST_MIB to re-measure at another size; it should not move.
@@ -452,7 +452,7 @@ fn an_unreachable_peer_is_counted_not_raised() {
 
     // The rendezvous service is running and says at once that `a` is not
     // there. This used to accept "ran out of time" as well, and the
-    // difference matters -- see the next test.
+    // difference matters: see the next test.
     let outcome = b.sync_within(5).unwrap();
     assert_eq!(outcome.reached, 0);
     assert_eq!(outcome.adopted, 0);
@@ -521,8 +521,8 @@ fn a_relay_can_be_given_by_name() {
 /// A shared file freed from the phone comes back when asked for.
 ///
 /// The phone's sync planned with everything but the one step that turns "I
-/// asked for this back" into a download -- the desktop daemon added that step
-/// itself -- so asking did nothing. Found by opening a freed file from the
+/// asked for this back" into a download (the desktop daemon added that step
+/// itself) so asking did nothing. Found by opening a freed file from the
 /// system file picker on an emulator, which asks for it and syncs.
 #[test]
 fn a_freed_shared_file_comes_back_when_asked_for() {
@@ -587,7 +587,7 @@ fn a_freed_shared_file_comes_back_when_asked_for() {
 /// The phone used to try its devices one after another, in name order, each
 /// with whatever was left of the window. One whose announced address leads
 /// nowhere takes eight seconds to give up on, so with a six-second window the
-/// working desktop sorted after it was never tried -- in every pass, since the
+/// working desktop sorted after it was never tried: in every pass, since the
 /// order never changes. Now every device is reached at once.
 #[test]
 fn a_device_that_is_off_does_not_starve_one_that_is_on() {
@@ -668,7 +668,7 @@ fn a_device_that_is_off_does_not_starve_one_that_is_on() {
 /// the phone made.
 ///
 /// Every device pulls, so a photo moves only when the desktop dials the phone
-/// back and asks -- and a phone that reached the desktop in a second used to
+/// back and asks, and a phone that reached the desktop in a second used to
 /// end its pass before the desktop could. The test above waits for it over as
 /// many passes as it takes; this one allows exactly one, which is what a phone
 /// in a background window gets.
@@ -678,7 +678,7 @@ fn a_device_that_is_off_does_not_starve_one_that_is_on() {
 /// stand-in desktop here runs pass after pass and is always dialling; a real
 /// daemon dials when it hears the phone, and can be busy. The case for the
 /// wait is a Galaxy S23 whose desktop, busy for ten seconds, collected inside
-/// the wait -- see decision 0020.
+/// the wait: see decision 0020.
 #[test]
 fn one_pass_is_enough_for_the_desktop_to_collect() {
     let _sharing = ALONE.read().unwrap_or_else(|e| e.into_inner());
@@ -720,8 +720,8 @@ fn one_pass_is_enough_for_the_desktop_to_collect() {
         }
     });
 
-    // Passes until one reaches the desktop -- finding each other is not what
-    // this tests -- and then no more.
+    // Passes until one reaches the desktop (finding each other is not what
+    // this tests) and then no more.
     let outcome = until_reached(&phone, std::time::Duration::from_secs(60));
     assert_eq!(outcome.reached, 1, "the phone never reached the desktop");
 
@@ -749,7 +749,7 @@ fn one_pass_is_enough_for_the_desktop_to_collect() {
 ///
 /// That is a device that did not answer, and must be reported as one. It was
 /// reported as time running out, which the worker answers by asking for
-/// another window sooner -- exponential backoff, for a device that will not
+/// another window sooner: exponential backoff, for a device that will not
 /// answer until someone switches it on. Measured on a Galaxy S23: the worker's
 /// window was twenty seconds and the wait for an introduction is twenty
 /// seconds, so every background pass came back that way.
@@ -791,7 +791,7 @@ fn a_device_that_never_answers_is_unreachable_not_out_of_time() {
 
     // Three seconds: the window closes while the phone is still connecting to
     // the rendezvous service. Eight: connecting gives up after five, and the
-    // window closes while the phone waits for `a` -- the phone's own case.
+    // window closes while the phone waits for `a`, the phone's own case.
     for window in [3, 8] {
         let started = std::time::Instant::now();
         let outcome = b.sync_within(window).unwrap();
@@ -838,7 +838,7 @@ fn a_cancelled_offer_cannot_be_joined() {
 
 /// The phone shows a code and waits on it; the person gives up. The wait
 /// already blocking must return then, not five minutes later when the code
-/// expires -- the Cancel button on the phone's code screen depends on it.
+/// expires: the Cancel button on the phone's code screen depends on it.
 #[test]
 fn giving_up_on_a_code_stops_the_wait_already_blocking() {
     let _sharing = ALONE.read().unwrap_or_else(|e| e.into_inner());
@@ -887,8 +887,8 @@ fn a_pairing_code_is_drawn_as_a_qr_code() {
 ///
 /// 1. The share **works with nothing to sync to**. There is no network in the
 ///    first half of this test at all.
-/// 2. The phone **knows it is outstanding** — that it holds the only copy —
-///    which is what it tells the person, and what a storage cap consults.
+/// 2. The phone **knows it is outstanding** (that it holds the only copy)
+/// which is what it tells the person, and what a storage cap consults.
 /// 3. Nobody asks for the transfer. It happens on the next ordinary sync,
 ///    which on a real phone is the periodic background worker.
 #[test]
@@ -915,7 +915,7 @@ fn a_share_made_while_the_desktop_is_off_arrives_when_it_returns() {
     phone.join_pairing(code).unwrap();
     waiting.join().unwrap().unwrap();
 
-    // -- the desktop is off ---------------------------------------------------
+    // , the desktop is off ---------------------------------------------------
     //
     // Nothing is listening and nothing is announced. This is the half that has
     // to work without a network, so no server is started for it.
@@ -940,7 +940,7 @@ fn a_share_made_while_the_desktop_is_off_arrives_when_it_returns() {
     assert!(phone.contains("holiday.jpg".into()).unwrap(), "a failed sync lost the file");
     assert_eq!(phone.outstanding().unwrap().files.len(), 1);
 
-    // -- the desktop comes back -----------------------------------------------
+    // , the desktop comes back -----------------------------------------------
 
     let desktop = Arc::new(desktop);
     let stop = Arc::new(std::sync::atomic::AtomicBool::new(false));
@@ -1121,7 +1121,7 @@ fn two_phones_pair_share_both_ways_and_send() {
 /// The phone reaches its folder on the computer (decision 0067, step 4)
 /// through the engine as the app calls it: opened, listed from the top down,
 /// a file fetched and its bytes checked, and closed. Until 2026-10-15 opening
-/// panicked every time -- a timeout made outside the runtime -- and only the
+/// panicked every time (a timeout made outside the runtime) and only the
 /// S23 showed it, because nothing here opened the folder.
 #[test]
 fn a_phone_opens_its_folder_on_the_computer() {
@@ -1193,7 +1193,7 @@ fn a_phone_opens_its_folder_on_the_computer() {
 
 /// The computer's shared folder through the engine as the app calls it
 /// (decision 0073, item 6): listed live, a folder made, a file added with
-/// its progress heard, renamed, found by searching, and deleted -- each made
+/// its progress heard, renamed, found by searching, and deleted, each made
 /// by the computer on its own folder.
 #[test]
 fn a_phone_changes_the_computers_shared_folder() {
@@ -1273,8 +1273,8 @@ fn a_phone_changes_the_computers_shared_folder() {
 
 /// A phone leaves the shared area when opened out of it (decision 0073, item
 /// 2), as the app opens it: what it held of it moves into its own vault when
-/// no computer is known to keep it -- here the desktop is this engine too,
-/// and says it is a phone, so nothing is dropped -- nothing is deleted on the
+/// no computer is known to keep it (here the desktop is this engine too,
+/// and says it is a phone, so nothing is dropped) nothing is deleted on the
 /// desktop, and a shared file made there afterwards is not taken.
 #[test]
 fn a_phone_leaves_the_shared_area() {
@@ -1344,7 +1344,7 @@ fn a_phone_leaves_the_shared_area() {
 
 /// This phone's own folder on the computer, changed from the phone (decision
 /// 0073, item 3): its vault changes and the computer follows at the next
-/// sync -- a file renamed into another folder there, freed on the phone,
+/// sync, a file renamed into another folder there, freed on the phone,
 /// and deleted. (Put back from either device's Recently deleted until
 /// 2026-11-14, decision 0089.)
 #[test]

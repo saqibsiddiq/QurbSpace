@@ -1,4 +1,4 @@
-# 0080 — One clipboard on the phone, and a tap opens
+# 0080: One clipboard on the phone, and a tap opens
 
 **Status:** Accepted, 2026-11-01. Built on Android the same day; not yet
 used on a device (see *Not verified*).
@@ -7,8 +7,8 @@ used on a device (see *Not verified*).
 ## What was asked
 
 The owner's list of 2026-11-01 for the phone's Files, item 5: open, rename,
-copy, paste and delete, as the website promises — a tap opens, a long press
-gives every option — in *Shared* on a computer, in *Vault* and *Received*,
+copy, paste and delete, as the website promises (a tap opens, a long press
+gives every option) in *Shared* on a computer, in *Vault* and *Received*,
 and in the phone's own backup folder on a computer
 ([phase 5](../phases/phase-5-mobile.md)).
 

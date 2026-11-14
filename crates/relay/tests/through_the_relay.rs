@@ -2,8 +2,8 @@
 //!
 //! The claim being tested is that the relay is safe to hand traffic to: it
 //! forwards datagrams, an ordinary QUIC session runs inside, and the relay has
-//! no key for any of it. If that works, everything built on top of QUIC —
-//! pinned identity, the wire protocol, chunk transfer — works over the relay
+//! no key for any of it. If that works, everything built on top of QUIC
+//! (pinned identity, the wire protocol, chunk transfer) works over the relay
 //! without knowing it is there.
 
 use qurb_relay::{endpoint_over, Frame, RelayServer, RelaySocket};
@@ -385,7 +385,7 @@ async fn a_frame_for_a_device_that_is_not_there_is_dropped() {
 
 /// Decision 0061: a device on the relay under its own name and a meeting's.
 /// Alice dials Bob by the meeting's name for him, as the meeting's name for
-/// her, and the session runs both ways -- Bob's answers go out under the name
+/// her, and the session runs both ways: Bob's answers go out under the name
 /// he was called by, or Alice's QUIC would not recognise them.
 #[tokio::test(flavor = "multi_thread")]
 async fn a_session_runs_to_a_second_name_and_answers_under_it() {

@@ -178,7 +178,7 @@ fn an_edit_and_a_deletion_reach_the_desktop() {
     assert!(row.is_none(), "still held after it was deleted");
 }
 
-/// A phone that lost its index -- wiped, reinstalled over the same identity --
+/// A phone that lost its index (wiped, reinstalled over the same identity)
 /// shows the desktop an empty list. That is not an instruction to delete, and
 /// the backup must survive it.
 #[test]

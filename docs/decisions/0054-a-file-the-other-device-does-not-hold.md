@@ -1,6 +1,6 @@
-# 0054 — A file the other device does not hold is listed, not failed every sync
+# 0054: A file the other device does not hold is listed, not failed every sync
 
-**Status:** Accepted — built and tested; watched on the S23 on 2026-10-07;
+**Status:** Accepted, built and tested; watched on the S23 on 2026-10-07;
 extended by [0055](0055-a-file-on-no-device-says-so.md), which shows such a
 file as on no device
 **Date:** 2026-10-07

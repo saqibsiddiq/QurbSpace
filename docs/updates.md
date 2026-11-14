@@ -3,7 +3,7 @@
 Installed QurbSpace apps update themselves from the latest release on
 GitHub ([decision 0078](decisions/0078-the-beta-updates-itself.md)).
 
-**Desktop (Linux):** install the **AppImage** from the latest release — make
+**Desktop (Linux):** install the **AppImage** from the latest release, make
 it executable and run it, or put it where you keep programs. It looks for a
 new version a minute after starting and every six hours, puts it in place,
 and *Restart to update* appears at the foot of the sidebar; the next login
@@ -14,7 +14,7 @@ is fetched in the background; *Install update* in the sidebar installs it.
 Not yet run on Windows.
 
 **Phone:** the APK from the latest release. The first time an update is
-ready, Android asks to allow QurbSpace to install apps — allow it once; after
+ready, Android asks to allow QurbSpace to install apps: allow it once; after
 that, updates install by themselves while the app is closed. Settings →
 Version says where it stands, and a tap looks now.
 

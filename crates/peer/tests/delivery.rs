@@ -2,7 +2,7 @@
 //!
 //! A device that shares a file while the other one is off needs to answer one
 //! question afterwards: did it get there? Nothing else in the protocol asks it
-//! — every other message is a device fetching what it wants — so the receiving
+//! (every other message is a device fetching what it wants) so the receiving
 //! device says so, once, after the content is committed.
 //!
 //! The answer matters twice. It is what a phone shows the person who shared a
@@ -218,7 +218,7 @@ async fn a_peer_reports_what_it_is_merely_holding() {
 
     sender.write("old.bin", b"delivered long ago");
 
-    // Both devices hold it, and nobody ever said so -- the state an upgrade
+    // Both devices hold it, and nobody ever said so: the state an upgrade
     // leaves behind. Built by copying the plan across without the report.
     let tree = sender.engine.tree().unwrap();
     let plan = receiver.engine.plan_against(&tree).unwrap();
@@ -277,8 +277,8 @@ async fn a_holding_is_reported_only_once() {
     assert_eq!(second, 0, "the same holding was reported twice");
 }
 
-/// A file the other device lists and does not hold -- freed there on the
-/// strength of a device that has since lost it -- is recorded as being
+/// A file the other device lists and does not hold (freed there on the
+/// strength of a device that has since lost it) is recorded as being
 /// elsewhere, not fetched and failed on every sync. On 2026-10-07 a phone
 /// showed *Didn't finish* for 18 such files every time it synced.
 #[tokio::test(flavor = "multi_thread")]
@@ -387,7 +387,7 @@ async fn a_file_asked_for_that_the_peer_does_not_hold_still_fails() {
     assert_eq!(failed, 1, "the same failure recorded on every sync");
 }
 
-/// A copy this device was told of -- by the device that made the file -- and
+/// A copy this device was told of (by the device that made the file) and
 /// that device freed since, is asked about once and then not counted
 /// (decision 0055). A copy that is there is asked about once and confirmed.
 #[tokio::test(flavor = "multi_thread")]
@@ -489,7 +489,7 @@ async fn a_device_paired_again_has_its_copies_counted_again() {
 
 /// A file made by a device that is no longer paired: the phone's own, made
 /// before it was set up again with a new identity. Nobody is left to report
-/// holding it -- reports go to a file's maker -- so the phone called a photo
+/// holding it (reports go to a file's maker) so the phone called a photo
 /// the laptop also had the only copy (2026-10-08). Asked once, each copy
 /// counts or does not.
 #[tokio::test(flavor = "multi_thread")]

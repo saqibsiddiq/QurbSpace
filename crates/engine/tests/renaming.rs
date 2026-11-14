@@ -2,7 +2,7 @@
 //!
 //! The rule that matters: a file keeps its area. A phone files new things
 //! privately (decision 0036), and a shared file renamed there must not quietly
-//! become private -- vanishing from every other device as if deleted.
+//! become private: vanishing from every other device as if deleted.
 
 use qurb_engine::{Engine, StoreSource};
 use qurb_storage::{ChunkKey, Store};

@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
  * Pairing draft 1 draws it (docs/design/redesign.md).
  *
  * A code on a screen can be seen or overheard, and whoever uses it first used
- * to get in -- since decision 0052, with the key. Now the device showing the
+ * to get in: since decision 0052, with the key. Now the device showing the
  * code asks first: who wants in, and the six digits it should be showing.
  * Both screens derive the number from both devices' certificates and the
  * code, so a device that took the code from somebody else's screen shows a
@@ -37,7 +37,7 @@ object Approval {
      * Asks the person at this phone, which is showing a code, whether to let a
      * device in: *Pair with saqib?*, or *Let saqib join?* for a device that
      * takes this phone's key, which a chip says. The engine calls it on a
-     * background thread and it blocks that thread until they answer -- or for
+     * background thread and it blocks that thread until they answer, or for
      * as long as a code lives, five minutes, after which the answer is no and
      * the sheet goes. A sheet swiped away is a no.
      */
@@ -102,7 +102,7 @@ object Approval {
         }
 
     /**
-     * The page while this phone joins: the number, and where to approve it --
+     * The page while this phone joins: the number, and where to approve it,
      * *Approve on saqib*, round a laptop or a phone, by the name the device
      * showing the code gave (decision 0074); *your other device* when it gave
      * none. Setup's last step and the page over Devices.

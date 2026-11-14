@@ -1,12 +1,12 @@
-# 0003 — SQLite index alongside a content-addressable store
+# 0003: SQLite index alongside a content-addressable store
 
 **Status:** Accepted
 **Date:** 2026-09-07
 
 ## Decision
 
-File metadata — paths, chunk lists, version history, sync state, search indexes
-— lives in SQLite in WAL mode. Chunk payloads live in a separate
+File metadata (paths, chunk lists, version history, sync state, search indexes)
+lives in SQLite in WAL mode. Chunk payloads live in a separate
 content-addressable store on the filesystem, at
 `chunks/<first 2 hex of hash>/<full hash>`.
 
@@ -30,19 +30,19 @@ hash caps any one directory at roughly 1/256th of the chunk population.
 
 ## Rejected
 
-- **RocksDB / LMDB** — key-value only, so the hierarchical and relational parts
+- **RocksDB / LMDB**: key-value only, so the hierarchical and relational parts
   of the metadata would need a hand-built index layer on top. That layer is
   where the bugs would live.
-- **Embedded PostgreSQL** — a separate server process on a consumer desktop is
+- **Embedded PostgreSQL**: a separate server process on a consumer desktop is
   a deployment and support burden that cannot be justified.
-- **Blobs inside SQLite** — bloats the database, slows every query, and makes
+- **Blobs inside SQLite**: bloats the database, slows every query, and makes
   incremental backup of metadata impractical.
 
 ## Tradeoff accepted
 
 SQLite permits one writer at a time. All mutations must funnel through a single
 writer task, which is a real constraint on the engine's internal design rather
-than an implementation detail — it has to be designed in from the start, not
+than an implementation detail: it has to be designed in from the start, not
 discovered later.
 
 ## Reversibility

@@ -113,6 +113,6 @@ Because `UpstashJSONParseError extends UpstashError`, a single `instanceof Upsta
 
 ### Debugging
 
-- **Read the message — it includes the failed command.** `UpstashError` messages are formatted like `<server error>, command was: ["GET","key"]`, so logging `error.message` shows exactly what was sent.
+- **Read the message: it includes the failed command.** `UpstashError` messages are formatted like `<server error>, command was: ["GET","key"]`, so logging `error.message` shows exactly what was sent.
 - **`UrlError` at startup** almost always means a missing or typo'd `UPSTASH_REDIS_REST_URL` (it must start with `https://`). Verify env vars before suspecting the network.
-- **Retryable vs. fatal.** Network and `TimeoutError` failures are transient and already covered by the built-in `retry`. An `UpstashError` from a bad command (wrong argument types, `WRONGTYPE`, unknown command) is deterministic — retrying won't help, so fix the call instead of raising the retry count.
+- **Retryable vs. fatal.** Network and `TimeoutError` failures are transient and already covered by the built-in `retry`. An `UpstashError` from a bad command (wrong argument types, `WRONGTYPE`, unknown command) is deterministic: retrying won't help, so fix the call instead of raising the retry count.

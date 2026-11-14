@@ -35,7 +35,7 @@ import uniffi.qurb_mobile.PeerInfo
 /**
  * The components every place is built from (docs/design/direction.md §48):
  * rows, states, groups, attention, empty states, sheets. One definition each,
- * so a pattern looks and behaves the same wherever it appears -- the Android
+ * so a pattern looks and behaves the same wherever it appears: the Android
  * half of what `crates/desktop/ui/core.js` is to the window.
  */
 class Kit(private val app: AppCompatActivity) {
@@ -47,8 +47,8 @@ class Kit(private val app: AppCompatActivity) {
     // ------------------------------------------------------------------ rows
 
     /**
-     * A row: an icon in its tile, a name, one line under it -- a state as an
-     * icon and words where there is one -- and something at the end.
+     * A row: an icon in its tile, a name, one line under it (a state as an
+     * icon and words where there is one) and something at the end.
      */
     fun row(
         parent: ViewGroup,
@@ -174,8 +174,8 @@ class Kit(private val app: AppCompatActivity) {
         return FileRow(root, tile, icon, badge, name, size, sub)
     }
 
-    /** Show a file in `row`: tapped, `onTap`; held, `onHold` -- every option
-     *  -- or `onTap` where there is none (the owner's list of 2026-11-01,
+    /** Show a file in `row`: tapped, `onTap`; held, `onHold`, every option
+     * , or `onTap` where there is none (the owner's list of 2026-11-01,
      *  item 5: a tap opens, a long press gives all). */
     fun bindFile(
         row: FileRow,
@@ -232,7 +232,7 @@ class Kit(private val app: AppCompatActivity) {
     /**
      * A folder as Figma's Files draws one: a white card, its icon in green at
      * the top, its name, and how many it holds where that is known. Opened on
-     * a tap; held, `onHold` -- the same sheet a file's tap gives.
+     * a tap; held, `onHold`: the same sheet a file's tap gives.
      */
     fun folderCard(
         name: String,
@@ -533,7 +533,7 @@ class Kit(private val app: AppCompatActivity) {
      * A device as a circle (the owner's list of 2026-10-26, items 5 to 7):
      * its picture, or the first letter of its name on a green ringed to show
      * in light mode as in dark, and a
-     * dot on its edge, blue when it is on and red when it is off -- none for
+     * dot on its edge, blue when it is on and red when it is off, none for
      * [off] null, this phone's own. With no device, a plus.
      */
     fun avatar(name: String?, off: Boolean?, picture: android.graphics.Bitmap?, size: Int = 40): FrameLayout {
@@ -1282,15 +1282,15 @@ class Kit(private val app: AppCompatActivity) {
 
     /**
      * A sheet (§36): elevated glass rising from the bottom, the place behind
-     * it dimmed -- and blurred, where the phone blurs behind windows.
+     * it dimmed, and blurred, where the phone blurs behind windows.
      */
     fun sheet(): Sheet = Sheet(app, this)
 
     /**
      * A name asked for in a sheet: the field, and Cancel and `verb`. The
-     * name without its extension is chosen once the field has focus -- set
+     * name without its extension is chosen once the field has focus (set
      * before, the focus put the cursor at the end, and what was typed went
-     * after `.png` (on the emulator) -- and the keyboard is up for it.
+     * after `.png` (on the emulator)) and the keyboard is up for it.
      * `then` hears the name, trimmed, when it is something new.
      */
     fun askName(title: String, start: String, verb: String, then: (String) -> Unit) {
@@ -1734,8 +1734,8 @@ class Sheet(private val app: AppCompatActivity, private val kit: Kit) {
 
     /**
      * One of a few settings to choose between (decision 0086): the option
-     * row's shape, its icon in a tile -- green for the one chosen, quiet for
-     * the rest -- and a tick, not an arrow, on the chosen one. Closes the
+     * row's shape, its icon in a tile (green for the one chosen, quiet for
+     * the rest) and a tick, not an arrow, on the chosen one. Closes the
      * sheet, then does it.
      */
     fun choice(@DrawableRes icon: Int, label: String, chosen: Boolean, onTap: () -> Unit): Sheet {

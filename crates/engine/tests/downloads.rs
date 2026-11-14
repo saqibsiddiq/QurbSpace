@@ -156,7 +156,7 @@ fn nothing_already_in_downloads_is_overwritten() {
 
 /// A crash after the file was moved into place and before the delivery was
 /// recorded. The next sync finds the file already there, byte for byte, and
-/// records it -- rather than filing a second copy under another name.
+/// records it: rather than filing a second copy under another name.
 #[test]
 fn an_interrupted_delivery_is_recognised_not_duplicated() {
     let mut phone = Device::new();
@@ -173,7 +173,7 @@ fn an_interrupted_delivery_is_recognised_not_duplicated() {
     assert_eq!(again.adopted, 0, "not recorded as taken");
 }
 
-/// Without a downloads directory -- a phone -- nothing changes: the delivery
+/// Without a downloads directory (a phone) nothing changes: the delivery
 /// is filed privately in the folder.
 #[test]
 fn a_phone_still_files_it_in_the_folder() {

@@ -7,7 +7,7 @@ license.workspace = true
 # Talking to another device: the wire format, a QUIC transport, and the client
 # that turns a sync plan into bytes over the network.
 #
-# Sits above the engine rather than below it — the engine knows nothing about
+# Sits above the engine rather than below it: the engine knows nothing about
 # networks, and this crate adapts it to one.
 
 [features]
@@ -49,8 +49,8 @@ spake2 = "0.4"
 # route uses. A device on a VPN or overlay network has a second address that
 # peers elsewhere can reach and the default route never mentions.
 if-addrs = "0.13"
-# For the socket options multicast needs -- address reuse and group membership
-# -- which the standard library exposes only partially.
+# For the socket options multicast needs (address reuse and group membership)
+# which the standard library exposes only partially.
 socket2 = { version = "0.5", features = ["all"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
 rcgen = "0.13"

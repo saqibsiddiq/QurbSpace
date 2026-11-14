@@ -1,12 +1,12 @@
 //! qurb in a window.
 //!
 //! The same [`Daemon`](qurb_cli::Daemon) `qurb run` starts, hosted inside a
-//! Tauri shell rather than a terminal — an interface should display the engine,
+//! Tauri shell rather than a terminal, an interface should display the engine,
 //! not reimplement it. See [decision 0032] for why it hosts the daemon instead
 //! of talking to one, and why there are two mechanisms rather than one for
 //! getting data into the window.
 //!
-//! [decision 0032]: ../../../docs/decisions/0032-the-interface-hosts-the-daemon.md
+//! [decision 0032]../../../docs/decisions/0032-the-interface-hosts-the-daemon.md
 //!
 //! The window opens whether or not there is a device yet. Setting one up is the
 //! job of a screen, so it cannot be a precondition of the screen existing; see
@@ -69,7 +69,7 @@ fn run() -> Result<()> {
         }
     };
     // Files opened from a guest's folder by a run that ended without locking
-    // it -- a crash, a power cut -- go now, as locking would have done
+    // it (a crash, a power cut) go now, as locking would have done
     // (decision 0060). A running instance would have kept them: this is the
     // first.
     if let Some(runtime) = std::env::var_os("XDG_RUNTIME_DIR") {
@@ -87,7 +87,7 @@ fn run() -> Result<()> {
     let root = qurb_cli::layout::settle(directory());
     let hosted = Arc::new(Hosted::new(root.clone()));
     // A key protected by a passphrase waits for the window to ask for it
-    // (decision 0046) -- at login too, which is why the window then shows:
+    // (decision 0046): at login too, which is why the window then shows:
     // nothing syncs until it is typed.
     let locked = qurb_cli::is_set_up(&root)
         && commands::key_protection(&root) == Some(qurb_keys::Protection::Passphrase);

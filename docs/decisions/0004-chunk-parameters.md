@@ -1,4 +1,4 @@
-# 0004 — Chunk size bounds of 128 KiB / 512 KiB / 2 MiB
+# 0004: Chunk size bounds of 128 KiB / 512 KiB / 2 MiB
 
 **Status:** Accepted
 **Date:** 2026-09-09
@@ -18,7 +18,7 @@ mistake.
 
 In a representative user directory (2720 files, 1.17 GiB), **94.5% of files were
 smaller than the proposed 1 MiB minimum.** Every one of those files collapses
-into exactly one chunk. Content-defined chunking does nothing for them — no
+into exactly one chunk. Content-defined chunking does nothing for them: no
 sub-file deduplication, and any edit re-sends the entire file. The system would
 have been paying CDC's complexity while getting fixed-block behaviour for the
 overwhelming majority of files.
@@ -35,7 +35,7 @@ Sweeping the parameters over the same corpus (`sweep` in the Phase 0 spike):
 
 512 KiB is the knee of the curve. Against the original proposal it nearly
 doubles the deduplication rate and cuts small-edit transfer cost by a third,
-while keeping the metadata index under 350 MiB per TiB of library — small enough
+while keeping the metadata index under 350 MiB per TiB of library: small enough
 for SQLite to serve quickly and small enough to be viable on a phone.
 
 64 KiB buys more deduplication still, but 1.35 GiB of index per TiB is too much
@@ -52,14 +52,14 @@ corroboration.
 
 ## Tradeoff accepted
 
-More chunks means a larger metadata index and more per-chunk overhead — an
+More chunks means a larger metadata index and more per-chunk overhead: an
 encryption nonce and authentication tag per chunk, and more filesystem inodes.
 At 512 KiB this is acceptable; it would not be at 64 KiB.
 
 ## What would change this
 
 These numbers come from one corpus on one machine. A user population whose files
-skew much larger — video editors, for example — would shift the knee upward.
+skew much larger (video editors, for example) would shift the knee upward.
 Worth re-measuring against real user data before the parameters are frozen by
 stored data that would need rewriting to change.
 

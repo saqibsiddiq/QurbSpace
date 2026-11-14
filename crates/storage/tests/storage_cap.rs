@@ -123,7 +123,7 @@ fn a_phone_has_its_first_computer_keep_its_vault_once() {
 }
 
 /// What a wipe would lose: a file no other device holds is listed, and stops
-/// being listed when one says it has it -- even a phone, whose copy is still a
+/// being listed when one says it has it, even a phone, whose copy is still a
 /// copy if this device is the one wiped (decision 0053).
 #[test]
 fn only_here_lists_what_a_wipe_would_lose() {
@@ -174,7 +174,7 @@ fn evicting_actually_frees_the_space() {
 }
 
 /// An evicted file is still a file. It keeps its place in the index, its
-/// content hash, and its chunk list — that is what "keep the index" means.
+/// content hash, and its chunk list: that is what "keep the index" means.
 #[test]
 fn an_evicted_file_is_still_known() {
     let mut f = fixture();
@@ -251,7 +251,7 @@ fn a_replica_evicts_nothing() {
 ///
 /// Every file in a replica is "held", and every byte of it is in the chunk
 /// store. Counting both makes a replica look like it is using twice the disk
-/// it is — which on a small always-on box is the difference between fitting
+/// it is, which on a small always-on box is the difference between fitting
 /// and not.
 #[test]
 fn a_replica_counts_its_bytes_once() {
@@ -280,7 +280,7 @@ fn a_replica_counts_its_bytes_once() {
 /// The fetch writes the same bytes the index already records, so it looks
 /// like an unchanged file. Unless that still marks the file as held, it stays
 /// "not here" with its bytes sitting in the folder: never a candidate for
-/// eviction again, counted as missing, and -- worst -- a later deletion of it
+/// eviction again, counted as missing, and (worst) a later deletion of it
 /// is taken for the cap's own doing and never reaches the other devices.
 #[test]
 fn a_file_fetched_back_is_held_again() {
@@ -308,7 +308,7 @@ fn a_file_fetched_back_is_held_again() {
 }
 
 /// What the Storage screen offers to free is exactly what freeing will
-/// accept: bytes here that another device holds, biggest first -- never the
+/// accept: bytes here that another device holds, biggest first, never the
 /// only copy, and never a file already freed.
 #[test]
 fn what_can_be_freed_is_only_what_another_device_holds() {

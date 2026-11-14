@@ -30,7 +30,7 @@ address; `qurb-theta.vercel.app` serves the same deployment.
 repository's root into `website/` and the project went on building from the
 root, which no longer held a Next.js app: every build since failed, and
 qurb.cloud served the July landing page all that time. Setting the Root
-Directory fixed it. A failed build fails quietly — a red mark on a commit —
+Directory fixed it. A failed build fails quietly (a red mark on a commit)
 so a change to the site is not finished until the live page shows it.
 
 ## It looks like the apps, on purpose
@@ -52,7 +52,7 @@ parts, the same words.
   run `node scripts/icons.mjs`; if the window does not have it yet, add it to
   `scripts/desktop-icons.py` first.
 - **Inter is served from this site** (`public/fonts/`, the window's files and
-  licence), so no page asks another site for anything — which is also what
+  licence), so no page asks another site for anything, which is also what
   lets the privacy page say so.
 - **The mark** is `components/mark.tsx`, and `app/icon.svg` is
   `packaging/qurb.svg`.
@@ -105,7 +105,7 @@ are `app/home.css`, prefixed so they touch nothing else.
 ## Every claim is the product's
 
 The words make no claim [../docs/features.md](../docs/features.md) does not,
-at the level it is checked there — and the pages state what is missing as
+at the level it is checked there, and the pages state what is missing as
 plainly as what works: no release yet, Linux and Android only, no relay anyone
 can use. Change the product, change the page. In particular:
 

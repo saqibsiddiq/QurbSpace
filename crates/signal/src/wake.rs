@@ -8,8 +8,8 @@
 //!
 //! A push notification is the way through, and it is the only way through:
 //! both platforms reserve waking a sleeping app to their own service. What
-//! qurb sends is an empty poke — no filenames, no sizes, no counts, not even
-//! which peer — because the device already knows how to find out once it is
+//! qurb sends is an empty poke (no filenames, no sizes, no counts, not even
+//! which peer) because the device already knows how to find out once it is
 //! awake. See
 //! [decision 0028](../../docs/decisions/0028-waking-a-sleeping-device.md).
 //!
@@ -37,8 +37,8 @@ pub trait Waker: Send + Sync {
     /// schedule instead, which is what happened before any of this existed.
     fn wake(&self, token: &WakeToken);
 
-    /// Be told how to forget a token the push service says no longer exists
-    /// -- an app uninstalled, or a phone set up again under a new one. Without
+    /// Be told how to forget a token the push service says no longer exists:
+    /// an app uninstalled, or a phone set up again under a new one. Without
     /// it a dead token is tried on every wake for ever: 21 refusals in three
     /// days on the owner's laptop (2026-10-18). Does nothing by default.
     fn when_gone(&self, _forget: Forget) {}
@@ -50,7 +50,7 @@ pub type Forget = Arc<dyn Fn(&WakeToken) + Send + Sync>;
 /// The default: nobody can be woken.
 ///
 /// A service configured with no push credentials behaves exactly as it did
-/// before push existed — devices sync when they next look. Correct rather than
+/// before push existed: devices sync when they next look. Correct rather than
 /// degraded, and it is what every test and every self-hosted deployment
 /// without a Firebase project gets.
 pub struct NoWaker;

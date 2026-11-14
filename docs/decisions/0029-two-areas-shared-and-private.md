@@ -1,6 +1,6 @@
-# 0029 — Two areas: one shared, one private per device
+# 0029: Two areas: one shared, one private per device
 
-**Status:** Accepted — extended by [0036](0036-a-phone-keeps-its-own-files.md)
+**Status:** Accepted, extended by [0036](0036-a-phone-keeps-its-own-files.md)
 **Date:** 2026-09-23
 
 ## Decision
@@ -19,7 +19,7 @@ is that device's vault.
 ## Why both, rather than one
 
 The product model asks for private per-device vaults. The engine implemented
-one namespace shared by everything — a syncing device wants every path, the
+one namespace shared by everything: a syncing device wants every path, the
 tree request returns everything a device knows, and a chunk request serves any
 hash to any paired peer with no check beyond pairing.
 
@@ -40,7 +40,7 @@ other entirely.
 
 An interface that declines to show a vault changes nothing about what a peer
 can ask for. A peer does not need a listing to fetch content: a hash is a name,
-and a device that once saw a file — or guessed — can ask for the bytes
+and a device that once saw a file (or guessed) can ask for the bytes
 directly.
 
 So the check is in the protocol, on all three of the requests that can reveal
@@ -58,8 +58,8 @@ from outside, or the refusal itself becomes a way to enumerate what exists.
 
 ## Three audiences, not two
 
-The first implementation took an `Option<&DeviceId>` — `Some` for a peer,
-`None` for local use — and it was wrong in a way the test suite caught
+The first implementation took an `Option<&DeviceId>` (`Some` for a peer,
+`None` for local use) and it was wrong in a way the test suite caught
 immediately: seven existing tests broke, because a peer that authenticates by
 pinned fingerprint but is not recorded in the `peers` table resolved to `None`
 and was refused everything.
@@ -67,17 +67,17 @@ and was refused everything.
 There are three cases and conflating any two is a bug with a security
 consequence, so [`Audience`](../../crates/storage/src/db.rs) is an enum:
 
-- **`Ourselves`** — this device. Sees everything it holds; an interface showing
+- **`Ourselves`**: this device. Sees everything it holds; an interface showing
   somebody their own files is not a peer.
-- **`Device(id)`** — a peer this store recognises. The shared area and that
+- **`Device(id)`**: a peer this store recognises. The shared area and that
   device's vault.
-- **`Unplaced`** — a peer that authenticated but whose device is not recorded
+- **`Unplaced`**: a peer that authenticated but whose device is not recorded
   here. The shared area only.
 
 `Unplaced` is the interesting one. It is not refused outright, because the
 connection already proved it is trusted and the shared area is exactly what
 trust entitles a device to. Being stricter would break a paired device whose
-bookkeeping is incomplete and buy nothing — it owns no vault here, so it is
+bookkeeping is incomplete and buy nothing: it owns no vault here, so it is
 shown none either way.
 
 ## Deduplication decides a case that looks like a leak
@@ -98,15 +98,15 @@ SQLite cannot drop a column-level UNIQUE, so the table is rebuilt. Three things
 about that were easy to get wrong and are worth recording:
 
 **`UNIQUE(scope, path)` would not have worked.** SQL treats NULLs as distinct,
-so two shared rows with the same path would both have been allowed — the exact
+so two shared rows with the same path would both have been allowed: the exact
 bug the constraint exists to prevent. It is two *partial* unique indexes
 instead: one on `path` where the scope is null, one on `(scope, path)` where it
 is not.
 
 **Foreign keys have to be off while a table is rebuilt.** `file_chunks`
 cascades from `files`, and dropping the old table with them enforced would take
-every chunk reference in the store with it. Migrations now run with them off —
-they are the only place schema changes happen — and `foreign_key_check` runs
+every chunk reference in the store with it. Migrations now run with them off
+(they are the only place schema changes happen) and `foreign_key_check` runs
 afterwards, so a migration that got a reference wrong fails at startup instead
 of surfacing later as missing content.
 

@@ -3,7 +3,7 @@
 //! Removal stops trust; it cannot reach into the removed device, and does not
 //! pretend to (brief §35). What it must get right is everything *here* that
 //! went on counting on that device: sends waiting for it, what this device
-//! keeps for it, and -- the one that loses data -- copies it was known to hold,
+//! keeps for it, and (the one that loses data) copies it was known to hold,
 //! which freeing space treats as the reason it is safe to drop a local copy.
 
 use qurb_storage::{ChunkKey, Store};

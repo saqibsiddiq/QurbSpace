@@ -1,6 +1,6 @@
 //! Which folders this person syncs, and where to put a new one.
 //!
-//! A person may have more than one — work and personal, say — and a machine
+//! A person may have more than one (work and personal, say) and a machine
 //! may have more than one person. Both need answering before anything else can
 //! be built on top, because "the sync folder" is not a constant.
 //!
@@ -40,8 +40,8 @@ fn registry_path() -> Result<PathBuf> {
 ///
 /// Every path comes back absolute. A relative one can only be an entry written
 /// before [`remember`] made them absolute, and it is read from the home
-/// folder, which is where the desktop -- started at login, in the home folder
-/// -- has been opening it. Read from wherever a terminal happened to be, the
+/// folder, which is where the desktop (started at login, in the home folder)
+/// has been opening it. Read from wherever a terminal happened to be, the
 /// same line named a different folder in the window and on the command line,
 /// and a folder typed as `home/project/qurb` became a second device the window
 /// ran while `qurb status` showed the first.
@@ -105,7 +105,7 @@ pub fn forget(root: &Path) -> Result<()> {
 /// before that, on the reasoning that files from another device are files
 /// somebody wants to find; decision 0037 gave that place to files sent *to*
 /// this device instead, which are ordinary files qurb stops tracking, and the
-/// two must not overlap. Existing folders stay where they are until moved --
+/// two must not overlap. Existing folders stay where they are until moved:
 /// see [`current`] and [`crate::layout::settle`].
 pub fn default_root() -> Result<PathBuf> {
     Ok(PathBuf::from(std::env::var("HOME").context("no HOME set")?).join("qurb").join(crate::layout::SHARED))
@@ -137,7 +137,7 @@ pub fn user_downloads() -> Result<PathBuf> {
 /// The folder to act on when none was named.
 ///
 /// In order: the most recently used that is actually set up, then the default
-/// location if *it* is set up. Returns `None` rather than inventing one — a
+/// location if *it* is set up. Returns `None` rather than inventing one: a
 /// program that silently creates a store somewhere is worse than one that asks.
 pub fn current() -> Option<PathBuf> {
     for folder in known() {

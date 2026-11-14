@@ -1,4 +1,4 @@
-# 0082 — Each user's computer is their own server; no instant wake-up
+# 0082: Each user's computer is their own server; no instant wake-up
 
 **Status:** Accepted as the release direction, 2026-11-02; amended the same day (*No money of the owner's*, below). Not built.
 **Date:** 2026-11-02
@@ -8,7 +8,7 @@
 The owner, on the release: users must not depend on his laptop, which runs
 today's rendezvous and relay through Tailscale Funnel
 ([staging.md](../staging.md)); they should be on their own hardware; and the
-product is to stay simple. Then: no instant wake-ups -- the phone app is how a
+product is to stay simple. Then: no instant wake-ups, the phone app is how a
 user reaches things, and the desktop tells them when the phone is needed.
 
 ## Decided
@@ -31,15 +31,15 @@ user reaches things, and the desktop tells them when the phone is needed.
   hole-punch. It carries no files and stores nothing. Reached at a domain we
   own, so it can move without an app update.
 - **No relay of ours.** The users whose connection blocks both direct paths
-  (carrier-grade NAT, no IPv6, hole punching failing -- estimated at 1 in 10
+  (carrier-grade NAT, no IPv6, hole punching failing: estimated at 1 in 10
   to 1 in 20, from published figures, not measured) work on their home
   Wi-Fi, and may set their own server in Settings › Advanced.
 - **No instant wake-up.** Nothing holds a Google push key. When the desktop
-  needs the phone -- an approval to open the person's folder -- the desktop
+  needs the phone (an approval to open the person's folder) the desktop
   says so, and opening the app connects at once. Everything else waits for
   the phone's background sync (about every 15 minutes) or the app being
   opened.
-- **What the user sees**: one status on the desktop's device page --
+- **What the user sees**: one status on the desktop's device page,
   *Reachable from anywhere*, *Reachable through QurbSpace helper*, or *Only on
   your home Wi-Fi* with why, and the optional own-server link.
 
@@ -107,7 +107,7 @@ heard in 0.17–0.21 s, both sides told to punch 0.40–0.52 s after it.
 Then on the owner's devices, both switched to `nostr` (the laptop's config
 `signal = nostr`; the phone built with it as its default), no Tailscale: the
 S23 on Airtel mobile data opened the laptop's *Shared*, and the laptop logged
-`connected peer=f63a0f05 candidate=106.202.97.42:47568` at 14:30:27 IST --
+`connected peer=f63a0f05 candidate=106.202.97.42:47568` at 14:30:27 IST,
 **a direct connection to the phone's mobile address**, through both carriers'
 CGNATs, introduced by the public relays. The first attempts before it timed
 out on the addresses the phone had announced while on Wi-Fi; not yet looked
@@ -154,7 +154,7 @@ Measured on the owner's laptop (Ryzen, CachyOS, home Wi-Fi), 2026-11-02:
 
 - **Direct over mobile data, through the public relays.** The S23 on Airtel
   mobile data, brought back to the screen at 19:31:09 IST, reached the laptop
-  at its CGNAT's public address at 19:31:13 -- relays opened and connected in
+  at its CGNAT's public address at 19:31:13, relays opened and connected in
   about 2 s. The minutes of failure before it were the app paused in the
   background during phone calls, not the path.
 - **A laptop woken from sleep heard nothing.** After the laptop resumed at

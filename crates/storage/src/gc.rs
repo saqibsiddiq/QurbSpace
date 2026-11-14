@@ -8,12 +8,12 @@
 //! Collection runs in two stages, separated because they answer different
 //! questions.
 //!
-//! **Stage 1 — expire tombstones.** A deleted file keeps its row and its chunk
+//! **Stage 1: expire tombstones.** A deleted file keeps its row and its chunk
 //! references for the retention window, which is what makes undelete possible.
 //! Past that window the row and its links are removed. Removing the links is
 //! what actually releases the chunks, via the trigger in [`crate::db`].
 //!
-//! **Stage 2 — reclaim chunks.** Any chunk now referenced by nothing, and
+//! **Stage 2: reclaim chunks.** Any chunk now referenced by nothing, and
 //! unreferenced for longer than the retention window, is removed from disk.
 //! The second condition matters for chunks orphaned by an *edit* rather than a
 //! deletion: overwriting a file releases the old version's chunks, and the
@@ -23,8 +23,8 @@
 //! held for the retention period as a tombstone, and then for the retention
 //! period again as unreferenced chunks, so the worst case before space is
 //! actually reclaimed is twice the configured window. That is the safe
-//! direction to err in for a storage product — it costs disk, where the other
-//! direction costs data — but it is a real cost and worth knowing about when
+//! direction to err in for a storage product (it costs disk, where the other
+//! direction costs data) but it is a real cost and worth knowing about when
 //! choosing the window.
 //!
 //! # Concurrency
@@ -32,7 +32,7 @@
 //! The deletions run inside a single `BEGIN IMMEDIATE` transaction, which takes
 //! SQLite's one write lock and therefore excludes any concurrent writer for the
 //! duration. Without that, a writer could add a reference to a chunk between
-//! this code deciding it was unreferenced and removing it from disk — leaving
+//! this code deciding it was unreferenced and removing it from disk: leaving
 //! an index entry pointing at nothing.
 //!
 //! Payloads are removed from disk before the transaction commits. If the
@@ -55,8 +55,8 @@ pub struct GcStats {
     pub bytes_reclaimed: u64,
 }
 
-/// Reclaim space, keeping anything deleted or superseded within `retention`
-/// -- and a vault's deletions as long as Recently deleted keeps a file, unless
+/// Reclaim space, keeping anything deleted or superseded within `retention`:
+/// and a vault's deletions as long as Recently deleted keeps a file, unless
 /// `retention` is zero, which asks for everything as `empty_trash` does.
 pub fn collect(db: &mut Db, cas: &Cas, retention: Duration) -> Result<GcStats> {
     let cutoff = db::now() - retention.as_secs() as i64;
@@ -109,7 +109,7 @@ pub fn collect(db: &mut Db, cas: &Cas, retention: Duration) -> Result<GcStats> {
     tx.commit()?;
 
     // History is pruned here rather than on its own schedule: it is the same
-    // question -- how far back does this device remember -- and running it in
+    // question (how far back does this device remember) and running it in
     // the same pass means one place to look when the answer surprises someone.
     match db.prune_activity(ACTIVITY_RETENTION, ACTIVITY_ROWS) {
         Ok(gone) if gone > 0 => tracing::debug!(rows = gone, "pruned history"),

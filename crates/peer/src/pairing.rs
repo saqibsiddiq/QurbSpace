@@ -15,8 +15,8 @@
 //! # Where the security actually comes from
 //!
 //! The invite carries the inviter's **full fingerprint**, not an abbreviation.
-//! Transferring it out of band — a QR code on a screen, a code read over the
-//! phone — is what authenticates the inviter, because an attacker in the
+//! Transferring it out of band (a QR code on a screen, a code read over the
+//! phone) is what authenticates the inviter, because an attacker in the
 //! network path cannot change what is printed on a screen.
 //!
 //! That makes the one-time token a narrower thing than it first appears. It
@@ -188,7 +188,7 @@ pub struct Paired {
 
 /// This device, as pairing presents it: its name, its kind (`phone`,
 /// `computer` or `replica`) and its key, from which the check two devices
-/// compare is derived -- and which a device with none is given.
+/// compare is derived, and which a device with none is given.
 pub struct Ours<'a> {
     pub name: &'a str,
     pub kind: &'a str,
@@ -256,7 +256,7 @@ fn known_kind(kind: &str) -> Option<String> {
 impl PairingHost {
     /// Open a port and produce an invite for it.
     ///
-    /// The listener accepts **any** certificate, unlike ordinary serving — it
+    /// The listener accepts **any** certificate, unlike ordinary serving: it
     /// has to, because the device joining is by definition not yet known. What
     /// keeps that safe is that it answers nothing except a pairing request, and
     /// only one carrying the token.
@@ -331,7 +331,7 @@ impl PairingHost {
         //
         // The whole wait is bounded by it. Without this the accept loop blocks
         // for ever, so a `qurb pair` nobody answers sits there advertising a
-        // code that stopped working five minutes in -- which is worse than
+        // code that stopped working five minutes in, which is worse than
         // failing, because the screen still says "Waiting..." and the person
         // reading the code out has no way to know it is dead.
         let remaining = self.invite.expires_at - now;
@@ -621,7 +621,7 @@ pub async fn accept(
 /// Close, and let the close reach the other device.
 ///
 /// `close` only queues it. A joining program that exited straight afterwards
-/// -- `qurb join` does -- took the close with it, and the device showing the
+/// (`qurb join` does) took the close with it, and the device showing the
 /// code, waiting to see its reply arrive, sat out the thirty-second idle
 /// timeout before saying it had paired.
 async fn hang_up(connection: &quinn::Connection, endpoint: &quinn::Endpoint) {
@@ -647,7 +647,7 @@ async fn answer(send: &mut quinn::SendStream, response: &Response, connection: &
 /// say anyway.
 const WHO_WAIT: Duration = Duration::from_secs(3);
 
-/// Who is showing `invite` -- its name and kind -- asked before joining or
+/// Who is showing `invite` (its name and kind) asked before joining or
 /// visiting with it ([`Request::Who`]), so the person can be told where to
 /// approve. `None` from a device older than the question, which answers *not
 /// found*, and from one that does not answer within [`WHO_WAIT`]: never an
@@ -739,7 +739,7 @@ where
 /// Visit a computer as a guest, with a guest invite it showed (decision
 /// 0060): this device keeps its own key, shows the number while the person
 /// there approves, and is given the secret the two will meet under. It is
-/// recorded here as a host -- another person's computer, shown only what is
+/// recorded here as a host: another person's computer, shown only what is
 /// sent to it.
 pub async fn visit(
     invite: &Invite,

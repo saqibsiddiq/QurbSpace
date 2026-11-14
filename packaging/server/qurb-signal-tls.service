@@ -1,6 +1,6 @@
 # The rendezvous service, presenting its own certificate.
 #
-# For a host with an address and no domain name — which is what a small VPS is
+# For a host with an address and no domain name, which is what a small VPS is
 # until you buy one. The certificate is self-signed and devices are told its
 # fingerprint, exactly as they are told a peer's: see
 # docs/decisions/0035-a-rendezvous-on-a-bare-address.md.

@@ -12,8 +12,8 @@
 //!
 //! # Transfer is incremental
 //!
-//! Fetching a file asks for its *manifest* — the list of chunks it is made
-//! of — and then only for the chunks this device does not already hold. A large
+//! Fetching a file asks for its *manifest* (the list of chunks it is made
+//! of) and then only for the chunks this device does not already hold. A large
 //! file with a small edit shares nearly all its chunks with the copy already
 //! here, so nearly nothing crosses the wire. This is the point of the content-
 //! defined chunking in [`qurb_storage`], finally realised over a network.
@@ -25,8 +25,8 @@
 //! peer must hold the matching private key rather than merely replay a public
 //! certificate.
 //!
-//! **Pairing is not built.** Deciding which fingerprint to expect — the QR-code
-//! exchange in the architecture — is Phase 3. Until then the caller supplies it,
+//! **Pairing is not built.** Deciding which fingerprint to expect (the QR-code
+//! exchange in the architecture) is Phase 3. Until then the caller supplies it,
 //! which is why [`PeerClient::connect`] demands a fingerprint rather than
 //! offering a way to skip one.
 //!

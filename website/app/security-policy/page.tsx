@@ -12,7 +12,7 @@ export default function SecurityPage() {
   return (
     <DocPage
       title="Security"
-      intro="How Qurb protects your files and keys today — and, just as plainly, what it doesn’t protect against yet."
+      intro="How Qurb protects your files and keys today, and, just as plainly, what it doesn’t protect against yet."
     >
       <h2>Your key</h2>
       <p>
@@ -29,13 +29,13 @@ export default function SecurityPage() {
       <ul>
         <li>
           <strong>Between devices</strong>, everything is encrypted, over QUIC. Each device has its own certificate, and
-          pairing carries its full fingerprint across the room — by a code you scan or type — so a device only ever
+          pairing carries its full fingerprint across the room: by a code you scan or type, so a device only ever
           talks to devices you added.
         </li>
         <li>
           <strong>On a device</strong>, the files in your Qurb folder are ordinary files, protected the way the rest of
-          your disk is. What Qurb keeps in its own store — copies held for your other devices, the parts of files not
-          in the folder — is compressed and encrypted with XChaCha20-Poly1305.
+          your disk is. What Qurb keeps in its own store: copies held for your other devices, the parts of files not
+          in the folder: is compressed and encrypted with XChaCha20-Poly1305.
         </li>
         <li>
           <strong>Anything a peer sends is checked</strong> before it is written: content is named by its BLAKE3 hash and
@@ -46,9 +46,9 @@ export default function SecurityPage() {
       <h2>The services</h2>
       <p>
         The service that introduces devices across networks learns their network addresses and that they want to meet,
-        under identifiers it can’t link to a person — never a filename, a file or a key. A relay, where one is
+        under identifiers it can’t link to a person: never a filename, a file or a key. A relay, where one is
         used, forwards encrypted traffic it cannot read. If you set up push, Google learns that a phone was woken, and
-        when — nothing about why. You run both services yourself; Qurb runs neither.
+        when: nothing about why. You run both services yourself; Qurb runs neither.
       </p>
 
       <h2>What it doesn’t protect against yet</h2>

@@ -1,4 +1,4 @@
-# 0035 — A rendezvous on a bare address
+# 0035: A rendezvous on a bare address
 
 **Status:** Accepted
 **Date:** 2026-09-24
@@ -21,13 +21,13 @@ connection across a network you do not own.
 
 The identifiers devices announce under are bearer secrets: anybody who sees one
 can ask where that device is. So a connection to a rendezvous across somebody
-else's network has to be encrypted — which means a certificate, which normally
+else's network has to be encrypted, which means a certificate, which normally
 means a domain name and a certificate authority.
 
 Requiring somebody to buy a domain in order to run a rendezvous is a barrier
 this product should not put up. The alternative that was being used instead was
 an overlay network, which worked and added a dependency on a third party for
-something two devices and a small host can do between themselves — and which
+something two devices and a small host can do between themselves, and which
 failed, silently, for three hours, because it had quietly dropped off.
 
 Pinning is also simply how qurb checks identity everywhere else. Peers are
@@ -45,7 +45,7 @@ A fragment rather than a query parameter because a fragment is not sent to the
 server. It is a fact *about* the server; putting it in the query string would
 send the thing being checked to the thing being checked.
 
-The cost is a shell footgun — `#` starts a comment — which the documentation
+The cost is a shell footgun (`#` starts a comment) which the documentation
 calls out, because the failure arrives later as a certificate error rather than
 at the moment it was mistyped.
 
@@ -77,7 +77,7 @@ people will paste from print it.
 `--tls` with no certificate given makes one in the state directory and reuses it
 for ever. The fingerprint is what every device has been told to expect, so a
 service that generated a new certificate each time it restarted would lock out
-every device it had — and would do it on a restart, which is the moment nobody
+every device it had, and would do it on a restart, which is the moment nobody
 is watching.
 
 ## What this does not do

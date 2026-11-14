@@ -43,7 +43,7 @@ async fn join(url: &str, master: &MasterKey, fingerprint: [u8; 32], port: u16) -
 /// than hanging.
 /// The next message, skipping arrival notices.
 ///
-/// `Appeared` is unsolicited and can land between any request and its reply —
+/// `Appeared` is unsolicited and can land between any request and its reply:
 /// it is sent to everyone already in a group whenever someone else joins. A
 /// test waiting for a punch instruction or a refusal is not interested, and
 /// treating the first message as the answer made several of them fail the day
@@ -317,7 +317,7 @@ async fn a_service_that_never_answers_is_given_up_on() {
     holding.abort();
 }
 
-// -- limits ------------------------------------------------------------------
+// , limits ------------------------------------------------------------------
 
 /// A server with limits tight enough to reach in a test.
 async fn strict_server(limits: qurb_signal::Limits) -> (Arc<SignalServer>, String) {
@@ -430,8 +430,8 @@ async fn an_oversized_message_does_not_reach_the_parser() {
 ///
 /// The half that used to be missing. The server knew the moment a device
 /// appeared and told only that device; everyone else had to discover it by
-/// asking. A peer that asks on a backoff — which grows precisely because the
-/// absent device keeps being absent — will not be asking during the twenty-odd
+/// asking. A peer that asks on a backoff (which grows precisely because the
+/// absent device keeps being absent) will not be asking during the twenty-odd
 /// seconds a phone is awake in a background window. Measured before this
 /// existed: a laptop retrying every 120s never once caught a phone announcing
 /// for 25s.
@@ -488,7 +488,7 @@ async fn a_device_is_not_told_about_its_own_arrival() {
 ///
 /// The service reads 4 KiB at a time, down from the library's 128 KiB, to hold
 /// a connection per device in a fraction of the memory. A device with many
-/// addresses -- a laptop on a VPN, Docker and two networks -- announces more
+/// addresses (a laptop on a VPN, Docker and two networks) announces more
 /// than 4 KiB, and its partner must still be told all of it.
 #[tokio::test(flavor = "multi_thread")]
 async fn an_announcement_bigger_than_a_read_arrives_whole() {

@@ -1,7 +1,7 @@
 //! Pairing codes as QR codes.
 //!
 //! The code carries the inviter's full fingerprint and has to travel *outside*
-//! the network being paired — someone who can change what you see has already
+//! the network being paired: someone who can change what you see has already
 //! won, so sending it over the link it authorises would defeat the point. A QR
 //! code on a screen, read by a camera, is exactly that: the bytes cross the
 //! room as light, not as packets.
@@ -16,8 +16,8 @@ use qrcode::{EcLevel, QrCode};
 ///
 /// Drawn with half-block characters, two rows of the code per line of text.
 /// A terminal cell is about twice as tall as it is wide, so one character per
-/// module would produce a code stretched vertically — which cameras read
-/// badly — and this makes the result close to square.
+/// module would produce a code stretched vertically (which cameras read
+/// badly) and this makes the result close to square.
 ///
 /// A quiet zone is included. The specification requires four modules of blank
 /// margin, and scanners genuinely fail without it: the code is found by
@@ -26,7 +26,7 @@ use qrcode::{EcLevel, QrCode};
 pub fn terminal(text: &str) -> Result<String, qrcode::types::QrError> {
     // Low correction, because the code is read off a screen rather than
     // something creased or smudged, and lower correction means a smaller
-    // symbol -- which matters when the display is a text terminal.
+    // symbol, which matters when the display is a text terminal.
     let code = QrCode::with_error_correction_level(text, EcLevel::L)?;
     let modules = code.to_colors();
     let width = code.width();
@@ -161,7 +161,7 @@ mod tests {
     }
 
     /// The SVG has to encode the same matrix the terminal renderer draws.
-    /// They share `to_colors`, so if one scans the other does — and this is
+    /// They share `to_colors`, so if one scans the other does, and this is
     /// what catches a renderer that transposed or offset it.
     #[test]
     fn the_svg_draws_one_square_per_dark_module() {
@@ -211,7 +211,7 @@ mod tests {
                 assert_eq!(
                     found.contains(&(x, y)),
                     dark,
-                    "module at ({x}, {y}) is drawn wrongly — is the matrix transposed?"
+                    "module at ({x}, {y}) is drawn wrongly: is the matrix transposed?"
                 );
             }
         }

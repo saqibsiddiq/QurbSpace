@@ -1,7 +1,7 @@
 # The rendezvous service, able to wake sleeping phones.
 #
 # The same service with push credentials. Use this one *instead of*
-# qurb-signal.service -- they listen on the same port.
+# qurb-signal.service: they listen on the same port.
 #
 # Needs a build with the feature:  cargo build --release --features push
 # And a Firebase service account JSON readable only by the qurb user:

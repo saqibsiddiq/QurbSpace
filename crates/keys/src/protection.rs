@@ -2,20 +2,20 @@
 //!
 //! The key itself is 32 bytes that decrypt everything a person owns. Until now
 //! it sat in a file readable only by its owner, which defends against other
-//! users of the machine and against nothing that can read the disk — a stolen
+//! users of the machine and against nothing that can read the disk: a stolen
 //! laptop, an unencrypted backup, malware running as the user.
 //!
 //! Three options now, which defend against different things:
 //!
-//! - [`Protection::File`] — owner-only permissions. What was there before, kept
+//! - [`Protection::File`], owner-only permissions. What was there before, kept
 //!   because a headless machine may have neither a keystore nor anyone to type
 //!   a passphrase.
-//! - [`Protection::Keystore`] — the operating system's own store: Keychain,
+//! - [`Protection::Keystore`]: the operating system's own store: Keychain,
 //!   the Windows Credential Manager, or the Secret Service. Encrypted at rest
 //!   and, on a locked machine, unreadable.
-//! - [`Protection::Passphrase`] — the key wrapped with one only the user knows.
+//! - [`Protection::Passphrase`]: the key wrapped with one only the user knows.
 //!   The only option that survives someone taking the disk *and* the session.
-//! - [`Protection::Platform`] — the key held by something the caller supplies.
+//! - [`Protection::Platform`]: the key held by something the caller supplies.
 //!   For phones, where the keystore is Keychain or the Android Keystore and
 //!   neither is reachable from Rust: the app implements [`SecretStore`] and
 //!   this uses it.
@@ -48,7 +48,7 @@ pub enum Protection {
 
 /// Somewhere outside this process that can keep a small secret.
 ///
-/// Implemented by the platform — Android Keystore, iOS Keychain — and passed in.
+/// Implemented by the platform (Android Keystore, iOS Keychain) and passed in.
 /// The secret is the master key itself rather than something wrapping it: both
 /// platforms handle small secrets well, and a wrapping layer would mean running
 /// a key-derivation function at every launch for no gain, since the stored value
@@ -120,18 +120,18 @@ const NONCE_LEN: usize = 24;
 /// 64 MiB and three passes: enough that guessing a weak passphrase costs real
 /// hardware time, and little enough that unlocking on a phone does not feel
 /// broken. These are baked into the format, so a file written today must still
-/// open in five years — changing them means a new format version rather than an
+/// open in five years: changing them means a new format version rather than an
 /// edit here.
 const MEMORY_KIB: u32 = 64 * 1024;
 const PASSES: u32 = 3;
 const LANES: u32 = 4;
 
-// -- the operating system's keystore -----------------------------------------
+// , the operating system's keystore -----------------------------------------
 
 /// Put the key in the OS keystore, keyed by the vault's location.
 ///
-/// Keyed by path so that two stores on one machine — a personal one and a test
-/// one — do not fight over the same entry.
+/// Keyed by path so that two stores on one machine (a personal one and a test
+/// one) do not fight over the same entry.
 /// The label a vault's key is stored under.
 ///
 /// Derived from the vault's path so two stores on one device do not collide,
@@ -228,7 +228,7 @@ pub fn keystore_available() -> bool {
     readable
 }
 
-// -- passphrase --------------------------------------------------------------
+// , passphrase --------------------------------------------------------------
 
 /// Wrap the key with a passphrase.
 ///
@@ -310,7 +310,7 @@ fn derive_wrapping_key(passphrase: &str, salt: &[u8]) -> Result<[u8; 32]> {
     Ok(out)
 }
 
-// -- odds and ends -----------------------------------------------------------
+// , odds and ends -----------------------------------------------------------
 
 fn hex(bytes: &[u8; 32]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
@@ -376,7 +376,7 @@ mod tests {
     #[test]
     fn truncation_is_refused() {
         // A sample of cut points rather than all of them. Argon2id is
-        // deliberately expensive, and every attempt pays for it -- checking
+        // deliberately expensive, and every attempt pays for it: checking
         // every offset turned this file into two minutes of work to prove
         // something the boundaries already demonstrate.
         let wrapped = wrap(&MasterKey::generate(), "passphrase").unwrap();

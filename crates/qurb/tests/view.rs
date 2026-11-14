@@ -3,7 +3,7 @@
 //!
 //! The distinction these tests exist for is availability. "Here", "not here"
 //! and "here and nowhere else" look the same to a listing that only knows
-//! whether a file is on disk — and a storage screen that offered to free the
+//! whether a file is on disk, and a storage screen that offered to free the
 //! third would be offering to delete somebody's only copy.
 
 #![recursion_limit = "256"]
@@ -102,8 +102,8 @@ fn a_file_whose_keeper_is_removed_reads_as_on_no_device() {
     assert_eq!(device.view().files(None, 100, 0).unwrap()[0].availability, Availability::Nowhere);
 }
 
-/// A copy recorded for a device this one was never paired with -- the device
-/// that made a file, reached through another -- is not one it can ask for.
+/// A copy recorded for a device this one was never paired with (the device
+/// that made a file, reached through another) is not one it can ask for.
 #[test]
 fn a_copy_on_a_device_never_paired_is_not_counted() {
     let mut device = Device::new();

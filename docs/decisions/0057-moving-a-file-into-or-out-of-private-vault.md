@@ -1,6 +1,6 @@
-# 0057 — Moving a file into or out of Private Vault
+# 0057: Moving a file into or out of Private Vault
 
-**Status:** Accepted — built on the desktop, Android and the command line;
+**Status:** Accepted, built on the desktop, Android and the command line;
 watched between the laptop and the S23, from the command line and the
 phone's own buttons
 **Date:** 2026-10-08

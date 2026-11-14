@@ -2,12 +2,12 @@
 //!
 //! # Three ways to keep it, and what each defends against
 //!
-//! - [`Protection::File`] — owner-only permissions. Defends against other users
+//! - [`Protection::File`]: owner-only permissions. Defends against other users
 //!   of the machine and a backup that excludes it. Does **not** defend against
 //!   anything that can read the disk.
-//! - [`Protection::Keystore`] — the operating system's own store. Encrypted at
+//! - [`Protection::Keystore`]: the operating system's own store. Encrypted at
 //!   rest, and on a locked machine unreadable.
-//! - [`Protection::Passphrase`] — wrapped with something only the user knows.
+//! - [`Protection::Passphrase`]: wrapped with something only the user knows.
 //!   The only option that survives someone taking the disk *and* the session,
 //!   and the only one that cannot start unattended.
 //!
@@ -33,7 +33,7 @@ const FILE_LEN: usize = 4 + 1 + 32;
 /// The result of opening a vault.
 ///
 /// Two cases rather than one, because they are not the same event. A newly
-/// created key comes with a phrase that **cannot be produced again later** —
+/// created key comes with a phrase that **cannot be produced again later**:
 /// the type makes the caller confront that at the moment it is true, instead of
 /// offering a `phrase()` method that would imply it can be asked for any time.
 pub enum Opened {
@@ -91,7 +91,7 @@ impl Vault {
 
     /// Forget the key here: the file, and the keystore's copy where it is
     /// kept there. Gone for good unless another device or the 24 words have
-    /// it -- what resetting a device is for (decision 0086).
+    /// it: what resetting a device is for (decision 0086).
     pub fn erase(&self) -> Result<()> {
         if self.protection().ok() == Some(Protection::Keystore) {
             protection::keystore_remove(&self.path)?;
@@ -110,7 +110,7 @@ impl Vault {
     /// Load or create, keeping the key the way `protection` says.
     ///
     /// The passphrase is only consulted when one is called for, and is required
-    /// then — a vault that silently fell back to an unprotected file because
+    /// then: a vault that silently fell back to an unprotected file because
     /// nobody supplied one would be worse than refusing.
     pub fn open_or_create_with(
         &self,
@@ -159,8 +159,8 @@ impl Vault {
 
     /// The platform store, or a message saying which call was missing.
     ///
-    /// A vault kept this way is unreadable without it, and the mistake -- opening
-    /// with `Vault::at` where the app meant `Vault::at(..).using(..)` -- is easy
+    /// A vault kept this way is unreadable without it, and the mistake (opening
+    /// with `Vault::at` where the app meant `Vault::at(..).using(..)`) is easy
     /// and produces a key that cannot be found rather than one that is wrong.
     fn store(&self) -> Result<&dyn SecretStore> {
         self.store.as_deref().ok_or_else(|| Error::Keystore {
@@ -173,7 +173,7 @@ impl Vault {
     /// Change how the key is kept, without changing the key.
     ///
     /// The key is read out first and written back the new way, so the data it
-    /// protects is untouched — this changes the lock, not the contents. The old
+    /// protects is untouched: this changes the lock, not the contents. The old
     /// copy is removed only once the new one is in place, because a device that
     /// loses its key in the middle of being made safer has been made
     /// catastrophically less safe.
@@ -201,7 +201,7 @@ impl Vault {
     /// Install a key recovered from its phrase, setting up a replacement device.
     ///
     /// Refuses to overwrite an existing key. Doing so would orphan every chunk
-    /// already stored here — they would still be on disk, encrypted under a key
+    /// already stored here: they would still be on disk, encrypted under a key
     /// that no longer exists anywhere. Deleting the file is a deliberate act and
     /// should stay one.
     pub fn restore(&self, phrase: &RecoveryPhrase) -> Result<MasterKey> {
@@ -370,7 +370,7 @@ mod tests {
     #[test]
     fn restoring_onto_a_fresh_device_gives_the_same_derived_keys() {
         // What "recovery" has to mean: the new device can decrypt what the old
-        // one wrote. Equality of the master key is not the point -- equality of
+        // one wrote. Equality of the master key is not the point: equality of
         // what it derives is.
         let old = tempfile::tempdir().unwrap();
         let Opened::Created { key, phrase } = Vault::at(old.path()).open_or_create().unwrap()
@@ -417,7 +417,7 @@ mod tests {
         // Anchored past the last format rather than to one of them, so adding a
         // format moves the "future" and this keeps testing what it names. It
         // was `FORMAT_PASSPHRASE + 1` and started failing the day
-        // `FORMAT_PLATFORM` took that number -- which is the test working.
+        // `FORMAT_PLATFORM` took that number, which is the test working.
         let mut bytes = MAGIC.to_vec();
         bytes.push(FORMAT_PLATFORM + 1);
         bytes.extend_from_slice(&[0u8; 32]);

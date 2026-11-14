@@ -1,4 +1,4 @@
-# 0089 — No Recently deleted: a deletion is for good
+# 0089: No Recently deleted: a deletion is for good
 
 **Status:** Accepted and built, 2026-11-14. Supersedes
 [0042](0042-recently-deleted.md). Amends
@@ -34,8 +34,8 @@ feature: remove the feature.
   and read for builds before this; a computer no longer reports the part.
 
 Why through `trash/` rather than unlinking at once: the store's bookkeeping
-for a deleted file -- its counted size, a held file's chunks, a vault file
-freed to a computer -- is all on that path and tested there. Taking the path
+for a deleted file (its counted size, a held file's chunks, a vault file
+freed to a computer) is all on that path and tested there. Taking the path
 away would rewrite deletion across the store for no difference a person sees.
 
 ## Consequences

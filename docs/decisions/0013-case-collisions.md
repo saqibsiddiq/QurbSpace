@@ -1,4 +1,4 @@
-# 0013 — Case collisions are refused, not resolved
+# 0013: Case collisions are refused, not resolved
 
 **Status:** Accepted
 **Date:** 2026-09-16
@@ -53,7 +53,7 @@ while the reverse merely declines to merge two paths that were always distinct.
 
 ## Configurable, because the hazard is the fleet's
 
-A Linux desktop holding both `README` and `readme` is fine — until a phone
+A Linux desktop holding both `README` and `readme` is fine: until a phone
 joins, at which point one of them is destroyed and the deletion comes back.
 
 So `set_fold_case(true)` lets a case-sensitive machine behave as a
@@ -76,8 +76,8 @@ same reason an unreadable file does not abort a reconciliation.
 
 Folding is ASCII-only, via SQLite's `lower()`. Turkish dotted I and other
 script-specific rules are missed. Unicode case folding is entangled with
-normalisation — macOS stores NFD, Linux usually NFC, and two paths can differ in
-bytes while being the same name — and that is a larger piece of work which this
+normalisation (macOS stores NFD, Linux usually NFC, and two paths can differ in
+bytes while being the same name) and that is a larger piece of work which this
 decision does not attempt.
 
 ## Reversibility

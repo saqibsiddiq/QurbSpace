@@ -2,7 +2,7 @@
 //!
 //! Everything here is genuine: real sockets on loopback, a real TLS 1.3
 //! handshake with mutual certificate pinning, real chunk requests. What is not
-//! genuine is the *distance* — both ends are in one process, so nothing here
+//! genuine is the *distance*: both ends are in one process, so nothing here
 //! says anything about behaviour across a NAT or a slow link.
 //!
 //! The two-device tests in `qurb-engine` already prove the decisions converge.
@@ -165,7 +165,7 @@ async fn sync_until_stable(a: &mut Device, b: &mut Device) -> usize {
     panic!("two devices did not converge over the network within 6 rounds");
 }
 
-// -- the basics --------------------------------------------------------------
+// , the basics --------------------------------------------------------------
 
 #[tokio::test(flavor = "multi_thread")]
 async fn a_file_crosses_the_network() {
@@ -186,7 +186,7 @@ async fn tombstones_cross_the_network() {
     // The file has to reach B *first*, so that A's later deletion is causally
     // after B's copy rather than concurrent with it. Two devices that each
     // created the file independently would be a genuine conflict, and decision
-    // 0009 says the edit wins there -- which is a different test.
+    // 0009 says the edit wins there, which is a different test.
     let mut a = Device::new();
     let mut b = Device::new();
     a.write("doomed.txt", b"temporary");
@@ -205,7 +205,7 @@ async fn tombstones_cross_the_network() {
 async fn a_concurrent_delete_loses_to_a_concurrent_edit_over_the_network() {
     // The case the previous test deliberately avoids. Both devices know the
     // file; one edits it and the other deletes it, neither having seen the
-    // other. The edit must survive -- a deletion stays recoverable, a discarded
+    // other. The edit must survive: a deletion stays recoverable, a discarded
     // edit does not.
     let mut a = Device::new();
     let mut b = Device::new();
@@ -328,7 +328,7 @@ async fn a_partial_file_that_is_not_the_content_is_not_kept() {
     assert_eq!(b.on_disk().get("video.mp4"), Some(&content), "a wrong partial file was built on");
 }
 
-// -- incremental transfer ----------------------------------------------------
+// , incremental transfer ----------------------------------------------------
 
 #[tokio::test(flavor = "multi_thread")]
 async fn only_missing_chunks_cross_the_wire() {
@@ -343,7 +343,7 @@ async fn only_missing_chunks_cross_the_wire() {
     b.write("big.bin", &original);
 
     // Change a few bytes near the beginning and add a little, which shifts
-    // every byte after it -- the case fixed-size blocks handle worst.
+    // every byte after it: the case fixed-size blocks handle worst.
     let mut edited = Vec::with_capacity(original.len() + 16);
     edited.extend_from_slice(&original[..1000]);
     edited.extend_from_slice(b"SIXTEEN NEW BYTE");
@@ -396,7 +396,7 @@ async fn content_already_held_under_another_name_is_not_fetched() {
     assert_eq!(b.on_disk().get("renamed.bin"), Some(&content));
 }
 
-// -- identity ----------------------------------------------------------------
+// , identity ----------------------------------------------------------------
 
 #[tokio::test(flavor = "multi_thread")]
 async fn an_unrecognised_peer_is_refused() {

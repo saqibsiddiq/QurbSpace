@@ -1,7 +1,7 @@
 //! The rendezvous service.
 //!
 //! Holds a websocket open per device, remembers where each says it is, and
-//! introduces two that want to reach each other — telling both to punch at the
+//! introduces two that want to reach each other: telling both to punch at the
 //! same moment.
 //!
 //! # What it deliberately cannot do
@@ -18,7 +18,7 @@
 //! # Websocket, not QUIC
 //!
 //! The data plane is QUIC over UDP. This is not, deliberately. If UDP is blocked
-//! — which is exactly the situation where a device most needs coordinating — a
+//! (which is exactly the situation where a device most needs coordinating) a
 //! UDP control channel cannot even tell it that it needs a relay. The channel
 //! that arranges the fallback has to work where the fallback is needed.
 
@@ -37,7 +37,7 @@ type Outbox = mpsc::UnboundedSender<FromServer>;
 
 /// Limits, so that anyone who finds the port cannot exhaust the machine.
 ///
-/// None of these protect against a determined attacker with many addresses —
+/// None of these protect against a determined attacker with many addresses:
 /// that needs infrastructure this service does not have. What they do is make
 /// the cheap attacks cheap to survive: one connection cannot spend the server's
 /// memory, and one group cannot grow without bound.
@@ -125,14 +125,14 @@ struct Directory {
     /// Only *that* there is work, never what: a set of member ids per absent
     /// member. Two devices that change a thousand files between them leave one
     /// entry, because the answer to "should I sync" is the same either way.
-    /// That also bounds it — a group of sixty-four members cannot leave more
+    /// That also bounds it: a group of sixty-four members cannot leave more
     /// than sixty-four ids waiting for any one of them.
     waiting: HashMap<(GroupId, MemberId), std::collections::HashSet<MemberId>>,
     /// How to wake each member that has said it can be.
     ///
     /// Outlives both the connection and the group, and that is not an
     /// oversight. A token is only ever useful for a device that is *not*
-    /// here — and the case that matters most is everybody being away at once:
+    /// here, and the case that matters most is everybody being away at once:
     /// a laptop shut overnight beside a sleeping phone empties the group, and
     /// dropping the token then would mean the laptop could never wake the
     /// phone when it came back.
@@ -144,7 +144,7 @@ struct Directory {
     /// Where the tokens are kept across a restart, when they are.
     ///
     /// Without it a restarted service could wake nobody until each device had
-    /// connected again and said how -- for a phone, its next scheduled pass,
+    /// connected again and said how: for a phone, its next scheduled pass,
     /// which Android may put off for hours. Found on 2026-09-28, the first
     /// time the laptop hosting the service restarted it.
     wake_file: Option<std::path::PathBuf>,
@@ -196,8 +196,8 @@ impl Directory {
         //
         // Without it the server knows the moment a device appears and tells
         // only that device. Everyone else has to discover it by asking, and a
-        // peer that asks on a backoff -- which grows precisely because the
-        // absent device keeps being absent -- will not be asking during the few
+        // peer that asks on a backoff (which grows precisely because the
+        // absent device keeps being absent) will not be asking during the few
         // seconds a phone is awake. Measured before this existed: a laptop
         // retrying every 120s against a phone announcing for 25s never met it.
         let arrival = FromServer::Appeared {
@@ -219,7 +219,7 @@ impl Directory {
     ///
     /// `false` means the recipient is not connected and the note was kept. The
     /// caller is the one that knows whether there is another way to reach them
-    /// — a push notification — and this is the moment to use it.
+    /// (a push notification) and this is the moment to use it.
     fn note_waiting(&mut self, group: GroupId, from: MemberId, to: MemberId) -> bool {
         if let Some(m) = self.groups.get(&group).and_then(|g| g.get(&to)) {
             let _ = m.outbox.send(FromServer::Waiting { from });
@@ -297,7 +297,7 @@ impl Directory {
     ///
     /// Unbounded growth here is a slow leak keyed on something anyone can
     /// generate for free. Oldest-first because the newest registration is the
-    /// one most likely to still be valid — a push token is reissued, and the
+    /// one most likely to still be valid: a push token is reissued, and the
     /// device tells us again each time it connects.
     fn evict_wake_tokens(&mut self, most: usize) {
         if self.wake.len() <= most {
@@ -344,7 +344,7 @@ pub struct SignalServer {
     acceptor: Option<tokio_rustls::TlsAcceptor>,
     connections: Arc<std::sync::atomic::AtomicUsize>,
     /// How to reach devices that are not connected. Does nothing unless the
-    /// deployment supplies one — see [`crate::wake`].
+    /// deployment supplies one: see [`crate::wake`].
     waker: crate::wake::SharedWaker,
     /// Where a WebSocket opened at `/relay` goes, as a byte stream: to a
     /// relay, when this service carries one ([`crate::tunnel`]).
@@ -411,7 +411,7 @@ impl SignalServer {
 
     /// Terminate TLS here, with this certificate.
     ///
-    /// For a deployment with no reverse proxy in front — which is the ordinary
+    /// For a deployment with no reverse proxy in front, which is the ordinary
     /// case on a small host, and the only case when there is no domain name to
     /// get a certificate for. See [`crate::tls`].
     pub fn behind(mut self, certificate: crate::tls::Certificate) -> Result<Self> {
@@ -645,8 +645,8 @@ where
     let mut rate = RateLimit::new(&limits);
 
     while let Some(message) = source.next().await {
-        // Deliberately not `?`. A client that vanishes -- laptop shut, network
-        // dropped, process killed -- surfaces here as an error, and propagating
+        // Deliberately not `?`. A client that vanishes (laptop shut, network
+        // dropped, process killed) surfaces here as an error, and propagating
         // it would skip the cleanup at the end of this function. The device
         // would stay in the directory and peers would go on being handed its
         // dead address. Ungraceful disconnection is the common case, not the

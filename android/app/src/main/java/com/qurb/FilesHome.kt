@@ -11,10 +11,10 @@ import uniffi.qurb_mobile.PeerInfo
 
 /**
  * Files (the owner's list of 2026-11-01, items 1 to 4 and 10): every device,
- * as a card -- this phone first, with its picture, then each computer with
+ * as a card, this phone first, with its picture, then each computer with
  * its own picture and its dot, blue on and red off. A tap opens the device:
  * this phone's two folders, *Vault* and *Received*; a computer's folder as
- * its `~/qurb` has it -- *Shared*, this phone's own folder under the phone's
+ * its `~/qurb` has it, *Shared*, this phone's own folder under the phone's
  * name, and other people's, locked. Every folder the same card, with no
  * words under it.
  */

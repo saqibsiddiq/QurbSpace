@@ -27,8 +27,8 @@ object Opened {
      * a video starts at once and seeks where it likes, and nothing of it is
      * kept. The first way, fetching it whole first, kept the S23 waiting on
      * a 1.6 GB episode and filled its cache. A small one is fetched whole and
-     * checked into the cache under its content's hash -- so a photo opened
-     * again is not fetched again -- and handed over through a FileProvider,
+     * checked into the cache under its content's hash (so a photo opened
+     * again is not fetched again) and handed over through a FileProvider,
      * readable through that one URI only; the cache is held under
      * [OPENED_MOST] and let go of a day later ([tidy]).
      */

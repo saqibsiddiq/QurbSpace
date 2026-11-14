@@ -2,7 +2,7 @@
 //!
 //! Deliberately dumb: it moves opaque byte strings to and from paths derived
 //! from a hash. It does not know that the bytes are encrypted, and it does not
-//! verify them — that belongs one layer up, in [`crate::Store`], which holds
+//! verify them: that belongs one layer up, in [`crate::Store`], which holds
 //! the key needed to check anything.
 
 use crate::error::{Error, Result};
@@ -76,7 +76,7 @@ impl Cas {
         })
     }
 
-    /// Remove a chunk. Missing is not an error — garbage collection may race
+    /// Remove a chunk. Missing is not an error: garbage collection may race
     /// with another process that already removed it, and the desired end state
     /// is the same either way.
     pub fn remove(&self, hash: &blake3::Hash) -> Result<()> {

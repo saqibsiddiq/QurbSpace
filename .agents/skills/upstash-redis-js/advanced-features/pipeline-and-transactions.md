@@ -8,13 +8,13 @@
 
 - **Pipelines**: Reducing round trips for independent operations
 - **Transactions**: Running a group of commands with no other client interleaving
-- **Lua scripts (`redis.eval`)**: Atomic multi-step logic in one round trip — all-or-nothing writes, read-then-write
+- **Lua scripts (`redis.eval`)**: Atomic multi-step logic in one round trip, all-or-nothing writes, read-then-write
 
 ## Limitations
 
 - Pipeline commands execute independently (no atomicity, no isolation)
-- **Transactions do not roll back.** If a command fails at runtime (e.g. a WRONGTYPE error), the commands that already ran keep their effects and the rest still execute — the transaction can be left partially applied. Use a Lua script when you need all-or-nothing.
-- No WATCH / optimistic locking over the REST client — use a Lua script (`redis.eval`) for atomic check-and-set
+- **Transactions do not roll back.** If a command fails at runtime (e.g. a WRONGTYPE error), the commands that already ran keep their effects and the rest still execute: the transaction can be left partially applied. Use a Lua script when you need all-or-nothing.
+- No WATCH / optimistic locking over the REST client: use a Lua script (`redis.eval`) for atomic check-and-set
 
 ## Examples
 
@@ -45,7 +45,7 @@ const txResults = await tx.exec();
 
 ### Lua Scripts (`redis.eval`)
 
-The whole script runs as one unit in a single round trip, so you can validate every precondition before the first write — and beyond all-or-nothing writes, branch, loop and use variables across multiple Redis calls.
+The whole script runs as one unit in a single round trip, so you can validate every precondition before the first write, and beyond all-or-nothing writes, branch, loop and use variables across multiple Redis calls.
 
 ```typescript
 const script = `

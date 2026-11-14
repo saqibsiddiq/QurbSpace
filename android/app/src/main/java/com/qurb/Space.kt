@@ -28,8 +28,8 @@ object Space {
         if (depth > 4) return
         for (child in dir.listFiles().orEmpty().map { it to size(it) }.sortedByDescending { it.second }.take(10)) {
             if (child.second < 1_000_000) continue
-            // The app's own files by name; the person's -- their Vault, what
-            // they opened -- as "a file", its name being theirs, not the log's.
+            // The app's own files by name; the person's (their Vault, what
+            // they opened) as "a file", its name being theirs, not the log's.
             val path = child.first.relativeTo(top).path
             val shown = if (child.first.isDirectory || "/.qurb/" in "/$path") path else "${child.first.parentFile?.relativeTo(top)?.path}/(a file)"
             Log.i(TAG, "space ${"  ".repeat(depth)}$shown: ${child.second / 1_000_000} MB")

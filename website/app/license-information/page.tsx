@@ -28,7 +28,7 @@ export default function LicencesPage() {
       <ul>
         {thirdParty.map(([name, where, licence, link]) => (
           <li key={name}>
-            <strong>{name}</strong> — {where}: {link ? <a href={link}>{licence}</a> : licence}
+            <strong>{name}</strong>: {where}: {link ? <a href={link}>{licence}</a> : licence}
           </li>
         ))}
       </ul>

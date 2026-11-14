@@ -21,7 +21,7 @@ import uniffi.qurb_mobile.Qurb
  * there is no progress bar, no file size, no notifixation").
  *
  * A round runs from the first file waiting to the last one the computer has,
- * and its bar is how much of that round is there -- not of the whole backup,
+ * and its bar is how much of that round is there, not of the whole backup,
  * which on the S23 was 38,057 files of 38,075 and drew a bar already full.
  * Files added while it runs make the round larger rather than move the bar
  * back. Between the computer's confirmations, the bytes this phone has handed

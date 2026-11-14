@@ -1,6 +1,6 @@
 // The waitlist: an email address, added to one set in Upstash Redis, which
 // the Vercel Marketplace integration provides (its REST address and token in
-// the environment). Nothing else about the person is kept — no name, no
+// the environment). Nothing else about the person is kept: no name, no
 // address, no device. Without the integration the waitlist says it is not
 // open, rather than pretending to take the address.
 

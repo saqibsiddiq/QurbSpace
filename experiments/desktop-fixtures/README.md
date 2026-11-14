@@ -49,7 +49,7 @@ python3 -m http.server 8731
 
 Then open `http://localhost:8731/experiments/desktop-fixtures/`.
 
-`?state=` picks what Home shows: `synced` (the default, and quiet — no
+`?state=` picks what Home shows: `synced` (the default, and quiet, no
 conflicts, nothing moving), `syncing`, `away`, `alone` (nothing paired) or
 `attention`. `?place=files` (or `settings`, `storage`, `key`, `advanced`,
 `activity`, `received`, `deleted`, `conflicts`, `waiting`, `add`) opens a
@@ -76,8 +76,8 @@ fixture has no way to be that.
 
 `frame.html?n=<i>` shows the `i`-th frame of `docs/design/system/desktop.html`
 alone at 1120 × 720 (`&page=` for another mockup page, `&theme=dark`), and
-`index.html?then=<script>` runs a script once the window is up -- a click, a
-sheet -- with `?dev=<id>` opening a device's page, so a headless browser can
+`index.html?then=<script>` runs a script once the window is up (a click, a
+sheet) with `?dev=<id>` opening a device's page, so a headless browser can
 photograph each screen beside its frame:
 
     chromium --headless=new --window-size=1120,720 --virtual-time-budget=5000 \

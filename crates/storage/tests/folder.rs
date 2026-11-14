@@ -3,7 +3,7 @@
 //! What a file browser on the phone asks the index, instead of walking the
 //! directory: which files are beneath a folder, what one file is and where its
 //! bytes are, and which files match some text. The index is flat, so "a
-//! folder" is only the paths that begin with it -- and a folder name containing
+//! folder" is only the paths that begin with it, and a folder name containing
 //! `_` or `%` must not turn into a pattern.
 
 use qurb_storage::db::Availability;

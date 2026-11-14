@@ -5,7 +5,7 @@
 //! it says is safe to act on: a stolen or compromised device keeps its pinned
 //! identity. So a version naming `../../.bashrc`, an absolute path, or qurb's
 //! own store inside the folder must be refused before anything touches the
-//! disk -- for a file, a deletion and a delivery alike.
+//! disk: for a file, a deletion and a delivery alike.
 //!
 //! The wire refuses these on decoding. These tests build the peer's tree in
 //! process, so they exercise the engine's own check, which is what stands if

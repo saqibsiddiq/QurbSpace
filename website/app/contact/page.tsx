@@ -21,7 +21,7 @@ export default function ContactPage() {
         <LinkRow href={`${repoUrl}/issues`} icon="search" title="See what’s already open" text="Someone may have asked already" />
       </div>
       <p>
-        Found a security problem? Please don’t open a public issue for it — see{' '}
+        Found a security problem? Please don’t open a public issue for it: see{' '}
         <Link href="/responsible-disclosure">reporting a vulnerability</Link>.
       </p>
     </DocPage>

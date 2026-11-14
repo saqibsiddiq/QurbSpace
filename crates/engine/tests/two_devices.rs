@@ -111,7 +111,7 @@ fn assert_converged(a: &Device, b: &Device) {
     assert_eq!(a.live_paths(), b.live_paths(), "the two indexes differ");
 }
 
-// -- vectors survive storage -------------------------------------------------
+// , vectors survive storage -------------------------------------------------
 
 #[test]
 fn a_local_change_is_stamped_with_this_devices_vector() {
@@ -177,7 +177,7 @@ fn two_stores_get_different_identities() {
     );
 }
 
-// -- syncing -----------------------------------------------------------------
+// , syncing -----------------------------------------------------------------
 
 #[test]
 fn a_file_reaches_the_other_device() {
@@ -296,7 +296,7 @@ fn both_devices_contributing_different_files_converge() {
     assert_eq!(a.on_disk().len(), 2);
 }
 
-// -- conflicts ---------------------------------------------------------------
+// , conflicts ---------------------------------------------------------------
 
 #[test]
 fn concurrent_edits_keep_both_versions_on_disk() {
@@ -371,7 +371,7 @@ fn identical_content_created_independently_is_not_a_conflict() {
     assert_eq!(b.on_disk().get("same.txt").map(String::as_str), Some("now changed"));
 }
 
-// -- transfer avoidance ------------------------------------------------------
+// , transfer avoidance ------------------------------------------------------
 
 #[test]
 fn content_already_held_is_not_fetched_again() {
@@ -405,7 +405,7 @@ fn syncing_an_already_agreed_pair_plans_no_work() {
     assert!(b.engine.plan_against(&a.engine.tree().unwrap()).unwrap().is_empty());
 }
 
-// -- the two halves must not fight each other --------------------------------
+// , the two halves must not fight each other --------------------------------
 
 #[test]
 fn reconciling_after_a_sync_does_not_restamp_adopted_files() {
@@ -413,7 +413,7 @@ fn reconciling_after_a_sync_does_not_restamp_adopted_files() {
     // reconciliation notices a file it has not seen, and the engine stamps it
     // as a *local* change. That version would then be concurrent with the
     // peer's own copy, and the next exchange would raise a conflict over a file
-    // that was just successfully synced -- forever.
+    // that was just successfully synced: forever.
     //
     // What prevents it is `apply_plan` recording the modification time the file
     // actually ended up with, so the size-and-mtime fast path recognises it.
@@ -459,7 +459,7 @@ fn a_tombstone_adopted_from_a_peer_is_not_resurrected_by_reconciliation() {
 fn a_conflict_file_is_not_treated_as_a_new_local_edit() {
     // A conflict writes a second file onto both devices. If either then stamps
     // it as its own new file, the two copies become concurrent and conflict
-    // again -- producing a conflict file for the conflict file.
+    // again: producing a conflict file for the conflict file.
     let (mut a, mut b) = (Device::new(), Device::new());
     a.write("shared.txt", "original");
     sync_until_stable(&mut a, &mut b);

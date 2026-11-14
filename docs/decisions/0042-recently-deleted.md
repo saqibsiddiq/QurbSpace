@@ -1,4 +1,4 @@
-# 0042 — Recently deleted
+# 0042: Recently deleted
 
 **Status:** Superseded by [0089](0089-no-recently-deleted.md), 2026-11-14: removed at the owner's word.
 **Date:** 2026-09-28
@@ -13,7 +13,7 @@ listed in a `trash` table in the index, instead of unlinked.
   deleted it; a file deleted through qurb itself (the phone's Vault); the
   version not kept when a conflict is settled ([0043](0043-settling-a-conflict.md)).
 - **What does not.** A file somebody deletes with their own file manager is
-  already gone before qurb sees it — their desktop's own trash has it. The
+  already gone before qurb sees it: their desktop's own trash has it. The
   *other* devices move their copies into Recently deleted as the deletion
   reaches them, so the file is still recoverable from any of those.
 - **Restoring** puts the file back in the folder as a change made on that
@@ -21,7 +21,7 @@ listed in a `trash` table in the index, instead of unlinked.
   does. The deletion is undone everywhere, including on the device that made
   it and had nothing left to restore from. A restore never overwrites: if
   something is at the old path now, it comes back as `name (restored).ext`.
-- **Thirty days**, then it goes for good — in the housekeeping every device
+- **Thirty days**, then it goes for good: in the housekeeping every device
   already runs (the daemon every few minutes, a phone after each sync). "Delete
   now" does it sooner.
 - **Under a storage limit** Recently deleted goes after content held only on
@@ -40,8 +40,8 @@ with it every copy anywhere: the retention window the index keeps for a
 tombstone could restore the *record*, not the bytes. "Recover a deleted file"
 (product plan §2.9) had nothing to recover from.
 
-Moving instead of unlinking costs nothing at the moment of deletion — a rename
-within one filesystem — and a phone whose store directory is on a different
+Moving instead of unlinking costs nothing at the moment of deletion (a rename
+within one filesystem) and a phone whose store directory is on a different
 filesystem from its folder copies and then deletes.
 
 **Per device, not shared.** Each device's list is what *it* holds. A shared
@@ -66,8 +66,8 @@ every copy is not built.
 
 A device that deleted a file could not take the **same bytes** again, under any
 name. Its tombstone still answered "the content is here" from
-`any_file_with_content`, but with an empty chunk list — the references to
-payloads that left with the file had been released — and an empty list
+`any_file_with_content`, but with an empty chunk list (the references to
+payloads that left with the file had been released) and an empty list
 assembles to the wrong bytes. The file failed as corrupt on every sync. Any
 re-added photo or restored copy would have hit it. `any_file_with_content` now
 only answers from a row whose chunks add up to its size; the regression test is
@@ -78,7 +78,7 @@ only answers from a row whose chunks add up to its size; the regression test is
 **2026-10-08.** A sharing rule (decision 0044) is a file in the shared area, so
 a rule deleted on another device arrived like any deletion and was kept here.
 Recently deleted then listed `.qurb-sharing/<folder>` as a deleted file, and
-restoring it would have put back a rule somebody had removed — on the device
+restoring it would have put back a rule somebody had removed: on the device
 it had let back into the folder, leaving that device out again. A rule deleted
 elsewhere is now removed, not kept. One kept by an earlier build is not
 listed, cannot be restored, and still expires.

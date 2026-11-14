@@ -6,7 +6,7 @@
 #   ./scripts/release.sh linux            # deb, rpm, Arch package
 #   ./scripts/release.sh server           # the qurb program alone, static, x86_64 and arm64
 #   ./scripts/release.sh android          # every ABI: an APK each, one for all, an app bundle
-#   ./scripts/release.sh windows          # the window and the qurb program, zipped -- not run on Windows
+#   ./scripts/release.sh windows          # the window and the qurb program, zipped, not run on Windows
 #   ./scripts/release.sh sums             # SHA256SUMS of what is there
 #
 # What each package is for, what has been run on what, and what has not, is
@@ -15,7 +15,7 @@
 #
 # Needs: cargo-tauri (`cargo install tauri-cli`), makepkg (Arch), llvm-strip, the Android
 # NDK and SDK and the release key (android/README.md, "Signing"), and for the
-# static and Windows builds Zig and cargo-zigbuild -- ZIG names the zig binary
+# static and Windows builds Zig and cargo-zigbuild, ZIG names the zig binary
 # if it is not on PATH.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -34,7 +34,7 @@ if [[ -n ${ZIG:-} ]]; then export PATH=$(dirname "$ZIG"):$PATH; fi
 
 linux() {
     # No AppImage: it carries the building machine's libraries, and needs a
-    # glibc as new as that machine's -- 2.44 here, which only the newest
+    # glibc as new as that machine's, 2.44 here, which only the newest
     # distributions have (docs/releasing.md, "Known gaps").
     echo "== Linux: deb, rpm"
     # Apart from the everyday target/, so a release never ships whatever a

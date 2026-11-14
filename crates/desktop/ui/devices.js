@@ -203,7 +203,7 @@ function drawAdd(main) {
 }
 
 // Add your phone (D17): the code to scan, its six digits, how long it
-// lasts, and Later. The phone that scans asks in a sheet (D18) -- or, a
+// lasts, and Later. The phone that scans asks in a sheet (D18), or, a
 // phone removed here coming back, says it is back and what is its again
 // (D23; decision 0084).
 async function drawShowCode(main, { guest, first }) {

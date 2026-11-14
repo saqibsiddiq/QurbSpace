@@ -1,4 +1,4 @@
-# 0066 — Six digits to pair, on the same network
+# 0066: Six digits to pair, on the same network
 
 **Status:** Accepted, 2026-10-14. Amends [0014](0014-pairing.md), whose code
 carried the inviting device's whole fingerprint because "a short code would

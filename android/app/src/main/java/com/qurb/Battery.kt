@@ -12,8 +12,8 @@ import android.provider.Settings
  *
  * A phone that saves battery hard freezes an app nobody is looking at: on a
  * new OPPO a computer collecting its backup stood still while the app was
- * off screen (the owner, 2026-11-13). Asked once, on first opening -- an app
- * can ask nothing while it is being installed -- with the system's own
+ * off screen (the owner, 2026-11-13). Asked once, on first opening (an app
+ * can ask nothing while it is being installed) with the system's own
  * question, and again from Settings. Some makers keep a switch of their own
  * as well; once the system's is given, Settings opens the app's page there.
  */

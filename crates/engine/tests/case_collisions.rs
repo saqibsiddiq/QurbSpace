@@ -2,7 +2,7 @@
 //!
 //! On Linux they are two files. On macOS and Windows they are one, and writing
 //! the second destroys the first. That alone would be a nuisance; what makes it
-//! data loss is what happens next — the reconciliation after the overwrite sees
+//! data loss is what happens next: the reconciliation after the overwrite sees
 //! one file where the index expected two, reports the missing one as deleted,
 //! and propagates that deletion to every other device.
 //!
@@ -104,7 +104,7 @@ fn a_colliding_path_is_refused_rather_than_silently_overwriting() {
         stats.failures[0].error
     );
 
-    // The existing file must be untouched -- that is the whole point.
+    // The existing file must be untouched: that is the whole point.
     assert_eq!(
         fs::read(target.root.join("readme")).unwrap(),
         b"already here, different case",

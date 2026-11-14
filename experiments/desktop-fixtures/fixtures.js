@@ -3,8 +3,8 @@
 // Loaded before the window's own scripts, which read `window.__TAURI__` as
 // they start and would otherwise fail on the first line.
 //
-// `?state=` picks the live state Home draws -- synced, syncing, away, alone
-// (nothing paired), attention -- and `?screen=` opens a place directly, so
+// `?state=` picks the live state Home draws (synced, syncing, away, alone
+// (nothing paired), attention) and `?screen=` opens a place directly, so
 // each can be looked at without clicking through. `?quiet` answers with no
 // conflicts and no transfers: the healthy state, the one that should look
 // almost boring.
@@ -130,7 +130,7 @@ const ANSWERS = {
   // try; the real parser, with its units, is tested in `qurb-cli`.
   read_allowance: ({ text }) => {
     const gb = parseFloat(text);
-    if (!(gb > 0)) throw new Error(`\`${text.trim()}\` is not an amount of space — try 75 or 1.5 TB`);
+    if (!(gb > 0)) throw new Error(`\`${text.trim()}\` is not an amount of space: try 75 or 1.5 TB`);
     return String(Math.round(gb * 1024 ** 3));
   },
   // Any code is taken here; the real one fetches the key from the device
@@ -227,7 +227,7 @@ const ANSWERS = {
     spoken: "kilo seven foxtrot quebec · romeo two delta · sierra nine whiskey",
     expires_at: now + 300,
     // None, unless a script has put a real one from the Rust renderer in
-    // `window.__fixtureQr` -- the way to look at the actual drawing here.
+    // `window.__fixtureQr`: the way to look at the actual drawing here.
     qr: window.__fixtureQr ?? null,
     // Six digits (decision 0066). `?withdrawn` for digits tried wrongly too
     // often.
@@ -235,7 +235,7 @@ const ANSWERS = {
   }),
 
   // Answers "waiting" for a few seconds, then a phone asks to join with the
-  // number it shows (decision 0053) until approved -- "paired" -- or
+  // number it shows (decision 0053) until approved ("paired") or
   // declined, when the code waits again. The countdown, the question and the
   // arrival can all be looked at without a second device.
   pairing_state: () => {
@@ -647,8 +647,8 @@ window.__TAURI__ = {
 })();
 
 // `?then=<script>` runs once the window is up, after `?place=`: how a
-// headless screenshot reaches a screen behind a click -- a device's page,
-// a sheet -- for comparing with its mockup frame. `?dev=<id>` opens that
+// headless screenshot reaches a screen behind a click (a device's page,
+// a sheet) for comparing with its mockup frame. `?dev=<id>` opens that
 // device's page.
 (() => {
   const then = params.get("then");

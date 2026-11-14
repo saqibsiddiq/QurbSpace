@@ -3,8 +3,8 @@
 //!
 //! What a phone does with its chosen folders (decision 0063), done by a
 //! computer with folders of its own: each is kept in this device's vault
-//! under `.qurb-outside/folders/<name>/`, read where it lies -- recorded, not
-//! copied (decision 0062) -- and so kept by every device named to keep this
+//! under `.qurb-outside/folders/<name>/`, read where it lies (recorded, not
+//! copied (decision 0062)) and so kept by every device named to keep this
 //! one's own files (`qurb holders`). A file deleted from the folder stays
 //! with them while one of them holds it, as a phone's do.
 
@@ -99,7 +99,7 @@ pub fn run(
     let mut reports = Vec::new();
     // Offered to the devices keeping this vault: a phone offers its folders
     // only on Wi-Fi (decision 0062), and a computer is taken to be on a
-    // network that does not count what it carries -- the bandwidth limit is
+    // network that does not count what it carries, the bandwidth limit is
     // the way to hold it back.
     if !config.backup_folders.is_empty() {
         if let Err(e) = store.db().set_outside_offered(true) {

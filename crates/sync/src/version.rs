@@ -37,7 +37,7 @@ impl Content {
 /// Carried on the version rather than inferred, because the receiver cannot
 /// tell from the path and gets exactly one chance to file it correctly. A
 /// private version adopted as shared content would be advertised to every
-/// other device on the next sync -- silent, immediate and irreversible.
+/// other device on the next sync: silent, immediate and irreversible.
 ///
 /// Four rather than two because holding a vault has a direction. Once two
 /// devices can each hold the other's, "this is a vault entry" cannot say
@@ -62,8 +62,8 @@ impl Area {
     }
 
     /// The byte this is carried as. The first two are the values the old
-    /// `private` flag had, which is not compatibility -- the protocol version
-    /// changed with this -- but does keep the common cases recognisable.
+    /// `private` flag had, which is not compatibility (the protocol version
+    /// changed with this) but does keep the common cases recognisable.
     pub fn to_byte(self) -> u8 {
         match self {
             Area::Shared => 0,
@@ -145,7 +145,7 @@ impl FileVersion {
 
     /// Whether two versions hold the same bytes, regardless of history.
     ///
-    /// Two devices can reach identical content independently — the same file
+    /// Two devices can reach identical content independently: the same file
     /// copied into place on each. That is not a conflict even though the
     /// vectors are concurrent.
     pub fn same_content(&self, other: &Self) -> bool {

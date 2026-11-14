@@ -1,9 +1,9 @@
 //! Tor end to end on the live network: an onion service published, reached,
 //! and datagrams carried both ways through the bridges (decision 0082).
 //!
-//! Ignored by default -- it needs the internet and takes up to a minute:
+//! Ignored by default (it needs the internet and takes up to a minute:
 //!
-//!     cargo test -p qurb-peer --features tor-host --test tor_live -- --ignored --nocapture
+//!     cargo test -p qurb-peer --features tor-host --test tor_live) --ignored --nocapture
 
 #![cfg(feature = "tor-host")]
 

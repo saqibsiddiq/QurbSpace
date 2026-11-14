@@ -1,4 +1,4 @@
-# 0010 — Content is requested by hash, never by path
+# 0010: Content is requested by hash, never by path
 
 **Status:** Accepted
 **Date:** 2026-09-16
@@ -46,8 +46,8 @@ The index needs to answer "does any live path hold this content", which is a
 partial index on `content_hash`. Small, and it pays for itself the first time a
 large file is renamed.
 
-`ContentSource` is the seam where the network goes. Everything above it —
-planning, conflict resolution, writing files, recording vectors — is finished
+`ContentSource` is the seam where the network goes. Everything above it
+(planning, conflict resolution, writing files, recording vectors) is finished
 and tested. Below it there is currently one implementation that reads another
 local store, which is what the two-device tests use.
 

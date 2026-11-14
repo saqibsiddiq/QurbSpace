@@ -18,9 +18,9 @@ import uniffi.qurb_mobile.PeerInfo
 
 /**
  * This phone's folder on a computer (the owner's item 5, decision 0067 step
- * 4): what the computer keeps for it -- its WhatsApp, the folders it backs
+ * 4): what the computer keeps for it (its WhatsApp, the folders it backs
  * up, its Private Vault, files deleted here included, and what it kept for
- * this phone before it was set up again -- browsed live while the computer
+ * this phone before it was set up again) browsed live while the computer
  * is on. Any file can be downloaded to this phone, or restored where it was,
  * and the whole folder searched, by the computer (decision 0073, item 4).
  *

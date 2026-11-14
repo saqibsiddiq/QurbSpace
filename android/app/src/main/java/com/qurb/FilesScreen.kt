@@ -22,11 +22,11 @@ import uniffi.qurb_mobile.FileEntry
 
 /**
  * Files, or Private Vault (direction §18, §15): the same browser over the two
- * areas a phone has -- the shared space every device sees, and this phone's
+ * areas a phone has, the shared space every device sees, and this phone's
  * own.
  *
- * Every file says where its bytes are -- *On this phone*, *Available
- * elsewhere*, *Only copy here* -- because that decides what a person can
+ * Every file says where its bytes are (*On this phone*, *Available
+ * elsewhere*, *Only copy here*) because that decides what a person can
  * safely do with it, and the actions offered follow from it. *Free local
  * space* never looks like deleting (§12), and is never offered for the only
  * copy (§13).

@@ -5,11 +5,11 @@ import { Rise } from './rise'
 import { release, releaseFile, releasesUrl, repoUrl } from '../app/site-config'
 
 // The last part of the landing page (docs/design/website-brief.md): getting
-// it, kept plain — no drawing and none of the hero's words, at the owner's
+// it, kept plain, no drawing and none of the hero's words, at the owner's
 // asking.
-// One button that knows the visitor's device — Android and Linux download,
+// One button that knows the visitor's device (Android and Linux download,
 // Windows downloads marked early (built, never run on Windows: releasing.md),
-// Mac and iPhone have no app and are offered the waitlist instead — then the
+// Mac and iPhone have no app and are offered the waitlist instead) then the
 // waitlist itself and the code. Until the release is published on GitHub
 // (site-config's `release`), no button links to a file that is not there.
 

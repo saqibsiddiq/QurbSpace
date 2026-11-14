@@ -1,28 +1,28 @@
 # Understanding qurb from scratch
 
 This is the one document to read if you know nothing about this project. It
-assumes no prior context — not the architecture document, not the conversations
+assumes no prior context, not the architecture document, not the conversations
 that produced it, not familiarity with sync engines. Everything else in `docs/`
 goes deeper on one topic; this file is the map.
 
 It is a **living document**. Anything that changes how the system fits together
 should be reflected here in the same piece of work that changes it.
 
-**Last verified against the code:** 2026-10-15 — the whole file checked against
+**Last verified against the code:** 2026-10-15, the whole file checked against
 the source, not just the sections that changed: every file and name it
 mentions found in the tree, the file map compared with each directory, and
 the prose read against what changed since 2026-10-08. Phases 0–2 are
 complete. Phase 3 is built and its kill criterion is unmeasured, for want of
 a second *network*. Phase 4 has a daemon, a desktop window that does
-everything the command line does — setting up, pairing by code or six
+everything the command line does (setting up, pairing by code or six
 digits, sending, conflicts, sharing folders with chosen
-devices, the passphrase — and an Arch package; no automatic updater, by
+devices, the passphrase) and an Arch package; no automatic updater, by
 decision. Since 2026-10-14 `~/qurb` holds people: `~/qurb/Shared`, the synced
 folder, and a folder for each person, opened only with their phone's yes
 ([0067](decisions/0067-a-folder-for-each-person.md)). Phase 5 has an Android
 app on a real phone that syncs with a laptop in both directions, shares into
 qurb from anywhere on the phone, and backs up WhatsApp and
-chosen folders to the laptop — restoring them unproven
+chosen folders to the laptop: restoring them unproven
 ([0062](decisions/0062-backing-up-whatsapp.md)); iOS is untouched. Both apps
 were rebuilt to the owner's design direction on 2026-09-29, and given a dark
 mode on 2026-10-08 ([0056](decisions/0056-dark-mode.md)). What comes next:
@@ -38,8 +38,8 @@ meets it.
 
 ## 1. What this project is
 
-qurb is a **private cloud storage system**. It aims to feel like Dropbox — you
-put a file in a folder on your laptop, it appears on your phone — while being
+qurb is a **private cloud storage system**. It aims to feel like Dropbox (you
+put a file in a folder on your laptop, it appears on your phone) while being
 built on the opposite premise: **your files are never stored on our servers.**
 
 They move directly from your laptop to your phone, encrypted, over the internet.
@@ -101,19 +101,19 @@ every synced file cost **twice** its size.
 
 So it is not written. On a device with a folder attached, the chunk store keeps
 only what the folder cannot supply, and a read that finds no payload goes to the
-file instead — seeking to the chunk's offset, which the index computes as the
+file instead: seeking to the chunk's offset, which the index computes as the
 running sum of the chunks before it. The bytes are hashed before they are
 returned, so a file edited behind qurb's back makes the *old* chunks fail to
 read rather than answer with the wrong content.
 
-A store with no folder — a storage-only replica — keeps every payload, because
+A store with no folder (a storage-only replica) keeps every payload, because
 nothing else has them. See
 [decisions/0024](decisions/0024-the-file-is-the-payload-store.md) for what this
 costs, and `qurb reclaim` for freeing the duplicates an older store still holds.
 
 #### A device may be told how much disk it can use
 
-Set with `qurb config <dir> limit=10G`, or with the slider in the desktop app —
+Set with `qurb config <dir> limit=10G`, or with the slider in the desktop app:
 the same act either way, because the slider writes the same settings file the
 command does, and the daemon re-reads it as it runs.
 
@@ -130,20 +130,20 @@ device is known to hold those exact bytes. A device that cannot free enough
 stays over its limit and says so. That looks like a bug and is not: a limit is
 a promise about disk, and no number in a settings box outranks the only copy of
 someone's work. Nor does it ever free a file this device keeps for another's
-vault — a phone's backup above all: only this device's own files are
+vault: a phone's backup above all: only this device's own files are
 candidates (`Db::evictable`).
 
 **Dropping a file must not look like deleting it.** A syncing device decides a
 file was deleted by not finding it. So the index records whether this device is
-*holding* each file, separately from whether the file is there — set before the
-unlink, never after — and both the scan and the watcher skip a file that is
+*holding* each file, separately from whether the file is there (set before the
+unlink, never after) and both the scan and the watcher skip a file that is
 missing on purpose. Without that, a device running low on disk would delete the
 user's files on every other device. See
 [decisions/0025](decisions/0025-a-storage-cap-that-cannot-lose-data.md).
 
 #### A deletion keeps a copy for thirty days
 
-Deleting a file — here, or on another device and synced — moves the file out
+Deleting a file (here, or on another device and synced) moves the file out
 of the folder into `.qurb/trash/` rather than unlinking it, and the `trash`
 table remembers where it came from. For thirty days it can be restored, which
 writes it back as a *new version* in the area it was deleted from, so a shared
@@ -162,7 +162,7 @@ off. There is no outbox and no retry queue: the file is written into the folder
 and indexed like any other, and it reaches the others whenever one is next
 reachable.
 
-"What is still waiting to be delivered" is therefore a *question*, not a list —
+"What is still waiting to be delivered" is therefore a *question*, not a list:
 asked of the index as "live files this device made, whose content no other
 device is known to hold". It cannot drift from the truth, because it is read
 fresh each time rather than maintained.
@@ -186,7 +186,7 @@ not here that no device this one can ask holds reads as *On no device*. See
 For that question to have an answer, a device that finishes receiving content
 tells the device it got it from: `Got { content }`, the only message in the
 protocol that asks for nothing. Credited to the certificate the connection
-authenticated with, never to anything the message claims — a storage cap drops
+authenticated with, never to anything the message claims: a storage cap drops
 local copies on the strength of that record.
 
 A device also sends it for content it is merely *holding*, a few per sync and
@@ -200,8 +200,8 @@ peer's tree).
 
 That report covers only what a device holds in its own folder. A computer
 keeping a phone's vault holds those files without materialising them, so a
-`Got` for one lost on the way -- the connection dropped between fetching
-and telling -- was never made good, and the phone counted the file as still
+`Got` for one lost on the way (the connection dropped between fetching
+and telling) was never made good, and the phone counted the file as still
 to go for good: 130 of the S23's WhatsApp files on 2026-10-15. So the phone
 asks instead. At each sync with a computer keeping its vault, it asks about
 up to 64 of its vault's files with no record of that computer holding them,
@@ -222,7 +222,7 @@ the same file sent twice was dropped without a word. See
 #### Nobody waits for a poll to find out
 
 A device that changes something tells the rendezvous service it has work for
-each of its peers — who, never what. The service forwards that to peers that
+each of its peers: who, never what. The service forwards that to peers that
 are connected and **keeps it for peers that are not**, delivering it the moment
 they appear.
 
@@ -232,7 +232,7 @@ hour. Measured with two idle daemons: a file written on one was on the other
 **one second later**.
 
 It is also the input a push notification needs. The service knows both who has
-work and who is absent, which is exactly the condition for waking a phone —
+work and who is absent, which is exactly the condition for waking a phone:
 and the condition for *not* waking one, when the peer it would sync with is
 not there either.
 
@@ -252,8 +252,8 @@ We measured this in Phase 0 on a 196 MiB file, prepending a single byte:
 
 | method | chunks still reusable |
 |---|---|
-| content-defined (FastCDC) | 304 / 305 — **99.7%** |
-| fixed 4 MiB blocks | 0 / 50 — **0%** |
+| content-defined (FastCDC) | 304 / 305: **99.7%** |
+| fixed 4 MiB blocks | 0 / 50: **0%** |
 
 That table is the entire justification for the extra complexity of CDC. See
 [decisions/0004-chunk-parameters.md](decisions/0004-chunk-parameters.md) for how
@@ -274,7 +274,7 @@ servers are out of the loop.
 
 It does not always work. Some networks (**symmetric NAT**) assign a different
 external port per destination, which defeats the trick. For those we fall back
-to a **relay** — a server that forwards encrypted bytes without being able to
+to a **relay**: a server that forwards encrypted bytes without being able to
 read them. Relaying costs us bandwidth, so the percentage of connections that go
 direct is a number with a dollar value attached.
 
@@ -291,7 +291,7 @@ can be reached, and listens for others. No server is involved, and a device
 starts and syncs perfectly well when no rendezvous service exists at all.
 
 The beacon is encrypted under a key derived from the master key, so a stranger
-on the same café network sees random bytes — not the device identifier, not the
+on the same café network sees random bytes, not the device identifier, not the
 addresses, not the fact that qurb is running. That matters because the
 identifier a device announces under is a bearer secret.
 
@@ -309,7 +309,7 @@ own opinion and they must converge.
 We track causality with **vector clocks**: each device keeps a counter per
 device, like `{laptop: 42, phone: 12}`, meaning "I have seen 42 changes from
 laptop and 12 from phone." Comparing two vectors tells you whether one change
-happened after another, or whether they happened *concurrently* — neither aware
+happened after another, or whether they happened *concurrently*, neither aware
 of the other.
 
 Concurrent changes are conflicts. The rule is
@@ -321,8 +321,8 @@ filename is decided automatically.
 A person settles it afterwards: keep the original, keep the other version, or
 keep both under their own names. Settling is an ordinary change that syncs like
 any other, and the version not kept is deleted. A conflict is
-found by its *name* — `report.conflict-3f2a9c01-2026-09-28-141500.txt`, the
-device's short identifier and the time in UTC — parsed strictly by
+found by its *name* (`report.conflict-3f2a9c01-2026-09-28-141500.txt`, the
+device's short identifier and the time in UTC) parsed strictly by
 `qurb_sync::conflict_origin`, so there is no table of conflicts to drift out of
 step with the folder, and the window shows the device's name instead. See
 [decisions/0043](decisions/0043-settling-a-conflict.md).
@@ -331,7 +331,7 @@ step with the folder, and the window shows the device's name instead. See
 
 Everything above describes one namespace that every paired device converges on.
 That is the **shared area**, and it is where a path lives unless something says
-otherwise — put a file in the folder on your laptop and it appears on your
+otherwise: put a file in the folder on your laptop and it appears on your
 phone.
 
 Alongside it, each device has a **private vault**. Other devices may put content
@@ -340,8 +340,8 @@ between "our files" and "here, this is for you".
 
 In the index this is one nullable column, `files.scope`: `NULL` is the shared
 area, a device id is that device's vault. In the protocol it is an
-authorisation check on every request that could reveal content — the tree, a
-manifest, a chunk — because a user interface that declines to draw a listing
+authorisation check on every request that could reveal content (the tree, a
+manifest, a chunk) because a user interface that declines to draw a listing
 stops nothing, and a peer can ask for content by hash without ever looking at a
 listing.
 
@@ -350,7 +350,7 @@ file in that device's vault, and the recipient files it in their own folder
 without advertising it onward. See
 [decisions/0029](decisions/0029-two-areas-shared-and-private.md) for the data
 model and [decisions/0030](decisions/0030-sending-a-file-to-one-device.md) for
-what a send promises — including the rule that a copy in somebody's vault is a
+what a send promises: including the rule that a copy in somebody's vault is a
 copy this device may *not* count on, which is the difference between eviction
 and data loss.
 
@@ -362,7 +362,7 @@ taken when it was sent, the way a file in the folder supplies its own chunks.
 A file changed or deleted before then is not sent. `Store::check_sends`
 calls the send off and writes why in the history, and both apps' "something
 failed" notification reads it there. Once the recipient has it,
-`Store::tidy_sends` stops reading the file and deletes any copy qurb made —
+`Store::tidy_sends` stops reading the file and deletes any copy qurb made:
 only a file Android's share sheet lent briefly is copied, into the app's own
 files. Sends made before 2026-10-10 kept a sealed copy; those still go when
 space runs short on a desktop, or when asked for by name on a phone
@@ -376,7 +376,7 @@ gives once, and the folders chosen for it on either device, read with "All
 files access". Such a file is a row in the device's vault under a prefix
 (`.qurb-outside/whatsapp/`, `.qurb-outside/storage/<folder>/`), its chunks
 recorded and none stored, and `outside_sources`
-says where it is read from -- whenever a device keeping the vault asks, and
+says where it is read from: whenever a device keeping the vault asks, and
 checked against its hashes, for as long as the file is there.
 `Store::keep_outside_folder` brings the rows into line with a listing of the
 folder: new and changed files are read once, to chunk them, up to a deadline,
@@ -389,7 +389,7 @@ freed file. New files are read four at a time, each through the platform,
 and recorded in order. A device collecting many small files fetches ahead:
 the engine tells its source what a plan will ask for
 (`ContentSource::coming`), and the network source fetches small files 32 at
-a time and reports what arrived in batches (`finished`) -- one at a time, a
+a time and reports what arrived in batches (`finished`), one at a time, a
 laptop collected 4 to 8 a second from a phone. A larger file is reported as
 soon as it arrives, so that a phone backing up videos counts them down as
 they go (2026-10-25). A file kept for another device
@@ -408,19 +408,19 @@ folder, privately, as described above. See
 
 **A device can keep its own files private, and another holds them for it.**
 With `own-files = private` a file added on a device goes into its own vault,
-and the devices it names with `qurb holders` keep a copy — in the chunk store,
-never in the folder, never shown — which lets it free its local copy with
+and the devices it names with `qurb holders` keep a copy (in the chunk store,
+never in the folder, never shown) which lets it free its local copy with
 `qurb free` and have it back with `qurb fetch`. A holder drops a file only on
 the owner's deletion, never because it is missing from a list, so a wiped
 phone cannot delete its own backup. On the wire each tree entry says which of
-four areas it belongs to — shared, sent, held, hold — which is what moved the
+four areas it belongs to (shared, sent, held, hold) which is what moved the
 protocol to `qurb/2`. Built and verified between two desktops, and used by the
 Android app, where files that arrive on the phone are private by default and a
-device is chosen on the Devices screen to keep them — verified between a Galaxy
+device is chosen on the Devices screen to keep them: verified between a Galaxy
 S23 and a laptop: kept, freed, fetched back byte-identical, and let go on
 deletion. See [decisions/0036](decisions/0036-a-phone-keeps-its-own-files.md).
 A file the person adds from Files or from Private Vault goes into that area
-instead, whatever the default says —
+instead, whatever the default says:
 [decisions/0049](decisions/0049-adding-a-file-puts-it-where-you-are-looking.md).
 
 **A phone takes no part in the shared area** since
@@ -428,10 +428,10 @@ instead, whatever the default says —
 engine's `shared_area` switch is off on a phone (`Settings::shared_area`): a
 sync takes nothing of other devices' shared files, and everything added goes
 into the phone's vault. On opening, `Store::leave_shared_area` lets go of
-each shared file a computer keeps -- row and bytes, with no tombstone, so it
+each shared file a computer keeps (row and bytes, with no tombstone, so it
 is deleted nowhere else; bytes only once that computer, asked, has said it
 holds them (`Db::confirmed_safe_elsewhere`), and a row with no bytes on the
-phone whoever keeps it -- and moves one only the phone has into its vault.
+phone whoever keeps it) and moves one only the phone has into its vault.
 The phone reaches a computer's shared folder live instead (`Request::Shared`
 and the requests after it, `crates/storage/src/shared_folder.rs`), and
 changes its own folder on a computer by changing its own vault, which the
@@ -442,13 +442,13 @@ decision 0089; the store's `restore_freed` and `restore_held` remain,
 reached from no window). Before that, a restore at the computer was a
 version of the computer's after the deletion, which the holder's planning
 does not let the old deletion undo, and the phone takes it back at its next
-sync -- `Action::Restored`, the one sync step a holder's word decides, and
+sync: `Action::Restored`, the one sync step a holder's word decides, and
 only for the very file the phone deleted (`Store::restored_elsewhere`).
 Computers and the CLI keep the shared area as described above.
 
 **A folder in the shared area can be shared with chosen devices.** By default
 a folder goes to every device. Choosing devices writes a small rule file,
-`.qurb-sharing/<folder>`, which syncs like any other file — so every device
+`.qurb-sharing/<folder>`, which syncs like any other file, so every device
 learns the rule the ordinary way, and each derives its own `shares` tables from
 it. The server side enforces it: a device not chosen is not shown the folder's
 files in the tree and is refused their manifests and chunks, however it asks.
@@ -522,9 +522,9 @@ the computer uses.
 **A computer keeps a folder for each person**
 ([decisions/0067](decisions/0067-a-folder-for-each-person.md)): its owner,
 whose phones' vaults it keeps, and each guest. `~/qurb` holds them:
-`~/qurb/Shared` is the synced folder — a folder of the old shape at `~/qurb`
+`~/qurb/Shared` is the synced folder (a folder of the old shape at `~/qurb`
 is moved there once, index and all, before anything watches it
-(`qurb_cli::layout`) — and beside it a read-only placeholder for each of the
+(`qurb_cli::layout`)) and beside it a read-only placeholder for each of the
 owner's phones, named as the phone is, and for each guest, holding one note
 ([decisions/0085](decisions/0085-a-folder-for-each-phone.md)). This
 computer's own vault is not shown there. In the
@@ -540,7 +540,7 @@ alone (0085). An open folder is read once into a tree
 mounted by a QurbSpace that stopped is unmounted when the folders are laid
 out (`mount::clear_stale`). A phone of the owner's reaches
 its own folder there with `Request::Kept`, answered to that phone only,
-fetching through the ordinary manifest and chunks — content kept for its
+fetching through the ordinary manifest and chunks: content kept for its
 earlier self included, and for no other device. The owner's folder is not
 sealed: the computer holds the same key, so its lock is qurb's rule, said so
 in the window. A large file in it is never copied whole to be watched: the
@@ -552,7 +552,7 @@ chunk's size (`qurb_peer::Ranged`, `StreamProvider.kt`).
 ### 2.7 The index remembers what happened, not just what is
 
 Everything above describes the index as a picture of the present: these paths,
-these chunks, this version. It also keeps a history — one row per thing that
+these chunks, this version. It also keeps a history: one row per thing that
 happened, with the path, the size and the device at the other end.
 
 The reason is that the interesting questions are about the past. "Why is this
@@ -566,14 +566,14 @@ what the table deliberately does *not* hold.
 
 A graphical front end runs the daemon inside itself rather than talking to one
 over a socket, and asks it two different kinds of question. The daemon
-publishes its live state — syncing, up to date, this many devices — on a
+publishes its live state (syncing, up to date, this many devices) on a
 `watch` channel, because only the latest value is ever useful. Everything else
 is a read-only query against the index: what devices, what files, what is
 available where, what happened, what is still on its way.
 
 Those queries are `qurb_cli::View`, and the terminal uses the same ones
 (`qurb ls`, `qurb find`, `qurb activity`). See
-[decisions/0032](decisions/0032-the-interface-hosts-the-daemon.md) — including
+[decisions/0032](decisions/0032-the-interface-hosts-the-daemon.md): including
 why a file's availability has more than two values, which is the difference
 between "free up space" and "delete my only copy". There are four: *here*,
 *elsewhere*, *only here*, and since
@@ -587,7 +587,7 @@ network. The keys never leave your devices. Our servers see encrypted bytes and
 routing metadata, nothing else.
 
 This is called **zero-knowledge**, and it has a hard consequence that shapes the
-product: if you lose your key, we cannot recover your data. Not "we won't" — we
+product: if you lose your key, we cannot recover your data. Not "we won't": we
 genuinely cannot.
 
 The key has a spelling, 24 words that *are* the key, but since 2026-10-05
@@ -599,7 +599,7 @@ end-to-end-encrypted in its Google backup. The key is what has to survive;
 the files survive only where a device or a replica still holds them. See also
 [decisions/0012](decisions/0012-key-hierarchy-and-recovery.md). Protecting that
 key *at rest* was the largest security gap for a long time and is now a choice
-between a file, the operating system's keystore and a passphrase — see
+between a file, the operating system's keystore and a passphrase: see
 [crates/keys/README.md](../crates/keys/README.md) for what each defends
 against.
 
@@ -637,8 +637,8 @@ difficulty lives on the device. The servers are a phone book and an emergency
 mail forwarder.
 
 The right-hand box is the target design. What runs today is two programs a
-person runs themselves — the rendezvous service (`qurb signal`) and the relay
-(`qurb relay`), on their own computer or server — with public STUN servers
+person runs themselves (the rendezvous service (`qurb signal`) and the relay
+(`qurb relay`), on their own computer or server) with public STUN servers
 (Google's and Cloudflare's) answering "what is my address". There are no
 accounts, no billing and no device registry beyond each device's own list of
 the devices it trusts.
@@ -655,7 +655,7 @@ This is the single most useful trace to have in your head.
  4. Ask the index: seen this hash?  ✅ SQLite lookup
       already known → record a reference, no data written
       new          → continue
- 4b. Is the file itself in the      ✅ if so, it *is* the payload — record the
+ 4b. Is the file itself in the      ✅ if so, it *is* the payload: record the
      synced folder?                    chunk, write nothing, skip to 8
  5. Compress                        ✅ Zstd, kept only when it actually helps
  6. Encrypt                         ✅ XChaCha20-Poly1305
@@ -681,23 +681,23 @@ find each other through the rendezvous service, punch through NAT, and fall back
 to a relay when no direct path exists.
 
 What is unmeasured is *how often* the direct path works. That needs two machines
-on two different networks — see
+on two different networks: see
 [measuring-connectivity.md](measuring-connectivity.md).
 
 Step 11 is where the chunking finally pays off. Inserting 16 bytes at the front
-of a 200 MB file moved **248 KiB** over the wire — one chunk, 0.1% of the file —
+of a 200 MB file moved **248 KiB** over the wire (one chunk, 0.1% of the file)
 where fixed-size blocks would have re-sent all 190 MiB.
 
 **How the other device finds out.** Steps 10 and 11 need both devices reachable
 at the same moment, and a phone is awake only in short bursts. The rendezvous
 service therefore *pushes*: when a device announces itself, everyone else in its
 group is told at once, with addresses attached. A peer that had to poll would
-not be asking during the twenty seconds a phone is up — see
+not be asking during the twenty seconds a phone is up: see
 [decisions/0022](decisions/0022-the-service-announces-arrivals.md).
 
 **Ordering matters at step 7 and 8, and not in the obvious way.** The payload is
 written and fsynced *before* the index records that it exists. A crash between
-them leaves a chunk nothing references — wasted space, reclaimed later. The
+them leaves a chunk nothing references: wasted space, reclaimed later. The
 opposite order would leave the index pointing at a payload that was never
 written, which no amount of local repair can fix. Orphaned data is a cost; a
 dangling reference is a corruption.
@@ -711,7 +711,7 @@ gigabytes. Step 4 is why storing the same photo twice costs nothing.
 
 ```
 qurb/
-├── README.md              Start here — what this is, current status
+├── README.md              Start here: what this is, current status
 ├── CLAUDE.md              Conventions and working agreements
 ├── Cargo.toml             Rust workspace root; shared dependency versions
 │
@@ -836,8 +836,8 @@ qurb/
 │   │   ├── src/phrase.rs    the 24 words, via BIP-39
 │   │   ├── src/vault.rs     where the master key lives: open, unlock,
 │   │   │                    protect, restore
-│   │   └── src/protection.rs  the three ways to keep it — a file, the
-│   │                        system keystore, a passphrase — and what each
+│   │   └── src/protection.rs  the three ways to keep it: a file, the
+│   │                        system keystore, a passphrase, and what each
 │   │                        defends against
 │   │
 │   ├── signal/            Finding the other device.
@@ -889,9 +889,9 @@ qurb/
 │   │   ├── src/send.rs      what sending some files and folders actually sends
 │   │   ├── src/status.rs    what the daemon is doing now, on a watch channel
 │   │   ├── src/view.rs      what an interface asks: devices, files, storage,
-│   │   │                    history, outgoing, search — all read-only
+│   │   │                    history, outgoing, search: all read-only
 │   │   ├── src/setup.rs     creating a device, joining one, describing a folder
-│   │   │                    — one definition, used by the terminal and the window
+│   │   │: one definition, used by the terminal and the window
 │   │   └── src/config.rs    a flat file meant to be edited by hand: the
 │   │                        settings the window changes too, pause, staying
 │   │                        awake, quiet notifications, updates (0086)
@@ -1193,7 +1193,7 @@ qurb/
 └── website/               The website, in the apps' design: the window's
                            tokens and components, its icons (generated from
                            its sprite), its words. Next.js on Vercel, deployed
-                           by every push to main; otherwise separate — nothing
+                           by every push to main; otherwise separate: nothing
                            here depends on it or builds it. Static but for
                            one route, the waitlist, kept in Upstash Redis
                            (decision 0075).
@@ -1202,7 +1202,7 @@ qurb/
 **The `crates/` vs `experiments/` split is load-bearing.** Anything in
 `experiments/` is disposable and is allowed to cut corners, as long as its
 README says which corners. Anything in `crates/` is meant to last and is held to
-a real standard. Nothing should quietly migrate from one to the other — Phase 1
+a real standard. Nothing should quietly migrate from one to the other: Phase 1
 code gets written fresh, informed by the spike rather than copied from it.
 
 ---
@@ -1228,10 +1228,10 @@ The unbuilt parts are listed at the end of this section.
 | Deduplication | within a file, across files, across versions |
 | Single-copy storage | a materialised file *is* its own payload store |
 | Deletion, tombstones, restore | content survives a retention window: the one `gc` is given (seven days in the daemon), a device's own vault's included since 2026-11-14 (`gc::collect`, [0089](decisions/0089-no-recently-deleted.md)) |
-| Deleted for good | no Recently deleted since 2026-11-14: a deletion still takes the file to `trash/` in the store, and the next housekeeping (every five minutes in the daemon, after each sync on a phone) empties it; a delete from either app empties its entry at once. The store's restore paths remain, unreachable from any window — [0089](decisions/0089-no-recently-deleted.md), superseding [0042](decisions/0042-recently-deleted.md) |
-| Sharing with chosen devices | a folder's devices are a rule file under `.qurb-sharing/` that syncs like any other; each device derives `shares` tables and filters what peers are shown and what it takes by them — [0044](decisions/0044-sharing-with-chosen-devices.md) |
-| A folder kept remotely | this device's choice (`remote_folders`, never synced): files listed, new versions recorded without their bytes, local copies freed where another device has them — [0045](decisions/0045-a-folder-kept-remotely.md) |
-| Conflicts settled | found by name (`qurb_sync::conflict_origin`), settled as ordinary changes; the version not kept is deleted for good (decision 0089) — [0043](decisions/0043-settling-a-conflict.md) |
+| Deleted for good | no Recently deleted since 2026-11-14: a deletion still takes the file to `trash/` in the store, and the next housekeeping (every five minutes in the daemon, after each sync on a phone) empties it; a delete from either app empties its entry at once. The store's restore paths remain, unreachable from any window: [0089](decisions/0089-no-recently-deleted.md), superseding [0042](decisions/0042-recently-deleted.md) |
+| Sharing with chosen devices | a folder's devices are a rule file under `.qurb-sharing/` that syncs like any other; each device derives `shares` tables and filters what peers are shown and what it takes by them: [0044](decisions/0044-sharing-with-chosen-devices.md) |
+| A folder kept remotely | this device's choice (`remote_folders`, never synced): files listed, new versions recorded without their bytes, local copies freed where another device has them, [0045](decisions/0045-a-folder-kept-remotely.md) |
+| Conflicts settled | found by name (`qurb_sync::conflict_origin`), settled as ordinary changes; the version not kept is deleted for good (decision 0089): [0043](decisions/0043-settling-a-conflict.md) |
 | Garbage collection | two-stage, never touches a referenced chunk; the daemon runs it every five minutes, a phone after each background sync |
 | Integrity verification | detects missing, corrupt, and orphaned chunks |
 | Reclaiming duplicates | `qurb reclaim`, for stores written before single-copy |
@@ -1239,10 +1239,10 @@ The unbuilt parts are listed at the end of this section.
 | Per-device private vaults | `files.scope`: `NULL` is shared, a device id is that device's vault |
 | Holding another device's vault | `files.held`, a `holders` list, and four areas on the wire; never released, dropped only on a tombstone |
 | A history of what happened | one table, pruned by age and count; `qurb activity` reads it |
-| Sending to one device | `qurb send <files and folders> to <device>`; no copy kept: read from the file when collected, called off if it changed or went first — [0060](decisions/0060-a-computer-keeps-private-folders-for-several-people.md) |
+| Sending to one device | `qurb send <files and folders> to <device>`; no copy kept: read from the file when collected, called off if it changed or went first, [0060](decisions/0060-a-computer-keeps-private-folders-for-several-people.md) |
 | Receiving on a desktop | saved to `Downloads/qurb` as an ordinary file; overlap with the folder refused |
-| Deliveries remembered | a `deliveries` record per send -- sender, name, version -- never expired, so a send is taken once and the same file sent again arrives again — [0059](decisions/0059-a-send-is-not-its-bytes.md) |
-| Removing a device | `Store::remove_device`: trust ends here, waiting sends cancelled, its copies stop counting as copies, what is kept for it stays unless asked; trust asked per request, not only at the handshake — [0041](decisions/0041-removing-a-device.md). Remembered, not only forgotten (`removed_devices`, V32): a listener still lets a device it removed in (`accepted_fingerprints`) to answer it `Response::Removed` to everything, and a `Request::Goodbye` tells it at once on an open connection; the removed side forgets the remover and remembers it as `by_them`. Paired again it is removed no longer; set up again, its `Become` makes it the device it was, its files its own again; its files are listed in storage, locked, with Delete — [0084](decisions/0084-removal-is-said-and-remembered.md). A computer has no permanent identity yet (0084, left undone) |
+| Deliveries remembered | a `deliveries` record per send (sender, name, version) never expired, so a send is taken once and the same file sent again arrives again: [0059](decisions/0059-a-send-is-not-its-bytes.md) |
+| Removing a device | `Store::remove_device`: trust ends here, waiting sends cancelled, its copies stop counting as copies, what is kept for it stays unless asked; trust asked per request, not only at the handshake, [0041](decisions/0041-removing-a-device.md). Remembered, not only forgotten (`removed_devices`, V32): a listener still lets a device it removed in (`accepted_fingerprints`) to answer it `Response::Removed` to everything, and a `Request::Goodbye` tells it at once on an open connection; the removed side forgets the remover and remembers it as `by_them`. Paired again it is removed no longer; set up again, its `Become` makes it the device it was, its files its own again; its files are listed in storage, locked, with Delete: [0084](decisions/0084-removal-is-said-and-remembered.md). A computer has no permanent identity yet (0084, left undone) |
 
 ### Built and tested (`crates/watcher`, Phase 1)
 
@@ -1274,7 +1274,7 @@ The unbuilt parts are listed at the end of this section.
 | Conflict detection | by causality, never by wall-clock time |
 | Conflict resolution | both versions kept; a concurrent edit beats a delete |
 | Deliveries | vault entries are collected once, not reconciled |
-| A folder outside the vault's, kept in it | `outside_sources`: rows read where they lie, never materialised; gone files deleted or, for media, kept by the holder — [0062](decisions/0062-backing-up-whatsapp.md) |
+| A folder outside the vault's, kept in it | `outside_sources`: rows read where they lie, never materialised; gone files deleted or, for media, kept by the holder, [0062](decisions/0062-backing-up-whatsapp.md) |
 | Tree reconciliation | plans describing end states, not decisions |
 | Convergence | two and three devices, 320 random seeds |
 
@@ -1299,41 +1299,41 @@ for the workspace as it stands.
 | QUIC transport | one bidirectional stream per request |
 | Mutual authentication | pinned fingerprints, handshake signature verified |
 | Wire format | length-bounded; decoder has no panicking path |
-| Incremental transfer | only chunks the receiver lacks cross the wire, eight in flight at once; a fetch that was cut off chunks what it has and carries on — [0050](decisions/0050-large-files-from-a-phone.md). From a phone over Wi-Fi this measured about 5 MB/s under Cubic, barely faster than one at a time ([phase 5](phases/phase-5-mobile.md#measured-on-the-s23-2026-10-05)); the next row is what changed that |
-| Pairing | approved at the device showing the code, both screens showing the same six digits; refused between devices holding different keys; each side records whether the other is a phone, computer or replica — [0053](decisions/0053-approval-same-key-and-safe-copies.md); the device joining is told who shows the code, to say where to approve — [0074](decisions/0074-who-shows-the-code.md) |
-| Six digits to pair | beside the QR code, six digits a device on the same network types: the showing device multicasts an offer (port 47318), the typing one connects unpinned and runs SPAKE2 with the digits, both certificates bound in, and is given the long code sealed under the key; then pairs with it as if scanned, approval included. Five wrong tries and the digits stop working for that code — [0066](decisions/0066-six-digits-to-pair.md) |
-| Guests | another person's device visits with a guest code, keeping its own key; the two meet at the rendezvous service under a secret of their own and are shown each other only what was sent to them (the `Guest` audience) — [0060](decisions/0060-a-computer-keeps-private-folders-for-several-people.md) |
-| A guest's folder, sealed | a guest's Private Vault kept by the computer it visits under sealed names and sealed chunks the computer cannot open, filed under the guest's person; freed on the phone once kept, fetched back and checked when opened — [0060](decisions/0060-a-computer-keeps-private-folders-for-several-people.md) |
-| Opening a guest's folder at the computer | the window asks, the guest's phone approves behind its screen lock and sends the folder key, accepted only if it opens the folder; held in memory until locked or ten minutes unused; files opened unsealed into memory-backed space and checked. Run end to end with the emulator as the guest; not with a real phone — [0060](decisions/0060-a-computer-keeps-private-folders-for-several-people.md) |
-| A folder for each person | the owner's, as a guest's is: asked from the window, a yes from one of the owner's phones (`Unlock` with no key, the computer holding the same one); the ask heard at each sync and every ten seconds of a long pass, the yes sent the same way. Run between the S23 and the laptop on 2026-10-15: shown on the phone six seconds after the ask, open 21 seconds after it, a file opened — [0067](decisions/0067-a-folder-for-each-person.md) |
-| A phone's folder on a computer | `Kept { dir }`: a phone of the computer's own person is shown what is kept for it and for its earlier self, at one place in the tree a person sees, and fetches through the ordinary manifest and chunks; browsed on the S23, 2026-10-15 — [0067](decisions/0067-a-folder-for-each-person.md) |
-| A phone knows what its computer keeps | `confirm_kept`: each sync, a phone asks the computer keeping its vault about up to 64 of its files with no record of it keeping them, at random, and records each yes; a `Got` lost with a connection had left 130 of the S23's WhatsApp files "still to go" for good — [0062](decisions/0062-backing-up-whatsapp.md) |
-| A computer's shared folder, from phones | `Shared { dir }`, `Search { within }`, and `SharedMkdir`, `SharedMove`, `SharedDelete`, `Upload`/`UploadDone` (pieces of at most 4 MiB, checked against the hash before placing): the owner's phones and every guest's open, search and change the computer's shared folder live, nothing copied to the phone; each change made by the computer on its own folder, a deletion for good at its next housekeeping (decision 0089), refused with a reason a person can read (`Response::Refused`); `crates/storage/src/shared_folder.rs`, `tests/hostile.rs` — [0073](decisions/0073-the-phone-works-with-its-computer.md) |
-| A phone out of the shared area | the engine's `shared_area` switch, off on a phone (`Settings::shared_area`): a sync takes nothing of others' shared files, everything added goes into the phone's vault, and opening runs `Store::leave_shared_area` -- a shared file a computer keeps forgotten here with no tombstone, so deleted nowhere else, its bytes here only once the computer, asked at a sync, has said it holds them; one only the phone has moved into its vault; the area's tombstones and rules forgotten; each run finds less (`tests/leaving_shared.rs`, `out_of_the_shared_area.rs`, `a_phone_leaves_the_shared_area`) — [0073](decisions/0073-the-phone-works-with-its-computer.md) |
-| A phone changes its own folder there | by changing its own vault, which the computer follows at the next sync, files and whole folders alike: copy and paste (`Store::copy_in_vault`, a freed file's copy on the same chunks), rename and move (`Store::move_in_vault` over`Store::rename_file`, and `rename_freed` for a file freed to the computer -- a new version on the same chunks, no byte crossing), delete (`delete_kept`, for good since 2026-11-14; a backup only once its original is gone from the phone), add files, search the whole folder (`Search { within: Kept }`); the app syncs at once after each (`tests/freed_rename.rs`, `tests/freed_deletion.rs`, `tests/held_deletion.rs`, `a_phone_changes_its_own_folder_on_the_computer`) — [0073](decisions/0073-the-phone-works-with-its-computer.md) |
-| The relay carries meetings | one relay connection, several names: a device's own and one per meeting with another person's device, so a computer reaches a guest it cannot dial — [0061](decisions/0061-the-relay-carries-meetings.md) |
-| Staying on the relay | the connection dialled again when it goes, from one second doubling to a minute, every name registered again; a relay down at start kept, known down, and not dialled through until up — tested by restarting a relay under a socket ([0068](decisions/0068-the-rendezvous-service-relays.md), amended 2026-10-18) |
-| A list fetched only when it changed | `TreeDigest`: the fingerprint of the list a device would send; the asker keeps each device's last list (`trees`) and fetches only a changed one, so a pass with nothing changed received 24 KiB rather than 9.8 MB on the S23 — [0071](decisions/0071-a-file-list-fetched-only-when-it-changed.md) |
-| Only what changed in a list | `TreeSince`: the entries changed since the asker's kept list, by a counter in the index that triggers move (schema 27), with the whole list's fingerprint; the asker rebuilds its list and uses it only if the fingerprint matches, else fetches it whole. On a copy of the laptop's index, one changed file costs 194 bytes rather than 7.9 MB; not yet run on the S23 or on a hotspot — [0072](decisions/0072-only-what-changed-in-a-list.md) |
-| A device's own name and picture | set on the device itself (the phone's Settings, the computer's Settings; a computer's config name recorded at each start, `daemon::tell_name`) into `own_profile` (schema 28), with a time always later than the last; every sync asks each paired device `Profile { since }` (`learn_profile`) and is answered only what changed, a picture at most 256 KiB (`wire::MAX_PICTURE`), kept in `peer_profiles` and the name written over the pairing name in `peers`, so a rename reaches devices already paired. Both apps make a 256-pixel square JPEG; the phone draws circles from memory, reading a picture again only when its time changes (`PeerInfo::picture_at`). A device from before this answers *not found* and keeps its pairing name (`tests/profile.rs`) — the owner's list of 2026-10-26, item 7 |
+| Incremental transfer | only chunks the receiver lacks cross the wire, eight in flight at once; a fetch that was cut off chunks what it has and carries on: [0050](decisions/0050-large-files-from-a-phone.md). From a phone over Wi-Fi this measured about 5 MB/s under Cubic, barely faster than one at a time ([phase 5](phases/phase-5-mobile.md#measured-on-the-s23-2026-10-05)); the next row is what changed that |
+| Pairing | approved at the device showing the code, both screens showing the same six digits; refused between devices holding different keys; each side records whether the other is a phone, computer or replica ([0053](decisions/0053-approval-same-key-and-safe-copies.md); the device joining is told who shows the code, to say where to approve) [0074](decisions/0074-who-shows-the-code.md) |
+| Six digits to pair | beside the QR code, six digits a device on the same network types: the showing device multicasts an offer (port 47318), the typing one connects unpinned and runs SPAKE2 with the digits, both certificates bound in, and is given the long code sealed under the key; then pairs with it as if scanned, approval included. Five wrong tries and the digits stop working for that code: [0066](decisions/0066-six-digits-to-pair.md) |
+| Guests | another person's device visits with a guest code, keeping its own key; the two meet at the rendezvous service under a secret of their own and are shown each other only what was sent to them (the `Guest` audience): [0060](decisions/0060-a-computer-keeps-private-folders-for-several-people.md) |
+| A guest's folder, sealed | a guest's Private Vault kept by the computer it visits under sealed names and sealed chunks the computer cannot open, filed under the guest's person; freed on the phone once kept, fetched back and checked when opened: [0060](decisions/0060-a-computer-keeps-private-folders-for-several-people.md) |
+| Opening a guest's folder at the computer | the window asks, the guest's phone approves behind its screen lock and sends the folder key, accepted only if it opens the folder; held in memory until locked or ten minutes unused; files opened unsealed into memory-backed space and checked. Run end to end with the emulator as the guest; not with a real phone: [0060](decisions/0060-a-computer-keeps-private-folders-for-several-people.md) |
+| A folder for each person | the owner's, as a guest's is: asked from the window, a yes from one of the owner's phones (`Unlock` with no key, the computer holding the same one); the ask heard at each sync and every ten seconds of a long pass, the yes sent the same way. Run between the S23 and the laptop on 2026-10-15: shown on the phone six seconds after the ask, open 21 seconds after it, a file opened, [0067](decisions/0067-a-folder-for-each-person.md) |
+| A phone's folder on a computer | `Kept { dir }`: a phone of the computer's own person is shown what is kept for it and for its earlier self, at one place in the tree a person sees, and fetches through the ordinary manifest and chunks; browsed on the S23, 2026-10-15, [0067](decisions/0067-a-folder-for-each-person.md) |
+| A phone knows what its computer keeps | `confirm_kept`: each sync, a phone asks the computer keeping its vault about up to 64 of its files with no record of it keeping them, at random, and records each yes; a `Got` lost with a connection had left 130 of the S23's WhatsApp files "still to go" for good, [0062](decisions/0062-backing-up-whatsapp.md) |
+| A computer's shared folder, from phones | `Shared { dir }`, `Search { within }`, and `SharedMkdir`, `SharedMove`, `SharedDelete`, `Upload`/`UploadDone` (pieces of at most 4 MiB, checked against the hash before placing): the owner's phones and every guest's open, search and change the computer's shared folder live, nothing copied to the phone; each change made by the computer on its own folder, a deletion for good at its next housekeeping (decision 0089), refused with a reason a person can read (`Response::Refused`); `crates/storage/src/shared_folder.rs`, `tests/hostile.rs`, [0073](decisions/0073-the-phone-works-with-its-computer.md) |
+| A phone out of the shared area | the engine's `shared_area` switch, off on a phone (`Settings::shared_area`): a sync takes nothing of others' shared files, everything added goes into the phone's vault, and opening runs `Store::leave_shared_area` (a shared file a computer keeps forgotten here with no tombstone, so deleted nowhere else, its bytes here only once the computer, asked at a sync, has said it holds them; one only the phone has moved into its vault; the area's tombstones and rules forgotten; each run finds less (`tests/leaving_shared.rs`, `out_of_the_shared_area.rs`, `a_phone_leaves_the_shared_area`)) [0073](decisions/0073-the-phone-works-with-its-computer.md) |
+| A phone changes its own folder there | by changing its own vault, which the computer follows at the next sync, files and whole folders alike: copy and paste (`Store::copy_in_vault`, a freed file's copy on the same chunks), rename and move (`Store::move_in_vault` over`Store::rename_file`, and `rename_freed` for a file freed to the computer (a new version on the same chunks, no byte crossing), delete (`delete_kept`, for good since 2026-11-14; a backup only once its original is gone from the phone), add files, search the whole folder (`Search { within: Kept }`); the app syncs at once after each (`tests/freed_rename.rs`, `tests/freed_deletion.rs`, `tests/held_deletion.rs`, `a_phone_changes_its_own_folder_on_the_computer`)) [0073](decisions/0073-the-phone-works-with-its-computer.md) |
+| The relay carries meetings | one relay connection, several names: a device's own and one per meeting with another person's device, so a computer reaches a guest it cannot dial, [0061](decisions/0061-the-relay-carries-meetings.md) |
+| Staying on the relay | the connection dialled again when it goes, from one second doubling to a minute, every name registered again; a relay down at start kept, known down, and not dialled through until up: tested by restarting a relay under a socket ([0068](decisions/0068-the-rendezvous-service-relays.md), amended 2026-10-18) |
+| A list fetched only when it changed | `TreeDigest`: the fingerprint of the list a device would send; the asker keeps each device's last list (`trees`) and fetches only a changed one, so a pass with nothing changed received 24 KiB rather than 9.8 MB on the S23, [0071](decisions/0071-a-file-list-fetched-only-when-it-changed.md) |
+| Only what changed in a list | `TreeSince`: the entries changed since the asker's kept list, by a counter in the index that triggers move (schema 27), with the whole list's fingerprint; the asker rebuilds its list and uses it only if the fingerprint matches, else fetches it whole. On a copy of the laptop's index, one changed file costs 194 bytes rather than 7.9 MB; not yet run on the S23 or on a hotspot: [0072](decisions/0072-only-what-changed-in-a-list.md) |
+| A device's own name and picture | set on the device itself (the phone's Settings, the computer's Settings; a computer's config name recorded at each start, `daemon::tell_name`) into `own_profile` (schema 28), with a time always later than the last; every sync asks each paired device `Profile { since }` (`learn_profile`) and is answered only what changed, a picture at most 256 KiB (`wire::MAX_PICTURE`), kept in `peer_profiles` and the name written over the pairing name in `peers`, so a rename reaches devices already paired. Both apps make a 256-pixel square JPEG; the phone draws circles from memory, reading a picture again only when its time changes (`PeerInfo::picture_at`). A device from before this answers *not found* and keeps its pairing name (`tests/profile.rs`): the owner's list of 2026-10-26, item 7 |
 | The relay alongside a slow direct path | the relay tried once the announced addresses have had four seconds, whichever connects first kept, rather than after all of them time out (0071) |
-| An edit in the clock's tick | a file read within three seconds of its time is read again on each scan until older, so a second write of the same size in the same tick is not missed (`racy`, index schema 26) — found on Android 8, [0069](decisions/0069-too-recent-to-trust.md) |
-| Congestion control | BBR rather than quinn's default, Cubic, which reads Wi-Fi's stray losses as congestion: 12.5–14.0 MB/s from the S23 against 5.2–5.3 — [0051](decisions/0051-bbr-not-cubic.md) |
-| Read-only serving | a peer can ask, never tell — with one exception below |
-| The file list in frames | `TreeStream`: the same list as `Tree`, sent as length-prefixed frames of about 1 MiB, at most 1 GiB in all, so a library too large for one 64 MiB message still syncs; asked first, `Tree` when a peer does not answer it — [0065](decisions/0065-the-scale-qurb-is-built-for.md) |
-| A device set up again is one device | the same person's, same name and kind, paired after the older was last seen: listed as the newer, which offers to remove the older and says what is kept for it — the owner's item 6, 2026-10-14 |
-| Awake while collecting | while a plan brings content in, on mains power, GNOME's and logind's sleep inhibitors are held (`awake.rs`), bound to Qurb's own life — the owner's item 1, 2026-10-14; *Stay awake to collect* in the window's Settings turns it off (0086) |
-| Over the Nostr relays | when the meeting point is the Nostr relays, the QUIC session can run over them too, a packet an ephemeral event, sealed and addressed to one device by a daily topic (`qurb_signal::nostr::datagrams`, `qurb_peer::nostr_path`); raced beside the introduction and Tor when a device is not on the local network; 35–52 KB/s measured — [0087](decisions/0087-quic-over-nostr-relays.md) |
-| A mailbox in Google Drive | opt-in: a device answers offline what the other would ask live -- its list, packs of what the other lacks, receipts -- into QurbSpace's hidden folder in the person's Drive, sealed with a key from the master key, and the other collects, plans and applies only what arrived (`crates/mailbox`); collected always, posted when the device was not reached; 2 GB waiting, files up to 64 MB. A computer signs in to several accounts and posts to each phone in the account its `hello` letter is in; a phone signs in through Google's sign-in and hands each computer a one-time code (`Request::DriveCode`), which the computer exchanges for the phone's account (`qurb_mailbox::drive::exchange`, `qurb::drive_account`) — [0088](decisions/0088-a-mailbox-in-the-persons-google-drive.md) |
-| Pausing | `qurb_peer::pause`, process-wide: paused until a time or until resumed, or held off mobile data on the phone. Paused, a device runs no pass and the server closes another device's connection at its next request, so the other side sees it off rather than failing file by file (`tests/pause.rs`). The computer's is in its config file, read at each pass; the phone's in the app's settings, said to the engine before each sync — [0086](decisions/0086-the-persons-controls.md) |
-| Requests answered in parallel | the index is asked under the store's lock, the bytes read after it is let go (`Store::locate`, `ChunkReader`), so requests made at once are read at once — [0064](decisions/0064-many-small-files-quickly.md) |
+| An edit in the clock's tick | a file read within three seconds of its time is read again on each scan until older, so a second write of the same size in the same tick is not missed (`racy`, index schema 26): found on Android 8, [0069](decisions/0069-too-recent-to-trust.md) |
+| Congestion control | BBR rather than quinn's default, Cubic, which reads Wi-Fi's stray losses as congestion: 12.5–14.0 MB/s from the S23 against 5.2–5.3, [0051](decisions/0051-bbr-not-cubic.md) |
+| Read-only serving | a peer can ask, never tell: with one exception below |
+| The file list in frames | `TreeStream`: the same list as `Tree`, sent as length-prefixed frames of about 1 MiB, at most 1 GiB in all, so a library too large for one 64 MiB message still syncs; asked first, `Tree` when a peer does not answer it, [0065](decisions/0065-the-scale-qurb-is-built-for.md) |
+| A device set up again is one device | the same person's, same name and kind, paired after the older was last seen: listed as the newer, which offers to remove the older and says what is kept for it, the owner's item 6, 2026-10-14 |
+| Awake while collecting | while a plan brings content in, on mains power, GNOME's and logind's sleep inhibitors are held (`awake.rs`), bound to Qurb's own life: the owner's item 1, 2026-10-14; *Stay awake to collect* in the window's Settings turns it off (0086) |
+| Over the Nostr relays | when the meeting point is the Nostr relays, the QUIC session can run over them too, a packet an ephemeral event, sealed and addressed to one device by a daily topic (`qurb_signal::nostr::datagrams`, `qurb_peer::nostr_path`); raced beside the introduction and Tor when a device is not on the local network; 35–52 KB/s measured: [0087](decisions/0087-quic-over-nostr-relays.md) |
+| A mailbox in Google Drive | opt-in: a device answers offline what the other would ask live (its list, packs of what the other lacks, receipts) into QurbSpace's hidden folder in the person's Drive, sealed with a key from the master key, and the other collects, plans and applies only what arrived (`crates/mailbox`); collected always, posted when the device was not reached; 2 GB waiting, files up to 64 MB. A computer signs in to several accounts and posts to each phone in the account its `hello` letter is in; a phone signs in through Google's sign-in and hands each computer a one-time code (`Request::DriveCode`), which the computer exchanges for the phone's account (`qurb_mailbox::drive::exchange`, `qurb::drive_account`): [0088](decisions/0088-a-mailbox-in-the-persons-google-drive.md) |
+| Pausing | `qurb_peer::pause`, process-wide: paused until a time or until resumed, or held off mobile data on the phone. Paused, a device runs no pass and the server closes another device's connection at its next request, so the other side sees it off rather than failing file by file (`tests/pause.rs`). The computer's is in its config file, read at each pass; the phone's in the app's settings, said to the engine before each sync: [0086](decisions/0086-the-persons-controls.md) |
+| Requests answered in parallel | the index is asked under the store's lock, the bytes read after it is let go (`Store::locate`, `ChunkReader`), so requests made at once are read at once: [0064](decisions/0064-many-small-files-quickly.md) |
 | Vault authorisation | tree, manifest and chunk requests all check the asker's scope |
 | Delivery reports | `Got`: the receiver says it holds it, so the sender can stop calling it undelivered |
-| A phone's folders, chosen on the phone | Chosen on the phone only since 2026-11-14; the computer's window lists what is chosen and kept, without switches. `Folders`: a computer keeping a phone's vault asks what folders it has, at any depth, answered to that computer only; `Chosen`: the phone asks which were ticked for it, about itself only. Chosen as a tree: the deepest choice decides a folder, and a choice sets every choice inside it (`qurb_storage::chosen`, `tests/lifecycle.rs` `folders_are_chosen_as_a_tree`). Backed up under `.qurb-outside/storage/<folder>/`, kept when deleted on the phone — [0063](decisions/0063-backing-up-a-phones-folders-chosen-on-the-desktop.md) |
+| A phone's folders, chosen on the phone | Chosen on the phone only since 2026-11-14; the computer's window lists what is chosen and kept, without switches. `Folders`: a computer keeping a phone's vault asks what folders it has, at any depth, answered to that computer only; `Chosen`: the phone asks which were ticked for it, about itself only. Chosen as a tree: the deepest choice decides a folder, and a choice sets every choice inside it (`qurb_storage::chosen`, `tests/lifecycle.rs` `folders_are_chosen_as_a_tree`). Backed up under `.qurb-outside/storage/<folder>/`, kept when deleted on the phone: [0063](decisions/0063-backing-up-a-phones-folders-chosen-on-the-desktop.md) |
 | Every reachable address offered | LAN, overlay network and public, raced in parallel; the local ones offered again within seconds of changing |
 | Signalling that reconnects | a rendezvous restart costs seconds, not a daemon restart |
 | Local discovery | encrypted beacons; two devices on one network need no server at all |
-| A rendezvous on a bare IP | self-signed, pinned by fingerprint in the URL — no domain, no authority |
+| A rendezvous on a bare IP | self-signed, pinned by fingerprint in the URL: no domain, no authority |
 
 ### Built and tested (`crates/keys`, Phase 1)
 
@@ -1346,7 +1346,7 @@ for the workspace as it stands.
 | Key hygiene | redacted in `Debug`, wiped on drop, owner-only on disk |
 
 879 tests in 94 test binaries on Linux, all passing, 3 ignored (2026-10-15,
-debug build, the development laptop, on a network that carries multicast —
+debug build, the development laptop, on a network that carries multicast:
 the tests of local discovery and of six digits find devices that way, and
 fail on one that does not). Clippy is clean. On Android the engine's crates run by `scripts/android-test.sh`:
 678 tests in 63 binaries passed on the Android 14 x86_64 emulator on
@@ -1356,9 +1356,9 @@ Galaxy S23 was 426 of them, on 2026-09-17. See
 
 **The wire protocol is `qurb/2`.** It was `qurb/0` until tree entries gained a
 flag saying "this belongs in your vault", which is not a byte an older build can
-safely ignore — it would adopt somebody else's private content as shared and
+safely ignore: it would adopt somebody else's private content as shared and
 advertise it to the whole fleet. It became `qurb/2` on 2026-09-27 when that flag
-became one of four areas — shared, sent, held, hold — because holding another
+became one of four areas (shared, sent, held, hold) because holding another
 device's vault has a direction a flag cannot carry, and a `qurb/1` build would
 read the new two as "sent to me" and file somebody's private files in its own
 folder. Devices negotiate the version during the TLS handshake, so a mismatch
@@ -1368,16 +1368,16 @@ is a clean refusal to connect. Every device has to be rebuilt together.
 concurrent edits, deletions and resurrections, with both sides computing the
 same conflict filename independently, using keys derived from a recovery phrase.
 
-**Tested at 100,000 files** — 4.40 GiB between two devices, every correctness
+**Tested at 100,000 files**: 4.40 GiB between two devices, every correctness
 check green: all paths present on both sides, reference counts agreeing, every
 chunk decrypting and hashing to its own name, sampled files byte-identical. A
 warm re-index of those 100k files takes 1.13s and an incremental sync of 1,000
-edited files takes 3.5s. A cold index takes 237s, which is slow — 58% of it is
+edited files takes 3.5s. A cold index takes 237s, which is slow: 58% of it is
 filesystem syscalls, and the fix is parallelism, which nothing in the design
 prevents. See [phases/phase-1-engine.md](phases/phase-1-engine.md).
 
 **Devices now pair.** An invite carries the inviter's full fingerprint across an
-out-of-band channel — a QR code, or a code read aloud — and both sides record the
+out-of-band channel (a QR code, or a code read aloud) and both sides record the
 other in a trust store binding device identity to network identity. On one
 network, six digits fetch that invite instead, through SPAKE2
 ([decisions/0066](decisions/0066-six-digits-to-pair.md)). A listener
@@ -1385,31 +1385,31 @@ takes its guest list from there, so the system has a notion of "my devices"
 rather than a list the caller assembled.
 
 **Devices can also get through a router.** STUN discovers what address this
-machine looks like from outside, and hole punching opens a path — on the same
+machine looks like from outside, and hole punching opens a path: on the same
 socket throughout, because a router's mapping belongs to one local port and
 using a fresh socket would punch a hole nobody is listening behind.
 
-**A device can also be a storage-only replica** — always on, holding content so
+**A device can also be a storage-only replica**: always on, holding content so
 the others need not all be awake at once, materialising nothing and originating
 nothing. That is the answer to the availability gap that had been open since
 Phase 1; see [decisions/0006](decisions/0006-availability-gap.md).
 
 **A rendezvous service now coordinates them.** Devices announce where they are
-and are told to punch at the same moment — which is what hole punching needs and
+and are told to punch at the same moment, which is what hole punching needs and
 what a request-and-response API cannot arrange. It learns no filenames and
 cannot link a group of devices to a person; see
 [decisions/0016](decisions/0016-what-signalling-learns.md).
 
 **And a connection policy joins them up.** `Connector` binds a socket, discovers
 its public address, announces, asks to be introduced, and races every address the
-peer offered — keeping the first that answers, local addresses first. Both sides
+peer offered: keeping the first that answers, local addresses first. Both sides
 dial when told to, because a QUIC handshake's opening packets *are* the hole
 punch and a device that only listens has punched nothing.
 
 Its own addresses are not fixed for the life of the process. A connector
 listening on every interface reads them again every five seconds
 (`follow_addresses`), and on a change announces again to the rendezvous service
-— which replaces what it holds — answers later introductions with the new ones,
+(which replaces what it holds) answers later introductions with the new ones,
 and puts them in its beacons at once. The public address is the exception: it
 stays as STUN found it at start, because QUIC owns the socket by then. Found
 when the owner's laptop rejoined its Wi-Fi under a new address and went on
@@ -1432,7 +1432,7 @@ which carry no relay ([0082](decisions/0082-each-users-computer-is-their-server.
 publishes an onion service and announces its address with its others; a
 phone built with `tor` that cannot reach it directly within a few seconds
 tries the onion alongside, QUIC carried over Tor's stream by a small bridge
-(`crates/peer/src/tor.rs`). Slow — measured 0.15–0.31 MB/s — and meant for
+(`crates/peer/src/tor.rs`). Slow (measured 0.15–0.31 MB/s) and meant for
 opening files away from home.
 
 **And the two are joined.** Reaching a peer tries every direct address at once
@@ -1464,12 +1464,12 @@ Swift a phone calls. What that became is the Android section below.
 | Case-insensitive collisions | probed, reported, and refused |
 | Corruption repair | damaged chunks refetched from a peer and verified |
 | Large renames | free in both sort directions; empty directories pruned |
-| Hostile peers | wrong bytes, nonsense, silence — none reaches disk |
-| Hostile paths | `../`, absolute paths, qurb's own store — refused on the wire and again before any write or delete (added 2026-09-25) |
+| Hostile peers | wrong bytes, nonsense, silence: none reaches disk |
+| Hostile paths | `../`, absolute paths, qurb's own store: refused on the wire and again before any write or delete (added 2026-09-25) |
 | Concurrent collection | the collector runs against a live writer |
 
-The phase found five real defects, all of the same shape — correct in isolation,
-wrong in combination — living in the seams between components rather than inside
+The phase found five real defects, all of the same shape (correct in isolation,
+wrong in combination) living in the seams between components rather than inside
 them. See [phases/phase-2-correctness.md](phases/phase-2-correctness.md).
 
 **A directory now syncs into a local store**, and can be tried:
@@ -1497,7 +1497,7 @@ What enrolling a device looks like on its own:
 cargo run -p qurb-keys --example enrol -- /tmp/device-a
 ```
 
-The Phase 1 kill criterion — generate a tree, sync it, verify it, edit it, sync
+The Phase 1 kill criterion: generate a tree, sync it, verify it, edit it, sync
 again. Needs roughly 20 GiB free at 100k files:
 
 ```bash
@@ -1506,7 +1506,7 @@ cargo run --release -p qurb-peer --example scale -- /tmp/scale 100000
 
 **The whole system at once.** Starts a rendezvous service and a relay, brings up
 two devices in the directories given, pairs them, connects them, and then keeps
-running — drop a file into either directory and watch it appear in the other:
+running: drop a file into either directory and watch it appear in the other:
 
 ```bash
 cargo run --release -p qurb-peer --example demo -- /tmp/device-a /tmp/device-b
@@ -1516,15 +1516,15 @@ Everything is in one process, which is the one thing about it that is not
 realistic. The sockets, handshakes, encryption, chunking and conflict resolution
 are all the real implementations.
 
-That was where Phase 2 ended: everything a *person* needs — an interface,
-installers, an app on a phone — was missing. The window, the Android app and
+That was where Phase 2 ended: everything a *person* needs (an interface,
+installers, an app on a phone) was missing. The window, the Android app and
 the package came after, and are described below.
 
 ### Measured in the Phase 0 spike
 
 | thing | result |
 |---|---|
-| Chunking throughput | 665 MiB/s warm, 246 MiB/s cold — disk-bound, not CPU-bound |
+| Chunking throughput | 665 MiB/s warm, 246 MiB/s cold: disk-bound, not CPU-bound |
 | Boundary stability | 99.7% chunk reuse after an edit, vs 0% for fixed blocks |
 | Round-trip integrity | 2722 real files, byte-exact |
 | QUIC transport | 287 MiB/s loopback |
@@ -1536,7 +1536,7 @@ The engine cross-compiles for all four Android architectures, and
 [`crates/mobile-ffi`](../crates/mobile-ffi/) gives it a surface a phone can
 call, generating Kotlin and Swift from the Rust. A phone pairs out of band,
 finds the other device through the rendezvous service, connects over QUIC and
-syncs — all through that surface, with `sync_within(seconds)` because both
+syncs: all through that surface, with `sync_within(seconds)` because both
 platforms kill background work that outstays its window. The master key can be
 handed to the platform's own keystore, which the app supplies because neither
 Android's nor iOS's is reachable from Rust.
@@ -1553,13 +1553,13 @@ share sheet's confirmation says where what was just shared will go.
 
 **It runs on a phone.** `./scripts/android-test.sh` pushes the test binaries
 with `adb` and runs them: on a Samsung Galaxy S23 (Android 16, arm64-v8a) all 35
-binaries passed on 2026-09-17 — 426 tests, including the real QUIC handshakes
+binaries passed on 2026-09-17, 426 tests, including the real QUIC handshakes
 and hole punching. The suite has grown since and has been run on the
 emulator, not on the phone again. Receiving a 512 MiB file over the network
 there grows the heap by 6 MiB. On 2026-10-18 and 19 it ran on Android 8.0
 (API 26, the oldest the app supports) for the first time, as x86_64 and as
-32-bit x86 -- `./scripts/android-test.sh x86`, the nearest this machine comes
-to a 32-bit ARM phone -- and found a lost edit no other platform here showed
+32-bit x86 (`./scripts/android-test.sh x86`, the nearest this machine comes
+to a 32-bit ARM phone) and found a lost edit no other platform here showed
 ([decisions/0069](decisions/0069-too-recent-to-trust.md)); with it fixed, all
 775 tests passed as x86, and 774 as x86_64, the last a test sensitive to a
 loaded emulator ([releasing.md](releasing.md), *Known gaps*). The app itself
@@ -1577,7 +1577,7 @@ core problems that a desktop merely tolerates:
 - **Filenames are normalised to NFC.** macOS and iOS decompose names on the way
   in, which made a synced `café` look deleted-and-recreated on every scan and
   duplicated it without limit.
-- **`Connector::start` announced `0.0.0.0`** — true about a socket bound to
+- **`Connector::start` announced `0.0.0.0`**: true about a socket bound to
   every interface, and useless to a peer. Hidden until now because every test
   binds `127.0.0.1` explicitly and STUN normally supplies an address that works
   instead; it broke two devices on a network with no route to the internet.
@@ -1587,20 +1587,20 @@ the engine built with the `mobile` profile, link-time optimised. The designed
 app's is an 11.6 MB APK, measured on a Galaxy S23 on 2026-10-08 at a median cold
 start of 182 ms and about 91 MB in memory, most of it graphics. The first
 release build was 10.7 MB installed against 46.7 MB for the debug build, at
-about 175 ms — see [decisions/0039](decisions/0039-a-light-android-app.md).
+about 175 ms: see [decisions/0039](decisions/0039-a-light-android-app.md).
 
-**There is an Android app** — [`android/`](../android/) — which installs, sets up
+**There is an Android app** ([`android/`](../android/)) which installs, sets up
 an identity, keeps the key in the Android Keystore, pairs and syncs. Since
-2026-09-29 it follows the same design as the desktop window, in four tabs —
-Home, Files, Devices, Settings — under a floating bar. Home says whether
+2026-09-29 it follows the same design as the desktop window, in four tabs
+(Home, Files, Devices, Settings) under a floating bar. Home says whether
 everything is synced, or backing up, or waiting for a device to collect;
 offers *Sync now* and *Send* side by side; and lists what is *Waiting* and the
-*Backups* — WhatsApp's folder and the phone's chosen folders, kept on the
+*Backups* (WhatsApp's folder and the phone's chosen folders, kept on the
 computer ([decisions/0062](decisions/0062-backing-up-whatsapp.md),
-[0063](decisions/0063-backing-up-a-phones-folders-chosen-on-the-desktop.md)) —
+[0063](decisions/0063-backing-up-a-phones-folders-chosen-on-the-desktop.md)))
 with conflicts to settle as attention. Files, since 2026-10-24
 ([decisions/0073](decisions/0073-the-phone-works-with-its-computer.md)), has
-*This phone* -- the Private Vault, *Received* -- then each
+*This phone* (the Private Vault, *Received*) then each
 computer's *Shared* folder, opened live, then *Devices*, this phone's folder
 on each of its computers. The Vault is browsed by folder and searched, says
 where each file's bytes are, and opens, frees, fetches, renames, moves,
@@ -1608,9 +1608,9 @@ sends, saves out or deletes each from a sheet. The phone's folder on a
 computer is opened to download or restore a file
 ([decisions/0067](decisions/0067-a-folder-for-each-person.md)), and its
 Private Vault part renamed, moved, deleted and added to from there; a backup
-is deleted there once its original is gone from the phone. Devices pairs —
-scanning a code, typing six digits, or showing one, a device asking to join
-approved by the six digits both screens show — chooses who keeps the phone's
+is deleted there once its original is gone from the phone. Devices pairs
+(scanning a code, typing six digits, or showing one, a device asking to join
+approved by the six digits both screens show) chooses who keeps the phone's
 own files, and removes a device. A computer asking to open this phone's
 folder there is answered behind the screen lock. Settings
 has space, copies of sent files, notifications, the theme, syncing and the
@@ -1619,9 +1619,9 @@ only while something moves. A conflict's sheet previews each version that is on
 the phone. The desktop's three notifications are raised from the history after
 each sync. Android's *Clear data* opens qurb's own screen, which says what
 exists only on this phone before anything goes. Before the design the same
-features were five tabs — Home, Vault, Devices, Transfers, Settings — and it is
+features were five tabs (Home, Vault, Devices, Transfers, Settings) and it is
 through those that most of the hardware checks below were made. The designed
-screens were walked on the S23 on 2026-10-03 — see
+screens were walked on the S23 on 2026-10-03: see
 [phases/phase-5-mobile.md](phases/phase-5-mobile.md#the-designed-app-on-the-s23),
 and
 [android/README.md](../android/README.md). Building it found a bug nothing else could: UniFFI keeps only the *last*
@@ -1633,25 +1633,25 @@ Rust test passed.
 the phone's engine that reads or changes the index takes it in turn
 (`Qurb::engine`), so one slow call holds up every screen. A call that holds
 it over half a second, or waits over a quarter, is logged with the line it
-was taken at (`Held`). Summaries that read every row -- a backup's, the copies
-of sent files -- are kept while the index is unchanged (`Remembered`,
+was taken at (`Held`). Summaries that read every row (a backup's, the copies
+of sent files) are kept while the index is unchanged (`Remembered`,
 `Db::change_mark`: rows changed through this connection, and SQLite's
 `data_version` for commits through another). A screen's refresh runs one at
 a time, one asked for meanwhile run once after it (`Screen.refreshing`).
 Measured on the S23 on 2026-10-15, phase 5, *The owner's list of
 2026-10-15*.
 
-The app syncs on its own through WorkManager — every fifteen minutes when
+The app syncs on its own through WorkManager (every fifteen minutes when
 Android allows it, or every hour once a push has arrived in the last week,
-since push then does the urgent part — and a `DocumentsProvider` puts the synced files in the
-system file picker and the Files app — listed from the index, so a freed file
+since push then does the urgent part) and a `DocumentsProvider` puts the synced files in the
+system file picker and the Files app: listed from the index, so a freed file
 is shown and downloads when opened, and other apps can save into the folder. A device that has not answered when a
 window closes counts as *unreachable*, not as time running out: the second is
 a retry with exponential backoff, and confusing them once pushed a phone's next
 sync further away each time its computer was off
 ([decisions/0020](decisions/0020-sync-takes-a-deadline.md#found-on-a-phone)).
-The phone can fall back to a relay, set in Settings by `host:port` — a name is
-looked up each pass — which is what lets it reach a laptop at home from mobile
+The phone can fall back to a relay, set in Settings by `host:port` (a name is
+looked up each pass) which is what lets it reach a laptop at home from mobile
 data; a relay that cannot be reached costs only the fallback. A pass reaches
 every paired device at once and syncs each as it answers, so a
 switched-off device cannot use up the window a working one needs. A pass with
@@ -1679,14 +1679,14 @@ replacing it.
 **A real phone and a real laptop sync both ways**, verified on hardware: a
 4.7 MB photo crossed from a Galaxy S23 to a laptop, byte-identical by SHA-256.
 Getting there found five more defects that no test could have caught, because
-each needed two machines and a router — most importantly that the rendezvous
+each needed two machines and a router: most importantly that the rendezvous
 service knew the moment a device appeared and told nobody, which made sync
 one-directional in practice while looking symmetrical in design
 ([decision 0022](decisions/0022-the-service-announces-arrivals.md)).
 
 **Unwatched behaviour and iOS are what remain.** The background worker is
 scheduled and was verified through WorkManager, but a phone left alone for a
-day — syncing on Android's timetable, at some cost in battery — has never been
+day (syncing on Android's timetable, at some cost in battery) has never been
 observed, and everything verified so far was on one phone, one laptop and one
 network. iOS needs Xcode, which needs a Mac. See
 [phases/phase-5-mobile.md](phases/phase-5-mobile.md).
@@ -1695,19 +1695,19 @@ network. iOS needs Xcode, which needs a Mac. See
 
 | thing | status |
 |---|---|
-| A window | Tauri 2, no framework and no build step; since 2026-10-31 in the phone's and the website's language ([design/desktop.md](design/desktop.md)): a sidebar of three places — Home, Files, Settings — devices and people reached through Home's circle, the deep green the only colour, light and dark, Inter, the phone's Phosphor icons. The rows below were written for the window before it, and say what it does; where each now is, is in the design record |
+| A window | Tauri 2, no framework and no build step; since 2026-10-31 in the phone's and the website's language ([design/desktop.md](design/desktop.md)): a sidebar of three places (Home, Files, Settings) devices and people reached through Home's circle, the deep green the only colour, light and dark, Inter, the phone's Phosphor icons. The rows below were written for the window before it, and say what it does; where each now is, is in the design record |
 | It hosts the daemon | the same one `qurb run` starts, on its own threads |
-| Home | one state — synced, syncing, devices away, add your first device, needs attention — then *Sync now* and *Send*, of one size (*Add a device* alone until there is one); attention only when something needs a decision; *Waiting*: files made here no other device has yet, sends not collected, a phone's folders still to come; *Backups*: WhatsApp and the folders kept here for each of your phones. What happened lately is a clock button away (Activity), not on Home. *Sync now* tells the daemon (`Daemon::sync_when_asked`) to drop every backoff, tell each device there is news — which wakes a phone that is asleep — and sync with all of them |
-| Files | at the top, *Shared* and a folder for each person the computer keeps files for, the owner's included, each opened only with a yes from that person's phone ([0067](decisions/0067-a-folder-for-each-person.md)); inside *Shared*, a file browser from the index: search, breadcrumbs, folders apart from files, and where each file's bytes are — *On this device*, *Available elsewhere*, *Only copy here*, *On no device* ([0055](decisions/0055-a-file-on-no-device-says-so.md)); keep a file here, free its local space, send it, move it into Private Vault, delete it; a details panel naming the devices that hold it |
+| Home | one state (synced, syncing, devices away, add your first device, needs attention) then *Sync now* and *Send*, of one size (*Add a device* alone until there is one); attention only when something needs a decision; *Waiting*: files made here no other device has yet, sends not collected, a phone's folders still to come; *Backups*: WhatsApp and the folders kept here for each of your phones. What happened lately is a clock button away (Activity), not on Home. *Sync now* tells the daemon (`Daemon::sync_when_asked`) to drop every backoff, tell each device there is news (which wakes a phone that is asleep) and sync with all of them |
+| Files | at the top, *Shared* and a folder for each person the computer keeps files for, the owner's included, each opened only with a yes from that person's phone ([0067](decisions/0067-a-folder-for-each-person.md)); inside *Shared*, a file browser from the index: search, breadcrumbs, folders apart from files, and where each file's bytes are, *On this device*, *Available elsewhere*, *Only copy here*, *On no device* ([0055](decisions/0055-a-file-on-no-device-says-so.md)); keep a file here, free its local space, send it, move it into Private Vault, delete it; a details panel naming the devices that hold it |
 | Private Vault | this computer's own files, browsed the same way; *Move to shared* takes one back out ([0057](decisions/0057-moving-a-file-into-or-out-of-private-vault.md)) |
-| Devices | who is paired, whether each is connected now and whether directly or through the relay, when each was last reached; a device set up again shown as one, with what is still kept from before — one rule for it, `Db::became`, which the window's list, a phone's folder on a computer and the phone's own list all ask: the person's word first (its page, or `qurb same`), then the same **install** — a marker each device tells the devices it trusts, made one way from what its platform keeps for the app across a reinstall (Android's `ANDROID_ID`, a computer's machine id; `Request::Install`) — then the same name, for devices from before ([0077](decisions/0077-one-device-is-counted-once.md)); and a phone does not change identity in the first place: its identity is derived from the person's key and its `ANDROID_ID`, the same after a reinstall or *Clear data*, and taken over by telling its computers (`Request::Become`, [0079](decisions/0079-a-phone-keeps-one-identity.md)); a person's folder shows one folder per device, its identities merged; a phone's backups from its panel, opened in the person's folder; removing one, with what that will and will not do said first |
+| Devices | who is paired, whether each is connected now and whether directly or through the relay, when each was last reached; a device set up again shown as one, with what is still kept from before (one rule for it, `Db::became`, which the window's list, a phone's folder on a computer and the phone's own list all ask: the person's word first (its page, or `qurb same`), then the same **install**) a marker each device tells the devices it trusts, made one way from what its platform keeps for the app across a reinstall (Android's `ANDROID_ID`, a computer's machine id; `Request::Install`), then the same name, for devices from before ([0077](decisions/0077-one-device-is-counted-once.md)), and a phone does not change identity in the first place: its identity is derived from the person's key and its `ANDROID_ID`, the same after a reinstall or *Clear data*, and taken over by telling its computers (`Request::Become`, [0079](decisions/0079-a-phone-keeps-one-identity.md)); a person's folder shows one folder per device, its identities merged; a phone's backups from its panel, opened in the person's folder; removing one, with what that will and will not do said first |
 | Activity | reached from Home: what this device did, paged, with the reason where there is one |
-| Storage | how much Qurb takes against the limit or the disk; what is kept here by kind -- each phone's backups (WhatsApp, folders, Private Vault), the shared files, guests' sealed folders (`storage_parts`); the largest files that can be freed without losing anything; and the allowance |
-| Settings | grouped lists: this device and its key, devices and pairings, where files sent here go, keep new files private, notifications, the 24 words, appearance — system, light or dark ([0056](decisions/0056-dark-mode.md)) — and the advanced settings — rendezvous, relay, port, start at login, version, Quit |
+| Storage | how much Qurb takes against the limit or the disk; what is kept here by kind: each phone's backups (WhatsApp, folders, Private Vault), the shared files, guests' sealed folders (`storage_parts`); the largest files that can be freed without losing anything; and the allowance |
+| Settings | grouped lists: this device and its key, devices and pairings, where files sent here go, keep new files private, notifications, the 24 words, appearance (system, light or dark ([0056](decisions/0056-dark-mode.md))) and the advanced settings, rendezvous, relay, port, start at login, version, Quit |
 | Setting a device up | make a new one, with nothing to write down, or join with another device's code, which brings the key ([0052](decisions/0052-the-key-travels-with-the-code.md)); the storage question asked; the 24 words a fallback |
 | Locked | a key protected by a passphrase is unlocked in the window; at login the window shows itself to ask |
-| Pairing | show a code — QR and six digits, the whole code folded away — or enter one, six digits or the whole code, joining as the sixth digit is typed; with a countdown; a device asking is approved by the number both screens show ([0053](decisions/0053-approval-same-key-and-safe-copies.md), [0066](decisions/0066-six-digits-to-pair.md)) |
-| Sending | a sheet — what, to which device, then the file travelling there and landing — from Home, a file, a device, or files dropped anywhere on the window |
+| Pairing | show a code (QR and six digits, the whole code folded away) or enter one, six digits or the whole code, joining as the sixth digit is typed; with a countdown; a device asking is approved by the number both screens show ([0053](decisions/0053-approval-same-key-and-safe-copies.md), [0066](decisions/0066-six-digits-to-pair.md)) |
+| Sending | a sheet (what, to which device, then the file travelling there and landing) from Home, a file, a device, or files dropped anywhere on the window |
 | Notifications | three things only: a file sent to you, one collected, one that failed; each can be turned off alone (0086) |
 | Transfer progress | a panel that appears while something moves or waits: both directions, live, with the time left |
 | Cancelling a send | before it is collected, from the window or `qurb cancel`; never after |
@@ -1719,21 +1719,21 @@ network. iOS needs Xcode, which needs a Mac. See
 | Gallery and quick preview | a folder mostly of pictures, the phone's camera folder included, as a grid of the pictures' own thumbnails; Space shows the picture, text, video, song or PDF under the pointer, large, the arrow keys moving through the folder. Video, songs and PDFs are served to the window from 127.0.0.1 at a token (`peek`, `peek_kept`, `src/stream.rs`, which serves files on disk as well as from the store) |
 | Search | one field over the shared folder, the Vault, and every person's folder open at the time (`find_people`); a locked one is not searched, and said so |
 | Speed limit | one rate up, one down, for the whole process (`qurb_peer::limit`), settings `upload-limit` and `download-limit`, applied at once from the window ([0076](decisions/0076-a-computer-backs-up-its-folders-and-holds-back-its-speed.md)) |
-| The person's controls | since 2026-11-12, both apps: pause sync (an hour, until 8:00, until resumed), each kind of notification alone, updates installing themselves or waiting for a yes, a report saved locally, resetting the device; the computer also *Stay awake to collect*, the phone mobile data (off, no backups, everything), backups nightly or every six hours, an app lock and where received files are saved. *Meeting point* on both (Recently deleted, listed here until 2026-11-14, is gone: decision 0089) — [0086](decisions/0086-the-persons-controls.md) |
+| The person's controls | since 2026-11-12, both apps: pause sync (an hour, until 8:00, until resumed), each kind of notification alone, updates installing themselves or waiting for a yes, a report saved locally, resetting the device; the computer also *Stay awake to collect*, the phone mobile data (off, no backups, everything), backups nightly or every six hours, an app lock and where received files are saved. *Meeting point* on both (Recently deleted, listed here until 2026-11-14, is gone: decision 0089), [0086](decisions/0086-the-persons-controls.md) |
 | A computer's own folders, backed up | folders outside the synced one kept in this computer's vault under `.qurb-outside/folders/`, read where they lie (`qurb_cli::backup`, setting `backup-folders`), and so kept by the computers chosen to keep its vault; shown on those in the owner's folder ([0076](decisions/0076-a-computer-backs-up-its-folders-and-holds-back-its-speed.md)) |
 
 ### Designed but not built
 
 An iOS app, per-file keys, key rotation, relay selection and quotas, accounts
-and billing, packages for anything but Arch, and an automatic updater — the
+and billing, packages for anything but Arch, and an automatic updater: the
 last deliberately, until it can be built safely
 ([decisions/0047](decisions/0047-versions-and-upgrades.md)).
 
 The desktop interface does what the command line does. The window sets a
-device up — the folder, how much disk it may use, and either a new key with
+device up (the folder, how much disk it may use, and either a new key with
 nothing to write down or the code another device shows, which brings its key
 ([0052](decisions/0052-the-key-travels-with-the-code.md)); the 24 words remain a
-fallback — unlocks a
+fallback) unlocks a
 passphrase-protected key, pairs devices by code, browses what is synced and
 where each file's bytes are, sends to one device, settles conflicts, restores
 deleted files, chooses which devices each folder goes to and which folders stay
@@ -1751,7 +1751,7 @@ Selective sync is built in both halves: a device drops local copies when it is
 over its storage limit and fetches them back on request, and a person can say
 a folder is kept only remotely
 ([decisions/0045](decisions/0045-a-folder-kept-remotely.md)). What Linux still
-lacks is a placeholder — see the first gap below.
+lacks is a placeholder: see the first gap below.
 
 ### The gaps that matter most
 
@@ -1774,8 +1774,8 @@ Eleven things are known-missing rather than merely unbuilt:
    is for, has not been watched. What is left is the person whose every device
    is gone. A computer has nothing that leaves the machine, so a person with
    only computers, who did not keep the words, has no way back. Every
-   consumer product in this space adds some escape hatch for that — social
-   recovery, an escrowed key, a printed kit — and each trades away part of
+   consumer product in this space adds some escape hatch for that (social
+   recovery, an escrowed key, a printed kit) and each trades away part of
    the promise. Which to add, if any, is undecided.
 
 3. **Nobody has watched a phone sync for a day.** The background worker is
@@ -1800,9 +1800,9 @@ Eleven things are known-missing rather than merely unbuilt:
    laptop: sharing a folder with chosen devices, keeping one only remotely,
    removing a device, the share sheet's *send to a device*, the phone showing
    a pairing code, moving files into and out of Private Vault. Still not: most
-   of the desktop window's own buttons with a real phone on the other end —
-   its pairing was, approved by number on 2026-10-08, and the rest is driven
-   by its smoke test against a second device on the same machine — two
+   of the desktop window's own buttons with a real phone on the other end
+   (its pairing was, approved by number on 2026-10-08, and the rest is driven
+   by its smoke test against a second device on the same machine) two
    phones, and a new phone restored from a Google backup. On 2026-10-15 the
    window's Home, Storage and the owner's folder in Files were used with the
    S23 on the other end: *Sync now*, the folder asked for and opened with the
@@ -1837,15 +1837,15 @@ Eleven things are known-missing rather than merely unbuilt:
    phone could be neither woken nor reached off the home Wi-Fi, until it was
    noticed on 2026-10-08 and set again by hand
    ([phase 5](phases/phase-5-mobile.md#the-last-of-the-phone-and-a-setting-lost-three-days-before)).
-   Since 2026-10-18 a phone never falls back to that address -- Settings says
-   *Not set — only devices on this Wi-Fi* -- and the address is kept in Block
+   Since 2026-10-18 a phone never falls back to that address (Settings says
+   *Not set) only devices on this Wi-Fi*, and the address is kept in Block
    Store beside the key, so a reinstall or a phone restored from a backup has
    it back. *Clear data* empties Block Store too, so after it the person
    still sets it again; now they are told.
 
 9. **Restoring WhatsApp from the computer is unproven.** The S23's WhatsApp
-   folder is kept on the laptop — 36,062 files, 10.1 GB, every one known
-   kept since 2026-10-15 — and the phone can fetch any file back. Nobody
+   folder is kept on the laptop (36,062 files, 10.1 GB, every one known
+   kept since 2026-10-15) and the phone can fetch any file back. Nobody
    has yet put the backup back and watched WhatsApp read it
    ([decisions/0062](decisions/0062-backing-up-whatsapp.md)). Until that is
    done, nothing here says to turn WhatsApp's Google backup off.
@@ -1882,14 +1882,14 @@ when free pages are a quarter of it). A phone and the daemon also delete the
 lists kept for devices no longer paired (`Trees::keep_only`), and a mailbox
 lets go of arrivals no plan wants once a day old (`Mailbox::tidy_inbox`).
 
-**Availability** — files being unreachable when every device is switched off —
+**Availability** (files being unreachable when every device is switched off)
 is answered by storage-only replicas, decided in
 [decisions/0006](decisions/0006-availability-gap.md), built in Phase 3 and
 runnable since `qurb replica`. Verified with the two ordinary devices never
 running at the same time: see [anywhere.md](anywhere.md).
 
 **Protecting the key at rest** was the largest security gap and is now a choice
-between a file, the operating system's keystore, and a passphrase — see
+between a file, the operating system's keystore, and a passphrase: see
 [crates/keys/README.md](../crates/keys/README.md) for what each defends against.
 
 ---
@@ -1903,7 +1903,7 @@ is in [trying-it.md](trying-it.md). What follows is the reference.
 cargo build --release
 ```
 
-**The program itself.** Two devices, start to finish — `init` on the first,
+**The program itself.** Two devices, start to finish: `init` on the first,
 then `pair` there, which shows a code and six digits, and `join` with the
 digits or the code on the second, which brings the first device's key with it
 ([decisions/0052](decisions/0052-the-key-travels-with-the-code.md)); the first
@@ -1944,7 +1944,7 @@ hand:
 
 ```bash
 # What this folder holds and whether the bytes are actually here. "only here"
-# means no other device has it — losing this device would lose the file.
+# means no other device has it: losing this device would lose the file.
 ./target/release/qurb ls ~/Sync
 ./target/release/qurb ls ~/Sync photos
 ```
@@ -1955,7 +1955,7 @@ hand:
 ```
 
 ```bash
-# What this device did, newest first. With a path, what happened to that file —
+# What this device did, newest first. With a path, what happened to that file: 
 # which is the question a log cannot answer once the process has exited.
 ./target/release/qurb activity ~/Sync
 ./target/release/qurb activity ~/Sync holiday/beach.jpg
@@ -2000,7 +2000,7 @@ hand:
 # Firebase service account; without it devices sync when they next look.
 #
 # `--tls` makes the rendezvous present its own certificate and print the whole
-# setting — address and fingerprint — for devices to copy. That is what lets it
+# setting: address and fingerprint: for devices to copy. That is what lets it
 # run on a host with an address and no domain name. Without it, put a reverse
 # proxy in front: unencrypted rendezvous is refused by devices anywhere but the
 # local network.
@@ -2024,7 +2024,7 @@ cargo test --workspace
 ```
 
 ```bash
-# Classify this network's NAT — run on every network you care about
+# Classify this network's NAT: run on every network you care about
 ./target/release/quictest stun
 ```
 
@@ -2098,7 +2098,7 @@ cd packaging/arch && makepkg -si
 
 Syncing from outside the house needs the rendezvous service somewhere both
 devices can reach; [anywhere.md](anywhere.md) is the recipe, including a free
-one. Only that service needs a public name — the files go directly between the
+one. Only that service needs a public name: the files go directly between the
 devices and never touch it. To run the services on a host of your own, unit
 files and the step-by-step are in
 [packaging/server/](../packaging/server/README.md).
@@ -2120,40 +2120,40 @@ tmpfs that the 2 GiB synthetic corpus will fill.
 ## 7. Suggested reading order
 
 1. This file.
-2. [features.md](features.md) — what a person can do with it today, on each
+2. [features.md](features.md): what a person can do with it today, on each
    device.
-3. [glossary.md](glossary.md) — skim it, then use it as a reference.
-4. [roadmap.md](roadmap.md) — what is being built when, and the honest risks.
-5. [phases/phase-0-spike.md](phases/phase-0-spike.md) — the measurements, and
+3. [glossary.md](glossary.md): skim it, then use it as a reference.
+4. [roadmap.md](roadmap.md): what is being built when, and the honest risks.
+5. [phases/phase-0-spike.md](phases/phase-0-spike.md): the measurements, and
    the design error they caught.
-6. [architecture.md](architecture.md) — the full target design.
-7. [decisions/](decisions/) — read these when you want to know *why*, or when
+6. [architecture.md](architecture.md): the full target design.
+7. [decisions/](decisions/): read these when you want to know *why*, or when
    you are about to change something and want to know what it would break.
-8. [crates/qurb/README.md](../crates/qurb/README.md) — the commands, and what
+8. [crates/qurb/README.md](../crates/qurb/README.md): the commands, and what
    the daemon does not do yet. The quickest way to see the shape of the whole
    thing is to run it.
 
 Then the layers, bottom to top:
 
-9. [crates/storage/README.md](../crates/storage/README.md) — the two invariants
+9. [crates/storage/README.md](../crates/storage/README.md): the two invariants
    the storage layer is built around. Then its source, in this order:
    `store.rs`, `db.rs`, `gc.rs`.
-10. [crates/watcher/README.md](../crates/watcher/README.md) — the four silent
+10. [crates/watcher/README.md](../crates/watcher/README.md): the four silent
     failure modes filesystem watching has to prevent.
-11. [crates/sync/README.md](../crates/sync/README.md) — why concurrency means
+11. [crates/sync/README.md](../crates/sync/README.md): why concurrency means
     conflict, and why convergence is a different property from correctness.
-12. [crates/engine/README.md](../crates/engine/README.md) — how a change becomes
+12. [crates/engine/README.md](../crates/engine/README.md): how a change becomes
     work, and the one heuristic the engine leans on.
-13. [crates/keys/README.md](../crates/keys/README.md) — why a lost phrase is
+13. [crates/keys/README.md](../crates/keys/README.md): why a lost phrase is
     unrecoverable, and what the key file does and does not defend against.
-14. [crates/peer/README.md](../crates/peer/README.md) — what actually crosses
+14. [crates/peer/README.md](../crates/peer/README.md): what actually crosses
     the wire, and what pinned identity does and does not protect.
 15. [crates/signal/README.md](../crates/signal/README.md) and
-    [crates/relay/README.md](../crates/relay/README.md) — the two services, and
+    [crates/relay/README.md](../crates/relay/README.md): the two services, and
     what each is deliberately unable to learn.
-16. [crates/mobile-ffi/README.md](../crates/mobile-ffi/README.md) — the surface
+16. [crates/mobile-ffi/README.md](../crates/mobile-ffi/README.md): the surface
     a phone calls, and the four platform constraints that shaped it.
-17. [android/README.md](../android/README.md) — the app, and the things about
+17. [android/README.md](../android/README.md): the app, and the things about
     Android that dictated its shape: the keystore, edge-to-edge drawing, and a
     background scheduler that decides when you run. The fourth, the 16 KB page
     size, is in [phases/phase-5-mobile.md](phases/phase-5-mobile.md#16-kb-page-alignment)
@@ -2161,18 +2161,18 @@ Then the layers, bottom to top:
 
 And when you want to run it for real, rather than on one machine:
 
-18. [anywhere.md](anywhere.md) — what has to be reachable for a phone to sync
+18. [anywhere.md](anywhere.md): what has to be reachable for a phone to sync
     from a train, what does not, and a way to get there for nothing.
-19. [packaging/server/README.md](../packaging/server/README.md) — the two
+19. [packaging/server/README.md](../packaging/server/README.md): the two
     services on a host of your own: unit files, ports, and which of them may
     face the internet.
 
 And when you want to close the measurements still outstanding:
 
-20. [measuring-connectivity.md](measuring-connectivity.md) — how to measure the
+20. [measuring-connectivity.md](measuring-connectivity.md): how to measure the
     direct-connection rate, which is the number the relay bill depends on. The
     other open measurement, whether sync survives a phone's battery and its
-    platform's patience, needs a phone left alone for a day — see
+    platform's patience, needs a phone left alone for a day: see
     [phases/phase-5-mobile.md](phases/phase-5-mobile.md).
 
 ---
@@ -2180,11 +2180,11 @@ And when you want to close the measurements still outstanding:
 ## 8. Conventions
 
 - **Rust** for anything on a device: engine, storage, crypto, networking. That
-  includes the phones — [`crates/mobile-ffi`](../crates/mobile-ffi/) is the
+  includes the phones: [`crates/mobile-ffi`](../crates/mobile-ffi/) is the
   only place platform languages appear, and it is a seam rather than a second
   implementation.
 - **Rust for the services too.** The rendezvous service and the relay are
-  Rust, because they share wire types and key derivation with the devices — see
+  Rust, because they share wire types and key derivation with the devices: see
   [decisions/0015](decisions/0015-control-plane-in-rust.md), which revised the
   architecture's original choice of Go. Whether accounts and billing are Rust
   as well is left open until that work starts.
@@ -2203,7 +2203,7 @@ And when you want to close the measurements still outstanding:
   panics on a Tokio thread. It did, with zbus: see
   [phases/phase-4-product.md](phases/phase-4-product.md#notifications-stopped-at-the-first-failure).
 - **A Tokio timer is made inside the runtime.** `tokio::time::timeout` built
-  outside `block_on` — `runtime.block_on(timeout(..))` — panics with "no
+  outside `block_on` (`runtime.block_on(timeout(..))`) panics with "no
   reactor running" when it is built, not when awaited; write
   `block_on(async { timeout(..).await })`. The phone's folder on the
   laptop failed that way on every open until 2026-10-15, and the emulator
@@ -2215,7 +2215,7 @@ And when you want to close the measurements still outstanding:
 ## 9. Keeping this file honest
 
 The failure mode for a document like this is drifting out of sync with the code
-until it becomes actively misleading — worse than having no document at all.
+until it becomes actively misleading: worse than having no document at all.
 
 Update it whenever you change how the system fits together: a new subsystem, a
 changed data flow, a moved directory, a corrected assumption. Update the

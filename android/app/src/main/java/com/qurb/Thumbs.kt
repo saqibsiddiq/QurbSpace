@@ -62,7 +62,7 @@ object Thumbs {
         file(scope, icon, java.io.File(Engine.root(icon.context), path), "local:$path:$modifiedAt")
     }
 
-    /** Into `icon`: any file on this phone, by where it is -- one a backup
+    /** Into `icon`: any file on this phone, by where it is, one a backup
      *  is taking from the phone's own folders (Waiting, 2026-11-03). */
     fun file(
         scope: CoroutineScope,
@@ -76,8 +76,8 @@ object Thumbs {
         val path = name
         show(scope, icon, key) {
             if (!file.isFile) return@show null
-            // A file that cannot be read as what its name says -- a PDF that
-            // is not one -- is drawn as its kind, never left blank.
+            // A file that cannot be read as what its name says (a PDF that
+            // is not one) is drawn as its kind, never left blank.
             when (Peek.kind(path)) {
                 "picture" -> decode(file.path)
                 "video" -> media(context) { it.setDataSource(file.path) }?.let { framed(it.first, it.second) }
@@ -96,8 +96,8 @@ object Thumbs {
     }
 
     /** Into `icon`, once it is read: a file of a computer's folder, read in
-     *  part where that is enough -- a JPEG's own thumbnail, a video's frame
-     *  read as a player reads it -- else whole when small. */
+     *  part where that is enough (a JPEG's own thumbnail, a video's frame
+     *  read as a player reads it) else whole when small. */
     fun remote(scope: CoroutineScope, icon: ImageView, folder: () -> KeptFolder?, file: KeptFile) {
         val context = icon.context
         show(scope, icon, "kept:${file.content}") {
@@ -210,7 +210,7 @@ object Thumbs {
     /** A document as the mockups draw one (components.css's .th.doc): a
      *  white page of grey lines, its type on a coloured tag at the foot. */
     /**
-     * Code and markup, whose first lines read as noise in a tile -- XML's
+     * Code and markup, whose first lines read as noise in a tile: XML's
      * `<?xml version='1.0'` three times over in a grid (the owner,
      * 2026-11-13): drawn by their kind. Notes keep their first lines.
      */
@@ -355,7 +355,7 @@ object Thumbs {
 
 /**
  * Files as a gallery, three to a row of square pictures, as the desktop
- * shows a folder that is mostly photos -- a phone's camera folder, a
+ * shows a folder that is mostly photos: a phone's camera folder, a
  * holiday. Each square is a file's thumbnail, its kind's icon until then.
  */
 object Gallery {

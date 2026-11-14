@@ -1,4 +1,4 @@
-# 0065 — The scale qurb is built for
+# 0065: The scale qurb is built for
 
 **Status:** Accepted as targets and an order of work, 2026-10-14. Measured at
 100,000 and a million files the same day. A million files could not sync at
@@ -124,9 +124,9 @@ generated:
 
 | stage | measured | target |
 |---|---|---|
-| first index | 1,623 s, 616 files/s | -- |
+| first index | 1,623 s, 616 files/s |, |
 | re-index, nothing changed | 27.5 s | within 15 s: **missed** |
-| first sync | **failed**: `ReadToEnd(TooLong)` | -- |
+| first sync | **failed**: `ReadToEnd(TooLong)` |, |
 
 The sync could not start. The whole file list goes in one message, and one
 message is capped at 64 MiB (`MAX_MESSAGE`); a million entries, each with
@@ -155,13 +155,13 @@ deep verify):
 
 | stage | measured | target |
 |---|---|---|
-| first index | 1,547.5 s, 646 files/s | -- |
+| first index | 1,547.5 s, 646 files/s |, |
 | re-index, nothing changed | 23.6 s | within 15 s: missed |
-| file list exchanged | 4.96 s | -- |
+| file list exchanged | 4.96 s |, |
 | first sync, 44 GiB | 2,305 s, 2.3 ms a file | twice a plain copy: not yet measured against one |
-| 10,000 edited: re-index | 83.8 s | -- |
+| 10,000 edited: re-index | 83.8 s |, |
 | 10,000 edited: sync | 58.2 s, 254 MiB on the wire | 1,000 within 10 s: not run at 1,000 |
-| deep verify, after each sync | 532.7 s, 492.4 s | -- |
+| deep verify, after each sync | 532.7 s, 492.4 s |, |
 
 Every check passed after both syncs, 500 sampled files byte-identical each
 time. So the hard limit is gone: a library of a million files syncs. What

@@ -7,7 +7,7 @@
 //!
 //! So the daemon keeps a small summary and publishes it on a
 //! [`tokio::sync::watch`] channel. Watch rather than broadcast because a
-//! display only ever wants the *current* state — a tray icon that fell behind
+//! display only ever wants the *current* state: a tray icon that fell behind
 //! and had to catch up through a queue of stale summaries would be showing the
 //! past. A late reader sees the latest value and nothing else, which is exactly
 //! what an interface needs.
@@ -107,7 +107,7 @@ pub struct Status {
     /// Paired devices, and how many answered the last time we tried.
     pub peers: usize,
     pub peers_reachable: usize,
-    /// Most recent first, capped — see [`Status::REMEMBERED`].
+    /// Most recent first, capped: see [`Status::REMEMBERED`].
     pub recent: Vec<Recent>,
     /// The last thing that went wrong, if anything has.
     pub problem: Option<String>,
@@ -117,8 +117,8 @@ pub struct Status {
     pub incoming: Vec<Transfer>,
     /// Files this device is serving to another that asked for them.
     ///
-    /// The sender cannot know a transfer is over -- the other device simply
-    /// stops asking -- so these are not removed when they finish. An entry
+    /// The sender cannot know a transfer is over (the other device simply
+    /// stops asking) so these are not removed when they finish. An entry
     /// whose `updated` is more than a few seconds old is no longer moving, and
     /// the device's `Got` is what says it arrived.
     pub outgoing: Vec<Transfer>,

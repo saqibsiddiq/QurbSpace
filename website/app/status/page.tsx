@@ -17,7 +17,7 @@ export default function StatusPage() {
         <Icon name="info" size={20} />
         <span>
           <b>Your devices depend on you, not on us.</b> They sync directly with each other. The small service that
-          introduces them across networks — and the relay, if you use one — run on a computer or server of your own, so
+          introduces them across networks, and the relay, if you use one: run on a computer or server of your own, so
           their status is on that machine. On any device, <code>qurb status</code> says what it holds and which devices
           it trusts.
         </span>

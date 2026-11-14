@@ -86,7 +86,7 @@ pub const SPREAD: u16 = 4;
 pub enum FromClient {
     /// I am here, at these addresses.
     ///
-    /// Sent on connecting and again whenever the addresses change — a laptop
+    /// Sent on connecting and again whenever the addresses change: a laptop
     /// moving between networks does this several times a day.
     Announce { group: GroupId, member: MemberId, endpoints: Endpoints },
 
@@ -100,7 +100,7 @@ pub enum FromClient {
 
     /// I have something for this member, whenever it is next able to hear it.
     ///
-    /// Carries no content and no filenames — the fact that there is work, and
+    /// Carries no content and no filenames: the fact that there is work, and
     /// who it is for. That is the whole point: the service arranges meetings
     /// and never learns what is said at them.
     ///
@@ -111,7 +111,7 @@ pub enum FromClient {
     /// Delivered immediately if the recipient is connected, and remembered if
     /// not, so it arrives the moment they appear. Remembering it is what makes
     /// a device that was asleep at the moment of the change learn about it
-    /// without waiting for its own next poll — the difference between a photo
+    /// without waiting for its own next poll: the difference between a photo
     /// arriving in seconds and arriving in a quarter of an hour.
     Waiting { to: MemberId },
 
@@ -122,7 +122,7 @@ pub enum FromClient {
     /// token is whatever the platform's push service issued; qurb never looks
     /// inside it and does nothing with it but hand it back.
     ///
-    /// `None` withdraws it — on signing out, or when the platform revokes one.
+    /// `None` withdraws it: on signing out, or when the platform revokes one.
     /// A device that never sends this is simply never woken, which is how
     /// every desktop behaves: it is already connected.
     Reachable { via: Option<String> },

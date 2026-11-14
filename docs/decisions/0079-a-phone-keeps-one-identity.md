@@ -1,17 +1,17 @@
-# 0079 — A phone keeps one identity, however often it is set up
+# 0079: A phone keeps one identity, however often it is set up
 
-**Status:** Accepted — built 2026-11-01; tested over real connections
+**Status:** Accepted, built 2026-11-01; tested over real connections
 (`crates/peer/tests/permanent_identity.rs`) and in the store's rules; in
 v0.2.0-beta.4. **The installed case run on the owner's S23 the same
 evening**: with the laptop and phone both on beta.4, the phone reached the
-laptop over Wi-Fi at 20:33:34 and took its permanent identity — the laptop
+laptop over Wi-Fi at 20:33:34 and took its permanent identity (the laptop
 kept its device id `E5781F95` and turned its fingerprint from `6385F8CC` to
-`F63A0F05` — and at 20:36:28, restarted, connected as it and synced. **The
+`F63A0F05`) and at 20:36:28, restarted, connected as it and synced. **The
 set-up-again case run on it minutes later**: the app uninstalled
 (20:37:43, its data gone) and installed again from the published beta.4,
 joined by code under a passing pairing (`92EA8F5A`), told the laptop which
 identity it was becoming, was answered with its device id, took it, and at
-20:39:42 connected as `E5781F95` again — one device, nothing left behind.
+20:39:42 connected as `E5781F95` again, one device, nothing left behind.
 The run found one bug, fixed after beta.4: the name rule took the permanent
 identity to have become the passing pairing, so each was listed as the
 other's (`a_passing_pairing_is_nobodys_later_self`).
@@ -19,7 +19,7 @@ other's (`a_passing_pairing_is_nobodys_later_self`).
 
 ## What was asked
 
-After the owner's S23 had become three devices in a day — "SM-S911B", "skib
+After the owner's S23 had become three devices in a day: "SM-S911B", "skib
 phone", and "SM-S911B" again, each reinstall a new identity, linked
 afterwards by his word (decision 0077): "the phone must retain its single
 identity each time, it must not make 3 separate identities on each install."
@@ -36,23 +36,23 @@ same phone afterwards; this keeps it from changing at all.
 1. **A permanent identity, made, not kept.** A phone's identity is derived
    (`Identity::derived`) from a seed made from the person's key
    (`Purpose::DeviceIdentity`) and what Android keeps for this install of
-   the app across a reinstall and *Clear data* — `ANDROID_ID`
+   the app across a reinstall and *Clear data*: `ANDROID_ID`
    (`Identity::permanent_seed`). The same phone set up with the same
    person's key makes the same identity; another phone or another person, a
    different one. An Ed25519 key, whose signatures are deterministic, and a
-   certificate with every field fixed, so the certificate — and so the
-   fingerprint every device pins — is the same byte for byte.
+   certificate with every field fixed, so the certificate (and so the
+   fingerprint every device pins) is the same byte for byte.
 2. **The raw `ANDROID_ID` stays on the phone.** Other devices are told only
    the marker made from it one way (decision 0077); none of them can make
    the phone's identity, though each holds the person's key.
 3. **Taken over by telling the computer** (`Request::Become`, a new request
    an older build ignores). A phone joining by code must present *some*
-   identity before the key reaches it — the key travels in that connection —
+   identity before the key reaches it (the key travels in that connection)
    so it joins under a passing one, then says which identity it is becoming:
    - a computer that does not know that identity turns the phone's
      fingerprint to it and keeps its device id: everything kept for it stays
      its. A phone already installed does this on its next sync, once;
-   - a computer that knows it — the phone was set up again — answers with
+   - a computer that knows it (the phone was set up again) answers with
      the device id it had, and counts the passing pairing as that device.
      The phone takes that device id, **only while nothing has been made in
      its store**, since every version counts against the id it was made

@@ -55,10 +55,10 @@ fn somewhere(n: usize) -> Endpoints {
     }
 }
 
-// -- the rendezvous service ---------------------------------------------------
+// , the rendezvous service ---------------------------------------------------
 
-/// `devices` connected and announced, in groups of two -- one person's phone
-/// and laptop -- then a sample of introductions timed while all of them are
+/// `devices` connected and announced, in groups of two (one person's phone
+/// and laptop) then a sample of introductions timed while all of them are
 /// held open.
 async fn signal(url: &str, devices: usize, samples: usize) -> Result<()> {
     let pairs = devices / 2;
@@ -170,7 +170,7 @@ async fn futures_join<T: Send + 'static>(
     out
 }
 
-// -- the relay ---------------------------------------------------------------
+// , the relay ---------------------------------------------------------------
 
 /// `devices` registered with the relay and sending nothing: what a relay holds
 /// for every device that is on and configured to fall back to it.

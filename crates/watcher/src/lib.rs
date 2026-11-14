@@ -25,7 +25,7 @@
 //!   stream stops describing reality. Handled by reporting
 //!   [`Event::RescanRequired`] rather than continuing as if nothing happened.
 //!
-//! Changes are delivered **at least once**, not exactly once — see
+//! Changes are delivered **at least once**, not exactly once: see
 //! [`Watcher`] for why, and what that requires of the consumer.
 //!
 //! See ../../docs/CODEBASE.md for where this sits in the system.

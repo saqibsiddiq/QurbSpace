@@ -1,8 +1,8 @@
 //! Phase 0 kill-criterion harness.
 //!
 //! Usage:
-//!   chunkbench                 -- generate a synthetic corpus and measure it
-//!   chunkbench <path>          -- measure a real file or directory tree
+//!   chunkbench (generate a synthetic corpus and measure it
+//!   chunkbench <path>) measure a real file or directory tree
 //!
 //! Reports the three numbers that decide whether Phase 1 is worth starting:
 //! chunking throughput, dedup ratio, and boundary stability under an edit.
@@ -183,7 +183,7 @@ fn generate_corpus(scratch: &Path) -> Result<PathBuf> {
         buf.extend_from_slice(para);
     }
 
-    // An exact duplicate of the media region -- dedup must catch all of this.
+    // An exact duplicate of the media region: dedup must catch all of this.
     buf.extend_from_slice(&media);
 
     // Tail of fresh randomness so the file does not end on a repeat.

@@ -1,12 +1,12 @@
-# 0020 — Sync takes a deadline
+# 0020: Sync takes a deadline
 
 **Status:** Accepted. Amended 2026-09-27: what `timed_out` means, the deadline
 now covers starting, a dropped connector stops its background work, and a pass
-stays open briefly for peers to collect — see [Found on a phone](#found-on-a-phone)
+stays open briefly for peers to collect, see [Found on a phone](#found-on-a-phone)
 and [A pass that waits to be collected from](#a-pass-that-waits-to-be-collected-from).
 Amended 2026-10-04 by [0050](0050-large-files-from-a-phone.md): a pass may go on
 answering a device that is collecting from it past its window, when its caller
-asks with `sync_serving` -- the background worker, running in the foreground.
+asks with `sync_serving`, the background worker, running in the foreground.
 **Date:** 2026-09-17
 
 ## Decision
@@ -29,7 +29,7 @@ outstays it. iOS `BGTaskScheduler` grants short and unpredictable windows and
 penalises an app that overruns by granting fewer of them later. Android's
 `WorkManager` is more generous and still finite.
 
-So "sync until finished" is not a neutral default on a phone — it is the way an
+So "sync until finished" is not a neutral default on a phone: it is the way an
 app loses its background privileges, and it does so gradually and invisibly.
 An app cannot wrap a blocking call in its own timeout either, because killing a
 thread mid-transfer is not something either platform offers.
@@ -74,7 +74,7 @@ starts fresh and gets a fresh chance at a direct path.
 The desktop daemon accepts incoming connections continuously. A phone accepts
 them only for the duration of a pass.
 
-This is not a compromise — it is what the platform permits. A backgrounded app
+This is not a compromise: it is what the platform permits. A backgrounded app
 is suspended the moment its window closes, and a socket it left open stops being
 serviced regardless of intent. Pretending otherwise would mean holding resources
 the system is about to take back.
@@ -104,7 +104,7 @@ puts the decision on the far side of the boundary, where it would be called from
 a thread that knows nothing about what the loop is in the middle of.
 
 **Let the app pass a huge deadline and effectively sync forever.** Still
-available — `sync_within(3600)` is legal — and that is deliberate: in the
+available (`sync_within(3600)` is legal) and that is deliberate: in the
 foreground, with the user watching a progress bar, it is the right call. What
 matters is that the parameter exists and has to be thought about.
 
@@ -117,7 +117,7 @@ matters is that the parameter exists and has to be thought about.
   was asleep, and both are ordinary. `SyncOutcome` counts `unreachable`
   separately from raising an error for exactly this reason.
 - The per-pass connector means STUN runs per pass. On a metered connection that
-  is a small repeated cost, which is why `Settings::discover` can turn it off —
+  is a small repeated cost, which is why `Settings::discover` can turn it off:
   at the price of only reaching peers on the same network.
 
 ## Found on a phone
@@ -132,13 +132,13 @@ device through the rendezvous service waits up to twenty seconds for an
 introduction, and the background worker's window was twenty seconds. So the
 window closed while the phone was still waiting, and the pass came back as
 `timed_out` with nothing reached and nothing unreachable. The worker read that
-as "no paired devices" — wrong — and answered `timed_out` with a retry, which on
+as "no paired devices" (wrong) and answered `timed_out` with a retry, which on
 Android is exponential backoff. That is the three-hour gap between syncs that
 the worker had already been fixed once for, arrived at by a different route: a
 switched-off computer is the ordinary state of things, and the ordinary
 schedule is the answer to it.
 
-`timed_out` now means what this record always said it meant — work left over:
+`timed_out` now means what this record always said it meant: work left over:
 a device that answered was still being synced, or devices were left untried. A
 device that has not answered when the window closes is counted in
 `unreachable`, however long it was waited for.
@@ -146,7 +146,7 @@ device that has not answered when the window closes is counted in
 **Starting was outside the deadline.** Each pass starts a connector, which
 connects to the rendezvous service, and that handshake had no bound at all. A
 service that accepts the connection and never answers held the pass for ever,
-whatever deadline was asked for — found while writing the test for the first
+whatever deadline was asked for: found while writing the test for the first
 defect, which hung for ten minutes. The handshake is now bounded at five
 seconds (`qurb_signal::client::HANDSHAKE_TIMEOUT`), which also bounds the
 desktop daemon's start and its reconnect loop, and the phone's connector start
@@ -162,7 +162,7 @@ never answers and an eight-second window, and without the fix returns exactly
 `reached: 0, unreachable: 0, timed_out: true`. The older test for an unreachable
 device accepted either answer, which is how this went unnoticed.
 
-**Devices were tried one after another** — recorded here as not fixed, and
+**Devices were tried one after another**: recorded here as not fixed, and
 fixed the same day. With two paired devices and the first switched off, waiting
 for the first could use the whole window and the second was never tried; the
 pass came back `timed_out`, was retried, and the same happened next time, since
@@ -185,7 +185,7 @@ connector at the end of a pass freed nothing it had started: the rendezvous
 reconnect loop, the beacon sender and the beacon listener ran on for the life
 of the process, and the reconnect loop held the QUIC endpoint, so its socket
 stayed open. A minute after a pass the phone had six UDP sockets, three beacon
-listeners — one per pass since the app started — and was still announcing the
+listeners (one per pass since the app started) and was still announcing the
 addresses of passes long finished. The desktop, hearing those, dialled them
 every eight seconds and timed out each time. A connector now stops everything
 it started when it is dropped (`crates/peer/tests/lifetime.rs`, seen to fail
@@ -196,15 +196,15 @@ device pulls what it wants, so a photo the phone made moves only when the
 desktop dials back and asks, which it does the moment it hears the phone. But
 on a local network the phone's own syncing now finishes in under a second, and
 the pass ended there, before the desktop could come. So a pass that reached a
-device and has something waiting for one — a send not yet collected, a shared
-file nobody else holds, or an own file when a device keeps them — announces
+device and has something waiting for one (a send not yet collected, a shared
+file nobody else holds, or an own file when a device keeps them) announces
 that it has news and keeps answering until it has been collected or ten
 seconds have passed (`LINGER`), and never beyond the window. A private file
 with nobody chosen to keep it waits for no one, so it holds nothing open.
 
 On the phone, with both changes: the desktop, still busy with the stale
 addresses above, connected ten seconds after the phone finished its own syncing
-— inside the wait — and took the file. Without the wait the pass would have
+(inside the wait) and took the file. Without the wait the pass would have
 been closed for nine of those seconds. Whether the wait is still needed once
 the stale addresses are gone was not measured; the test written for it
 (`one_pass_is_enough_for_the_desktop_to_collect`) passes either way, because its

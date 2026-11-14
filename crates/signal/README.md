@@ -12,7 +12,7 @@ punch      both sides told at the same moment
 ## What it is not allowed to know
 
 No filenames, no chunks, no keys. It does not even learn *whose* devices these
-are — identifiers are derived from a master key the server does not hold:
+are: identifiers are derived from a master key the server does not hold:
 
 ```
 group  = KDF(master, "rendezvous-group/v1")
@@ -24,8 +24,8 @@ without being told they are related. A member identifier depends on the
 fingerprint, which pairing has already established, so a peer can work out where
 to look while the server sees only opaque bytes.
 
-Run naively — devices registering under an account name, or their real
-fingerprints — the server would learn every user, their devices and their
+Run naively (devices registering under an account name, or their real
+fingerprints) the server would learn every user, their devices and their
 locations over time. That is a more valuable database than the files it was
 carefully prevented from seeing.
 
@@ -36,7 +36,7 @@ near it. See [decision 0016](../../docs/decisions/0016-what-signalling-learns.md
 ## Two design points that look arbitrary and are not
 
 **Websockets over TCP, not QUIC.** The data plane is QUIC, and reusing it here
-would be tidier — and would fail exactly when needed. If UDP is blocked, which is
+would be tidier, and would fail exactly when needed. If UDP is blocked, which is
 precisely when a device most needs coordinating, a UDP control channel cannot
 tell that device it needs a relay. The channel that arranges the fallback has to
 work where the fallback is needed.
@@ -64,7 +64,7 @@ on a phone, recorded in
 A device left in the directory after it disconnects means peers are handed a
 dead address and spend their punch attempts on it.
 
-The subtle case is an *abrupt* disconnect — laptop shut, network dropped — which
+The subtle case is an *abrupt* disconnect (laptop shut, network dropped) which
 is the common one rather than the exception. An early return on the resulting
 error would skip the cleanup it was meant to trigger.
 
@@ -78,7 +78,7 @@ tests and says what it is.
 ## It relays too
 
 `SignalServer::relaying` gives it a relay to carry: a WebSocket opened at
-`/relay` -- or a path ending in it, behind a proxy that adds a prefix -- is
+`/relay` (or a path ending in it, behind a proxy that adds a prefix) is
 handed over as a byte stream (`tunnel.rs`), decided from the request line
 before the handshake. `qurb signal` does this unless given `--no-relay`, and
 without a relay `/relay` is refused with a 404, so a device looking for one
@@ -95,7 +95,7 @@ When a device announces itself, every other member of its group is told, with
 the addresses attached so acting on the news needs no second round trip.
 
 This was the half that was missing, and it is what makes syncing with a phone
-work at all. The server always knew the moment a device appeared — it told only
+work at all. The server always knew the moment a device appeared: it told only
 that device. Everyone else had to discover it by asking, and a peer that asks on
 a backoff will not be asking during the twenty-odd seconds a phone is awake in a
 background window. Worse, the backoff grows *because* the phone keeps being
@@ -110,13 +110,13 @@ transfer completes inside the phone's window.
 
 Appearing is one half. The other is a device that is *already* connected and
 has just changed something: the peer has no reason to ask, so without being
-told it waits for its own next poll — up to two minutes on a desktop, a quarter
+told it waits for its own next poll, up to two minutes on a desktop, a quarter
 of an hour on a phone.
 
 `Waiting { to }` says there is something for a member. It carries who and never
 what: no filenames, no sizes, no counts. The service forwards it if that member
 is connected, and **keeps it if not**, delivering it the moment they announce.
-Keeping it is the point — the device that most needs telling is exactly the one
+Keeping it is the point: the device that most needs telling is exactly the one
 that was asleep when the change happened.
 
 Notes collapse: fifty changes for one absent peer leave one note, because the
@@ -128,7 +128,7 @@ the other **one second later**, with the recipient logging the notice one
 millisecond after the sender recorded the change.
 
 The notice carries a blinded `MemberId`, not a fingerprint, so the service still
-cannot tell which device arrived — see
+cannot tell which device arrived: see
 [decision 0016](../../docs/decisions/0016-what-signalling-learns.md). A
 recipient recovers the fingerprint by re-deriving the identifier for each peer
 it already trusts, which is a handful of hashes against a person's own devices.
@@ -140,7 +140,7 @@ phone does not: Android stops a background app's connection within minutes of
 the screen going off. So the device most in need of being told something is the
 one that cannot be told.
 
-[`wake::Waker`](src/wake.rs) is the seam. The default does nothing — a service
+[`wake::Waker`](src/wake.rs) is the seam. The default does nothing: a service
 with no credentials behaves exactly as it did before push existed, which is
 correct rather than degraded. [`fcm`](src/fcm.rs), behind the `push` feature,
 fills it in with Firebase.
@@ -151,18 +151,18 @@ Two rules decide when, and the second is the one worth stating:
 - Only because the device asking is **there to sync with**. Waking a phone for
   a peer that is not itself online spends its battery to find nobody.
 
-The poke carries nothing — no filenames, no sizes, not even which peer. A woken
+The poke carries nothing: no filenames, no sizes, not even which peer. A woken
 device syncs with the peers it already knows, so there is nothing useful to put
 in it and every reason not to: the push service sees the message.
 
 Measured on a Galaxy S23 asleep with its screen off: a change on a laptop at
 `13:22:18.579412`, a push at `.579876`, and the phone logging "woken by another
-device" at `13:22:19.281` — **seven hundred milliseconds**. See
+device" at `13:22:19.281`, **seven hundred milliseconds**. See
 [decision 0028](../../docs/decisions/0028-waking-a-sleeping-device.md) for what
 the dependency costs.
 
 What Firebase refuses is told apart (`fcm::Refused`). A token it says is gone
--- `UNREGISTERED`, or not a valid token -- is forgotten by the service and not
+(`UNREGISTERED`, or not a valid token) is forgotten by the service and not
 tried again; until 2026-10-18 it was poked on every wake for as long as the
 service ran. A refusal of the service's own access token is met by fetching a
 fresh one and sending once more. The access token's hour is counted by the

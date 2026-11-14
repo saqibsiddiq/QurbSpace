@@ -25,8 +25,8 @@ import uniffi.qurb_mobile.PeerInfo
 
 /**
  * The share sheet's way in, as Sharing into Qurb draft 1 draws it: sheets over
- * the app the person was sharing from -- *Save to*, then the file going, then
- * what happened -- and nothing of this activity's own behind them.
+ * the app the person was sharing from (*Save to*, then the file going, then
+ * what happened) and nothing of this activity's own behind them.
  *
  * Saving needs no network. A file saved writes into this phone's folder and
  * is indexed here and now, whether or not any other device is on; reaching
@@ -184,8 +184,8 @@ class ShareActivity : AppCompatActivity() {
 
     /**
      * Files that went to `to` before, and whether to send them again
-     * (decision 0059). The files to leave out -- none, to send them all again
-     * -- or null to send nothing.
+     * (decision 0059). The files to leave out (none, to send them all again)
+     * or null to send nothing.
      */
     private suspend fun askAgain(
         to: PeerInfo,
@@ -196,7 +196,7 @@ class ShareActivity : AppCompatActivity() {
         val names = staged.associate { it.file.absolutePath to it.name }
         val one = earlier.size == 1
         val everything = earlier.size == staged.size
-        val lines = earlier.joinToString("\n") { "${names[it.source] ?: it.source} — as ${it.sentAs}, ${Words.ago(it.at)}" }
+        val lines = earlier.joinToString("\n") { "${names[it.source] ?: it.source}, as ${it.sentAs}, ${Words.ago(it.at)}" }
         return kotlinx.coroutines.suspendCancellableCoroutine { answer ->
             var answered = false
             fun say(leaveOut: Set<String>?) {

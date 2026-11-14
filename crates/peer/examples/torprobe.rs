@@ -1,6 +1,6 @@
 //! How long it takes to reach an onion service through Tor from here, and
 //! whether it can be reached at all: `cargo run --example torprobe --features
-//! tor -- <onion>`. Measures the path a phone away from home uses to reach its
+//! tor, <onion>`. Measures the path a phone away from home uses to reach its
 //! computer (decision 0082). A fresh Tor state each run, in a temporary
 //! directory, so the first figure includes fetching Tor's directory.
 

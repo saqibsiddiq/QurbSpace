@@ -2,7 +2,7 @@
 //! devices of one group, one asks for the other, both are told to punch.
 //! Needs the internet, so ignored by default:
 //!
-//!     cargo test -p qurb-signal --test nostr_live -- --ignored --nocapture
+//!     cargo test -p qurb-signal --test nostr_live, --ignored --nocapture
 
 use qurb_signal::{Endpoints, FromServer, GroupId, MemberId, SignalClient};
 use std::time::{Duration, Instant};

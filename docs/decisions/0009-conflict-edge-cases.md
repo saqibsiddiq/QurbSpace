@@ -1,4 +1,4 @@
-# 0009 — Conflict cases decision 0005 did not cover
+# 0009: Conflict cases decision 0005 did not cover
 
 **Status:** Accepted
 **Date:** 2026-09-09
@@ -20,8 +20,8 @@ are common in practice, and each has a wrong answer that looks reasonable.
 One device deletes a file while another edits it, neither aware of the other.
 **The edit survives and the deletion is dropped.**
 
-The two outcomes are not symmetric in cost. A deletion that loses is recoverable
-— the tombstone and its chunks stay for the retention window, and the user can
+The two outcomes are not symmetric in cost. A deletion that loses is recoverable:
+the tombstone and its chunks stay for the retention window, and the user can
 restore. An edit that loses is gone, and 0005's central promise is that no edit
 is ever silently discarded.
 
@@ -30,7 +30,7 @@ one side's contribution is an absence.
 
 ### Concurrent changes to identical content are not a conflict
 
-Two devices can reach the same bytes independently — the same file copied onto
+Two devices can reach the same bytes independently: the same file copied onto
 each, or the same file deleted on each. The vectors are concurrent, but there is
 nothing to disagree about, and producing a conflict file would be pure noise.
 
@@ -39,12 +39,12 @@ not optional, and omitting it is a real bug rather than an inefficiency: if the
 two versions stay concurrent, the *next* edit on either device is concurrent
 with the other's history, and raises a conflict over content that never
 disagreed. That fault was caught by the convergence simulation and by nothing
-else — every unit test passed while it was present, because the user-visible
+else: every unit test passed while it was present, because the user-visible
 content converged correctly and only the recorded history diverged.
 
 ### Resolutions carry the merged vector
 
-Every resolution of a concurrent case — conflict, resurrection, or merge —
+Every resolution of a concurrent case (conflict, resurrection, or merge)
 records a version vector that is the merge of both sides.
 
 This is what makes resolution terminate. A merged vector dominates both inputs
@@ -61,7 +61,7 @@ won". Both devices compute identical end states from identical inputs without
 coordinating, which is what lets them converge without a negotiation protocol.
 
 One detail follows from that requirement. When two devices merge identical
-content, the display metadata — which device last touched it, and when — must
+content, the display metadata (which device last touched it, and when) must
 also be identical on both, or they still disagree. It is chosen by device id,
 purely because both sides can compute that without consulting a clock. The
 choice is arbitrary and affects only what is displayed.

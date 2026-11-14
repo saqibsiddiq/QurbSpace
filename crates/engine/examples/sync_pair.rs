@@ -1,7 +1,7 @@
 //! Sync two directories against each other, printing what happened.
 //!
 //! ```bash
-//! cargo run --release --example sync_pair -- /tmp/dev-a /tmp/dev-b
+//! cargo run --release --example sync_pair: /tmp/dev-a /tmp/dev-b
 //! ```
 //!
 //! Both directories are treated as separate devices with separate stores and

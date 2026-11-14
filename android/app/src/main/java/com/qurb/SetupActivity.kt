@@ -86,7 +86,7 @@ class SetupActivity : AppCompatActivity() {
 
         // Begun under the old rules and never finished: a key was made and its
         // words never typed back. Start here keeps that key; joining puts it
-        // aside -- which a phone set up as new by mistake needs to do.
+        // aside, which a phone set up as new by mistake needs to do.
         // Welcome, as the setup stories of 2026-11-03 have it: the computer
         // first, everyone's own server, so the one button scans its code;
         // starting on the phone alone is the link under it. With a key found,
@@ -127,7 +127,7 @@ class SetupActivity : AppCompatActivity() {
             }
             // Shown only once Block Store has answered (ten seconds at most):
             // shown before, Start here could become Use my key under a finger,
-            // and a tap meant for the kept key made a new one in its place --
+            // and a tap meant for the kept key made a new one in its place,
             // which it did on the emulator, 2026-10-24.
             views.start.visibility = View.VISIBLE
             views.other.visibility = View.VISIBLE
@@ -168,7 +168,7 @@ class SetupActivity : AppCompatActivity() {
 
     /**
      * Where the other device shows its code, as the path to it: Qurb, then
-     * Devices, then the plus -- three icons and two words.
+     * Devices, then the plus, three icons and two words.
      */
     private fun whereTheCodeIs() {
         val path = views.where
@@ -357,7 +357,7 @@ class SetupActivity : AppCompatActivity() {
 
     /**
      * Connected (the setup stories of 2026-11-03): the computer's face, what
-     * being connected means, and what to back up to it -- Photos on, WhatsApp
+     * being connected means, and what to back up to it, Photos on, WhatsApp
      * off unless chosen. A phone joined to another phone goes straight in.
      */
     private fun connected(): Boolean {

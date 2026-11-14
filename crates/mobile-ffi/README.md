@@ -4,8 +4,8 @@ The engine, as a phone can call it.
 
 Android and iOS cannot call Rust directly. This crate is the seam: a small,
 deliberately boring surface that [UniFFI](https://mozilla.github.io/uniffi-rs/)
-turns into Kotlin and Swift. It contains no sync logic of its own — everything
-delegates to `qurb-engine` — because logic behind an FFI boundary is logic that
+turns into Kotlin and Swift. It contains no sync logic of its own (everything
+delegates to `qurb-engine`) because logic behind an FFI boundary is logic that
 cannot be tested from the rest of the workspace.
 
 ## Generating the bindings
@@ -29,7 +29,7 @@ All four architectures. The script finds the NDK; set `ANDROID_NDK_HOME` if it
 cannot. SQLite is the only C dependency in the tree and the only reason the NDK
 is needed at all.
 
-Stripped, the library is 3.2–3.9 MB depending on architecture — roughly what the
+Stripped, the library is 3.2–3.9 MB depending on architecture: roughly what the
 engine adds to an app download, with SQLite, Zstd, BLAKE3, XChaCha20-Poly1305
 and QUIC all inside it.
 
@@ -46,7 +46,7 @@ file grows sixteen-fold, which is the property that matters.
 Builds the test binaries for Android, pushes them with `adb`, runs them. No app,
 no Gradle, no JVM: the FFI is a C ABI, and a test binary exercises the same Rust
 an app calls through it. On a Samsung Galaxy S23 (Android 16, arm64-v8a) all 35
-binaries pass — 426 tests in 104 seconds, including the QUIC handshakes and hole
+binaries pass: 426 tests in 104 seconds, including the QUIC handshakes and hole
 punching.
 
 This is the only thing that answers "does it work on Android?".
@@ -79,9 +79,9 @@ qurb.outstanding()                    // what this device made and nobody else h
 qurb.housekeep()                      // free what nothing needs; run it off the main thread
 ```
 
-Each `FileEntry` says where its bytes are — `Here`, `Elsewhere`, `OnlyHere` or
+Each `FileEntry` says where its bytes are (`Here`, `Elsewhere`, `OnlyHere` or
 `Nowhere` (no device this phone can ask has it, decision 0055), decided in the
-storage crate so the phone and the desktop cannot disagree — and whether it is
+storage crate so the phone and the desktop cannot disagree) and whether it is
 in the phone's own vault.
 
 A phone's own files, and a device to keep them (decision 0036):
@@ -104,8 +104,8 @@ qurb.cancelSend("photo.jpg", peer.fingerprint)
 qurb.history(50, null)                // newest first; pass the last id to page back
 ```
 
-Browsing by folder, as Files, Private Vault and the system file picker all do
-— one index query each, so they cannot disagree:
+Browsing by folder, as Files, Private Vault and the system file picker all do:
+one index query each, so they cannot disagree:
 
 ```kotlin
 qurb.browse("album")                  // Directory: its folders, and its files
@@ -120,7 +120,7 @@ qurb.makeFolder("album/2026")
 
 The system file picker has no notion of an area and uses the unrestricted
 calls. Files and Private Vault each use the `In` forms, and *Add files* in each
-adds into it — decision
+adds into it: decision
 [0049](../../docs/decisions/0049-adding-a-file-puts-it-where-you-are-looking.md).
 
 Deleting, conflicts, and who has what (decisions 0041–0045):
@@ -137,14 +137,14 @@ qurb.removalPlan(peer.fingerprint)    // what removing it would do, before doing
 qurb.removeDevice(peer.fingerprint, deleteKept = false)
 ```
 
-And two free functions: `engineVersion()` — `engine 0.1.0, protocol qurb/2,
-index schema 27` on 2026-10-24, commas since the redesign dropped the `·` — and
+And two free functions: `engineVersion()` (`engine 0.1.0, protocol qurb/2,
+index schema 27` on 2026-10-24, commas since the redesign dropped the `·`) and
 `qrCode(text)`, the matrix a phone draws to show a
 pairing code, so the app needs no image library.
 
 `outstanding()` is the honest answer to "did it get there yet": live files this
 device made whose content no other device is known to hold. It is a question
-asked of the index each time, not a queue that could drift from it — and it
+asked of the index each time, not a queue that could drift from it, and it
 empties when a peer says it holds the content, which is the one message in the
 protocol that asks for nothing.
 
@@ -226,7 +226,7 @@ folder.disconnect()                   //   a file already there
 ```
 
 The same connection reaches the computer's **shared folder** (decision 0073),
-live -- the computer's own person's phones and its guests' -- and changes it,
+live (the computer's own person's phones and its guests') and changes it,
 the computer making each change and saying why when it will not
 (`QurbException.Refused`, its words for the person):
 
@@ -245,9 +245,9 @@ A phone takes **no part in the shared area** since decision 0073:
 `Settings.sharedArea` is `false` unless set, and then a sync takes none of
 another device's shared files, everything added goes into the vault, and
 `moveToPrivate(path, false)` is refused. Opening the engine with it off lets
-go of shared files a computer keeps -- no tombstone, so nothing is deleted
+go of shared files a computer keeps (no tombstone, so nothing is deleted
 elsewhere; bytes on the phone only once that computer, asked at a sync, has
-said it holds them -- and moves the rest into the vault, logging *left the
+said it holds them) and moves the rest into the vault, logging *left the
 shared area* each time there was anything to do. Only this crate's own tests, which
 stand in for a desktop with a second engine, turn it on.
 
@@ -268,7 +268,7 @@ Each sync with a computer keeping the vault also asks it about up to 64 of
 the vault's files with no record of it keeping them (`confirm_kept`), so a
 *got it* lost on the way does not leave a file "still to go".
 
-Calls that only read -- the lists, counts and summaries the screens show --
+Calls that only read (the lists, counts and summaries the screens show)
 read the index through a connection of their own (`look`), so they are answered
 while a sync holds the engine to bring a large file in; on the S23 a 200 MB
 file used to keep Devices waiting 56 seconds (2026-10-19). Anything that
@@ -281,14 +281,14 @@ player stops rather than being declared not responding.
 
 `Settings.wakeToken` carries the platform's push token, so the rendezvous
 service can poke this device when another has something and this one is asleep.
-`null` — the default, and right on a desktop — means it is never woken and
+`null` (the default, and right on a desktop) means it is never woken and
 syncs when it next looks. A token the push service issues later, or issues
 anew, is handed over with `setWakeToken(token)` and given on the next pass;
 until 2026-10-18 the one the engine opened with was given for the life of the
 app.
 
 The pairing code carries this device's **full** fingerprint and must travel out
-of band — a QR code on screen, or read aloud. Sending it over the network
+of band: a QR code on screen, or read aloud. Sending it over the network
 being paired defeats the point: someone who can change what you see has already
 won. The six digits do travel over the network, which is why they only fetch
 the code, through an exchange that gives nothing to whoever does not know
@@ -298,14 +298,14 @@ them, and stop working after five wrong tries.
 
 **Memory.** An iOS FileProvider extension is killed at a ceiling in the tens of
 megabytes. Nothing here returns a file's contents: `export` writes to a path the
-caller supplies, `importFile` reads from one. Peak memory is one chunk — at most
-2 MiB — however large the file is. A test asserts this rather than a comment
+caller supplies, `importFile` reads from one. Peak memory is one chunk (at most
+2 MiB) however large the file is. A test asserts this rather than a comment
 claiming it, so a change that reintroduces buffering fails rather than ships.
 
 **Threading.** The engine takes `&mut self`, so one lock guards it. Calls block.
 The platform side is expected to make them off the main thread, which Kotlin
 coroutines and Swift's `async` both do naturally. A tokio runtime is built on
-first use and kept — lazily, so an app that only browses its files never pays
+first use and kept: lazily, so an app that only browses its files never pays
 for a thread pool.
 
 **Time.** `syncWithin(seconds)` takes a deadline because both platforms grant
@@ -321,13 +321,13 @@ device pulls, so the phone has to keep answering until the other side is done,
 and a pass that ended at its window cut an 800 MB video off part-way.
 `syncServing(seconds, servingSeconds)` keeps answering while a chunk has gone
 in the last ten seconds, or the last minute while what was being collected is
-still waiting, up to `servingSeconds` — for a caller the platform will
+still waiting, up to `servingSeconds`: for a caller the platform will
 let run that long, which on Android is a worker in the foreground
 ([decision 0050](../../docs/decisions/0050-large-files-from-a-phone.md)).
 
 **Errors.** A Rust error chain does not survive the crossing. Everything becomes
 `QurbError`, which is flat, matchable, and short on purpose: it lists only the
-cases a caller can *act* on — ask for the passphrase again, show the setup
+cases a caller can *act* on, ask for the passphrase again, show the setup
 screen, tell the user the file is gone, retry later. The original message is
 kept as text for logs.
 
@@ -354,7 +354,7 @@ val qurb = Qurb.openProtected(root, myKeyStore, Settings())
 
 Whatever is chosen is recorded in the vault, and `protectionOf(root)` reports
 it. Opening a keystore-protected vault *without* the keystore fails saying so
-rather than falling back — a silent fallback would mean reading a key that is
+rather than falling back: a silent fallback would mean reading a key that is
 not there and reporting something less useful.
 
 ### Android

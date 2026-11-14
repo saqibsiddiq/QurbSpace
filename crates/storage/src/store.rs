@@ -1,7 +1,7 @@
 //! The storage API: files in, files out, with deduplication underneath.
 //!
-//! [`Store`] ties the three lower layers together — the chunker, the encrypted
-//! chunk store on disk, and the SQLite index — and owns the ordering rules that
+//! [`Store`] ties the three lower layers together (the chunker, the encrypted
+//! chunk store on disk, and the SQLite index) and owns the ordering rules that
 //! keep them consistent with each other.
 
 use crate::cas::Cas;
@@ -22,7 +22,7 @@ pub struct Store {
     /// Where this device's materialised files live, if it has any.
     ///
     /// A syncing device writes every file to a folder the user can see, so the
-    /// plaintext is already on disk — and keeping an encrypted copy of it in
+    /// plaintext is already on disk, and keeping an encrypted copy of it in
     /// the chunk store as well costs a second copy of everything the user
     /// owns. With this set, the tree *is* the payload store for content it
     /// holds, and the chunk store keeps only what the tree does not provide.
@@ -44,7 +44,7 @@ pub struct Store {
 }
 
 /// Opens a send's file again when it is to be read, for a source that is not
-/// a path -- on Android, a `content://` document the app may read again later
+/// a path: on Android, a `content://` document the app may read again later
 /// (decision 0060). The platform supplies it, the way it supplies the keystore
 /// (decision 0021).
 pub trait Documents: Send + Sync {
@@ -211,7 +211,7 @@ enum Stamp<'a> {
 /// Whether the "content already matches" short-circuit may be taken.
 ///
 /// That short-circuit assumes matching content means the payloads are still on
-/// disk, which is true on every path except repair — which has just discarded
+/// disk, which is true on every path except repair, which has just discarded
 /// them on purpose. Taking it there would leave the file exactly as broken as
 /// before while reporting success.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -230,7 +230,7 @@ enum Payloads {
 struct Placement<'a> {
     stamp: Stamp<'a>,
     payloads: Payloads,
-    /// Whose vault this belongs in. `None` is the shared area — everything the
+    /// Whose vault this belongs in. `None` is the shared area: everything the
     /// product had before vaults existed.
     vault: Option<&'a DeviceId>,
     /// Kept for the vault's owner rather than sent to it. See [`Store::hold_file`].
@@ -322,7 +322,7 @@ pub struct OutsideEntry {
 }
 
 /// Folders under `dir` with nothing in them, removed from the deepest up,
-/// leaving `root` itself and anything hidden -- the store's own folder.
+/// leaving `root` itself and anything hidden: the store's own folder.
 fn remove_emptied(root: &Path, dir: &Path) {
     let Ok(read) = std::fs::read_dir(dir) else { return };
     for entry in read.flatten() {
@@ -476,8 +476,8 @@ impl OutsideReader {
     }
 }
 
-/// A file's content hash as the index records it -- BLAKE3 over all of its
-/// bytes in order, which is what [`chunker::chunk_bytes`] computes -- read in
+/// A file's content hash as the index records it (BLAKE3 over all of its
+/// bytes in order, which is what [`chunker::chunk_bytes`] computes) read in
 /// pieces rather than held.
 fn hash_reader(mut file: std::fs::File) -> std::io::Result<blake3::Hash> {
     let mut hasher = blake3::Hasher::new();
@@ -511,8 +511,8 @@ impl Store {
     /// Tell the store where materialised files live.
     ///
     /// With a tree, content the user can already see is not stored a second
-    /// time: `read_chunk` reads those bytes back out of the file. Without one —
-    /// a storage-only replica — every payload is kept in the chunk store, which
+    /// time: `read_chunk` reads those bytes back out of the file. Without one
+    /// (a storage-only replica) every payload is kept in the chunk store, which
     /// is the only copy that exists there.
     ///
     /// The root is the *sync* folder, not the store directory: the store lives
@@ -734,7 +734,7 @@ impl Store {
     /// The file is mapped once and both chunked and stored from the same
     /// mapping. An earlier version chunked the file and then read it again into
     /// a heap buffer, which read every byte twice and held the whole file in
-    /// memory — invisible at test sizes and 100k files' worth of waste at scale.
+    /// memory: invisible at test sizes and 100k files' worth of waste at scale.
     ///
     /// # Too recent to trust
     ///
@@ -742,7 +742,7 @@ impl Store {
     /// as unchanged. A filesystem's clock ticks, though: every few
     /// milliseconds on Android 8's kernel, and on Linux before 6.13; two
     /// seconds on FAT. A file read in the tick it was written in can be
-    /// written again, the same size, and keep the same time -- and that edit
+    /// written again, the same size, and keep the same time, and that edit
     /// would never be seen. It was not, on Android 8 (2026-10-18), where
     /// `an_edit_propagates` failed. So a file read within [`RACY`] of its time
     /// is marked, and read again on each scan until it is older than that, as
@@ -836,7 +836,7 @@ impl Store {
 
     /// Take on a version that was sent to this device privately.
     ///
-    /// Written into the folder exactly like anything else — the user asked for
+    /// Written into the folder exactly like anything else: the user asked for
     /// a file and should find a file. What differs is the index row: it is
     /// scoped to this device, so it is never advertised to any peer. A
     /// received file that entered the shared area would be pushed to every
@@ -907,7 +907,7 @@ impl Store {
     /// Chunk payloads are written to disk *before* the index is told they
     /// exist. A crash between the two leaves chunks nothing references, which
     /// garbage collection reclaims. The opposite order would leave index
-    /// entries pointing at payloads that were never written — a dangling
+    /// entries pointing at payloads that were never written: a dangling
     /// reference, which is unrecoverable without a peer to re-fetch from.
     ///
     /// Orphaned data is a cost. Dangling references are a corruption. When only
@@ -927,7 +927,7 @@ impl Store {
         // private when it changes here.
         //
         // Received files live in the folder like any other, so an ordinary
-        // write to one -- an edit, or a scan re-reading it -- arrives here with
+        // write to one (an edit, or a scan re-reading it) arrives here with
         // no vault named. Letting that create a shared row would publish
         // somebody's private file to every device the moment it was touched,
         // which is what happened on a phone: the scan after a delivery indexed
@@ -940,7 +940,7 @@ impl Store {
         // Local changes only. A version arriving from another device says for
         // itself which area it belongs to, and a shared one must never be
         // re-filed as private because a received file happens to share its
-        // name -- that would quietly take it out of the shared area here while
+        // name: that would quietly take it out of the shared area here while
         // every other device still has it there.
         //
         // And on a device that keeps its own files private, a file the index
@@ -977,7 +977,7 @@ impl Store {
                     // device holds it: a file dropped for the storage cap and
                     // fetched back arrives exactly like this. Without saying so
                     // here it stayed marked as dropped with its bytes sitting in
-                    // the folder -- fetched again on every sync, and a later
+                    // the folder: fetched again on every sync, and a later
                     // deletion of it taken for the cap's own doing and never
                     // passed on.
                     let backed = match vault {
@@ -987,8 +987,8 @@ impl Store {
                     let holding = (backed && self.supplies(logical_path)) || self.tree.is_none();
                     // Not `updated_at`: the same bytes are not a change, and
                     // that time is what every list says the file last changed
-                    // at. Moved on each read of a file read again -- one too
-                    // recent to trust is, every scan -- every such file looked
+                    // at. Moved on each read of a file read again (one too
+                    // recent to trust is, every scan) every such file looked
                     // changed to the devices asking (2026-10-20, decision 0072).
                     self.db.conn().execute(
                         "UPDATE files SET mtime_ns = ?1,
@@ -1005,7 +1005,7 @@ impl Store {
                     // A local write of identical bytes is not a change and must
                     // not advance the clock. A version adopted from a peer still
                     // has to record the history it arrived with, even though no
-                    // data moved -- in the shared area, which is the only place
+                    // data moved: in the shared area, which is the only place
                     // history is compared. `merge_version` writes the shared
                     // row, so a private version's history would land on a
                     // namesake.
@@ -1021,7 +1021,7 @@ impl Store {
 
         // Allocate the vector before opening the transaction: computing it
         // needs its own write, and a counter that skips a value on rollback is
-        // harmless -- vectors need to be monotonic, not dense.
+        // harmless, vectors need to be monotonic, not dense.
         let (vector, modified_by, modified_at) = match stamp {
             Stamp::Local => {
                 let (v, d) = self.db.next_local_vector(logical_path)?;
@@ -1036,7 +1036,7 @@ impl Store {
         // this device's folder, even when a file of that name and content
         // happens to be sitting there. Letting it lean on that file would mean
         // deleting your own `report.pdf` quietly destroyed the copy you sent
-        // somebody — which is not a say you should have over their data.
+        // somebody, which is not a say you should have over their data.
         //
         // This device's *own* vault is different: content sent here is written
         // into the folder like anything else, and is read from there.
@@ -1046,7 +1046,7 @@ impl Store {
         };
 
         // Whether the file being recorded is the one the tree holds at this
-        // path -- in which case the tree supplies the payloads and the chunk
+        // path: in which case the tree supplies the payloads and the chunk
         // store need not.
         //
         // Checked by path rather than assumed, because `put_file` accepts any
@@ -1056,7 +1056,7 @@ impl Store {
         // entirely.
         let materialised = backed_by_folder && self.supplies(logical_path);
 
-        // Phase 1: get every payload on disk. Distinct hashes only -- a file
+        // Phase 1: get every payload on disk. Distinct hashes only: a file
         // that repeats a chunk internally should not write it twice.
         let mut seen = HashSet::new();
         for c in &manifest.chunks {
@@ -1113,7 +1113,7 @@ impl Store {
         // Phase 1 decided which chunks needed writing, and that decision is
         // only as good as the moment it was made. Garbage collection running in
         // another connection can remove a chunk between the check and this
-        // point — it only ever removes chunks nothing references, which is
+        // point: it only ever removes chunks nothing references, which is
         // exactly what a chunk we are about to reference looks like until we
         // reference it.
         //
@@ -1137,8 +1137,8 @@ impl Store {
 
                 // A tree-backed chunk is deliberately absent from the CAS, so
                 // "indexed but no payload" is its normal state, not evidence
-                // that collection took it. Re-assert the index row -- that much
-                // *can* have been collected -- and never write the payload.
+                // that collection took it. Re-assert the index row (that much
+                // *can* have been collected) and never write the payload.
                 // The same for a send's, read from its file.
                 if materialised || by_reference {
                     if !indexed {
@@ -1172,8 +1172,8 @@ impl Store {
         // Whether this device is holding the bytes afterwards. A store with a
         // folder holds what the folder has; a replica holds chunks and so
         // always holds it. Recorded on every write so that a file coming back
-        // — re-created by the user, or fetched after being dropped for the
-        // storage cap — stops being marked as evicted without anyone having to
+        // (re-created by the user, or fetched after being dropped for the
+        // storage cap) stops being marked as evicted without anyone having to
         // remember to clear it.
         let holding = materialised || self.tree.is_none();
 
@@ -1236,14 +1236,14 @@ impl Store {
 
     /// Write a stored file's contents to `out`, a chunk at a time.
     ///
-    /// Peak memory is one chunk — at most 2 MiB — however large the file is.
+    /// Peak memory is one chunk (at most 2 MiB) however large the file is.
     /// That matters more than it sounds: an iOS FileProvider extension runs
     /// under a ceiling in the tens of megabytes, so a path that assembles a
     /// whole file in memory works on a desktop and is killed on a phone.
     ///
     /// Verification is the same as [`read_file`](Self::read_file): every chunk
     /// against its own hash, and the whole against the file hash. The second is
-    /// not redundant — correct chunks in the wrong order would pass the first.
+    /// not redundant: correct chunks in the wrong order would pass the first.
     ///
     /// The whole-file check necessarily comes after the last byte has been
     /// written, so a caller streaming to a destination that matters should
@@ -1347,7 +1347,7 @@ impl Store {
     ///
     /// Content the *folder* was holding is the exception, and has to be. Those
     /// bytes left with the file, so the tombstone cannot keep them restorable
-    /// however long it is held — and a reference to a payload that no longer
+    /// however long it is held, and a reference to a payload that no longer
     /// exists is the index claiming content it cannot produce, which `verify`
     /// is right to call damage. Those references are released here instead.
     /// See [decision 0024](../../docs/decisions/0024-the-file-is-the-payload-store.md).
@@ -1402,7 +1402,7 @@ impl Store {
     /// `scope` says which row: `None` for the shared area, this device's id for
     /// something sent here. The caller says, rather than this guessing from the
     /// path, because a deletion that arrived from another device is always
-    /// about the shared area — guessing would let a peer deleting its own
+    /// about the shared area: guessing would let a peer deleting its own
     /// `notes.txt` tombstone the private `notes.txt` somebody sent here.
     fn tombstone(
         &mut self,
@@ -1487,7 +1487,7 @@ impl Store {
 
     /// Reassemble content this device holds, by hash rather than by name.
     ///
-    /// Returns `None` when the content is not here — either unknown, or known
+    /// Returns `None` when the content is not here: either unknown, or known
     /// but with chunks that have since been collected. Verifies the result
     /// against the hash that was asked for, so a caller can write it without
     /// checking again.
@@ -1516,7 +1516,7 @@ impl Store {
     ///
     /// Returns `None` without writing anything when the content is not here, so
     /// a caller can fall back to fetching it. Verifies the result against the
-    /// hash asked for — but only once the last byte has been written, so a
+    /// hash asked for, but only once the last byte has been written, so a
     /// caller must not treat the destination as finished until this returns.
     pub fn read_content_into(
         &self,
@@ -1548,7 +1548,7 @@ impl Store {
     /// `content` from this device alone.
     ///
     /// Asked before a destination is touched, by a caller that would otherwise
-    /// have to open it to find out -- and opening it fresh would wipe what an
+    /// have to open it to find out, and opening it fresh would wipe what an
     /// interrupted transfer left there to be resumed.
     pub fn can_read_content(&self, content: &blake3::Hash) -> Result<bool> {
         Ok(self.readable_chunks(content)?.is_some())
@@ -1623,7 +1623,7 @@ impl Store {
     /// or the folder does. Asking only the chunk store would call almost every
     /// chunk absent on a device that syncs a folder, and the caller that most
     /// often asks is the one deciding whether to pull content over the
-    /// network — so getting this wrong re-transfers files that are already
+    /// network, so getting this wrong re-transfers files that are already
     /// here rather than failing visibly.
     pub fn has_chunk(&self, hash: &blake3::Hash) -> Result<bool> {
         if !self.db.has_chunk(hash)? {
@@ -1681,8 +1681,8 @@ impl Store {
         let manifest = chunker::chunk_reader(std::io::BufReader::with_capacity(1 << 20, file))
             .map_err(|e| Error::io(at, e))?;
 
-        // A send, every time: the same file sent again -- the person asked
-        // first, by whatever sends it -- is a new version the recipient takes,
+        // A send, every time: the same file sent again (the person asked
+        // first, by whatever sends it) is a new version the recipient takes,
         // and not collected until it has (decision 0059).
         self.db.sending_again(&manifest.file_hash, recipient)?;
         let stats = self.put_manifest(
@@ -1778,7 +1778,7 @@ impl Store {
     /// `source` holds the bytes, somewhere outside the folder: this device
     /// never shows what it holds, so the content goes into the chunk store and
     /// nowhere else. The row sits in the owner's vault, marked held, and is
-    /// never released -- that is the whole difference from a send.
+    /// never released: that is the whole difference from a send.
     pub fn hold_file(
         &mut self,
         version: &FileVersion,
@@ -1787,7 +1787,7 @@ impl Store {
     ) -> Result<PutStats> {
         let file = std::fs::File::open(source).map_err(|e| Error::io(source, e))?;
         let meta = file.metadata().map_err(|e| Error::io(source, e))?;
-        // SAFETY: as for every other write -- mapped once, chunked and stored
+        // SAFETY: as for every other write, mapped once, chunked and stored
         // from the map. An empty file cannot be mapped and has nothing to map.
         let mapped = match meta.len() {
             0 => None,
@@ -1822,8 +1822,8 @@ impl Store {
         self.tombstone(&version.path, Stamp::Remote(version), Some(*owner))?;
         // A file of the Private Vault of one of this person's own devices
         // goes into Recently deleted here too, naming that device (decision
-        // 0073), so that a deletion made there -- a mistake, or a lost phone
-        // in the wrong hands -- can be undone here. Nothing goes into
+        // 0073), so that a deletion made there (a mistake, or a lost phone
+        // in the wrong hands) can be undone here. Nothing goes into
         // `trash/`: the deleted row keeps its chunks as long as the entry
         // lasts (`gc::collect`). Not a backup, which goes when its original
         // goes from the phone, as the owner chose; nor a guest's, sealed.
@@ -1912,11 +1912,11 @@ impl Store {
     ///
     /// Gone files first, which are cheap: those `keep_when_gone` names stay
     /// in the vault if another device holds them, the rest are deleted. Then
-    /// new and changed ones, each read once, until `until` -- a run that stops
+    /// new and changed ones, each read once, until `until`: a run that stops
     /// part-way says how many it left, and the next carries on, since a file
     /// already kept and unchanged by size and time is not read again.
-    /// `skip` names files not to read this time -- ones that could not be
-    /// read earlier in the same run -- which are neither read nor taken for
+    /// `skip` names files not to read this time (ones that could not be
+    /// read earlier in the same run) which are neither read nor taken for
     /// gone.
     pub fn keep_outside_folder(
         &mut self,
@@ -1946,7 +1946,7 @@ impl Store {
     /// which needs the index: gone files dealt with, unchanged ones counted,
     /// and the new and changed ones listed to be read. The reading needs
     /// nothing of the store ([`OutsideReader`]), so a caller that holds the
-    /// store behind a lock can let go of it while files are read -- the phone,
+    /// store behind a lock can let go of it while files are read: the phone,
     /// whose screens waited up to 64 s behind a first backup of 9.8 GB on a
     /// new OPPO (2026-11-13).
     pub fn plan_outside_folder(
@@ -2139,8 +2139,8 @@ impl Store {
             )?,
             None => None,
         };
-        // A file of this device's own vault with no bytes here -- freed to a
-        // device keeping the vault, or a backup read where it lay -- is kept
+        // A file of this device's own vault with no bytes here (freed to a
+        // device keeping the vault, or a backup read where it lay) is kept
         // in Recently deleted all the same, costing nothing here: the deleted
         // row and the keeping device's copy both last as long (decision 0073).
         let trashed = match trashed {
@@ -2185,8 +2185,8 @@ impl Store {
         }
         let rules = qurb_sync::sharing::Rules::new(rules);
         // Nested rules are refused when made here; one that arrives nested
-        // anyway (made by hand, or on two devices at once) is kept -- both
-        // folders closed as their rules say -- and said.
+        // anyway (made by hand, or on two devices at once) is kept (both
+        // folders closed as their rules say) and said.
         for (folder, _) in rules.iter() {
             if let Some(other) = rules.nests(folder) {
                 tracing::warn!(folder, other, "two sharing rules nest; both apply");
@@ -2221,7 +2221,7 @@ impl Store {
     ///
     /// Written as a rule file that syncs like any other. Refused when it would
     /// nest inside or around another shared folder, when it names nobody, and
-    /// when this device is not one the folder is shared with now -- the other
+    /// when this device is not one the folder is shared with now: the other
     /// devices would refuse the change, so it is refused here first.
     pub fn set_sharing(
         &mut self,
@@ -2299,8 +2299,8 @@ impl Store {
 
     /// Every conflict waiting for somebody to say which version they want.
     ///
-    /// Found by name -- a conflict copy's name says what it is a version of
-    /// (see [`qurb_sync::conflict_origin`]) -- because only the device that
+    /// Found by name (a conflict copy's name says what it is a version of
+    /// (see [`qurb_sync::conflict_origin`])) because only the device that
     /// noticed a conflict records it; every other device just receives the
     /// copy, and has to recognise it all the same.
     pub fn conflicts(&self) -> Result<Vec<Conflict>> {
@@ -2332,7 +2332,7 @@ impl Store {
     /// Settle a conflict the way somebody chose: keep the version under the
     /// file's own name, keep the other one in its place, or keep both under
     /// names a person can read. `label` names the other version when both are
-    /// kept -- usually the device it came from.
+    /// kept: usually the device it came from.
     ///
     /// Every choice is an ordinary change here, so it reaches the other devices
     /// the way any change does, and the choice is made once for all of them.
@@ -2362,7 +2362,7 @@ impl Store {
             }
             Keep::Copy => {
                 needs_copy_here(self)?;
-                // Into the area the name was in -- or the copy's, if the
+                // Into the area the name was in, or the copy's, if the
                 // name has gone.
                 let area = match self.db.folder_row(&name.original)? {
                     Some((_, scope)) => {
@@ -2385,7 +2385,7 @@ impl Store {
 
     /// Rename or move a file in the folder, as a change made here: the new
     /// path appears and the old one is deleted on every device, and the file
-    /// stays in the area it was in -- a shared file does not become private
+    /// stays in the area it was in, a shared file does not become private
     /// by moving on a phone that files new things privately.
     ///
     /// Needs the file's bytes here: a file known only elsewhere has nothing to
@@ -2416,8 +2416,8 @@ impl Store {
         self.rename_in_folder(&root, from, to, scope)
     }
 
-    /// Copy a file or folder of this device's own vault to `to` -- each file
-    /// to the same place under it -- as a change made here (the owner's list
+    /// Copy a file or folder of this device's own vault to `to` (each file
+    /// to the same place under it) as a change made here (the owner's list
     /// of 2026-10-26, item 13: a phone copying and pasting in its folder on a
     /// computer). A file whose bytes are here is copied on disk; one freed to
     /// the computer becomes a version pointing at the same chunks, which that
@@ -2508,9 +2508,9 @@ impl Store {
     }
 
     /// A phone leaves the shared area (decision 0073, item 2), as the owner
-    /// chose: each shared file a computer keeps is let go of here -- its row
+    /// chose: each shared file a computer keeps is let go of here (its row
     /// forgotten and its bytes removed, with no tombstone, so it is deleted
-    /// nowhere else and stays in that computer's Shared folder -- and one only
+    /// nowhere else and stays in that computer's Shared folder) and one only
     /// this phone has moves into its own vault, so nothing is lost. Its bytes
     /// here go only once that computer, asked, has said it holds them
     /// ([`Db::confirmed_safe_elsewhere`](crate::db::Db::confirmed_safe_elsewhere));
@@ -2545,7 +2545,7 @@ impl Store {
             }
             let here = materialised && on_disk.as_ref().is_some_and(|f| f.is_file());
             if !here {
-                // No bytes of it here -- freed, or never fetched -- so
+                // No bytes of it here (freed, or never fetched) so
                 // forgetting the row loses nothing, whoever keeps it, and a
                 // phone out of the area would never fetch them now. Only the
                 // row: a file at its path the index does not call its own is
@@ -2660,8 +2660,8 @@ impl Store {
     /// Store a file from the folder as a change made here, in the area given:
     /// the shared area for `None`, this device's own vault for its own id.
     ///
-    /// For qurb writing a file itself -- a sharing rule, a restore, a rename,
-    /// a settled conflict -- where the file's area is already decided. A plain
+    /// For qurb writing a file itself (a sharing rule, a restore, a rename,
+    /// a settled conflict) where the file's area is already decided. A plain
     /// [`put_file`](Self::put_file) of a path the index has no live row for
     /// files it the way a *new* file goes, which on a phone is its own vault:
     /// a shared file restored or renamed there became private, and so to
@@ -2723,7 +2723,7 @@ impl Store {
     /// Record a version of a shared file without its bytes: listed, known to
     /// be on the device that made it, and fetched when somebody asks. What a
     /// folder kept only remotely does with a file that arrives (decision
-    /// 0045) -- the same state freeing a file leaves behind.
+    /// 0045): the same state freeing a file leaves behind.
     pub fn know_elsewhere(&mut self, version: &FileVersion) -> Result<()> {
         let Content::File { hash, size } = &version.content else {
             self.adopt(version, None, 0)?;
@@ -2773,7 +2773,7 @@ impl Store {
     /// other devices is no longer downloaded here until asked for.
     ///
     /// A file this device holds the only copy of stays: freeing it would be
-    /// deleting it (brief §29 -- "refuse it and explain why"). Returns how many
+    /// deleting it (brief §29, "refuse it and explain why"). Returns how many
     /// were freed, the bytes, and the paths kept for that reason.
     pub fn keep_remotely(&mut self, folder: &str) -> Result<(usize, u64, Vec<String>)> {
         let folder = folder.trim_matches('/');
@@ -2827,7 +2827,7 @@ impl Store {
     /// a new version, which reaches every other device the way any change
     /// does, and so undoes the deletion everywhere and not only here.
     ///
-    /// Returns where it went -- its old path, or beside it when that is taken
+    /// Returns where it went: its old path, or beside it when that is taken
     /// now, because a restore must never overwrite something.
     pub fn restore_from_trash(&mut self, id: i64) -> Result<String> {
         let Some(root) = self.tree.clone() else {
@@ -3059,7 +3059,7 @@ impl Store {
         Ok(freed)
     }
 
-    /// `path` if nothing is there -- in the index or on disk -- or the first
+    /// `path` if nothing is there (in the index or on disk) or the first
     /// free `name (restored).ext`, `name (restored 2).ext` beside it.
     fn free_path_near(&self, root: &Path, path: &str) -> Result<String> {
         let taken = |candidate: &str| -> Result<bool> {
@@ -3118,7 +3118,7 @@ impl Store {
     /// Stop trusting `device`: it can no longer connect here or sync with
     /// this device.
     ///
-    /// What it has, it keeps -- its key, and everything already on it. Nothing
+    /// What it has, it keeps: its key, and everything already on it. Nothing
     /// here reaches into another device, and removal does not pretend to.
     ///
     /// Here, sends it has not collected are cancelled, because nothing can
@@ -3129,7 +3129,7 @@ impl Store {
     /// copies (see [`Db::forget_peer`](crate::db::Db::forget_peer)).
     ///
     /// `name` goes into the history, which otherwise names a device by asking
-    /// the trust table -- where this one no longer is.
+    /// the trust table: where this one no longer is.
     pub fn remove_device(
         &mut self,
         device: &DeviceId,
@@ -3159,8 +3159,8 @@ impl Store {
         Ok(plan)
     }
 
-    /// Delete what this device keeps in `device`'s own vault -- a device
-    /// removed here, whose files were kept (D21) -- as any deletion is, to
+    /// Delete what this device keeps in `device`'s own vault (a device
+    /// removed here, whose files were kept (D21)) as any deletion is, to
     /// Recently deleted. How many files.
     pub fn delete_kept_for(&mut self, device: &DeviceId) -> Result<usize> {
         let kept = self.db.vault_contents(device)?;
@@ -3171,7 +3171,7 @@ impl Store {
     }
 
     /// Where what this device keeps for `device` is filed: its own vault, or
-    /// for a guest its person's folder (decision 0060) -- `None` when another
+    /// for a guest its person's folder (decision 0060), `None` when another
     /// device of that person is still paired, whose folder it is too.
     fn kept_scope(&self, device: &DeviceId) -> Result<Option<DeviceId>> {
         match self.db.person_of(device)? {
@@ -3198,14 +3198,14 @@ impl Store {
     /// Drop payloads this device is holding only on somebody else's behalf.
     ///
     /// Vault content is kept after the recipient has taken it, so a send is
-    /// never silently the only copy — but it is the first thing to go when
+    /// never silently the only copy, but it is the first thing to go when
     /// disk runs short, before any of this device's own files. Somebody else's
     /// safety net should yield before your own work does.
     ///
     /// Only content another device is recorded as holding, and only chunks no
     /// other file still needs from the chunk store. A chunk shared with a file
     /// that has nowhere else to read it is left alone, however tempting its
-    /// size — which is the same rule the storage cap follows and the reason
+    /// size, which is the same rule the storage cap follows and the reason
     /// this is safe to run unattended.
     ///
     /// Returns what it freed.
@@ -3283,7 +3283,7 @@ impl Store {
 
     /// The shared area only, all of it: this device's own side of a plan.
     ///
-    /// Not what any peer is shown -- that is [`tree_for`](Self::tree_for),
+    /// Not what any peer is shown: that is [`tree_for`](Self::tree_for),
     /// which leaves out folders shared without the peer. This device sees
     /// its own copy of those; planning without them would have it fetch them
     /// again on every sync, not knowing it had them.
@@ -3292,8 +3292,8 @@ impl Store {
     }
 
     /// This device's identity.
-    /// Record what kind of device a peer is, and -- on a phone, the first time
-    /// it learns of a computer -- let that computer keep this phone's own
+    /// Record what kind of device a peer is, and (on a phone, the first time
+    /// it learns of a computer) let that computer keep this phone's own
     /// vault (decision 0053). Returns whether it was made a holder.
     ///
     /// Once only, and only when the phone has no holder: a person who chooses
@@ -3318,7 +3318,7 @@ impl Store {
         self.db.local_device()
     }
 
-    // -- a vault kept, sealed, by another person's computer (decision 0060) --
+    //  (a vault kept, sealed, by another person's computer (decision 0060))
 
     /// Who this device's person is to the computer with this fingerprint,
     /// visiting it as a guest: derived from this person's key for that
@@ -3376,7 +3376,7 @@ impl Store {
                 size += piece.len() as u64;
                 parts.push((*blake3::hash(&piece).as_bytes(), db::SealedPart::Chunk(chunk)));
             }
-            // Its bytes are not here -- freed, and already kept somewhere --
+            // Its bytes are not here (freed, and already kept somewhere)
             // so there is nothing to seal it from. The view made while they
             // were is the one that stands.
             if !readable {
@@ -3447,8 +3447,8 @@ impl Store {
     }
 
     /// Record a file of this device's vault that a computer of another person
-    /// keeps and this device does not know of -- a phone set up again with
-    /// the same key -- listed, kept there, and fetched when asked for
+    /// keeps and this device does not know of (a phone set up again with
+    /// the same key) listed, kept there, and fetched when asked for
     /// (decision 0060). `version` is the file as its sealed header says: real
     /// path, size, content hash, time. Returns whether it was new.
     pub fn know_kept(&mut self, version: &FileVersion, holder: &DeviceId) -> Result<bool> {
@@ -3517,7 +3517,7 @@ impl Store {
         move_file(staging, &to).map_err(|e| Error::io(&to, e))?;
         let file = std::fs::File::open(&to).map_err(|e| Error::io(&to, e))?;
         let meta = file.metadata().map_err(|e| Error::io(&to, e))?;
-        // SAFETY: as for every other write -- mapped once, chunked and
+        // SAFETY: as for every other write, mapped once, chunked and
         // recorded from the map. An empty file cannot be mapped.
         let mapped = match meta.len() {
             0 => None,
@@ -3570,7 +3570,7 @@ impl Store {
     }
 
     /// Unseal the file `path` of a guest's folder kept here into `to`,
-    /// checked against its header -- the path, and the content -- before it is
+    /// checked against its header (the path, and the content) before it is
     /// called done (decision 0060, step 5).
     pub fn unseal_kept(
         &self,
@@ -3630,7 +3630,7 @@ impl Store {
     ///
     /// For repair only. Every other path trusts the index when the content hash
     /// matches, which is what makes an unchanged file cost a stat rather than a
-    /// read — but repair has just thrown a payload away on purpose, and needs
+    /// read, but repair has just thrown a payload away on purpose, and needs
     /// the write to happen anyway.
     pub fn rewrite_payloads(
         &mut self,
@@ -3652,7 +3652,7 @@ impl Store {
     ///
     /// Used by repair when a payload is found damaged. The index row stays,
     /// because files still reference it and the reference count is still
-    /// correct — what is gone is the bytes. A later write of the same content
+    /// correct: what is gone is the bytes. A later write of the same content
     /// will notice the payload is absent and store it again.
     pub fn discard_payload(&mut self, hash: &blake3::Hash) -> Result<()> {
         self.cas.remove(hash)
@@ -3668,7 +3668,7 @@ impl Store {
     ///
     /// Both halves, because under single-copy storage neither is the whole
     /// picture: the files the folder is holding, plus the chunk payloads that
-    /// the folder cannot supply. A cap has to bound the sum — bounding the
+    /// the folder cannot supply. A cap has to bound the sum: bounding the
     /// chunk store alone would bound almost nothing.
     pub fn usage(&self) -> Result<Usage> {
         Ok(Usage {
@@ -3690,7 +3690,7 @@ impl Store {
     ///
     /// The file leaves the folder and the row stays, marked as not held here.
     /// Afterwards the path still syncs, still appears in listings, and still
-    /// has a content hash and a chunk list — it simply has no local content
+    /// has a content hash and a chunk list: it simply has no local content
     /// until something fetches it back.
     ///
     /// Refuses when no other device is known to hold the content. That check is
@@ -3738,7 +3738,7 @@ impl Store {
         // Mark first, remove second. The other order leaves a window in which
         // the file is gone from the folder and the index still calls it held:
         // a scan landing there would read that as the user deleting it and
-        // propagate a tombstone. Marked-but-present is the harmless direction —
+        // propagate a tombstone. Marked-but-present is the harmless direction:
         // it costs one needless fetch at worst.
         self.db.set_materialised(logical_path, false)?;
 
@@ -3863,7 +3863,7 @@ impl Store {
     /// Drop payloads the tree can supply, and report what that freed.
     ///
     /// The single-copy rule applies when a file is indexed. A store written
-    /// before the rule existed — or one whose tree was attached later — holds
+    /// before the rule existed (or one whose tree was attached later) holds
     /// a second encrypted copy of content the user's own folder already has,
     /// and nothing re-indexes an unchanged file, so that copy would otherwise
     /// stay forever. This is the one-off pass that removes it.
@@ -3871,7 +3871,7 @@ impl Store {
     /// Safe to interrupt: each chunk is verified out of the tree *before* its
     /// payload is deleted, so a chunk is only ever dropped once the bytes are
     /// known to be readable somewhere else. A storage-only replica has no tree
-    /// and reclaims nothing, which is correct — it is the only holder.
+    /// and reclaims nothing, which is correct: it is the only holder.
     pub fn reclaim(&mut self) -> Result<GcStats> {
         let mut stats = GcStats::default();
         if self.tree.is_none() {
@@ -3918,7 +3918,7 @@ impl Store {
 
         for (hash, references) in &indexed {
             // A chunk nothing references is waiting to be collected. Its
-            // payload being gone is not data loss — no file depends on it —
+            // payload being gone is not data loss (no file depends on it)
             // and under single-copy storage this is the ordinary state of a
             // superseded version, whose bytes left when the file was
             // overwritten. Reporting these would mean `verify` calling a
@@ -3963,7 +3963,7 @@ impl Store {
 /// other, both kept (decision 0005). See [`Store::conflicts`].
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Conflict {
-    /// The path the file has, and the version under it -- `None` if that has
+    /// The path the file has, and the version under it: `None` if that has
     /// since been deleted or renamed.
     pub original_path: String,
     pub original: Option<ConflictVersion>,
@@ -4002,7 +4002,7 @@ pub enum Keep {
 pub struct RemovalPlan {
     /// Sends it has not collected, with their sizes: cancelled.
     pub waiting: Vec<(String, u64)>,
-    /// What this device keeps in its vault for it -- its own files, and sends
+    /// What this device keeps in its vault for it: its own files, and sends
     /// it has collected: kept, unless removal is told to delete them.
     pub kept_for_it: Vec<(String, u64)>,
     /// Files freed here whose only other known copy is on it. Once it is
@@ -4076,7 +4076,7 @@ impl Usage {
 
 /// Move a file, across filesystems if it has to.
 ///
-/// A rename where it can be -- instant, and atomic -- and a copy then a delete
+/// A rename where it can be (instant, and atomic) and a copy then a delete
 /// where it cannot: on a phone the store directory and the folder need not be
 /// on the same filesystem.
 fn move_file(from: &Path, to: &Path) -> std::io::Result<()> {

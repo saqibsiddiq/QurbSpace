@@ -1,7 +1,7 @@
 //! Waking an Android device through Firebase Cloud Messaging.
 //!
 //! The only way to reach a sleeping Android app from outside, and on iOS the
-//! equivalent (APNs) is the only way at all — both platforms reserve it to
+//! equivalent (APNs) is the only way at all: both platforms reserve it to
 //! themselves. See
 //! [decision 0028](../../docs/decisions/0028-waking-a-sleeping-device.md) for
 //! what that costs and why it is accepted.
@@ -18,8 +18,8 @@
 //!
 //! This is written from the HTTP v1 specification and has not been run against
 //! Firebase, because doing so needs a project, a service account and a real
-//! device. The shape is covered by tests — the request that would be sent, and
-//! the token cache — but the first real send is unproven. Said here rather
+//! device. The shape is covered by tests (the request that would be sent, and
+//! the token cache) but the first real send is unproven. Said here rather
 //! than discovered later.
 
 use crate::wake::{Forget, WakeToken, Waker};
@@ -107,7 +107,7 @@ impl Fcm {
     ///
     /// Google's tokens last an hour. Asking for one per push would triple the
     /// round trips and rate-limit a busy service, so it is cached with a
-    /// margin — a token about to expire mid-request is worse than an early
+    /// margin: a token about to expire mid-request is worse than an early
     /// refresh.
     async fn access_token(&self) -> Result<String, String> {
         const MARGIN: Duration = Duration::from_secs(120);
@@ -185,7 +185,7 @@ impl Fcm {
 
     /// Prove the credentials work, before anything depends on them.
     ///
-    /// Obtains an access token and throws it away — which exercises the whole
+    /// Obtains an access token and throws it away, which exercises the whole
     /// awkward half: reading the key, signing the assertion, and Google
     /// accepting it. Without this a mistyped path or a revoked key is
     /// discovered the first time somebody's phone fails to wake, which is

@@ -1,11 +1,11 @@
-# 0025 — A storage cap that cannot lose data
+# 0025: A storage cap that cannot lose data
 
 **Status:** Accepted
 **Date:** 2026-09-22
 
 ## Decision
 
-A folder may be given a limit — `qurb config <dir> limit=10G`. When a device is
+A folder may be given a limit: `qurb config <dir> limit=10G`. When a device is
 over it, qurb frees space by **dropping local copies of files while keeping
 everything the index knows about them**: the path, the content hash, the chunk
 list, the version vector. The file leaves the folder; the file does not leave
@@ -30,14 +30,14 @@ work.
 
 A `replicas` table records, per content hash, which devices are known to have
 those bytes. A row is written when this device **adopts a version some other
-device made** — the device named in `modified_by` created that content and has
+device made**: the device named in `modified_by` created that content and has
 it.
 
 This is deliberately narrow, and it has one consequence worth stating plainly:
 **a device never records a replica for content it originated itself.** A photo
 the phone took and sent to the desktop may be dropped on the desktop. The same
 photo may not be dropped on the phone, because as far as the phone can prove,
-it is the only holder. That asymmetry is the right way round — the device that
+it is the only holder. That asymmetry is the right way round: the device that
 made something is the one that should keep it.
 
 Measured on the development laptop, 2026-09-22, two devices on loopback with a
@@ -50,7 +50,7 @@ reported itself 2.8 MB over, with nothing safe to drop.
 Since [0026](0026-sharing-while-the-other-device-is-off.md) there is also a
 direct report: a device that finishes receiving content sends `Got { content }`,
 and the device that served it records the sender as a holder. That is not an
-inference from who made the file — it is the receiver saying so, credited to
+inference from who made the file: it is the receiver saying so, credited to
 the device its certificate proves it to be.
 
 This is the stronger of the two and it closes the case the `modified_by` rule
@@ -61,9 +61,9 @@ takes a copy, and may drop its own.
 
 If **every** device holding some content drops it, the content is gone. The
 record says "device D had these bytes at time T", not "device D has them now".
-Nothing today can produce that — a device drops only content another device is
+Nothing today can produce that (a device drops only content another device is
 recorded as holding, and that record is only ever created by a device that
-actually received it — but the record is a memory rather than a question, and a
+actually received it) but the record is a memory rather than a question, and a
 memory can go stale.
 
 Asking instead of remembering would mean a `Have { content }` request answered
@@ -78,14 +78,14 @@ This is where a storage cap destroys data, and it does it quietly.
 A syncing device decides a file was deleted by not finding it during a scan.
 Eviction removes a file. Without care, the sequence is: the device is short of
 space, so it drops a file, so the next scan concludes the user deleted it, so
-the deletion propagates to every other device — and the file is gone
+the deletion propagates to every other device, and the file is gone
 everywhere, because the device was low on disk.
 
 So the index records whether this device is *holding* each file, separately
 from whether the file exists:
 
 - `files.materialised` is set to 0 **before** the file is unlinked, never
-  after. The window in the safe direction — marked but still present — costs at
+  after. The window in the safe direction (marked but still present) costs at
   worst one needless fetch. The window in the unsafe direction costs the file.
 - The scan skips a missing file whose row says it was dropped on purpose.
 - The watcher's removal handler does the same, because eviction generates an
@@ -98,7 +98,7 @@ device still held both files and neither device recorded a deletion.
 
 `qurb fetch <path>` sets a `wanted` flag in the index rather than performing a
 transfer. The command runs in a different process from the daemon, the daemon
-may not be running, and no peer may be reachable — so the request is written
+may not be running, and no peer may be reachable, so the request is written
 down and acted on when a peer next is. Measured: the file returned on the
 following sweep and was byte-identical to the original.
 
@@ -126,7 +126,7 @@ for in order to be able to hold.
 ## What this depends on
 
 A cap is only as good as the space it can actually free, and until this work
-**garbage collection had never run** — `Store::gc` had no caller outside tests.
+**garbage collection had never run**: `Store::gc` had no caller outside tests.
 It is now on a five-minute timer in the daemon, ahead of the limit check, with
 a seven-day retention window. The order is deliberate: collecting frees
 superseded and deleted content, which costs the user nothing, and only then is
@@ -135,8 +135,8 @@ it fair to drop copies of files they still have.
 ## Fetched back, and still marked as dropped
 
 **Found 2026-09-27**, while working out how a phone would fetch back its own
-freed files. A file dropped for the cap and then fetched back — `qurb fetch`,
-or the window's button — came back with exactly the bytes the index already
+freed files. A file dropped for the cap and then fetched back (`qurb fetch`,
+or the window's button) came back with exactly the bytes the index already
 recorded, so the store took the shortcut for an unchanged file, which updated
 the modification time and nothing else. The file stayed marked as dropped with
 its bytes sitting in the folder. Three consequences, the last of them the rule

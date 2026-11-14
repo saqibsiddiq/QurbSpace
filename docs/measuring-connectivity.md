@@ -35,7 +35,7 @@ connections, the pairwise rate will be high.
 
 ## The real measurement
 
-Two machines, two genuinely different networks — not two machines on the same
+Two machines, two genuinely different networks, not two machines on the same
 wifi, and not a VPN, which changes the answer entirely.
 
 **Somewhere reachable**, run the rendezvous service and a relay:
@@ -46,7 +46,7 @@ qurb relay 0.0.0.0:9001
 ```
 
 A small VPS is enough. Neither serves TLS of its own, so put them behind a
-reverse proxy before they face the internet — the identifiers devices announce
+reverse proxy before they face the internet: the identifiers devices announce
 under are bearer secrets.
 
 **On each machine**, set up a device and point it at those:
@@ -77,7 +77,7 @@ Above ~70%, relay capacity is a modest fixed cost and the architecture holds.
 
 Below it, the cost of carrying other people's data starts to track user growth,
 which is the thing the whole design was meant to avoid. That would not be a
-reason to stop — it would be a reason to revisit
+reason to stop: it would be a reason to revisit
 [decision 0006](decisions/0006-availability-gap.md), because a paid replica that
 is also a relay looks very different when most traffic needs relaying anyway.
 

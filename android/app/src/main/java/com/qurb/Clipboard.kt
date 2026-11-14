@@ -10,7 +10,7 @@ import uniffi.qurb_mobile.Qurb
 /**
  * What was copied, from any of the phone's folders, to paste in another (the
  * owner's list of 2026-11-01, item 5): a file or folder of this phone's Vault
- * -- Received's files are among them -- or of a computer, its *Shared* or
+ * (Received's files are among them) or of a computer, its *Shared* or
  * this phone's backup folder there. One at a time, for this run of the app.
  */
 sealed class Clip(val name: String) {

@@ -12,7 +12,7 @@ use qurb_storage::Store;
 ///
 /// `Got` is sent when a transfer finishes, which covers everything from now on
 /// and nothing from before. A device that received a file last week holds it
-/// just as truly and never said so — and since a file both devices already
+/// just as truly and never said so, and since a file both devices already
 /// have is never transferred again, the device that made it would go on
 /// counting it as delivered nowhere for the life of the file.
 ///
@@ -21,7 +21,7 @@ use qurb_storage::Store;
 ///
 /// And deliveries taken before, sent again. `offered` is the peer's tree. A
 /// send of content this device has already taken is skipped, rightly, since
-/// a delivery is taken once -- but the sender is then never told, and keeps it
+/// a delivery is taken once, but the sender is then never told, and keeps it
 /// waiting for good, announcing news on every pass. That happened on
 /// 2026-10-05: a phone cleared and set up again sent a 1.7 GB video the laptop
 /// had taken from it earlier that day, and two days later still held it as
@@ -105,8 +105,8 @@ pub async fn learn_profile(client: &PeerClient, store: &Store, peer: &qurb_sync:
 /// phone listed 7 files as on the laptop that the laptop had freed long
 /// before, and that no device had any more. A copy denied is marked as one
 /// this device cannot ask for, and the file is shown as on no device. A copy
-/// marked so -- by removing the device, which pairing it again did not undo
-/// -- and confirmed counts again.
+/// marked so (by removing the device, which pairing it again did not undo)
+/// and confirmed counts again.
 ///
 /// Best effort, like [`report_holdings`]: it corrects what a screen says, and
 /// never fails a sync. Returns how many were asked.
@@ -144,7 +144,7 @@ pub async fn check_holders(
 /// that vault this device has no record of it holding (decision 0036).
 ///
 /// The record is made from the peer's `Got` as it collects. One lost on the
-/// way -- the connection dropped between fetching and telling -- left the
+/// way (the connection dropped between fetching and telling) left the
 /// file counted here as still to go for good: 130 of the S23's WhatsApp
 /// files on 2026-10-15, kept on the laptop for hours, whose 54 MB made every
 /// pass on the phone a long one. A few each pass, asked at once; a yes is
@@ -209,7 +209,7 @@ impl<'a> NetworkSource<'a> {
     /// Must be constructed from inside a multi-threaded Tokio runtime. Each
     /// fetch blocks the calling thread on network I/O through
     /// [`tokio::task::block_in_place`], which the current-thread scheduler
-    /// cannot do — it would deadlock rather than fail, which is why this
+    /// cannot do: it would deadlock rather than fail, which is why this
     /// captures the handle up front and panics here instead.
     pub fn new(client: &'a PeerClient, local: &'a Store) -> Self {
         Self {
@@ -264,7 +264,7 @@ impl ContentSource for NetworkSource<'_> {
     ///
     /// Failures are swallowed deliberately. This is a courtesy to the other
     /// end, and a sync that succeeded must not be reported as failed because
-    /// the closing remark did not get through — the file is here either way.
+    /// the closing remark did not get through: the file is here either way.
     /// The peer will learn of it on the next exchange.
     ///
     /// Put off and told [`AHEAD`] at a time, all at once, rather than a round
@@ -294,14 +294,14 @@ impl ContentSource for NetworkSource<'_> {
     /// The streaming form, which is the one that actually runs.
     ///
     /// Without this the trait's default applies, and the default buffers the
-    /// whole file — so the network path, the one a phone uses to receive a
+    /// whole file, so the network path, the one a phone uses to receive a
     /// large file, would hold it all in memory no matter how carefully the
     /// layers underneath stream. That is the failure
     /// [decision 0018] names as the easy one to make here, and it was made:
     /// this override was missing for a release, and nothing failed, because
     /// buffering is correct and only expensive.
     ///
-    /// [decision 0018]: ../../../docs/decisions/0018-file-contents-never-cross-the-ffi.md
+    /// [decision 0018]../../../docs/decisions/0018-file-contents-never-cross-the-ffi.md
     fn fetch_into(
         &mut self,
         hash: &[u8; 32],
@@ -348,7 +348,7 @@ impl NetworkSource<'_> {
     /// `hash`, if it is one of the small files the plan said it would ask
     /// for: fetched now with the next ones, [`AHEAD`] at a time, unless it
     /// already was. `None` for anything else, and for one whose fetch ahead
-    /// failed, which is then fetched on its own as before -- so a failure is
+    /// failed, which is then fetched on its own as before, so a failure is
     /// reported as it always was.
     fn fetched_ahead(&mut self, hash: &[u8; 32]) -> Option<Vec<u8>> {
         if let Some(bytes) = self.ready.remove(hash) {

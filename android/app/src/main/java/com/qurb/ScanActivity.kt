@@ -39,7 +39,7 @@ import java.util.concurrent.Executors
  * code turns it red, *Not a Qurb code*, and the camera goes on looking.
  *
  * The code carries the inviter's full fingerprint and has to travel *outside*
- * the network being paired — someone who can change what you see has already
+ * the network being paired: someone who can change what you see has already
  * won, so sending it over the link it authorises would defeat the point. A
  * camera reading a screen is exactly that: the bytes cross the room as light.
  *
@@ -129,7 +129,7 @@ class ScanActivity : AppCompatActivity() {
             val preview = Preview.Builder().build()
                 .also { it.setSurfaceProvider(views.preview.surfaceProvider) }
 
-            // QR only. Restricting the formats is a real speed-up — the
+            // QR only. Restricting the formats is a real speed-up: the
             // scanner stops looking for a dozen barcode symbologies that a
             // pairing code will never be.
             val scanner = BarcodeScanning.getClient(
@@ -203,7 +203,7 @@ class ScanActivity : AppCompatActivity() {
 
     /**
      * The barcode reader is Google Play services' own, fetched by the phone
-     * when first wanted, and until it arrives every frame fails to be read --
+     * when first wanted, and until it arrives every frame fails to be read:
      * which went unheard, and the screen said *Point at the code* to a code it
      * was pointed at (found on the emulator, 2026-11-09, which could not
      * fetch it). So it is asked for at once, said while it comes, and the six
@@ -234,7 +234,7 @@ class ScanActivity : AppCompatActivity() {
 
     /**
      * A Qurb code: the frame green, and the device showing it named when it
-     * says who it is (decision 0074) -- asked here, a few seconds at most --
+     * says who it is (decision 0074) (asked here, a few seconds at most)
      * then back to whoever asked, which joins.
      */
     private fun found(code: String) {

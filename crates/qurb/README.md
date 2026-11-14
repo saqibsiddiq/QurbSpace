@@ -48,7 +48,7 @@ qurb relay [addr]                the relay
 qurb netcheck                    what kind of router this machine is behind
 ```
 
-`[dir]` is the qurb folder. Left out, it is the one set up most recently —
+`[dir]` is the qurb folder. Left out, it is the one set up most recently:
 and a word that is not a folder with qurb in it is never taken for one, so
 `qurb protect keystore` and `qurb protect ~/qurb/Shared keystore` both mean
 what they say. Folders are listed by their full path, in
@@ -85,7 +85,7 @@ won.
 
 `qurb init`, `qurb enrol` and `qurb join` into a folder not set up all go
 through `qurb_cli::setup`, which is the one definition of what a set-up
-device is — a key, an identity, a config and an index. A typed code is read
+device is: a key, an identity, a config and an index. A typed code is read
 there too: the long code as it is, six digits found on the network
 (`setup::invite`). The desktop window calls the same functions, so a device created there
 and one created here are the same thing rather than two similar things.
@@ -98,7 +98,7 @@ search. `qurb ls` and `qurb find` are the terminal's use of it.
 
 The three-way availability is the part worth knowing about. A file that is here
 and also on the phone, and a file that is here and nowhere else, look identical
-to anything that only checks whether the bytes are on disk — and offering to
+to anything that only checks whether the bytes are on disk, and offering to
 free the second would be offering to delete it.
 
 ## Why is my file not here?
@@ -107,8 +107,8 @@ free the second would be offering to delete it.
 qurb activity ~/Sync holiday/beach.jpg
 ```
 
-Every device writes down what it did — stored, deleted, received, sent,
-collected, evicted, restored, conflicted, paired, failed — so the question is
+Every device writes down what it did (stored, deleted, received, sent,
+collected, evicted, restored, conflicted, paired, failed) so the question is
 still answerable after a restart, which is when people ask it. Without a path
 it lists everything, newest first.
 
@@ -120,7 +120,7 @@ qurb send ~/Sync ~/Downloads/tickets.pdf to phone     # naming the folder
 ```
 
 Any number of files and folders, then `to` and the device. A folder is sent
-whole under its own name — `Trip/day1/beach.jpg` — and arrives as a folder.
+whole under its own name (`Trip/day1/beach.jpg`) and arrives as a folder.
 Links inside a folder are not followed, and a qurb store inside one is never
 sent, since it holds this device's keys. Two things with the same name are both
 sent, the second as `notes (2).txt`. Anything that cannot be sent is named,
@@ -135,7 +135,7 @@ qurb cancel tickets.pdf to phone
 
 Takes back a send the device has not collected yet, by the name `qurb send`
 printed. It never arrives, however long the device was switched off. Once
-collected it cannot be taken back — the file is theirs then — and a device in
+collected it cannot be taken back (the file is theirs then) and a device in
 the middle of collecting when you cancel may still finish. The space it held
 comes back after the usual seven-day retention, not at once.
 
@@ -147,28 +147,28 @@ folder, privately. Name the recipient the way `qurb status` lists it, or by its 
 two devices share a name.
 
 The bytes stay on this device until the recipient confirms they arrived, so
-sending to a phone that is switched off works — it collects the file the next
+sending to a phone that is switched off works: it collects the file the next
 time it syncs. After that the copy here is the first thing dropped when the
 storage limit bites, before any of this device's own files.
 
 ## How news travels
 
-A device holds one request open against each peer — "tell me when your state
-differs from this" — and the answer arrives when it does. An edit reaches
+A device holds one request open against each peer ("tell me when your state
+differs from this") and the answer arrives when it does. An edit reaches
 another device in about 400ms, most of which is the watcher deliberately waiting
 to see whether the file is still being written.
 
 It does not break the rule that a peer can ask and never tell: the device that
 wants to know is the one asking, and the answer simply arrives later than usual.
 
-A counter rather than a flag, because a flag can be missed — a peer told
+A counter rather than a flag, because a flag can be missed: a peer told
 "something changed" cannot tell a notification it has already acted on from a
 new one. It says what it last saw instead, and gets an immediate answer if
 anything has happened since. The counter need not survive a restart: a peer
 holding a number from before sees one that does not match, which is exactly the
 right conclusion.
 
-A sweep every two minutes covers what being told cannot — a notification lost
+A sweep every two minutes covers what being told cannot: a notification lost
 with a dropped connection, a peer that was unreachable when it changed, a
 machine coming back from sleep.
 
@@ -190,7 +190,7 @@ qurb protect ~/Sync keystore     # into the operating system's keystore
 qurb protect ~/Sync passphrase   # wrapped with something only you know
 ```
 
-The key does not change, so nothing it protects becomes unreadable — this
+The key does not change, so nothing it protects becomes unreadable: this
 changes the lock, not the contents. A passphrase means `qurb run` asks at
 startup, so the device can no longer start unattended, which is the trade.
 
@@ -221,7 +221,7 @@ setting that silently does nothing is a bad afternoon.
 
 ### `limit`
 
-How much disk this folder may use — files plus chunk store. `0`, the default,
+How much disk this folder may use: files plus chunk store. `0`, the default,
 means no limit. Accepts `500M`, `10G`, `1T`, or a plain byte count.
 
 Over the limit, qurb drops local copies of the files it has gone longest
@@ -236,7 +236,7 @@ Two refusals are built in and will not be talked out of:
   limit is a promise about disk, not a reason to delete the only copy of
   something.
 
-On Linux a dropped file is simply absent from the folder — there is no
+On Linux a dropped file is simply absent from the folder: there is no
 placeholder API to keep its name visible, so `qurb status` is where you find
 out it still exists.
 
@@ -244,7 +244,7 @@ out it still exists.
 
 `shared`, the default on a desktop: a file added here goes to every device.
 `private`: it goes into this device's own vault instead, and only the devices
-named with `qurb holders add <device>` see it — each keeps a copy it never
+named with `qurb holders add <device>` see it, each keeps a copy it never
 shows. That is what lets `qurb free <path>` drop the local copy and `qurb fetch
 <path>` bring it back. A holder lets go of a file only when this device deletes
 it. What a phone does; see
@@ -264,7 +264,7 @@ the sender offering it again changes nothing. A name already taken in that
 directory is never overwritten; the arriving file is saved beside it as
 `name.from-<device>-<when>.ext`.
 
-The directory may not overlap the synced folder, in either direction —
+The directory may not overlap the synced folder, in either direction:
 received files inside the folder would be synced to every device. `qurb
 config` refuses such a setting and `qurb run` refuses to start with one. If
 the synced folder is itself `Downloads/qurb`, where new folders used to go, the
@@ -275,7 +275,7 @@ See [decision 0037](../../docs/decisions/0037-a-file-sent-to-a-desktop-is-an-ord
 ### `notifications`
 
 `on`, the default, or `off`: whether the desktop window raises its three
-notifications — a file sent here, one you sent collected, one that failed. The
+notifications, a file sent here, one you sent collected, one that failed. The
 command line and the tray raise none either way.
 
 ## What is waiting to be delivered
@@ -283,14 +283,14 @@ command line and the tray raise none either way.
 `qurb status` ends with a line like:
 
 ```
-  only here  2 file(s), 2.9 MiB — no other device has these yet
+  only here  2 file(s), 2.9 MiB: no other device has these yet
 ```
 
 Files this device made that no other device is known to hold. While that line
 is there, losing this device loses that work.
 
-It is a question asked of the index each time — live files made here whose
-content nothing else has taken — rather than a queue of pending transfers.
+It is a question asked of the index each time (live files made here whose
+content nothing else has taken) rather than a queue of pending transfers.
 There is nothing to queue: a file added while every other device is switched
 off is simply in the folder, and it moves when one is next reachable. A device
 learns it is no longer the only holder because the device that received the
@@ -328,7 +328,7 @@ says which became which.
 ## If the folder moves
 
 The daemon follows its folder by what it is, not by its name: the device and
-inode of `.qurb`, noted when it starts. Moved — to the Trash, say — or deleted
+inode of `.qurb`, noted when it starts. Moved (to the Trash, say) or deleted
 and made again at the same path, it is not the same folder, and the daemon
 stops with a message saying so rather than syncing on, unseen, from wherever
 the folder went. Put it back and start qurb again, or set it up again. It is
@@ -340,7 +340,7 @@ when it was made.
 
 ## On other systems
 
-Written on Linux, and built since 2026-10-18 for Windows too -- not yet run
+Written on Linux, and built since 2026-10-18 for Windows too, not yet run
 there ([decision 0070](../../docs/decisions/0070-the-first-release.md)). What
 differs is said once: `platform.rs` gives a Windows process `HOME`,
 `XDG_CONFIG_HOME` and `USER` from its profile, roaming data and user name, so
@@ -350,8 +350,8 @@ filesystem's size and free space of `statvfs` or `GetDiskFreeSpaceExW`; the
 store's lock is the standard library's file lock, `flock` on Linux as before.
 The computer is not kept awake on Windows while collecting.
 
-Built statically for any Linux -- x86_64 and arm64, against musl, with nothing
-asked of the system -- for a rendezvous service or a replica on whatever a
+Built statically for any Linux (x86_64 and arm64, against musl, with nothing
+asked of the system) for a rendezvous service or a replica on whatever a
 server runs (`./scripts/release.sh server`).
 
 ## What it does not do yet

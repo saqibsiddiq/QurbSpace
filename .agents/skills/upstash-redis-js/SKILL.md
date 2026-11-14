@@ -188,7 +188,7 @@ await redis.ttl("key");
 
 ## AI agents: use AgentKit
 
-For agent state on Redis — memory, chat history, RAG search tools, tool caching, rate limiting, chat persistence, resumable streams, locks — use [Upstash AgentKit](https://github.com/upstash/agentkit) instead of hand-rolling it on `@upstash/redis`. Pick the adapter for the framework and follow its docs page:
+For agent state on Redis (memory, chat history, RAG search tools, tool caching, rate limiting, chat persistence, resumable streams, locks) use [Upstash AgentKit](https://github.com/upstash/agentkit) instead of hand-rolling it on `@upstash/redis`. Pick the adapter for the framework and follow its docs page:
 
 | Framework | Package | Docs |
 | --- | --- | --- |

@@ -1,4 +1,4 @@
-# Phase 5 — Mobile
+# Phase 5: Mobile
 
 **Status:** in progress
 **Target:** months 11–14
@@ -20,12 +20,12 @@ record](../roadmap.md).
 | pairing and syncing from the phone | ✅ end to end, over QUIC |
 | a sync that fits a background window | ✅ `sync_within(seconds)` |
 | the key kept outside the app's files | ✅ Android Keystore, verified on a device |
-| **an Android app** | ✅ [`android/`](../../android/) — installs, sets up, syncs |
-| syncing unattended | ✅ WorkManager, every 15 minutes — hourly once push has worked in the last week |
+| **an Android app** | ✅ [`android/`](../../android/): installs, sets up, syncs |
+| syncing unattended | ✅ WorkManager, every 15 minutes: hourly once push has worked in the last week |
 | the files visible to other apps | ✅ a DocumentsProvider, verified in Files |
 | sharing into qurb from any app | ✅ a share target, works with no network |
 | knowing what has not been delivered | ✅ asked of the index, not kept as a queue |
-| being woken by another device | ✅ push, when configured — 0.7s on hardware |
+| being woken by another device | ✅ push, when configured: 0.7s on hardware |
 | **a phone syncing with a laptop, both ways** | ✅ verified on hardware |
 | syncing from mobile data | ✅ directly, through a rendezvous service on the laptop |
 | recently deleted, and settling a conflict | ✅ verified between the S23 and the laptop |
@@ -41,7 +41,7 @@ record](../roadmap.md).
 
 801 tests pass in 90 test binaries on Linux (2026-10-10, debug build, the
 development laptop); the last run on a Galaxy S23 was 426 of them, on
-2026-09-17 — the suite has grown since and has not been run there again.
+2026-09-17: the suite has grown since and has not been run there again.
 Clippy is clean.
 
 ## What the library costs
@@ -66,15 +66,15 @@ need at runtime.
 The largest correctness problem mobile exposed, and it had nothing to do with
 mobile code.
 
-An iOS FileProvider extension — the thing that makes files appear in the Files
-app — runs under a memory limit in the tens of megabytes. The receive path held
+An iOS FileProvider extension (the thing that makes files appear in the Files
+app) runs under a memory limit in the tens of megabytes. The receive path held
 whole files: fetch into a `Vec`, write it to disk, hand the same buffer to
 `adopt`. On a desktop that is merely wasteful. Inside an extension it is fatal,
 and fatal in the worst way: it works for small files and kills the process for
 large ones, so it looks like an intermittent bug rather than a design error.
 
 Measured on this machine (Linux 7.2.2, CachyOS, warm page cache, release build),
-as the growth in `RssAnon` — anonymous resident memory — across adopting one
+as the growth in `RssAnon` (anonymous resident memory) across adopting one
 file:
 
 | file | before | after |
@@ -82,7 +82,7 @@ file:
 | 256 MiB | 256 MiB of heap | 0 MiB |
 | 1024 MiB | 1024 MiB of heap | 1 MiB |
 
-And on the phone itself — a file arriving over a real QUIC connection from
+And on the phone itself: a file arriving over a real QUIC connection from
 another device rather than read from a local store:
 
 | file received over the network | heap (Galaxy S23) | heap (emulator) |
@@ -99,7 +99,7 @@ was always about, measured on hardware rather than argued from a desktop.
 counts *dirty* pages against a process; pages backed by a file on disk are clean
 and the kernel can drop them under pressure. Measuring the total counts both
 alike, which makes a memory-mapped read look exactly as dangerous as a 1 GiB
-`Vec` — the opposite of true. Four earlier versions of this measurement were
+`Vec`: the opposite of true. Four earlier versions of this measurement were
 wrong, the last of them because the buffer was dropped before the reading was
 taken, which made holding a whole file in memory appear to cost nothing.
 
@@ -130,7 +130,7 @@ involved: the FFI is a C ABI, and a test binary exercises the same Rust an app
 would reach through it.
 
 **On a real phone**: a Samsung Galaxy S23 (SM-S911B, Snapdragon 8 Gen 2,
-Android 16, API 36, arm64-v8a). All 35 binaries pass — 426 tests in 104 seconds.
+Android 16, API 36, arm64-v8a). All 35 binaries pass: 426 tests in 104 seconds.
 
 Also on an Android 14 (API 34) x86_64 emulator, where the same 35 binaries pass
 in 74 seconds. The emulator is worth keeping for the fast loop; the phone is
@@ -147,7 +147,7 @@ the code:
   a helper that was not on the device.
 - The script piped each binary's output into `grep -q`, which exits on its
   first match and closes the pipe. Most of the results were lost *and* the run
-  still reported a pass — the worse of the two failure modes, since a suite
+  still reported a pass: the worse of the two failure modes, since a suite
   that reports green while showing nothing is indistinguishable from one that
   works.
 
@@ -157,8 +157,8 @@ Running on ARM was worth insisting on. Architecture-independent Rust is
 architecture-independent, but two things here are not: BLAKE3 takes a NEON code
 path on ARM rather than AVX2, and ARM's memory model is weaker than x86's, so a
 concurrency bug that x86 hides can surface there. This workspace has real
-concurrency — a garbage collector running against a live writer, a worker pool
-holding a database connection each — and until now none of it had run anywhere
+concurrency (a garbage collector running against a live writer, a worker pool
+holding a database connection each) and until now none of it had run anywhere
 but x86.
 
 It found nothing. Every test passes on ARM64 exactly as on x86_64, including the
@@ -168,7 +168,7 @@ it does not prove the code is free of memory-ordering bugs, it proves that this
 suite on this device did not expose any.
 
 A note for anyone repeating this: the emulator cannot substitute. Emulator 37.x
-refuses an `arm64-v8a` image on an x86_64 host outright —
+refuses an `arm64-v8a` image on an x86_64 host outright:
 
     Avd's CPU Architecture 'arm64' is not supported by the QEMU2 emulator
     on x86_64 host. System image must match the host architecture.
@@ -200,7 +200,7 @@ the composed one deleted and the decomposed one created, and sends both back.
 Linux, which keeps the two apart, now has two files. Then it happens again.
 
 Paths are now normalised to NFC at the single seam where a disk path becomes a
-logical path — the same place the separator is already normalised, and for the
+logical path: the same place the separator is already normalised, and for the
 same reason. NFC is the canonical form because it is what the web and most
 sources of filenames already produce, so on Linux and Windows the change costs a
 scan and alters nothing.
@@ -211,14 +211,14 @@ a decision to make on their behalf.
 
 The first version of that resolution was wrong, and the test caught it. Both
 spellings normalise to the *same* logical path, so sorting by logical path left
-the tie to directory-read order — which differs between machines. Two devices
+the tie to directory-read order, which differs between machines. Two devices
 resolving the same collision could keep different files under one name. The rule
 now depends only on the filenames: the spelling already in normalised form wins,
 and byte order breaks anything left.
 
 ## The FFI
 
-[`crates/mobile-ffi`](../../crates/mobile-ffi/) — no sync logic of its own.
+[`crates/mobile-ffi`](../../crates/mobile-ffi/): no sync logic of its own.
 Logic behind an FFI boundary is logic the rest of the workspace cannot test, so
 there is none there: everything delegates to `qurb-engine` and `qurb-peer`.
 
@@ -230,7 +230,7 @@ Two bugs came out of writing tests for it, both of the kind that only appears
 when you use an API rather than design it:
 
 - **`import_file` could destroy the file it was adding.** An app handed it a
-  source already inside the synced tree — an entirely reasonable call — and it
+  source already inside the synced tree (an entirely reasonable call) and it
   became `std::fs::copy` from a path onto itself, which truncates. Now the two
   are compared after canonicalisation and an in-place file is indexed where it
   lies.
@@ -242,7 +242,7 @@ when you use an API rather than design it:
 ### Syncing, and what it turned up
 
 The phone pairs out of band, finds the other device through the rendezvous
-service, connects over QUIC and syncs — all through the FFI, with a test that
+service, connects over QUIC and syncs: all through the FFI, with a test that
 checks the file arrives byte-exact rather than that the calls returned `Ok`.
 
 The mobile-shaped entry point is `sync_within(seconds)`. Both platforms grant
@@ -258,7 +258,7 @@ something used the library the way a phone does.
 
 **`Connector::start` announced `0.0.0.0`.** It passed `socket.local_addr()`
 straight into the endpoints it advertised, and a socket bound to every interface
-reports `0.0.0.0:port` — true about the socket, useless to a peer, which has no
+reports `0.0.0.0:port`: true about the socket, useless to a peer, which has no
 "here" to resolve it against. The identical mistake was found and fixed in
 pairing invites earlier; it survived here because every existing test binds
 `127.0.0.1` explicitly, and in ordinary use STUN supplies a public address that
@@ -267,22 +267,22 @@ with no route to the internet, which is exactly when the local address is the
 only one there is.
 
 **`NetworkSource` was not streaming.** It implemented only the buffering half of
-`ContentSource` and inherited the trait's default for the streaming half — and
+`ContentSource` and inherited the trait's default for the streaming half, and
 that default buffers. So the network path, the one a phone uses to receive a
 large file, held the whole file in memory however carefully the layers beneath
 it streamed. Nothing failed, because buffering is correct and merely expensive.
 
 That second one is worth dwelling on. [Decision
 0018](../decisions/0018-file-contents-never-cross-the-ffi.md) names this exact
-hazard — "a new source that forgets to override gets correctness and loses the
-ceiling" — and it was then made by the same hand that wrote the warning, in the
+hazard ("a new source that forgets to override gets correctness and loses the
+ceiling") and it was then made by the same hand that wrote the warning, in the
 same week. A default implementation that is correct and slow is a default that
 nothing will ever catch. The answer was not a better comment but a test that
 measures.
 
 **STUN discovery is now a setting.** It had been unconditional, which meant the
 new tests would contact Google's and Cloudflare's STUN servers on every `cargo
-test` — slow, broken offline, and telling a third party the address of every
+test`: slow, broken offline, and telling a third party the address of every
 machine that runs the suite.
 
 ## Keeping the key off the disk
@@ -302,7 +302,7 @@ exists.
 What is stored is the key itself, 32 bytes, rather than something wrapping it.
 Both platforms handle small secrets well, and a wrapping layer would mean
 running Argon2id at every app launch to derive a key from a value that is
-already full entropy — a second of phone CPU for nothing.
+already full entropy: a second of phone CPU for nothing.
 
 Tested against a fake keystore, which checks the contract rather than the
 platforms: that the key reaches the store and *not* the vault file, that it
@@ -313,7 +313,7 @@ than looking like corruption.
 
 Adding it broke a test, correctly. `a_newer_format_is_refused_rather_than_misread`
 wrote format byte `FORMAT_PASSPHRASE + 1` to check that a file from the future is
-refused rather than guessed at — and `FORMAT_PLATFORM` then took that number, so
+refused rather than guessed at, and `FORMAT_PLATFORM` then took that number, so
 the "future" format became a real one. The test now anchors to the last format
 rather than to a particular one.
 
@@ -323,7 +323,7 @@ each platform; neither has been compiled.
 
 ## The app
 
-[`android/`](../../android/) — Kotlin, classic Views, about 700 lines. It
+[`android/`](../../android/): Kotlin, classic Views, about 700 lines. It
 installs, sets up an identity, keeps the key in the Android Keystore, lists
 files, pairs with another device, and syncs. The APK is 21 MB, of which roughly
 7 MB is the engine.
@@ -338,8 +338,8 @@ builds from a clean checkout on a machine with no NDK.
 
 `Qurb` had its methods in two `#[uniffi::export] impl` blocks. **UniFFI keeps
 only the last one and silently discards the rest.** The Rust compiled. The
-bindings generated without a warning. Eight methods — `scan`, `list`, `export`,
-`importFile`, `remove`, `usage`, `contains`, `root` — were simply absent from
+bindings generated without a warning. Eight methods (`scan`, `list`, `export`,
+`importFile`, `remove`, `usage`, `contains`, `root`) were simply absent from
 the Kotlin and Swift.
 
 Every Rust test kept passing, because they call these functions directly rather
@@ -353,7 +353,7 @@ instance method fell into the non-exported block.
 
 `crates/mobile-ffi/tests/bindings.rs` now reads the generated text and checks
 every method an app needs, in both languages. It also refuses to run against a
-library older than `src/lib.rs` — because its own first run passed against a
+library older than `src/lib.rs`, because its own first run passed against a
 stale one, which would have been a false pass exactly as easily as a false
 failure.
 
@@ -400,14 +400,14 @@ minutes reaches the same conclusion.
 device being asleep is ordinary and the backoff would keep it from draining the
 battery. That was exactly backwards. Every unanswered attempt doubled the
 delay, so a phone whose laptop had been off scheduled its next attempt three
-hours out — and the moment the laptop came back was the moment the phone had
+hours out, and the moment the laptop came back was the moment the phone had
 stopped looking. Caught on hardware, not on paper: a file shared at 18:01 was
 still sitting on the phone at 18:06 with the laptop running beside it and
 `jobscheduler` reporting `earliest=+3h5m58s`.
 
 Backoff is for transient errors. "Nobody is awake yet" is the steady state, and
 the answer to it is the ordinary fifteen-minute period, which only applies if
-the worker reports success — which also resets the attempt count, so an
+the worker reports success, which also resets the attempt count, so an
 accumulated backoff unwinds by itself.
 
 Fifteen minutes is not a choice: it is the shortest period WorkManager accepts,
@@ -417,7 +417,7 @@ go hours between runs. The app says so rather than implying otherwise.
 
 The first version was silent, which for background work is a defect rather than
 an omission: nobody is watching when it runs, so with no trace there is no way
-to tell a sync that works from one that has quietly stopped — and quietly
+to tell a sync that works from one that has quietly stopped, and quietly
 stopping is the failure mode a sync app actually dies of. It now logs and
 records its last result.
 
@@ -432,7 +432,7 @@ answered whenever one is next awake.
 
 There is **no outbox and no retry queue**, because nothing is queued. An outbox
 would be a second record of what needs to happen, and two records of one fact
-disagree eventually — an entry for a file since deleted retries forever, a file
+disagree eventually: an entry for a file since deleted retries forever, a file
 the outbox forgot is never sent and reports no error. Instead the index is
 asked each time: *live files this device made, whose content no other device is
 known to hold*. A file joins that answer when it is shared and leaves it when
@@ -441,7 +441,7 @@ somebody takes delivery, with nothing to enqueue or clean up.
 For that to be answerable at all, the protocol gained its first message that
 asks for nothing: `Got { content }`, sent by a device that has just finished
 receiving content, to the device it came from. Before it, a device being
-fetched *from* learned nothing — it served some chunks, and whether they added
+fetched *from* learned nothing: it served some chunks, and whether they added
 up to a file someone wrote was not its business. That is fine for syncing and
 useless for telling a person their photo arrived. It is credited to the
 certificate the connection authenticated with, never to anything the message
@@ -451,7 +451,7 @@ lets a storage cap drop a local copy on exactly this record.
 Measured, two devices through a rendezvous service on loopback: a file shared
 with the desktop **not running at all** was saved, correctly reported as held
 only by the phone, survived a sync attempt that reached nobody, and arrived
-byte-for-byte once the desktop came up — with nothing further done on the
+byte-for-byte once the desktop came up, with nothing further done on the
 phone. The phone then reported nothing outstanding.
 
 One thing worth fixing that was found writing this: importing over a name
@@ -478,7 +478,7 @@ title=qurb} @ content://com.qurb.documents/root/qurb]
 
 Browsing it shows folders and files with sizes and dates, and the breadcrumb
 works into nested folders. Querying the provider from a shell is refused with a
-`SecurityException`, which is correct — only the system's DocumentsUI may open
+`SecurityException`, which is correct: only the system's DocumentsUI may open
 it.
 
 Read-only. `openDocument` accepts mode `r` and nothing else, because supporting
@@ -492,7 +492,7 @@ undo.
 
 The app existed, the engine ran on hardware, and both had been tested against
 themselves. Putting a real phone and a real laptop on one network found five
-more things — none of which any test had caught, because each needed two
+more things, none of which any test had caught, because each needed two
 machines, a router, and a person trying to use them.
 
 ### `qurb pair` waited forever on a dead invite
@@ -503,7 +503,7 @@ Worse than failing, because the person reading the code aloud has no way to know
 it is dead.
 
 Two causes, and the first is the interesting one. `wait` took `now` as a
-parameter and checked `is_expired(now)` *inside* the accept loop — so the clock
+parameter and checked `is_expired(now)` *inside* the accept loop, so the clock
 it compared against was captured before the wait began, and the check could
 never fire however long the wait lasted. It was dead code that looked like a
 safeguard. Nothing else bounded the loop, so with nobody connecting it blocked
@@ -522,7 +522,7 @@ failed outright on a 16 KB device.
 
 `-Wl,-z,max-page-size=16384` in both Android scripts; the segments went from
 `0x1000` to `0x4000` and `zipalign -c -P 16` verifies the APK. JNA was already
-at `0x10000`, which satisfies the requirement — a larger alignment is a valid
+at `0x10000`, which satisfies the requirement: a larger alignment is a valid
 one.
 
 Only a real device surfaced this. The emulator never complained.
@@ -534,7 +534,7 @@ handled window insets. The toolbar sat beneath the status bar: it looked wrong,
 and the overflow button's top half was unreachable because taps in that strip go
 to the status bar instead.
 
-Invisible in a screenshot until you try to press something — which is how it was
+Invisible in a screenshot until you try to press something, which is how it was
 found, after several attempts at opening a menu that would not open. The first
 fix padded the toolbar, which pushes its contents down inside a box that does not
 grow, so the title clipped instead. The padding belongs on the `AppBarLayout`.
@@ -543,7 +543,7 @@ grow, so the title clipped instead. The padding belongs on the `AppBarLayout`.
 
 UniFFI generates `message = "detail=${detail}"`, so every dialog led with a field
 name: `detail=connection lost: timed out`. `QurbException.readable()` replaces
-it, and pairs each case with the first thing worth trying — a timeout on a home
+it, and pairs each case with the first thing worth trying: a timeout on a home
 network almost always means a firewall dropping UDP, and a rule that allows ping
 will still drop it, so the message says so. That was the actual cause here.
 
@@ -554,14 +554,14 @@ networking.
 
 `knock` opens a handshake it *wants* to fail: the packets are the entire point,
 and it pins its own fingerprint so nothing can complete. Every punch therefore
-logged `WARN rejected an unrecognised peer` — which reads exactly like a device
+logged `WARN rejected an unrecognised peer`, which reads exactly like a device
 being refused for real.
 
 It sent an investigation through the peers table, the certificate on the phone,
 and a BLAKE3 hash of that certificate to prove it matched what the laptop
 trusted, while the actual failure sat two lines above at `DEBUG`. The rejection
 is now `TRACE` when it is expected, and the genuine warning carries the full
-fingerprints on both sides — the four-byte short form cannot show a mismatch
+fingerprints on both sides: the four-byte short form cannot show a mismatch
 that starts later, which is precisely the case the message needs to prove.
 
 **A log line's severity is an assertion.** A `WARN` that fires on a successful
@@ -584,7 +584,7 @@ a 4.7 MB photo crossed inside the window, byte-identical by SHA-256.
 The honest state of this phase.
 
 **iOS, entirely.** It needs Xcode, which needs a Mac. The `staticlib` crate type
-is declared, the Swift bindings generate, and a test checks their text — but
+is declared, the Swift bindings generate, and a test checks their text, but
 nothing has put them through a Swift toolchain, there is no app, and no iOS
 device has run any of this. Nothing about iOS in this document is measured. The
 memory work was done *because* of the FileProvider ceiling; whether it clears
@@ -592,7 +592,7 @@ that ceiling in practice is unknown.
 
 **Background sync has never been observed happening on its own.** The worker is
 scheduled and was verified by running one through WorkManager rather than by
-calling the engine directly — so the path is the same one the schedule uses.
+calling the engine directly, so the path is the same one the schedule uses.
 What has not been watched is a phone left alone for a day, syncing on Android's
 timetable. That takes a day and a phone nobody is using.
 
@@ -604,7 +604,7 @@ actually costs in power.
 verified on a single Galaxy S23 and a single Linux laptop on one home Wi-Fi
 network, with the rendezvous service running on that laptop. Nothing has been
 tried across networks, through carrier-grade NAT, over cellular, or against a
-hosted service — which is also why Phase 3's kill criterion is still open.
+hosted service, which is also why Phase 3's kill criterion is still open.
 
 **The sync was hand-driven.** A person pressed Sync, or a script did. The
 end-to-end path of "change a file and have it appear elsewhere without anyone
@@ -623,13 +623,13 @@ unmeasured is *cost over time*: battery across a day, what Android actually
 grants the worker rather than what it was asked for, and what happens across a
 suspend. Closing it needs a phone left alone for a day, not more code.
 
-The iOS half of the criterion — whether a FileProvider extension survives its
-memory ceiling — is untouched, and the memory work that exists was done on its
+The iOS half of the criterion (whether a FileProvider extension survives its
+memory ceiling) is untouched, and the memory work that exists was done on its
 behalf without ever being tested against it.
 
 Phase 3's kill criterion (≥70% direct connections) also remains open. Today's
 work was two devices on *one* home network, which says nothing about the rate
-across different ones — and a phone on cellular, behind carrier-grade NAT, is
+across different ones, and a phone on cellular, behind carrier-grade NAT, is
 exactly the hard case that number is about. See
 [measuring-connectivity.md](../measuring-connectivity.md).
 
@@ -637,7 +637,7 @@ exactly the hard case that number is about. See
 
 A phone cannot hold a socket open in the background, so the device most in need
 of being told something is exactly the one that cannot be told. Telling a peer
-there is work for it — the Phase 4 change — only reaches a phone that happens
+there is work for it (the Phase 4 change) only reaches a phone that happens
 to be connected.
 
 A push notification is the way through, and on both mobile platforms it is the
@@ -671,7 +671,7 @@ exactly as before.
 **2026-09-24, Galaxy S23 (SM-S911B) against the laptop, same Wi-Fi.**
 
 Tree entries gained a private flag when vaults arrived, and the wire protocol
-went from `qurb/0` to `qurb/1` — a change that makes an older build refuse to
+went from `qurb/0` to `qurb/1`: a change that makes an older build refuse to
 connect rather than mishandle content sent to somebody's vault. That refusal is
 the correct behaviour and it means every device has to be rebuilt together, so
 it is worth recording that both halves were actually rebuilt and actually met.
@@ -679,7 +679,7 @@ it is worth recording that both halves were actually rebuilt and actually met.
 What was done: the engine cross-compiled and the debug APK rebuilt and
 installed; the laptop daemon restarted, because the running one had been
 started from a binary since replaced and was still speaking `qurb/0`. The two
-then synced — `after-restart.bin`, which the laptop had been holding as the
+then synced: `after-restart.bin`, which the laptop had been holding as the
 only copy, reached the phone, and both ended on 18 files.
 
 ```
@@ -695,7 +695,7 @@ Two things this did *not* establish, both worth saying:
 
 - **It was tested over the local network, not through the tailnet.** The
   phone's Tailscale was offline, so its configured rendezvous
-  (`wss://<host>.ts.net`) would not resolve — the failure was
+  (`wss://<host>.ts.net`) would not resolve: the failure was
   "No address associated with hostname", which is a DNS problem and not a
   protocol one. It was pointed at the laptop's LAN address for the test and put
   back afterwards.
@@ -726,8 +726,8 @@ overlay network.
 wasted.** In order:
 
 1. **The multicast lock.** Android drops multicast before it reaches an
-   application unless one is held. Necessary — it is held for the length of a
-   sync now — and on its own it changed nothing.
+   application unless one is held. Necessary (it is held for the length of a
+   sync now) and on its own it changed nothing.
 2. **The interface the group is joined on.** `if_addrs` was suspected of
    returning nothing under Android's NETLINK restrictions. It does not: the log
    above shows it enumerating `127.0.0.1` and `192.168.1.2` perfectly. The
@@ -740,7 +740,7 @@ wasted.** In order:
    now probes and waits up to a second before falling through to the rendezvous.
 
 The diagnosis only became possible once the engine could speak on Android at
-all — `tracing-subscriber` had been a dev-dependency, so every log line in the
+all: `tracing-subscriber` had been a dev-dependency, so every log line in the
 whole engine was being discarded. Two of the three guesses above were made
 blind, from the laptop's side, and cost far more than the fix did.
 
@@ -768,7 +768,7 @@ awake and running at the same time," which is what the engine reports when no
 peer could be reached.
 
 **What was tried.** Android drops multicast before it reaches an application
-unless it holds a `WifiManager.MulticastLock` — the radio would otherwise wake
+unless it holds a `WifiManager.MulticastLock`: the radio would otherwise wake
 for every packet on the network. That is exactly the shape of this failure, so
 the lock is now held for the length of a sync, released in a `finally`, with the
 `CHANGE_WIFI_MULTICAST_STATE` permission it needs. It did not change the result.
@@ -794,12 +794,12 @@ from the app's own Kotlin logging.
 A `tracing-android` layer is now installed on the first call into the engine,
 filtered by the same `RUST_LOG` the desktop uses. It has not yet produced a line
 on hardware, so either the layer is not reaching logcat or the sync under test
-did not run — which is itself the next thing to find out, and is a far better
+did not run, which is itself the next thing to find out, and is a far better
 place to be stuck than having no channel at all.
 
 **A third attempt, not yet tested on hardware.** Interface enumeration is now
 backed by asking the kernel directly which address it would send to this group
-from — a throwaway socket connected to the group address, no packet sent, its
+from: a throwaway socket connected to the group address, no packet sent, its
 local address read back. That needs no permission and no enumeration, which is
 exactly what a platform that restricts NETLINK requires. Whether it fixes the
 phone is unknown.
@@ -837,9 +837,9 @@ written when the folder held only the shared area, and each still assumed it.
 | 5 | a shared *tombstone* at the same name was taken for the file | a received file whose name had once been used and deleted could not be deleted |
 | 6 | a tombstone chose its row by name | another device's deletion of an unrelated shared file could tombstone the private one |
 | 7 | another device's deletion removed whatever was at the path on disk | **the received file was deleted** |
-| 8 | a shared file arriving at a received file's name was written over it | **the received file was destroyed** — its bytes lived nowhere else here |
+| 8 | a shared file arriving at a received file's name was written over it | **the received file was destroyed**: its bytes lived nowhere else here |
 | 9 | "stays private when edited" also applied to versions from other devices | a shared version could be re-filed as private on this device alone |
-| 10 | a send's check for "unchanged" compared against the sender's own file of the same name | **sending a file from the folder under its own name recorded nothing, and nothing was sent** — present since sending existed |
+| 10 | a send's check for "unchanged" compared against the sender's own file of the same name | **sending a file from the folder under its own name recorded nothing, and nothing was sent**: present since sending existed |
 
 Rows 7 and 8 lose a file outright, and row 10 is a send that silently does not happen. Row 8 is now refused, as a case collision
 is ([decision 0013](../decisions/0013-case-collisions.md)): the shared file waits,
@@ -848,10 +848,10 @@ or deleted.
 
 None of this was reachable by any earlier test, for a plain reason: no test
 ever gave a received file a name that also meant something in the shared
-area. It is the Phase 2 shape again — every component right on its own, wrong
+area. It is the Phase 2 shape again: every component right on its own, wrong
 where two of them meet.
 
-**Verified on Linux** — the laptop (CachyOS, kernel 7.2.6), debug build,
+**Verified on Linux**: the laptop (CachyOS, kernel 7.2.6), debug build,
 2026-09-25. Twelve tests in `crates/engine/tests/received_files.rs`, one in
 `crates/mobile-ffi/tests/lifecycle.rs` and one in
 `crates/storage/tests/vault_send.rs`. The tests for rows 2 to 5 and 10 failed
@@ -860,7 +860,7 @@ fix and watching the test fail. Rows 1 and 6 are covered by tests that were not
 separately seen failing. The whole workspace: 611 tests in 72 test binaries
 pass, and clippy is clean.
 
-**Verified on the phone** — 2026-09-25. Galaxy S23 (SM-S911B) running the debug
+**Verified on the phone**: 2026-09-25. Galaxy S23 (SM-S911B) running the debug
 APK, and the laptop running `qurb run ~/qurb` from a release build, on the same
 Wi-Fi with no rendezvous service anywhere: they found each other by local
 discovery. A 67-byte file, `private-check-0925.txt`, sent from the laptop with
@@ -874,8 +874,8 @@ discovery. A 67-byte file, `private-check-0925.txt`, sent from the laptop with
 | *Save a copy* | written to the phone's Downloads through the system picker; SHA-256 identical to the original |
 | deleting it sticks | back to 21 files after two syncs; the laptop did not deliver it again |
 
-The app has no way to delete a file — deliberately, see *The files, from the
-rest of the phone* — so the deletion was made by removing the file from the
+The app has no way to delete a file (deliberately, see *The files, from the
+rest of the phone*) so the deletion was made by removing the file from the
 app's folder with `adb shell run-as`. That exercises the scan noticing a
 deletion (row 1 above). The FFI's own `remove`, the path a future delete button
 would take, is verified on Linux only.
@@ -896,16 +896,16 @@ safe.
   [decision 0036](../decisions/0036-a-phone-keeps-its-own-files.md) has to solve
   it, and says so.
 - **Version vectors on received files are bookkeeping, not history.** An edit or
-  deletion of one is stamped from the shared area's history for that name —
-  usually none — rather than from the version that was delivered. Nothing
+  deletion of one is stamped from the shared area's history for that name
+  (usually none) rather than from the version that was delivered. Nothing
   compares them today. 0036's propagation to a holder will.
 - **`Store::restore_file` matches by name alone**, so undeleting would revive
   every tombstone at that path, whichever area it is in. It has no caller
   outside tests yet; it needs the same treatment before it gets one.
 - **`Store::evict` still looks only at the shared area.** Nothing asks it to
   free one chosen file yet. When *Free local space* is built, a received file
-  must be refused with the real reason — the sender's copy is one the phone may
-  not count on — not "not found".
+  must be refused with the real reason (the sender's copy is one the phone may
+  not count on) not "not found".
 - **Case collisions are checked against the shared area only.** A received
   `Report.pdf` beside a shared `report.pdf` is not reported. Both of this
   project's platforms are case-sensitive, so it is latent rather than live.
@@ -917,20 +917,20 @@ phone yet.**
 
 [Decision 0036](../decisions/0036-a-phone-keeps-its-own-files.md) makes a
 phone's own files private to it, with a device it chooses keeping a copy it
-never shows. That is what lets the phone free space and have a file back —
-the brief's acceptance steps 20 to 23 — without its photographs appearing on
+never shows. That is what lets the phone free space and have a file back
+(the brief's acceptance steps 20 to 23) without its photographs appearing on
 the desktop. The engine half is built: four areas on the wire (`qurb/2`), the
 holder keeping and dropping, and the phone freeing and fetching back. The
 decision records how it was verified and what tracing it found.
 
 Found on the way, and fixed separately because it was live in the shared area
 already: a file freed for the storage cap and fetched back stayed marked as
-freed — fetched again on every sync, and a later deletion of it never passed
+freed, fetched again on every sync, and a later deletion of it never passed
 on. See decision 0025.
 
 **What the phone still needed**, all of it step 6: the app setting its files
 private, a way to name the device that keeps them, and *Free local space* and
-*Download* on a file. Built the same day — see [the rebuilt app](#the-rebuilt-app).
+*Download* on a file. Built the same day: see [the rebuilt app](#the-rebuilt-app).
 Every device must be rebuilt for `qurb/2`, the phone included, or they will not
 connect.
 
@@ -939,7 +939,7 @@ connect.
 **2026-09-27, Galaxy S23 (SM-S911B), Android 16.** Asked which interface
 toolkit the rebuilt app should use, the project owner said only that it should
 be light and snappy. So the question became what makes it so, answered with
-measurements — see
+measurements: see
 [decision 0039](../decisions/0039-a-light-android-app.md), which has the table.
 
 The release build had never been made lean: R8 was off, and it carried an
@@ -962,7 +962,7 @@ reclaimed the copies older builds kept. The routine the desktop daemon runs is
 now one engine function, `housekeep`, and the phone runs it after every
 background sync and once per launch, after the list is drawn.
 
-On the S23 the first run freed about 19.5 MB — the chunk store went from
+On the S23 the first run freed about 19.5 MB: the chunk store went from
 100.7 MB to 81.2 MB. The index, copied off the phone with a debug build and
 read on the laptop, says what the rest is: all of it belongs to one deleted
 file, a 2.27 GB video of which the phone had fetched 81 MB, deleted on
@@ -981,27 +981,27 @@ the phone only when that is more than the files themselves.
 views as [decision 0039](../decisions/0039-a-light-android-app.md) chose: five
 tabs where there was one list and an overflow menu.
 
-- **Home** — which devices the phone knows, a card shown only while some files
+- **Home**, which devices the phone knows, a card shown only while some files
   exist on this phone and nowhere else (with the next step for each of three
   reasons that can be so), and what happened lately. *Connect a device* is the
   big button until one is connected, *Sync now* after.
-- **Vault** — every file with where its bytes are: a green dot for here and on
+- **Vault**: every file with where its bytes are: a green dot for here and on
   another device, amber for only here, grey for on another device and not here.
   Tapping offers what that allows, including *Free phone space* and
   *Download*. Read two hundred at a time.
-- **Devices** — who the phone knows, and which of them keep its files; choosing
+- **Devices**: who the phone knows, and which of them keep its files; choosing
   one is decision 0036's holder, with the consequences said before it is done.
   Files picked from anywhere on the phone can be sent to one device.
-- **Transfers** — sends waiting to be collected, each of which can be stopped,
+- **Transfers**: sends waiting to be collected, each of which can be stopped,
   and the history. The brief lists Activity as a sixth place; a tab bar holds
   five, and what happened and what is moving are one question asked at two
   times.
-- **Settings** — the phone's name, *Keep new files private* (on by default, per
+- **Settings**: the phone's name, *Keep new files private* (on by default, per
   decision 0036), space, background sync, the rendezvous service, the version.
 
 The screens are plain classes holding their views rather than Fragments, and
 none reads anything on the main thread. Installed over the existing app with
-the same key, so its data — 21 files, one paired desktop — was the phone's
+the same key, so its data (21 files, one paired desktop) was the phone's
 real data, and Home, Vault, Transfers and Settings were checked against it on
 screen, then all five again after fixes. Three faults found that way:
 
@@ -1011,12 +1011,12 @@ screen, then all five again after fixes. Three faults found that way:
 - The Devices screen said *"Not reached yet"* about the desktop the phone had
   been taking files from for days. Only the desktop daemon ever recorded when a
   device was last reached; the phone's sync never did. It does now, once the
-  other device has answered, and the end-to-end pairing test checks it — seen
+  other device has answered, and the end-to-end pairing test checks it: seen
   to fail first. On the phone this shows at the next sync that reaches the
   desktop, which was switched off.
 
 **Measured**, against the one-list app it replaced, back to back on the same
-phone — the table is in
+phone: the table is in
 [decision 0039](../decisions/0039-a-light-android-app.md#the-rebuilt-app-measured).
 Startup did not change (medians of 171 and 173 ms against 186 and 171 ms); five
 screens cost on average 0.2 MB of heap and 3.5 MB in total; the APK is 10.8 MB
@@ -1026,7 +1026,7 @@ against 10.7 MB.
 last record as *"no paired devices"* on a phone paired with a desktop. The
 desktop was switched off; waiting for it used the worker's whole twenty-second
 window, and a pass that ran out of time while waiting was reported as time
-running out, which the worker answers with a retry — exponential backoff, for a
+running out, which the worker answers with a retry: exponential backoff, for a
 device that will not answer until someone switches it on. Writing the test for
 that found that connecting to a rendezvous service that never answers had no
 bound at all. Both fixed and recorded in
@@ -1049,8 +1049,8 @@ test that showed it).
 
 It found three more things, all fixed or recorded:
 
-- **Each pass left its discovery running** — six sockets and three beacon
-  listeners a minute after the third pass — and announcing addresses that no
+- **Each pass left its discovery running** (six sockets and three beacon
+  listeners a minute after the third pass) and announcing addresses that no
   longer answered. Fixed in the connector.
 - **A pass ended before the desktop could collect from it.** A pass with
   something waiting now stays open up to ten seconds. Both are in
@@ -1058,13 +1058,13 @@ It found three more things, all fixed or recorded:
   with what was and was not measured.
 - **`big-from-laptop.bin` shows as only on this phone** while the laptop has
   it: the phone received it on 18 September, and recording where a received
-  file came from began on the 22nd. Nothing asks for it afterwards. Safe —
-  such a file is never offered for freeing — and recorded rather than fixed.
+  file came from began on the 22nd. Nothing asks for it afterwards. Safe
+  (such a file is never offered for freeing) and recorded rather than fixed.
 
 The share sheet's confirmation, seen when a test share failed for reasons of the
 test's own, had not taken the new design: square corners, the old background, a
 title the theme was meant to hide. It has now, and its message follows the
-privacy setting — it used to promise that "your other devices will get it" of a
+privacy setting: it used to promise that "your other devices will get it" of a
 file that, private by default, goes only to a device chosen to keep it.
 
 **The phrase is confirmed on the phone**, by the rules decision 0033 set for the
@@ -1074,8 +1074,8 @@ words shown again from the key rather than kept. The matching rule moved into
 emulator (a throwaway key): a wrong word kept the dialog open and said so; the
 app force-stopped half-way came back to the words, the same 24; the right
 words, one in capitals with a trailing space, went on to the app, and a
-relaunch went straight there. Screenshots of those dialogs come out blank —
-`FLAG_SECURE` — so the check was driven through the accessibility tree.
+relaunch went straight there. Screenshots of those dialogs come out blank
+(`FLAG_SECURE`) so the check was driven through the accessibility tree.
 
 **Not done here:** the storage question during setup (decision 0038, which is
 for desktops), the system picker asking the engine, sending straight to a
@@ -1093,9 +1093,9 @@ registry or Downloads.
 
 The provider used to walk the folder. It now lists what the engine knows:
 `browse` gives a directory's folders and files, `entry` one file, `search`
-matches anywhere in a path — one index query each. Checked end to end: a text
+matches anywhere in a path, one index query each. Checked end to end: a text
 file made on the laptop synced to the emulator, freed there, **was listed in the
-system Files app**, and **opening it downloaded it** — the viewer showed the
+system Files app**, and **opening it downloaded it**, the viewer showed the
 laptop's line and the copy back in the folder had the same SHA-256. Saving a
 copy into qurb's root through the system save dialog left a 63-byte file with
 the right contents, which the next sync indexed as the phone's own.
@@ -1108,14 +1108,14 @@ Getting there found four things:
   first attempt to open the freed file reached the laptop and came back empty.
   Moved into `plan_with`, which both use;
   `a_freed_shared_file_comes_back_when_asked_for` fails without it. The Vault's
-  *Download* had the same bug for shared files — the hardware check earlier
+  *Download* had the same bug for shared files: the hardware check earlier
   brought back a *private* file, which takes a different path.
 - **Saving into qurb from another app could only make an empty file.** The
   provider created the file and then refused to open it for anything but
   reading. Writing is now allowed onto a file on the phone; a created file gets
   a free name rather than the name of one it would overwrite.
 - **A folder name with `_` or `%` in it matched other folders**, in two index
-  queries — one behind the desktop's Files screen. Escaped, and tested with
+  queries: one behind the desktop's Files screen. Escaped, and tested with
   folders called `a_b` and `axb`.
 - **Paths from other processes were used as given.** A document ID with `..`
   in it now cannot leave the folder, nor one starting `.qurb` enter the store.
@@ -1133,12 +1133,12 @@ show a code.
 
 The code is drawn from a QR matrix the engine computes (`qr_code` in the FFI,
 the `qrcode` crate the command line already used, without its image features)
-into a bitmap in Kotlin — no image library in the app. The screen counts down
+into a bitmap in Kotlin: no image library in the app. The screen counts down
 to the code's expiry, keeps the display on, and closing it in any way stops the
 code working.
 
 Two faults in the FFI's pairing, fixed with it: `cancel` did nothing once
-`wait` had started — the host had already been taken out to wait on — so a
+`wait` had started (the host had already been taken out to wait on) so a
 phone would have listened until the code expired five minutes later; and the
 pairing host bound the sync port, which a background sync starting meanwhile
 would have found taken. It binds port zero now, as the desktop does. Tests:
@@ -1148,23 +1148,23 @@ phone**, and phone-to-phone needs a second Android device to verify.
 
 ## The Vault by folder, and the share sheet's choice
 
-**2026-09-28.** The Vault lists a folder at a time from the engine's index —
-the calls the system file picker already used, so the two cannot disagree —
+**2026-09-28.** The Vault lists a folder at a time from the engine's index
+(the calls the system file picker already used, so the two cannot disagree)
 with search across every folder, sorting by name, newest or largest, and Back
 going up a folder before it leaves the app. ⋯ saves everything in the folder
 to a folder on the phone in one go (Android's folder picker, then each file
 exported and copied), and opens Recently deleted. Deleting says the file is
 kept in Recently deleted for 30 days.
 
-Sharing into qurb from another app now asks where it should go — **Save to My
-Vault**, or **Send to** any paired device (brief §39) — and asks only when a
+Sharing into qurb from another app now asks where it should go (**Save to My
+Vault**, or **Send to** any paired device (brief §39)) and asks only when a
 device is paired to send to. Sent that way, a file goes to that device alone
 and is not added to the phone's Vault.
 
 **Renaming and moving** a file from the Vault, and making a folder, came with
 it. A file keeps its area when it moves: a phone files new things privately
 (decision 0036), and a shared file renamed there must not quietly become
-private — which to every other device would look like a deletion.
+private, which to every other device would look like a deletion.
 `Store::rename_file` writes the new path in the old one's area, and
 `crates/engine/tests/renaming.rs` checks both directions across two devices.
 A folder made on the phone is on disk only until something is put in it: the
@@ -1175,18 +1175,18 @@ Built and compiled; **not yet run on the phone**.
 ## Run on the emulator, and what that found
 
 **2026-09-28.** The new screens run on the `qurb-test` emulator, headless,
-upgraded in place over the previous build — so the index migrations from
+upgraded in place over the previous build, so the index migrations from
 schema 12 to 15 ran on a real phone's data. Walked through: the Vault by
 folder (new folder, into it and out with Back, moving a shared file into it
 and seeing it stay shared), the three ways to connect, the phone showing a
-code — its QR decoded with `zbarimg` to exactly the code printed under it —
+code (its QR decoded with `zbarimg` to exactly the code printed under it)
 Settings' new rows and Version, choosing which devices have a folder, and
 deleting a file then restoring it from Recently deleted.
 
 It found a fault the engine tests had not, because they all ran as desktops:
 **on a phone, a file qurb writes itself went into the phone's own vault.** A
 phone files new things privately (decision 0036), and the sharing rule, a
-restored file, and the results of settling a conflict are all new paths — so
+restored file, and the results of settling a conflict are all new paths, so
 a sharing rule made on a phone was invisible to every other device, and a
 shared file restored or kept there would have vanished from them. The store
 now writes those in the area already decided (`put_file_in`), retiring a row
@@ -1194,8 +1194,8 @@ left in the wrong area by the earlier build. Four engine tests with a phone
 fail without it. And two small things: a file's size was shown twice in the
 Vault, and the rule file was counted in "of files".
 
-Not on the emulator: anything needing a second device to answer — a conflict
-arriving, a removal, the share sheet sending — and the real phone.
+Not on the emulator: anything needing a second device to answer (a conflict
+arriving, a removal, the share sheet sending) and the real phone.
 
 ## Checked between the Galaxy S23 and the laptop
 
@@ -1214,7 +1214,7 @@ history were intact. Between the phone and the laptop, on home Wi-Fi:
 - **A real conflict**: the same file edited on both before either saw the
   other's change; both devices got both versions, the phone's Home showed the
   card, and **Keep both** chosen on the phone gave both devices the two files,
-  the renamed one still shared — the fault the emulator found, fixed, holding.
+  the renamed one still shared, the fault the emulator found, fixed, holding.
 - **Pushes**: three changes on the laptop woke the idle phone within two to
   three seconds, with the rendezvous service logging each push. Two earlier
   changes, made 30–40 s after a sync from the phone, woke nothing, and the
@@ -1234,7 +1234,7 @@ phone showing the code (the laptop is already paired).
 
 **2026-09-29** (commit `fad2d9b`). The app rebuilt to the owner's design
 direction ([design/direction.md](../design/direction.md)), the second half of
-[decision 0048](../decisions/0048-the-design-direction.md) — the desktop was
+[decision 0048](../decisions/0048-the-design-direction.md): the desktop was
 done the same day. Still the platform's own views, as
 [decision 0039](../decisions/0039-a-light-android-app.md) chose; no UI library
 was added.
@@ -1251,11 +1251,11 @@ finished.
 - **Home** answers whether the phone's Qurb space is okay, built from what a
   phone can know, since there is no daemon to ask: whether a sync is running,
   whether files made here have reached no other device, and when it last
-  reached one. That last is new — `last_reached_at`, written by the app's own
+  reached one. That last is new: `last_reached_at`, written by the app's own
   sync and by the background worker whenever a device answered. Its states
   are *Add your first device*, *Syncing…*, *N files are waiting to reach your
   devices* (saying which of the reasons it is), *Not synced yet* and
-  *Everything is synced*. One action — *Send to device*, or *Add a device* —
+  *Everything is synced*. One action (*Send to device*, or *Add a device*)
   a line of facts, *Sync now* and pull to sync; a file with two versions as
   attention, opening a sheet with both and the three choices; five recent
   events. A ring of light turns while syncing (§32) and the mark settles with
@@ -1263,14 +1263,14 @@ finished.
 - **Files** is the shared area a folder at a time, from the index: folders as
   tiles two to a row, breadcrumbs, search across every folder a quarter of a
   second after the last key, sorting, and each file's state in the direction's
-  words — *On this phone*, *Available elsewhere*, *Only copy here*,
+  words, *On this phone*, *Available elsewhere*, *Only copy here*,
   *Downloading*. Tapping a file opens a sheet with its details and what can be
   done. A folder made on the phone that holds nothing yet is listed from the
   disk, since the index knows only files. *Downloading* is remembered for the
   life of the app, not stored.
 - **Private Vault** is the same browser over the phone's own vault. Each lists
   only its own area, and *Add files* in each adds into it, whatever *Keep new
-  files private* says —
+  files private* says:
   [decision 0049](../decisions/0049-adding-a-file-puts-it-where-you-are-looking.md),
   with `browse_in`, `search_in` and `import_into` added to the FFI for it.
 - **Devices** shows this phone and each paired device as cards, with when each
@@ -1283,8 +1283,8 @@ finished.
   your devices*, or a paired device to send to; with no device paired it saves
   where the setting says and asks nothing.
 
-Underneath: one file of components, `Kit.kt` — rows, file states, groups,
-toggles, attention, empty states, sheets — the Android counterpart of the
+Underneath: one file of components, `Kit.kt` (rows, file states, groups,
+toggles, attention, empty states, sheets) the Android counterpart of the
 desktop's `core.js`. The colours, type and glass are resources, named by role;
 Inter is bundled in three weights with its licence in the app's assets; 53
 Lucide icons are generated as vector drawables by `scripts/android-icons.py`;
@@ -1296,9 +1296,9 @@ not blur. The night palette was removed: light only until dark is designed.
 `each_area_lists_its_own_and_adds_into_itself`, and on 2026-10-03 all 754
 tests passed on the laptop. The app was built: a debug APK on the laptop is
 dated 2026-09-29, a little under two hours before the commit. **Nothing records it running**
-— not on the S23, not on the emulator — and no screen of it has been looked
+(not on the S23, not on the emulator) and no screen of it has been looked
 at in this record. (It had run: the phone's own history, read on 2026-10-03,
-says so — [below](#the-designed-app-on-the-s23).) Nor had it been measured against decision 0039's table. (It was on
+says so, [below](#the-designed-app-on-the-s23).) Nor had it been measured against decision 0039's table. (It was on
 2026-10-08: the same startup and about 13 MB more memory, in
 [0039](../decisions/0039-a-light-android-app.md#the-designed-app-measured).)
 
@@ -1329,7 +1329,7 @@ from that day installed over the one on the phone, keeping its data and key;
 then every place walked by driving the phone from the laptop: Home, its
 syncing state and the Transfers bar, Files, a file's sheet, the ⋯ sheet,
 Private Vault, Recently deleted, Devices, a device's sheet, *Add a device*,
-Settings and its sheets, Activity, and the share sheet's question — opened
+Settings and its sheets, Activity, and the share sheet's question, opened
 and cancelled, nothing saved. Read from the accessibility tree and from
 screenshots; no file was deleted, freed or moved and no device removed.
 
@@ -1343,7 +1343,7 @@ section above was written. Which way the pairing went, and which screen sent,
 the history does not say.
 
 **Then nothing synced for four days.** From 2026-09-30 the laptop's desktop
-had been running a different, empty folder — the cause and the fix are in
+had been running a different, empty folder: the cause and the fix are in
 [phase 4](phase-4-product.md#a-folder-typed-without-a-slash). With it back on
 `~/qurb`, *Sync now* reached the laptop directly over the home Wi-Fi and Home
 said *Everything is synced … synced just now*.
@@ -1355,7 +1355,7 @@ Found, and fixed the same day:
   had reached it since. But a phone that merely upgraded would have said the
   same, because the note Home read is new with the design while the engine's
   own record is older. Home now takes the later of the two.
-- **Recently deleted cut off the days left** — "Expires in 2…", the part a
+- **Recently deleted cut off the days left**: "Expires in 2…", the part a
   person opens the screen for. Now "5 days ago on saqib · 25 days left", which
   fits two lines beside *Restore*. Seen on the phone.
 - **The share sheet's question was Material's own lilac dialog**, the one
@@ -1380,8 +1380,8 @@ morning, Background sync's record of its last run, and Activity.
 Two things true of the owner's files, recorded rather than changed:
 
 - **18 of the 21 files are on the phone only.** The laptop freed its copies on
-  2026-09-29 — its history says "local copy freed; another device keeps it"
-  for each — and the phone rightly marks them *Only copy here*. *Keep on this
+  2026-09-29 (its history says "local copy freed; another device keeps it"
+  for each) and the phone rightly marks them *Only copy here*. *Keep on this
   device* on the laptop brings any back.
 - **Nothing keeps a backup of the phone's Private Vault.** Removing the laptop
   ended that, as [decision 0041](../decisions/0041-removing-a-device.md) says
@@ -1412,7 +1412,7 @@ Three causes, each enough on its own:
   device to collect and never past its window, and Android freezes an app
   nobody is looking at; a connection already open lasted until then.
 
-Fixed on 2026-10-04 —
+Fixed on 2026-10-04:
 [decision 0050](../decisions/0050-large-files-from-a-phone.md): every device
 fetches eight chunks at once; a fetch that was cut off chunks what it has and
 carries on from the last chunk that matches; and a pass with 32 MiB or more
@@ -1422,7 +1422,7 @@ device collects, up to thirty minutes. *Sync now* hands such a pass to the
 worker.
 
 Tested: the network tests, now fetching eight at a time; a 12 MiB file cut
-two-thirds through arrives intact with only the rest crossing — and with
+two-thirds through arrives intact with only the rest crossing, and with
 resuming switched off, all 12,582,912 bytes cross and the test fails; a partial
 file that is not the content is not kept; and the rule for when a pass goes on
 answering, on its own.
@@ -1588,7 +1588,7 @@ connection that carries files now uses BBR:
 were built with it the same afternoon, and measured through them when the
 phone came back (next section).
 
-### Through the app, with BBR — and a phone cleared
+### Through the app, with BBR, and a phone cleared
 
 The S23 back on the home Wi-Fi at 17:49, its link at 468 Mbit/s, RSSI −48.
 Random test files of 512 MiB and 1 GiB were added with *Add files* in Files,
@@ -1861,7 +1861,7 @@ second later while it imported. At 00:52:38 the import finished, and Android
 refused the worker's foreground service from the background
 (`ForegroundServiceStartNotAllowedException`, "Background started FGS:
 Disallowed"). The ordinary pass went on, and the laptop dialled in and
-collected. At 00:53:03 the notification was up: *Tap to finish sending —
+collected. At 00:53:03 the notification was up: *Tap to finish sending,
 300.0 MB is waiting.* Tapping it opened the app. The laptop had finished
 three seconds after the notification went up: 314,572,800 bytes in 22.4 s,
 14.04 MB/s, 13 ms round trip, nothing lost. Android had not frozen the app
@@ -1873,7 +1873,7 @@ Recently deleted, and removed from its Downloads.
 **Block Store gives the key back.** Settings now reads the key from Block
 Store and compares it with this phone's own, rather than saying where it
 would be. On the S23: *On this phone, and in your Google backup, end-to-end
-encrypted with your screen lock — read back and checked just now.* That is
+encrypted with your screen lock, read back and checked just now.* That is
 the same call setup makes to offer *Use the key from your Google backup*. A
 phone set up again after a wipe has not been watched, since that means
 clearing this one.
@@ -1919,9 +1919,9 @@ never printed.
 
 | step | setup offered the backup | key |
 |---|---|---|
-| set up as new | — | `3a400287…`, read back from Block Store |
+| set up as new | none | `3a400287…`, read back from Block Store |
 | `pm clear`, the same as *Clear data* | no | Block Store returned nothing |
-| set up as new again | — | `12ab1d9d…`, read back |
+| set up as new again | none | `12ab1d9d…`, read back |
 | uninstalled, reinstalled | yes | *Use the key from your Google backup* gave `12ab1d9d…` |
 
 So Block Store carries the key across a reinstall, as decision 0052 says. It
@@ -1947,7 +1947,7 @@ With that build on the laptop, the phone's next sync came at 01:41, and
 qurb off screen, `qurb send` on the laptop sent the phone a small test file.
 The phone's background sync collected it. That waited on Android for some
 minutes, which held the job until the Wi-Fi counted as validated. At 10:49
-the notification read *saqib sent you a file — qurb-notice-test.txt*.
+the notification read *saqib sent you a file, qurb-notice-test.txt*.
 *Delivered* and *something failed* were not seen on the phone; they come
 from the same history entries the desktop's tests cover.
 
@@ -2153,7 +2153,7 @@ different keys, a change to the sealed format; see decision 0060, step 5.
 computer on the laptop: the real desktop application under GTK's Broadway
 backend, with a rendezvous service and relay of its own. Everything from the
 guest code to the file coming back ran, through the relay, because the
-emulator's address translation leaves the computer no way to dial it — as a
+emulator's address translation leaves the computer no way to dial it: as a
 carrier's NAT does to a phone on mobile data. The full account, and the six
 things it found and fixed (the relay not carrying meetings, the phone not
 saying whether the folder opened, the same ask shown twice, an undelivered
@@ -2169,8 +2169,8 @@ view hierarchy (*Open your folder on Study desktop*, *Confirm it's you*).
 
 **2026-10-11**, item 6 of the owner's list. Every screen of the app
 measured for where its parts sit, against its neighbours and against the
-other platform's: first its places, then every sheet and flow one by one --
-sending, conflicts, pairing, removing, setting up -- at the ordinary font
+other platform's: first its places, then every sheet and flow one by one
+(sending, conflicts, pairing, removing, setting up) at the ordinary font
 size, 1.3× and 2×, on the emulator and on the S23. Forty-five
 inconsistencies were found and fixed. Among them: section labels, breadcrumbs
 and row tiles off the page's left edge by 2 to 9 units, and every sheet's
@@ -2181,8 +2181,8 @@ device never paired here shown by its identifier; a key mismatch reported
 as *Network problem.*; setting up never brought into the design, with a
 back key that left it; and the app's own name, *qurb* in the launcher and
 *Qurb* on every screen. The rules the apps now follow, every finding with
-its measurement, and what is still not checked -- a conflict whose other
-version is not on the phone, the desktop under text scaling -- are in
+its measurement, and what is still not checked (a conflict whose other
+version is not on the phone, the desktop under text scaling) are in
 [design/consistency.md](../design/consistency.md).
 
 ## WhatsApp, kept by a computer: can it be done?
@@ -2192,7 +2192,7 @@ backups count against his Google account's free 15 GB. A one-screen spike
 ([experiments/whatsapp-access](../../experiments/whatsapp-access/README.md))
 answered the access half on the emulator and, read only, on the S23: an app
 with no storage permission can be given WhatsApp's folder in one tap, keep
-the grant, read every file in it, and -- on the emulator -- write into it
+the grant, read every file in it, and (on the emulator) write into it
 and make it where it does not exist yet. The S23's folder is 37,722 files,
 9.65 GB; listing it takes 54 s; WhatsApp now backs chats up as a weekly full
 backup of 498 MB and nightly increments of about 100 KB.
@@ -2304,9 +2304,9 @@ His answers to the questions they raised are with them.
    up again included; not yet seen on the S23.
 
    **With the S23, 2026-10-15** (0067's *Progress* has the detail): step 1
-   ran end to end -- asked in the laptop's window during a WhatsApp send,
+   ran end to end (asked in the laptop's window during a WhatsApp send,
    shown on the S23 in six seconds, approved behind its lock, open on the
-   laptop 21 seconds after the ask, listing both of the S23's folders --
+   laptop 21 seconds after the ask, listing both of the S23's folders)
    once two faults were fixed: an ask the background worker heard was never
    shown while the app was open, and a long pass did not look for asks for
    up to half an hour. Step 4 panicked on every open (a timeout built
@@ -2362,7 +2362,7 @@ His answers to the questions they raised are with them.
    backups still on their way, or *Nothing waiting*; then *Backups*,
    WhatsApp's and the phone's folders, each opening its own place. Checked on
    the emulator; not yet on the S23. **The desktop's, 2026-10-14**: the same
-   two buttons, *Waiting* in the same words, and *Backups* — WhatsApp and the
+   two buttons, *Waiting* in the same words, and *Backups*, WhatsApp and the
    folders kept here for each of your phones, with *Choose…* to change them.
    *Sync now* is new to the daemon: every device's backoff dropped, each told
    there is news (which wakes a phone asleep), and all synced. Checked in the
@@ -2380,11 +2380,11 @@ His answers to the questions they raised are with them.
    it said only what could be freed and the limit, while on the laptop nearly
    all of Qurb's 9.2 GB is the S23's backups, which it did not mention. Now:
    how much Qurb takes, against the limit or the disk, with what could go;
-   then *What is kept here*, four cards of one size -- *Your phones'
+   then *What is kept here*, four cards of one size (*Your phones'
    backups* (each phone's WhatsApp, folders and Private Vault, the S23 from
    before it was set up again on its own line), *Shared files* (how many,
    how much of them is here, how many freed), *Guests' folders* (sealed),
-   *Recently deleted* -- each with where to go for it; a line saying the
+   *Recently deleted*) each with where to go for it; a line saying the
    cards count files at their own size while the disk holds them compressed
    and shared once; the five largest files that can be freed, all of them
    freed by the button above; and the limit. Looked at in the fixtures page;
@@ -2408,9 +2408,9 @@ His answers to the questions they raised are with them.
     the S23 and the laptop.
 11. **All of it beautiful, symmetric and elegant.** Held to through each
     item rather than left to the end: every new screen was looked at as
-    built -- the desktop's in the fixtures page, wide and narrow; the phone's
+    built (the desktop's in the fixtures page, wide and narrow; the phone's
     on the emulator (Home, *Your folders*, the *Send* sheet, *Enter a code*
-    with its number pad, *Your folder on …* and its unreachable state) --
+    with its number pad, *Your folder on …* and its unreachable state))
     and what was found and fixed is in consistency rows 49 to 53. **With
     the S23 and the laptop's own window, 2026-10-15**: the phone's Home and
     the laptop's Home, Files and Storage looked at with real numbers; found
@@ -2444,9 +2444,9 @@ item added during the work.
    folder backups wait for Wi-Fi there by design; shared files and sends do
    not.
 2. **"The app feels really buggy and not smooth"**: optimised without losing
-   a feature. Measured on the S23 through the same journey each time -- five
+   a feature. Measured on the S23 through the same journey each time (five
    cold starts, then three rounds of the four tabs with scrolling, read from
-   `dumpsys gfxinfo` -- two runs each:
+   `dumpsys gfxinfo`) two runs each:
 
    | | the debug build the S23 ran | after |
    |---|---|---|
@@ -2485,7 +2485,7 @@ item added during the work.
    GPU clock follows the work, so they are not reported as a result. Earlier
    the same day, found with the S23: asks never shown while the app was open,
    asks unheard for a long pass, *Your folder on saqib* panicking on every
-   open, and Home's headline over a Waiting list -- all fixed (0067).
+   open, and Home's headline over a Waiting list, all fixed (0067).
 3. **A spare phone for further testing.** Not yet connected: its first
    pairing code was refused by `adb pair` ("protocol fault"), and a code
    works once; a fresh one is needed.
@@ -2496,7 +2496,7 @@ item added during the work.
    sheet starts with *Open*, fetched whole and checked into the app's cache
    under its content's hash and handed to the app for its type through a
    `FileProvider`; opened again, it is not fetched again; let go of a day
-   later. Large files were then found to struggle -- see item 6.
+   later. Large files were then found to struggle: see item 6.
 5. **"No space left on device"** opening a 1.6 GB episode from the owner's
    folder in the laptop's window: the file was being written into the
    memory-backed space files are opened into, 1.6 GB on the laptop, and
@@ -2515,14 +2515,14 @@ item added during the work.
 
 1. **"Find and fix every possible bug in the system."** Hunted by reading the
    code, by Android lint, by `cargo audit`, by the desktop smoke test, and by
-   running the whole Rust suite on Android 8.0 for the first time -- an
+   running the whole Rust suite on Android 8.0 for the first time: an
    emulator, API 26, no Google Play services, as 64-bit x86_64 and 32-bit x86.
    What was found, and what was done about each:
 
    | found | how | done |
    |---|---|---|
    | The rendezvous service kept poking a push token Firebase had forgotten, and a stale access token was refused with 401 after the laptop slept: it expired by `Instant`, which stops while Linux is suspended | reading `fcm.rs` against the laptop's log | forgotten on Firebase's "UNREGISTERED"; the access token by the wall clock, fetched afresh and the poke sent once more on a 401 |
-   | A phone with no rendezvous set used `10.0.2.2` -- the emulator's address for its host -- on real hardware; after *Clear data* the S23 did, for three days (2026-10-08) | reading `Qurb.kt` | none on a phone, which says so; the emulator keeps it; the address kept in Block Store beside the key and restored at setup |
+   | A phone with no rendezvous set used `10.0.2.2` (the emulator's address for its host) on real hardware; after *Clear data* the S23 did, for three days (2026-10-08) | reading `Qurb.kt` | none on a phone, which says so; the emulator keeps it; the address kept in Block Store beside the key and restored at setup |
    | The relay connection was opened once: a restart of the rendezvous service, or the daemon starting before it at login, left a device off the relay for the session, and told QUIC its socket had failed | reading `relay/socket.rs` | dialled again with backoff, every name registered again; tested by restarting a relay under it ([0068](../decisions/0068-the-rendezvous-service-relays.md), amended) |
    | A person's folder open on the computer stayed open through a night's sleep, the ten idle minutes counted on `Instant` | reading `openings.rs` | counted on both clocks; tested by moving the wall clock past a sleep |
    | A video address from that folder went on playing after the folder had locked itself, idle or asleep | reading `desktop/stream.rs` | checked as it plays, which counts as using it |
@@ -2552,7 +2552,7 @@ item added during the work.
    formal release."** Asked, answered on 2026-10-18: Windows built here and
    run under Wine, labelled as not run on Windows; version 0.1.0; built only,
    nothing published. **Built, 2026-10-18 and 19**, by `scripts/release.sh`
-   into `dist/0.1.0/` -- everything, and what has run on what, is in
+   into `dist/0.1.0/`: everything, and what has run on what, is in
    [releasing.md](../releasing.md); why it is shaped so,
    [decision 0070](../decisions/0070-the-first-release.md):
 
@@ -2588,13 +2588,13 @@ The owner's request: "test all the features on same wifi, mobile data and
 another hotspot", and suggest more. Run over USB, which let the phone be
 switched between networks from the laptop without losing it; the S23 on a debug
 build of the day's code (the same code as the `fast` build, readable with
-`run-as`), the laptop on the day's release build. The test harness -- write a
-file on either side, press *Sync now*, compare SHA-256 on both -- is in the
+`run-as`), the laptop on the day's release build. The test harness (write a
+file on either side, press *Sync now*, compare SHA-256 on both) is in the
 session's notes, not the repository.
 
 | | same Wi-Fi | mobile data (Airtel) | hotspot sharing home Wi-Fi | hotspot on mobile data (Jio) |
 |---|---|---|---|---|
-| suite: new, edited both ways, a file kept by the laptop, a larger file each way, deletion, Recently deleted, a conflict | 9 of 9 (50 MB) | 9 of 9 (2 MB) | 1 of 4 | 0 of 5 -- see below |
+| suite: new, edited both ways, a file kept by the laptop, a larger file each way, deletion, Recently deleted, a conflict | 9 of 9 (50 MB) | 9 of 9 (2 MB) | 1 of 4 | 0 of 5: see below |
 | path | direct, LAN | direct, the laptop's public address, punched | direct, then the relay | the relay |
 | a pass with nothing to do | 9 s | 10–16 s | ran out of time | ran out of time; after 0071, finished |
 | sends | both ways, byte for byte | | | |
@@ -2604,7 +2604,7 @@ session's notes, not the repository.
 Found, and fixed the same day unless said:
 
 - **A. The app froze while a large file arrived.** A sync holds the engine
-  for the whole transfer -- 64 s for 200 MB -- and Devices, Home and Files
+  for the whole transfer (64 s for 200 MB) and Devices, Home and Files
   waited behind it, up to 56 s. They now read through a connection of their
   own (`Qurb::look`); during the same download Devices drew in under 3 s.
   Changes still go through the engine one at a time.
@@ -2620,7 +2620,7 @@ Found, and fixed the same day unless said:
 - **D. With the phone itself offline, the app blamed the laptop.** Both
   messages now say the phone must be online too.
 - **E. Every pass fetched the laptop's whole file list**, 9.8 MB with nothing
-  changed -- the phone's own 37,959 backed-up files among it -- and on the
+  changed (the phone's own 37,959 backed-up files among it) and on the
   hotspot that never arrived within a pass: the likeliest reason for the
   owner's report of 2026-10-15. Now fetched only when it changed
   ([0071](../decisions/0071-a-file-list-fetched-only-when-it-changed.md)):
@@ -2638,7 +2638,7 @@ Found, and fixed the same day unless said:
   the name it was sent as. Now recorded under both.
 
 Also seen and not faults: the laptop's `own-files = private`, which files
-everything new on it into its own vault, kept by nobody -- the owner's to
+everything new on it into its own vault, kept by nobody, the owner's to
 decide; `7b543b5d`, which the phone heard on the home Wi-Fi, is the laptop's
 name at the rendezvous; background passes waiting below 15% battery, by design;
 the dial-back loop of the morning, which was the phone's old build. The
@@ -2795,12 +2795,12 @@ The rest of Files is built
 rest of 0073's engine work under it: *This phone* as Vault, Received and
 Deleted; a Shared card for each computer; and the phone's folder on each of
 its computers, searched whole by the computer, its Private Vault part changed
-from the phone -- *Add*, *Rename*, *Move to folder*, *Delete* -- the computer
+from the phone (*Add*, *Rename*, *Move to folder*, *Delete*) the computer
 following at once while both are connected. The phone no longer takes part in
 the shared area: on opening it lets go of each shared file a computer keeps,
-deleting it nowhere -- its bytes on the phone only once the computer, asked,
+deleting it nowhere (its bytes on the phone only once the computer, asked,
 has said it holds them, since the owner's laptop turned out to hold none of
-its shared files and the S23 might still record it as keeping them -- and
+its shared files and the S23 might still record it as keeping them) and
 moves one only it has into its Vault; the settings
 and actions that were the shared area's are gone. Checked on the emulator,
 set up from nothing, the command line built for Android as its computer.
@@ -2849,7 +2849,7 @@ the design afterwards. Built in `crates/desktop/ui-next/`, on the same engine
 commands, beside the window it will replace:
 
 - **Files**: one search over the shared folder and the Vault; This computer's
-  places as cards two to a row — Shared, Vault, Received, Recently deleted —
+  places as cards two to a row (Shared, Vault, Received, Recently deleted)
   and a folder for each person, opened with their phone's yes; folders as
   cards, files as rows with an icon for where their bytes are; a folder that
   is mostly pictures as a **gallery**; a file's sheet of round buttons
@@ -2862,7 +2862,7 @@ commands, beside the window it will replace:
 - **Through Home's circle**: a device's page (what it backs up here, what
   waits for it, its earlier self, details folded away, *Remove* with what that
   does said first); a phone's folders to back up, as switches; adding a
-  device — show a code, enter one, add a person — with the approval by
+  device (show a code, enter one, add a person) with the approval by
   number; the full Waiting list.
 - **Settings**, as the phone groups them, with Storage (the limit on a
   square-law track), the key (how it is kept, the 24 words, pairings),
@@ -2882,8 +2882,8 @@ drawn pictures.
 Looked at in the fixtures page in light and dark, then, at the owner's
 word, swapped in for the old window (`ui-next/` became `ui/`, the old one
 deleted, the fixtures and the icon script following it) and installed on
-the laptop. `scripts/desktop-smoke.sh` was rewritten for the new window —
-buttons found by their words, places opened with its own `go` — and all
+the laptop. `scripts/desktop-smoke.sh` was rewritten for the new window
+(buttons found by their words, places opened with its own `go`) and all
 three of its modes passed against the release build on 2026-10-31 with no
 command failing: set up, every place, paired by six digits, a send, the
 device removed, a passphrase set and unlocked; set up by joining; the
@@ -2904,7 +2904,7 @@ At the owner's "build all the still not built", the same evening:
   keepers, shown on those in the owner's folder
   ([0076](../decisions/0076-a-computer-backs-up-its-folders-and-holds-back-its-speed.md)).
   Proved over a real connection in `crates/peer/tests/holding.rs` and in the
-  real window by the smoke test; **not yet between two real computers** —
+  real window by the smoke test; **not yet between two real computers**:
   the owner has one.
 - **Search in people's folders**: every open one, the owner's phones'
   backups included (`find_people`, on the search the phone already had).
@@ -2915,8 +2915,8 @@ At the owner's "build all the still not built", the same evening:
   in the real window** in the smoke test; **a PDF has not been seen there**.
 
 `tests/wiring.rs` found what the fixtures could not: six commands the old
-window used and the new one does not — the guest-folder and phone-backup
-ones, which the new window reaches through a person's folder — now removed;
+window used and the new one does not (the guest-folder and phone-backup
+ones, which the new window reaches through a person's folder) now removed;
 and `not_elsewhere`, files only on this computer, which the agreed design
 put in Storage and which was missing there until then. 505 tests of the
 four crates touched pass, and all three smoke modes.
@@ -2930,7 +2930,7 @@ by name, so it was listed twice. A rename cannot be told from a second phone
 by anything the computer sees, so the person says it: on the older's page,
 *The same as another device*, or `qurb same <older> <newer>`; `--not`, or
 *Not the same* on the newer's page, takes it back. Kept as a local fact on
-the computer, and honoured by both copies of the rule — the window's list
+the computer, and honoured by both copies of the rule: the window's list
 (`view::set_up_again`) and what the phone may reach of its earlier self's
 backups (`Db::earlier_selves`). Applied to the owner's laptop the same day:
 `qurb status` lists SM-S911B as set up again as skib phone. Tested in
@@ -2961,7 +2961,7 @@ public and this is a big bug." The root is that a device set up again gets
 a new identity, and a name cannot tell it from a second device. Now each
 device tells the devices it trusts an install marker that outlives a
 reinstall (Android's `ANDROID_ID`, a computer's machine id, hashed), and one
-rule, `Db::became`, decides for every list — the computer's, a phone's
+rule, `Db::became`, decides for every list: the computer's, a phone's
 folder on it, and the phone's own, whose `peers()` now leaves out a device
 that became another; the phone app had no such rule at all before, so a
 computer set up again would have shown twice there
@@ -3000,7 +3000,7 @@ As he gave it, with his answers to what was asked:
 1. Files lists the devices: **this phone**, with two folders, *Vault* and
    *Received*; then each computer, with its own picture and whether it is
    online.
-2. A computer opens to the **exact reflection of its `~/qurb`** — with the
+2. A computer opens to the **exact reflection of its `~/qurb`**: with the
    person's own folder there named after their **phone**, and renamed when
    the phone is.
 3. So the laptop shows *Shared*, the folder of this phone's backups (its
@@ -3009,7 +3009,7 @@ As he gave it, with his answers to what was asked:
 4. The phone's backup folder lists everything backed up, as folders and
    files.
 5. Open, rename, copy, paste and delete, as the website promises: a tap
-   opens, a long press gives every option — in **Shared on a computer**, in
+   opens, a long press gives every option, in **Shared on a computer**, in
    **Vault and Received**, and in **the phone's own backup**.
 6. Previews on the phone, as on the desktop.
 7. Opening a computer is slow to connect: as quick as is realistically
@@ -3027,8 +3027,8 @@ As he gave it, with his answers to what was asked:
 
 **Item 7, first half, 2026-11-01.** Measured on the S23 and the laptop on
 one Wi-Fi: from tapping *Shared* to its list, **4.8 s**, of which 1.3 s was
-the phone building a whole connection from nothing — an endpoint, the
-relay, discovery — every time a computer was opened (`open_kept_folder`).
+the phone building a whole connection from nothing (an endpoint, the
+relay, discovery) every time a computer was opened (`open_kept_folder`).
 The phone now keeps each computer's connection while it lasts and reaches
 them when Files is shown (`prepare_computers`): **2.1 s** measured the same
 way, the measuring itself about 0.7 s of each. Next: the listing shown from
@@ -3054,7 +3054,7 @@ next layout and was not watched.
 the phone's backup folder now behave alike: the folder's name is the title,
 the way back names the page it returns to (the phone's or the computer's
 name at the top, the parent folder below), and nothing is written under the
-title — the backup folder's breadcrumb line and Shared's line naming the
+title, the backup folder's breadcrumb line and Shared's line naming the
 computer are gone. A computer's folder, opened again in the same run of the
 app, shows what it listed last time at once while the computer is asked
 (`LastListing`, memory only). Verified on the S23 for the backup folder and
@@ -3085,9 +3085,9 @@ answers `Request::Storage` (its disk, and its shared folder, each of the
 owner's phones' backups and Vault, other people's, Recently deleted) and
 `Request::EmptyDeleted`, to the owner's phones only. Its phone half, built
 2026-11-02: Settings → *Storage* (`StorageScreen.kt`), a card for each of the
-person's computers -- free of its disk, one bar coloured by what fills it, a
+person's computers (free of its disk, one bar coloured by what fills it, a
 row for each kind with its size, *Recently deleted* tapped to empty it after
-asking -- then this phone: what the app takes, and its cache cleared. **All of
+asking) then this phone: what the app takes, and its cache cleared. **All of
 items 6, 8, 11 and 12 await the test with the owner.**
 
 The rest: not built yet.
@@ -3104,7 +3104,7 @@ fixed together and tested together. As he answered, page by page:
   - D-2. A *Restore* section under *Backs up*: Everything, WhatsApp, each
     backed-up folder, and *Choose files* (the backup folder in select mode);
     progress in Home's *Waiting*. A file already on the phone is skipped.
-    From the computer whose page it is -- the one chosen on Home.
+    From the computer whose page it is: the one chosen on Home.
   - D-3. The *Private Vault* switch is for the Vault folder in Files only:
     switching it off must not stop WhatsApp or folder backups to that
     computer. Today both travel inside the vault to the devices keeping it,
@@ -3128,19 +3128,19 @@ fixed together and tested together. As he answered, page by page:
   Move, Copy, Share, Delete, More in a bar at the bottom; S2 copy and move by
   going to the folder and *Copy here* / *Move here*; S3 a tappable path; S4 a
   ⋮ with only Sort and View; S5 sort by name, date, size or type, either way,
-  and a list or a grid, remembered for each folder -- in a list folders and
+  and a list or a grid, remembered for each folder, in a list folders and
   files are both rows, in a grid both tiles; S6 Details; S7 Share to apps.
   S8, categories and recent files, left out.
 - **Received**: R-1 its empty state centred; R-2 a log by day; R-3 the
   sender's name on each; R-4 no Rename.
-- **Files, further** (all in the mockup): quick preview for every kind --
+- **Files, further** (all in the mockup): quick preview for every kind,
   photo, video and song played here as they stream, PDF by page, text and
   code with line numbers, CSV and spreadsheets as a table, Word and slides by
   page; Office files **converted to PDF by the laptop** (LibreOffice there;
   without it, the text, or *Open in an app*); anything else, *Open in an app*.
   A thumbnail for every kind in list and grid: a video's frame and length, a
   document's first page, code's first lines, a sheet's grid, a song's cover,
-  an app's icon, else its kind written on it -- made by the laptop for its
+  an app's icon, else its kind written on it, made by the laptop for its
   files, by the phone for the Vault's. *+* asks files or a folder; one
   progress card above the tab bar for adding, copying and moving between
   devices; new-folder, rename and delete sheets; the backup folder without
@@ -3158,8 +3158,8 @@ fixed together and tested together. As he answered, page by page:
   alone, without the dark tile behind them; SE-5 *Version* becomes *Update*.
   SE-6 a computer's storage measured against the space given to QurbSpace
   on it (its allowance, set on the desktop), not its whole disk.
-- **Activity**: a log by day, planned against memory. Big jobs -- a backup,
-  a sync, a restore -- one entry each, with count, size, start and end and
+- **Activity**: a log by day, planned against memory. Big jobs (a backup,
+  a sync, a restore) one entry each, with count, size, start and end and
   at most 20 names, not a row per file (a backup of 10,000 photos had filled
   the 10,000-row cap alone); what the person did one entry each; a failure
   repeating one entry with a count. Kept 90 days or 2,000 entries (about
@@ -3278,7 +3278,7 @@ redialled after 45 s of silence.
 On 2026-11-03: the phone's connections share one set of relay connections;
 Tor builds nothing ahead and sleeps when unused; and a computer's folder
 dials again by itself after a change of network, where the owner had had to
-leave and reopen it -- tried on the S23, 1.7 s to
+leave and reopen it, tried on the S23, 1.7 s to
 reconnect on mobile data, 0.4 s on Wi-Fi. APK 20.70 MB.
 
 **Not yet done:** Tor's throughput and its cost in data and battery on the
@@ -3319,7 +3319,7 @@ to be built.
   Waiting is option A, Home's rows and the Waiting page's sections; Recently
   deleted is the grid of P-RD1 to P-RD3, a deleted file's picture read from
   where its bytes are kept (`Qurb.deleted_file`); a document's tile is drawn
-  as a page with its type on a coloured tag; setup follows the stories --
+  as a page with its type on a coloured tag; setup follows the stories,
   Welcome scans the computer's code, *Start on this phone* the link; Welcome
   back, *Use my key* and *Start fresh*; the six digits boxed under the
   computer's face while it approves; then *Connected to saqib*, with Photos
@@ -3344,21 +3344,21 @@ computer and were not seen running.
 
 ## Deliberately left undone
 
-- **Keychain, on iOS.** The Android half is done and verified on a device —
+- **Keychain, on iOS.** The Android half is done and verified on a device:
   the app supplies the keystore across the FFI, which is
   [decision 0021](../decisions/0021-the-platform-supplies-the-keystore.md). The
   same seam is what iOS would use, and nothing has been written against it.
 - **Selective sync, automatically.** A phone cannot hold a desktop's library.
   A person can now say a folder is kept only remotely
-  ([decision 0045](../decisions/0045-a-folder-kept-remotely.md)) — listed,
-  fetched when opened — and free single files; what is not built is the phone
+  ([decision 0045](../decisions/0045-a-folder-kept-remotely.md)) (listed,
+  fetched when opened) and free single files; what is not built is the phone
   deciding for itself, by space or by age, and nothing yet warns before a
   large download on mobile data.
 - **Two phones that are both asleep.** Sync needs both devices awake and
   announced at the same moment, because a QUIC handshake's opening packets are
   the hole punch. Two desktops manage this by being on all the time. Two phones,
   each awake for a few seconds a day at the platform's discretion, may simply
-  never meet. Push narrows it — one phone can now wake the other — but only
+  never meet. Push narrows it (one phone can now wake the other) but only
   while the waking one is itself awake to ask. This is still the strongest
   argument for a storage-only replica in the picture, and the reason the
   roadmap plans iOS as a good viewer rather than a peer equal to a desktop.
@@ -3373,10 +3373,10 @@ computer and were not seen running.
   worse on a phone, which changes network several times a day: a connection that
   fell back to the relay while on cellular stays relayed after it reaches Wi-Fi.
   Since a per-pass connector is built fresh each time, the next pass does get a
-  fresh chance — so on mobile this is less severe than on the desktop daemon,
+  fresh chance, so on mobile this is less severe than on the desktop daemon,
   which holds one connector for hours.
 - **Comparing a conflict's two versions.** A conflict is attention on Home
-  that opens a sheet and settles it — keep this version, the other, or both
+  that opens a sheet and settles it: keep this version, the other, or both
   ([decision 0043](../decisions/0043-settling-a-conflict.md)); settling was
   verified on the S23, before the design. The sheet says who made each version,
   when and how big, and whether the other is on the phone yet. Since

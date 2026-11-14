@@ -22,7 +22,7 @@ pub enum Error {
     #[error("this key needs a passphrase to open")]
     PassphraseRequired,
 
-    #[error("unknown protection `{name}` — use file, keystore or passphrase")]
+    #[error("unknown protection `{name}`: use file, keystore or passphrase")]
     UnknownProtection { name: String },
 
     #[error("io error at {path}: {source}")]

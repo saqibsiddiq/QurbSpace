@@ -10,7 +10,7 @@
 //! ```
 //!
 //! Then open it and scan it. It should decode to the string below, which is a
-//! real pairing code's shape and an expired one's contents — it pairs with
+//! real pairing code's shape and an expired one's contents: it pairs with
 //! nothing.
 
 fn main() {

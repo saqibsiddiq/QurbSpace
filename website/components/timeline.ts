@@ -1,12 +1,12 @@
 // The little animation engine both scripted scenes use (the walkthrough and
 // the paper plane): every moving part has keyframes in one number, p, from 0
-// to 1, and draw() sets each part from them. What drives p — the scroll, or
-// the clock — is up to the scene.
+// to 1, and draw() sets each part from them. What drives p (the scroll, or
+// the clock) is up to the scene.
 
 export type Track = [number, number][]
 export type Keys = { o?: Track; x?: Track; y?: Track; r?: Track; s?: Track; h?: Track; w?: Track; dash?: Track; path?: Flight; tall?: Keys }
 
-// On a phone a scene is drawn tall — laptop above, phone below — instead of
+// On a phone a scene is drawn tall (laptop above, phone below) instead of
 // side by side. A Warp moves a point of the wide drawing to where it belongs
 // in the tall one; it is applied to what flies free between the devices
 // (elements marked data-free). A key's `tall` replaces any of its tracks

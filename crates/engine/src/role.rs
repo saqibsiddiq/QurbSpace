@@ -2,7 +2,7 @@
 //!
 //! Until now every device was the same thing: a watched directory backed by a
 //! store. That shape is wrong for the one device a peer-to-peer system most
-//! needs — something always on, holding content so the others do not all have
+//! needs: something always on, holding content so the others do not all have
 //! to be awake at once.
 //!
 //! See ../../docs/decisions/0006-availability-gap.md.
@@ -11,7 +11,7 @@
 ///
 /// Partial replication is not a refinement to add later. "Hold everything" is
 /// the expensive answer, and the useful one is usually "hold what I actually
-/// reach for" — recent photos, current work. Building the selector in from the
+/// reach for": recent photos, current work. Building the selector in from the
 /// start keeps that an option rather than a rewrite.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PinSet {
@@ -65,7 +65,7 @@ pub enum Role {
     /// Holds content, with no directory behind it.
     ///
     /// A replica exists so the others do not all have to be online at once. It
-    /// stores chunks, serves them, and originates nothing — it never edits,
+    /// stores chunks, serves them, and originates nothing: it never edits,
     /// never deletes, and never advances its own clock, so it can never win a
     /// conflict or propagate a change of its own.
     ///

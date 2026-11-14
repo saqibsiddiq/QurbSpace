@@ -2,7 +2,7 @@
 //!
 //! Raw events are far noisier than the changes a user made. Saving one file in
 //! a text editor typically produces a create, several writes, a rename, a
-//! delete, and a permissions change — for two paths. Copying a large file
+//! delete, and a permissions change: for two paths. Copying a large file
 //! produces a write event every few milliseconds for as long as the copy runs.
 //! Acting on each event would re-chunk the same file dozens of times and
 //! transfer half-written data.
@@ -14,7 +14,7 @@
 //!   `quiet`. This is what collapses an editor's burst into one change.
 //! - **Maximum hold.** A path is released regardless once `max_hold` has passed
 //!   since its first event. Without this, a file being appended to continuously
-//!   — a log, a long download, a video being recorded — would never settle and
+//! (a log, a long download, a video being recorded) would never settle and
 //!   would never sync at all.
 //!
 //! This type is deliberately free of I/O and of any clock of its own: the
@@ -91,7 +91,7 @@ impl Debouncer {
     ///
     /// The most recent event for a path wins: a file created and then deleted
     /// within the quiet period settles as a removal, and one deleted then
-    /// recreated — which is how many editors save — settles as an upsert.
+    /// recreated (which is how many editors save) settles as an upsert.
     pub fn observe(&mut self, path: impl Into<PathBuf>, kind: ChangeKind, now: Instant) {
         self.pending
             .entry(path.into())
@@ -104,8 +104,8 @@ impl Debouncer {
 
     /// Record that the platform dropped events.
     ///
-    /// Every backend has a bounded queue, and a large operation — unpacking an
-    /// archive, restoring a backup — can overrun it. When that happens the
+    /// Every backend has a bounded queue, and a large operation (unpacking an
+    /// archive, restoring a backup) can overrun it. When that happens the
     /// event stream is no longer a complete description of what changed, and
     /// the only correct response is a full rescan. Silently continuing would
     /// leave files permanently out of sync with no error anywhere.
@@ -148,7 +148,7 @@ impl Debouncer {
     /// finished after all.
     ///
     /// The watcher calls this when a file's size or modification time changed
-    /// between the last event and the moment it was about to be released — a
+    /// between the last event and the moment it was about to be released: a
     /// write whose event has not arrived yet. Chunking a file mid-write would
     /// store a torn copy, and worse, the memory-mapped read in the storage
     /// layer raises SIGBUS if the file is truncated underneath it.

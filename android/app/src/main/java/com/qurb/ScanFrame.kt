@@ -12,7 +12,7 @@ import androidx.core.content.ContextCompat
 
 /**
  * Over the camera, as the redesign's QR scanner draws it: everything dimmed
- * but a square, and four rounded corners round that square -- white while it
+ * but a square, and four rounded corners round that square, white while it
  * looks, green when a Qurb code is found, red for a code that is not one.
  *
  * The square is wherever [viewfinder] is laid out, so the layout places it

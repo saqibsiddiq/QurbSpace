@@ -3,8 +3,8 @@
 //!
 //! The owner's project is open source and earns him nothing, so nothing it
 //! needs may cost him money; and devices must not depend on his laptop. What
-//! the rendezvous service does for two devices -- "I want to reach you, here
-//! is where I am"; "yes, here is where I am"; both punch -- needs no server of
+//! the rendezvous service does for two devices ("I want to reach you, here
+//! is where I am"; "yes, here is where I am"; both punch) needs no server of
 //! its own, only somewhere both can post a few hundred bytes and hear the
 //! other within a second. Public Nostr relays are that: free, run by
 //! volunteers and companies, no account, hundreds of them.
@@ -22,8 +22,8 @@
 //! the first second: once the devices meet they talk directly, and the relays
 //! play no further part.
 //!
-//! Spoken to the rest of qurb as the rendezvous is -- [`FromClient`] in,
-//! [`FromServer`] out -- so the connector neither knows nor cares which
+//! Spoken to the rest of qurb as the rendezvous is ([`FromClient`] in,
+//! [`FromServer`] out) so the connector neither knows nor cares which
 //! carried a meeting. Waking a device that is not listening is not offered:
 //! decision 0082 has no instant wake-up.
 
@@ -220,7 +220,7 @@ pub(crate) async fn open(
     let (received, incoming) = mpsc::unbounded_channel::<FromServer>();
     let signer = Signer256::new();
     // As the service does on announce: who is here, which over relays is
-    // nobody known yet -- the devices learn each other by asking.
+    // nobody known yet, the devices learn each other by asking.
     let _ = received.send(FromServer::Peers { members: Vec::new() });
 
     let core = tokio::spawn(async move {
@@ -441,7 +441,7 @@ async fn stay_on(
 
 /// Datagrams to and from the other devices of a group, carried by public
 /// Nostr relays: the way a phone on Jio reached its laptop when nothing else
-/// did -- no IPv4 of its own, no IPv6 at home, Tor not getting through -- while
+/// did (no IPv4 of its own, no IPv6 at home, Tor not getting through) while
 /// its announcements through the relays always arrived.
 ///
 /// What a relay sees is what it sees of the meeting messages: an ephemeral

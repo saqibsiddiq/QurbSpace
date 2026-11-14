@@ -141,7 +141,7 @@ fn a_change_that_hides_from_the_check_is_caught_when_served() {
     assert_eq!(called_off.len(), 1, "never called off");
 }
 
-/// Touched -- its time moved, its bytes did not -- it still goes.
+/// Touched (its time moved, its bytes did not) it still goes.
 #[test]
 fn a_file_touched_but_unchanged_still_goes() {
     let mut fixture = Fixture::new();
@@ -194,7 +194,7 @@ fn a_vault_send_does_not_collide_with_the_senders_own_file_of_that_name() {
     let source = fixture.loose_file("outgoing-notes.txt", &theirs);
     fixture.store.send_to_vault("notes.txt", &source, &recipient()).unwrap();
 
-    // Two live rows, same path, different scopes -- and the sender's own file
+    // Two live rows, same path, different scopes, and the sender's own file
     // still reads as their own.
     assert_eq!(fixture.store.db().scope_of("notes.txt").unwrap(), None);
     assert_eq!(std::fs::read(fixture.root.join("notes.txt")).unwrap(), mine);
@@ -208,7 +208,7 @@ fn a_vault_send_does_not_collide_with_the_senders_own_file_of_that_name() {
 /// name, to one device. Same name *and* same bytes as the sender's own copy.
 ///
 /// The shortcut for an unchanged file compared against whatever row the path
-/// had, found the sender's own identical file, and reported "unchanged" --
+/// had, found the sender's own identical file, and reported "unchanged":
 /// so no vault entry was written and nothing was ever sent.
 #[test]
 fn sending_a_file_from_the_folder_under_its_own_name_is_recorded() {
@@ -275,7 +275,7 @@ fn releasing_never_takes_the_last_copy_of_a_shared_chunk() {
     std::fs::remove_file(fixture.root.join("mine.bin")).unwrap();
     fixture.store.db().set_materialised("mine.bin", false).unwrap();
 
-    // The recipient collected it -- into *their* vault, which this device
+    // The recipient collected it: into *their* vault, which this device
     // cannot read back. That frees the sender of holding it for them and
     // leaves the sender's own evicted file exactly as stranded as before.
     fixture.store.note_replica_in_vault(&blake3::hash(&payload), &recipient()).unwrap();
@@ -345,7 +345,7 @@ fn upgrading_remembers_every_delivery_already_taken() {
 }
 
 /// A sender sees chunks being asked for, not files. This is how it knows which
-/// send they belong to -- and that a chunk of its own shared file is not one.
+/// send they belong to, and that a chunk of its own shared file is not one.
 #[test]
 fn a_served_chunk_is_traced_to_the_send_it_belongs_to() {
     let mut fixture = Fixture::new();

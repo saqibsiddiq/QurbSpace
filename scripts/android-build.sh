@@ -34,7 +34,7 @@ NDK=$(find_ndk) || {
 No Android NDK found.
 
 Set ANDROID_NDK_HOME, or put one in ~/Android/. Download it from
-https://developer.android.com/ndk/downloads — it is about 2 GB.
+https://developer.android.com/ndk/downloads; it is about 2 GB.
 
 Without it, everything except qurb-storage still cross-compiles, because
 SQLite is the only C dependency in the tree.

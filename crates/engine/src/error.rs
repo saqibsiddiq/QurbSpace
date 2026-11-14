@@ -14,7 +14,7 @@ pub enum Error {
     ContentUnavailable { hash: String },
 
     /// A [`ContentSource`](crate::ContentSource) failed. The engine cannot know
-    /// why -- it may be a network, a disk, or another process -- so the detail
+    /// why (it may be a network, a disk, or another process) so the detail
     /// is carried as text.
     #[error("fetching content failed: {detail}")]
     Source { detail: String },
@@ -52,8 +52,8 @@ pub enum Error {
 /// A failure affecting one file.
 ///
 /// Kept separate from [`Error`] because these do not stop the engine. A file
-/// that cannot be read — no permission, deleted mid-read, a device that went
-/// away — must not prevent every other file from syncing. It is recorded,
+/// that cannot be read (no permission, deleted mid-read, a device that went
+/// away) must not prevent every other file from syncing. It is recorded,
 /// reported, and the run continues.
 #[derive(Debug)]
 pub struct FileFailure {

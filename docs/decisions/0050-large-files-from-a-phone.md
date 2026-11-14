@@ -1,6 +1,6 @@
-# 0050 — Large files from a phone: fetched in parallel, resumed, and served in the foreground
+# 0050: Large files from a phone: fetched in parallel, resumed, and served in the foreground
 
-**Status:** Accepted — built, and measured on the phone on 2026-10-05, where
+**Status:** Accepted, built, and measured on the phone on 2026-10-05, where
 fetching in parallel gained little (see *Checked, and not*); amends
 [0020](0020-sync-takes-a-deadline.md) (a pass may go on answering past its
 window, when its caller can) and the background worker's rule of no
@@ -27,7 +27,7 @@ Three causes, each enough on its own:
    opened fresh on every attempt, so the 2½ minutes' worth already on the
    laptop counted for nothing next time.
 3. **The phone stopped answering.** Its pass waits at most ten seconds for a
-   device to collect and never past its window — 25 seconds in the app, 20 in
+   device to collect and never past its window: 25 seconds in the app, 20 in
    the background. A connection already open is served past that while the
    process runs, which is how this one lasted 2½ minutes; but Android freezes
    an app nobody is looking at, and then the connection is lost.
@@ -41,15 +41,15 @@ chunks, 4 MiB at the average size and 16 MiB at the largest.
 **A fetch that was cut off carries on.** The partial file beside the
 destination (`.name.incoming`, which the scan ignores, or
 `holding-<hash>.incoming` for a vault kept for another device) is kept when a
-fetch fails. The next attempt chunks it — boundaries are chosen by content, so
-a prefix chunks the same as the file's start — keeps the run of chunks that
+fetch fails. The next attempt chunks it (boundaries are chosen by content, so
+a prefix chunks the same as the file's start) keeps the run of chunks that
 match the sender's manifest in order, cuts off the rest, and fetches only what
 follows. Nothing unchecked is kept: a partial file of another version of the
 same path keeps only the chunks they share. `PeerClient::resume_point`,
 used through `ContentSource::resume_into`, for the shared folder, a held vault
 and a delivery into Downloads alike.
 
-**A phone keeps answering while a device collects from it** — when its
+**A phone keeps answering while a device collects from it**: when its
 caller can let it. `sync_serving(window, up_to)` is `sync_within(window)`
 whose pass, once its own syncing is done, stays open while a chunk has gone in
 the last ten seconds, or in the last minute while what was being collected is
@@ -79,7 +79,7 @@ phone has to stay up for the whole transfer.
 **A permanent foreground service** would keep the phone answering for good,
 at the price [the worker's own comment](../../android/app/src/main/java/com/qurb/SyncWorker.kt)
 already declined: a notification forever. A temporary one is the arrangement
-Android offers for exactly this — something the person asked for, in
+Android offers for exactly this: something the person asked for, in
 progress, that must not be frozen.
 
 **Resuming by keeping fetched chunks in the chunk store** would have worked
@@ -105,7 +105,7 @@ there.
 
 - Tests: `a_file_cut_off_part_way_carries_on_where_it_stopped` (12 MiB, cut
   two-thirds through mid-chunk: the file arrives intact and only the rest
-  crosses — it fails with resuming disabled, when all 12,582,912 bytes cross),
+  crosses, it fails with resuming disabled, when all 12,582,912 bytes cross),
   `a_partial_file_that_is_not_the_content_is_not_kept`, and the existing
   network tests, which now fetch with eight in flight. The decision to keep
   answering is a function tested on its own (`keep_answering`).

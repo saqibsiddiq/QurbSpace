@@ -19,7 +19,7 @@ import uniffi.qurb_mobile.PeerInfo
 /**
  * One device's own page (docs/design/redesign.md, Devices draft 2 onwards):
  * its icon and name, whether it is on, Send, what it backs up of this phone,
- * and Remove. Who it is -- its identity and when it was paired -- is behind
+ * and Remove. Who it is (its identity and when it was paired) is behind
  * the info button, and in Settings.
  *
  * What it backs up is what the engine does today: keeping this phone's
@@ -152,7 +152,7 @@ class DeviceScreen(app: MainActivity, private var peer: PeerInfo) : Screen(app) 
         // What goes to it (the owner's review of 2026-11-02, D-3): the folders
         // and WhatsApp, always offered on one's own computer, each making it
         // keep the backups if it did not; and the Private Vault's own files,
-        // a switch of their own -- off, the backups go on.
+        // a switch of their own, off, the backups go on.
         if (!host) {
             kit.setting(card, R.drawable.ic_folder, "Folders",
                 if (state.keeps && state.folders > 0) state.folders.toString() else "") {
@@ -226,7 +226,7 @@ class DeviceScreen(app: MainActivity, private var peer: PeerInfo) : Screen(app) 
         }
     }
 
-    /** Restore: three options in one card (the owner, 2026-11-02) --
+    /** Restore: three options in one card (the owner, 2026-11-02),
      *  everything; Folders, a page of every folder backed up to pick from;
      *  and Files, the backup folder to pick files in. */
     private fun restore(page: LinearLayout) {

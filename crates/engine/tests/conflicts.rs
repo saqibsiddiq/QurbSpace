@@ -3,7 +3,7 @@
 //! Two devices change one file without either seeing the other; both versions
 //! are kept, one under a conflict name (decision 0005). These are about what
 //! happens next: every device recognising the conflict, and a choice made on
-//! one of them reaching the rest -- without losing the version not chosen.
+//! one of them reaching the rest, without losing the version not chosen.
 
 use qurb_engine::{Engine, StoreSource};
 use qurb_storage::{ChunkKey, Keep, Store};

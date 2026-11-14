@@ -1,5 +1,5 @@
 //! A file of a phone's own vault deleted while its bytes are not on the phone
-//! -- freed to the computer keeping them, or a backup read where it lay --
+//! (freed to the computer keeping them, or a backup read where it lay)
 //! kept in Recently deleted all the same, and put back from the chunks the
 //! deleted row still lists (decision 0073). Since 2026-11-14 nothing shows or
 //! restores it (decision 0089), and its chunks go with the ordinary retention

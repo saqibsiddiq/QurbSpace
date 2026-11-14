@@ -3,7 +3,7 @@
 Given by the project owner on 2026-09-28, recorded here word for word. It is
 the specification the design is checked against, section by section. Where it
 asks for something qurb does not do, or would make a claim that is not true,
-the resolution is in [brief.md](brief.md) §2 — this text is not edited to
+the resolution is in [brief.md](brief.md) §2: this text is not edited to
 match.
 
 ---
@@ -230,7 +230,7 @@ Create a consistent glass-material hierarchy.
 There should be three primary glass materials.
 
 ------------------------------------------------------------
-GLASS 01 — CLEAR
+GLASS 01: CLEAR
 ------------------------------------------------------------
 
 Use for:
@@ -258,7 +258,7 @@ border:
 very subtle translucent white
 
 ------------------------------------------------------------
-GLASS 02 — FROSTED
+GLASS 02: FROSTED
 ------------------------------------------------------------
 
 Use for:
@@ -284,7 +284,7 @@ soft and diffused
 This should feel like translucent material floating above the environment.
 
 ------------------------------------------------------------
-GLASS 03 — ELEVATED
+GLASS 03: ELEVATED
 ------------------------------------------------------------
 
 Use only for:

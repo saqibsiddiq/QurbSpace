@@ -2,8 +2,8 @@
 //!
 //! Android and iOS cannot call Rust directly. This crate is the seam: a small,
 //! deliberately boring surface that [UniFFI] turns into Kotlin and Swift. It
-//! contains no sync logic of its own — everything here delegates to
-//! [`qurb_engine`] — because logic that lives behind an FFI boundary is logic
+//! contains no sync logic of its own (everything here delegates to
+//! [`qurb_engine`]) because logic that lives behind an FFI boundary is logic
 //! that cannot be tested from the rest of the workspace.
 //!
 //! Four constraints shape it, and all four come from the platforms rather than
@@ -21,7 +21,7 @@
 //!
 //! **Time.** Both platforms grant background work a window and kill anything
 //! that outstays one, so the entry point that matters is not "sync" but
-//! [`Qurb::sync_within`] — sync for at most this long, and stop cleanly.
+//! [`Qurb::sync_within`]: sync for at most this long, and stop cleanly.
 //!
 //! **Errors.** A Rust error chain does not survive the crossing. Everything
 //! becomes [`QurbError`], flat and matchable, with the detail kept as text.
@@ -40,8 +40,8 @@ uniffi::setup_scaffolding!();
 /// What can go wrong, flattened for the crossing.
 ///
 /// Deliberately few. A Kotlin or Swift caller can only usefully distinguish
-/// cases it can *do* something about — ask for the passphrase again, tell the
-/// user the file is gone, retry later — so the enum is that list and nothing
+/// cases it can *do* something about (ask for the passphrase again, tell the
+/// user the file is gone, retry later) so the enum is that list and nothing
 /// more. `detail` carries the original message for logs and bug reports.
 #[derive(Debug, thiserror::Error, uniffi::Error)]
 pub enum QurbError {
@@ -76,7 +76,7 @@ pub enum QurbError {
     Network { detail: String },
 
     /// Freeing a file's local copy was refused, because no other device is
-    /// known to hold it: this is the only copy. Not a fault to report as one --
+    /// known to hold it: this is the only copy. Not a fault to report as one:
     /// the answer is to have a device keep it, or to send it somewhere.
     #[error("only copy: {detail}")]
     OnlyCopy { detail: String },
@@ -183,7 +183,7 @@ impl From<qurb_storage::db::FolderEntry> for FileEntry {
     }
 }
 
-/// A device removed: by this phone, or this phone by it -- which the phone
+/// A device removed: by this phone, or this phone by it, which the phone
 /// shows as "saqib removed this phone", with Add it again.
 #[derive(Debug, Clone, uniffi::Record)]
 pub struct RemovedDevice {
@@ -544,7 +544,7 @@ pub struct Outstanding {
 /// needs entitlements belonging to an app bundle. Both are a few lines on their
 /// own side and impossible on this one.
 ///
-/// What it keeps is 32 bytes — the master key itself, not something wrapping
+/// What it keeps is 32 bytes: the master key itself, not something wrapping
 /// it. Both platforms handle small secrets well, and a wrapping layer would
 /// mean running a key-derivation function at every launch for nothing, since
 /// the stored value is already full entropy.
@@ -607,7 +607,7 @@ impl qurb_keys::SecretStore for PlatformStore {
 /// Where the services are, and what this device calls itself.
 ///
 /// Every field has a working default, so an app that does not care can pass
-/// [`Settings::default`] — which is what [`Qurb::open`] does.
+/// [`Settings::default`], which is what [`Qurb::open`] does.
 #[derive(Debug, Clone, uniffi::Record)]
 pub struct Settings {
     /// Shown to other devices when pairing. Display only: nothing is ever
@@ -617,7 +617,7 @@ pub struct Settings {
     /// The rendezvous service that introduces two devices.
     #[uniffi(default = "ws://localhost:9000")]
     pub signal_url: String,
-    /// A relay to fall back to when no direct path exists, as `host:port` --
+    /// A relay to fall back to when no direct path exists, as `host:port`:
     /// a name or an address; a name is looked up on every pass. `None` means
     /// direct connections only, which on a cellular network often means none
     /// at all.
@@ -634,7 +634,7 @@ pub struct Settings {
     /// On by default, and necessary: a phone is behind carrier-grade NAT and
     /// has no idea what address a peer should dial. Turning it off restricts
     /// the device to peers on the same network, and is worth doing only when
-    /// contacting a third party is itself the objection — it reveals this
+    /// contacting a third party is itself the objection: it reveals this
     /// device's public IP to that server, as any VPN or video call does.
     #[uniffi(default = true)]
     pub discover: bool,
@@ -642,7 +642,7 @@ pub struct Settings {
     ///
     /// A push token, from the platform's own service. A phone cannot hold a
     /// socket open in the background, so without one it learns about a change
-    /// at its next scheduled look — a quarter of an hour, or longer while
+    /// at its next scheduled look: a quarter of an hour, or longer while
     /// dozing. With one, the rendezvous service can poke it the moment another
     /// device has something, and the poke carries nothing but "go and sync".
     ///
@@ -657,8 +657,8 @@ pub struct Settings {
     pub own_files_private: bool,
     /// Whether this phone takes part in the shared area. Off since decision
     /// 0073: the phone reaches a computer's shared folder live instead, and on
-    /// opening lets go of the shared files it held -- each one a computer
-    /// keeps dropped here, the rest moved into its own vault -- and files
+    /// opening lets go of the shared files it held (each one a computer
+    /// keeps dropped here, the rest moved into its own vault) and files
     /// everything added into its vault, whatever `own_files_private` says. On
     /// only where this engine stands in for a desktop, in its own tests.
     #[uniffi(default = false)]
@@ -705,7 +705,7 @@ pub struct Qurb {
     /// The relay to fall back to, if one is configured.
     relay: Option<String>,
     /// The port to listen on. Zero means any, which is right behind a router
-    /// that forwards nothing — and a phone is always behind one of those.
+    /// that forwards nothing, and a phone is always behind one of those.
     port: u16,
     /// Whether to ask a public STUN server for this device's public address.
     discover: bool,
@@ -732,8 +732,8 @@ pub struct Qurb {
     drive_code_handed: std::sync::atomic::AtomicBool,
     /// Each computer reached to browse it, kept while its connection lasts
     /// (the owner's list of 2026-11-01, item 7): opening a computer built
-    /// a whole connection from nothing every time -- an endpoint, the relay,
-    /// discovery -- 1.3 s of the 4.8 s it took on the S23 over Wi-Fi.
+    /// a whole connection from nothing every time (an endpoint, the relay,
+    /// discovery) 1.3 s of the 4.8 s it took on the S23 over Wi-Fi.
     kept_open: Mutex<std::collections::HashMap<String, Arc<KeptFolder>>>,
     /// Held while a computer is being reached ([`Qurb::open_kept_folder`]).
     opening: Mutex<std::collections::HashMap<String, Arc<Mutex<()>>>>,
@@ -878,7 +878,7 @@ pub struct Serving {
 
 /// Set up a new device, generating a key and its recovery phrase.
 ///
-/// Fails if a vault already exists — overwriting one would destroy the only
+/// Fails if a vault already exists: overwriting one would destroy the only
 /// copy of a key that may be protecting files this device cannot re-fetch.
 ///
 /// `root` is the directory to sync. On iOS this is inside the app group
@@ -892,7 +892,7 @@ pub fn create(root: String) -> Result<Setup, QurbError> {
 /// Set up a new device, keeping the key in the platform's keystore.
 ///
 /// The arrangement to prefer on a phone. Without a `keystore` the key sits in
-/// an owner-only file inside the app's private directory — which the kernel
+/// an owner-only file inside the app's private directory, which the kernel
 /// enforces, and which is worth nothing on a device with no passcode.
 ///
 /// Whatever is chosen here is recorded in the vault, so [`Qurb::open`] must be
@@ -903,7 +903,7 @@ pub fn create(root: String) -> Result<Setup, QurbError> {
 ///
 /// Called at the top of every entry point rather than by the platform, because
 /// an initialisation step the caller has to remember is one that will be
-/// forgotten — and was. Without a subscriber, every `tracing::` call in the
+/// forgotten, and was. Without a subscriber, every `tracing::` call in the
 /// engine is discarded, so on Android the entire engine was silent: a local
 /// discovery failure had to be diagnosed from the *other* device's logs,
 /// because the phone had no account of what it had done.
@@ -941,7 +941,7 @@ fn logging() {
 fn logging() {}
 
 /// How this phone tried to reach its computers, kept in a file of its own
-/// beside the store: some makers' Android -- an OPPO's, 2026-11-13 -- prunes
+/// beside the store: some makers' Android (an OPPO's, 2026-11-13) prunes
 /// an app's lines from the system log within minutes, and with them the only
 /// account of why a phone on mobile data did not connect. Read into the
 /// report (`Qurb::connection_log`). Half a megabyte, then started again with
@@ -1085,7 +1085,7 @@ pub fn restore_protected(
 
 /// Set up a device by joining one the person already has, from the code it
 /// shows: its key comes over the pairing connection, so nothing is typed but
-/// the code -- usually scanned (decision 0052). The two are paired as well.
+/// the code, usually scanned (decision 0052). The two are paired as well.
 ///
 /// The key is kept as [`restore_protected`] keeps it. Nothing is installed
 /// unless it arrives from the device whose fingerprint the code carries; a
@@ -1152,7 +1152,7 @@ pub fn join_new(
 
 /// What this phone shows while the device showing `code` approves it
 /// (decision 0053): the number, for the person to compare the two screens,
-/// and that device's name and kind, when it says them, for where to approve --
+/// and that device's name and kind, when it says them, for where to approve,
 /// *Approve on saqib* (decision 0074). The certificate the number is derived
 /// from is made here if this phone has none yet, and is the one joining then
 /// presents.
@@ -1277,7 +1277,7 @@ pub fn is_set_up(root: String) -> bool {
 /// compiles, the bindings generate without a warning, and the methods from
 /// every earlier block are simply absent from the Kotlin and Swift. Splitting
 /// this block once cost eight methods, and nothing noticed until an app tried
-/// to call them — the Rust tests reach these functions directly rather than
+/// to call them: the Rust tests reach these functions directly rather than
 /// through the generated bindings, so they all kept passing.
 #[uniffi::export]
 impl Qurb {
@@ -1286,7 +1286,7 @@ impl Qurb {
     /// `passphrase` is required only when the vault is passphrase-protected;
     /// pass `None` otherwise. On a phone the usual arrangement is no passphrase,
     /// because the app sandbox and the device's own lock screen already stand
-    /// between the file and anyone else — see the crate README.
+    /// between the file and anyone else: see the crate README.
     #[uniffi::constructor]
     pub fn open(root: String, passphrase: Option<String>) -> Result<Self, QurbError> {
         Self::open_with(root, passphrase, Settings::default())
@@ -1329,7 +1329,7 @@ impl Qurb {
 
     /// Bring the index up to date with what is on disk.
     ///
-    /// Needed at launch, and after the app has been suspended — neither
+    /// Needed at launch, and after the app has been suspended: neither
     /// platform delivers filesystem events to a process that was not running,
     /// so anything that changed in between produced no event at all.
     pub fn scan(&self) -> Result<ScanSummary, QurbError> {
@@ -1338,7 +1338,7 @@ impl Qurb {
 
     /// Every live file in the folder, sorted by path: the shared area, and
     /// whatever was sent to this phone. The second kind is private, and it is
-    /// still the phone's own file -- a list without it would hide exactly the
+    /// still the phone's own file: a list without it would hide exactly the
     /// thing somebody just sent.
     pub fn list(&self) -> Result<Vec<FileEntry>, QurbError> {
         self.page(0, u32::MAX)
@@ -1374,7 +1374,7 @@ impl Qurb {
 
     /// The same, in one area only: the shared area for `private == false`,
     /// this phone's Private Vault for `true`. What the Files screen and the
-    /// Private Vault each show -- a folder holding only private files is not
+    /// Private Vault each show: a folder holding only private files is not
     /// a folder of the shared area.
     pub fn browse_in(&self, dir: String, private: bool) -> Result<Directory, QurbError> {
         self.directory(dir, Some(private))
@@ -1406,7 +1406,7 @@ impl Qurb {
 
     /// Take a file from `source` into the synced tree at `path`, in the area
     /// given: the shared area, or this phone's Private Vault. What *Add files*
-    /// does in each, whatever *Keep new files private* says -- that setting is
+    /// does in each, whatever *Keep new files private* says: that setting is
     /// for files that arrive in the folder by other ways. A path already in
     /// qurb keeps its own area.
     pub fn import_into(&self, source: String, path: String, private: bool) -> Result<(), QurbError> {
@@ -1421,7 +1421,7 @@ impl Qurb {
     /// being handed the bytes.
     ///
     /// Returns the number of bytes written. The content is verified against its
-    /// hash, but only once the last byte has been written — so treat
+    /// hash, but only once the last byte has been written, so treat
     /// `destination` as incomplete until this returns, and do not move it into
     /// place before then.
     pub fn export(&self, path: String, destination: String) -> Result<u64, QurbError> {
@@ -1447,7 +1447,7 @@ impl Qurb {
     ///
     /// A `source` that is already at `path` inside the tree is indexed where it
     /// lies rather than copied. Copying it would be `std::fs::copy` from a file
-    /// onto itself, which truncates it to nothing — an easy call for an app to
+    /// onto itself, which truncates it to nothing: an easy call for an app to
     /// make, and a silent way to destroy the file it was trying to add.
     pub fn import_file(&self, source: String, path: String) -> Result<(), QurbError> {
         self.import(source, path, None)
@@ -1500,8 +1500,8 @@ impl Qurb {
     /// Delete a file of this phone's folder on a computer (decision 0073,
     /// item 3): this phone's own vault changes, and the computer follows at
     /// the next sync. Gone for good here at once, and there at its next
-    /// housekeeping (decision 0089). A backup -- of
-    /// WhatsApp, or of a folder -- only once its original is gone from this
+    /// housekeeping (decision 0089). A backup (of
+    /// WhatsApp, or of a folder) only once its original is gone from this
     /// phone: while it is here, the next backup would put the copy back, so
     /// that is refused with why. Never a file kept for this phone before it
     /// was set up again, which is another device's.
@@ -1570,8 +1570,8 @@ impl Qurb {
         Ok(self.identity()?.fingerprint().short())
     }
 
-    /// Devices this one trusts, each once: one set up again -- reinstalled,
-    /// its data cleared -- is left out for the device it became
+    /// Devices this one trusts, each once: one set up again (reinstalled,
+    /// its data cleared) is left out for the device it became
     /// (`Db::became`, the rule the computer's list uses too), so that no
     /// screen counts one device twice.
     pub fn peers(&self) -> Result<Vec<PeerInfo>, QurbError> {
@@ -1598,7 +1598,7 @@ impl Qurb {
     }
 
     /// What the platform keeps for this app across a reinstall or cleared
-    /// data -- Android's `ANDROID_ID` -- told to devices this phone trusts
+    /// data (Android's `ANDROID_ID`) told to devices this phone trusts
     /// one way only, as its install marker, so that set up again it is known
     /// for what it was (`Db::became`). Given by the app at every start.
     pub fn set_install_id(&self, id: String) -> Result<(), QurbError> {
@@ -1617,7 +1617,7 @@ impl Qurb {
     /// Offer an invitation, for another device to scan or be read.
     ///
     /// The returned code carries this device's *full* fingerprint and must
-    /// travel out of band — a QR code on the screen, or a code spoken aloud.
+    /// travel out of band: a QR code on the screen, or a code spoken aloud.
     /// Sending it over the network being paired would defeat the point: someone
     /// who can change what you see has already won.
     pub fn offer_pairing(&self) -> Result<Arc<Pairing>, QurbError> {
@@ -1626,7 +1626,7 @@ impl Qurb {
 
         // Inside the runtime even though `open` is not async: it binds a QUIC
         // endpoint, and quinn registers the socket with whatever reactor is
-        // current. Without this it fails with "no async runtime found" — which
+        // current. Without this it fails with "no async runtime found", which
         // names the cause but not the fix, since nothing in the call is awaited.
         let host = {
             let _guard = runtime.enter();
@@ -1677,7 +1677,7 @@ impl Qurb {
     ///
     /// The usual direction for a phone: the desktop shows a QR code and the
     /// phone's camera reads it, or the person types the six digits beside it
-    /// (decision 0066). A guest code -- another person's computer -- is a
+    /// (decision 0066). A guest code (another person's computer) is a
     /// visit, and the device it gives back is a host.
     pub fn join_pairing(&self, code: String) -> Result<PeerInfo, QurbError> {
         let identity = self.identity()?;
@@ -1714,7 +1714,7 @@ impl Qurb {
     /// window and kill it for outstaying one, so a sync that runs until it is
     /// finished is a sync that eventually gets the app's background privileges
     /// revoked. Running out of time is reported in
-    /// [`SyncOutcome::timed_out`] and is not an error — work already applied
+    /// [`SyncOutcome::timed_out`] and is not an error: work already applied
     /// stays applied, because each file is committed as it lands rather than at
     /// the end.
     ///
@@ -1794,8 +1794,8 @@ impl Qurb {
     ///
     /// A pass ends when its window does, and a device pulling a large file
     /// from the phone lost it there: an 800 MB video failed part-way, every
-    /// time. For a caller the platform will let run longer -- a foreground
-    /// worker -- this keeps the pass open while chunks are being asked for,
+    /// time. For a caller the platform will let run longer (a foreground
+    /// worker) this keeps the pass open while chunks are being asked for,
     /// and ends it [`COLLECTING`] after the last one went: [`PAUSED`] after,
     /// if what was being collected is not collected yet.
     pub fn sync_serving(&self, seconds: u32, serving_seconds: u32) -> Result<SyncOutcome, QurbError> {
@@ -1814,7 +1814,7 @@ impl Qurb {
     }
 
     /// The name of the file of this phone's own a collecting device is
-    /// taking now -- `VID_20261025_07.mp4` -- while one is: what the backup's
+    /// taking now (`VID_20261025_07.mp4`) while one is: what the backup's
     /// notice and Home name as going (the owner's list of 2026-10-25). None
     /// when nothing went in the last few seconds.
     pub fn serving_file(&self) -> Result<Option<String>, QurbError> {
@@ -1829,8 +1829,8 @@ impl Qurb {
     }
 
     /// Bytes a device reached would come and take from this one: sends not
-    /// yet collected, shared files only this device has, and -- when a device
-    /// keeps this one's files -- private ones not yet kept. What decides
+    /// yet collected, shared files only this device has, and (when a device
+    /// keeps this one's files) private ones not yet kept. What decides
     /// whether a sync is worth running as a long one.
     pub fn waiting_for_others_bytes(&self) -> Result<u64, QurbError> {
         Ok(self.for_others()?.1)
@@ -1838,7 +1838,7 @@ impl Qurb {
 
     /// What this device made and nothing else has taken yet.
     ///
-    /// Not "what failed to sync" — there is no queue of failed transfers,
+    /// Not "what failed to sync": there is no queue of failed transfers,
     /// because there is no transfer to fail until the other device is
     /// reachable. The file is simply here, indexed and waiting, and this says
     /// which files those are. A share made with every other device switched
@@ -1942,7 +1942,7 @@ impl Qurb {
     /// Free this phone's copy of a file another device keeps: *Free local
     /// space*. The file stays known, and `fetch` brings it back.
     ///
-    /// Refused with `OnlyCopy` when no other device is known to hold it --
+    /// Refused with `OnlyCopy` when no other device is known to hold it:
     /// the engine's check, not the app's, so no screen can skip it. Returns the
     /// bytes freed.
     pub fn free_local(&self, path: String) -> Result<u64, QurbError> {
@@ -1965,7 +1965,7 @@ impl Qurb {
 
     /// Ask for a freed file back. Acted on at the next sync with a device that
     /// has it, so asking while offline works. Returns whether it was freed at
-    /// all -- asking for a file already here is not an error, and changes
+    /// all: asking for a file already here is not an error, and changes
     /// nothing.
     pub fn fetch(&self, path: String) -> Result<bool, QurbError> {
         Ok(self.engine()?.store().db().want(&qurb_watcher::normalize(&path))?)
@@ -2009,8 +2009,8 @@ impl Qurb {
     /// browse it, within `seconds` (decision 0067, step 4). The computer has
     /// to be on and running Qurb.
     pub fn open_kept_folder(&self, fingerprint: String, seconds: u32) -> Result<Arc<KeptFolder>, QurbError> {
-        // One dial per computer at a time: the screens that ask together --
-        // a folder and its thumbnails -- share the first's connection. On the
+        // One dial per computer at a time: the screens that ask together
+        // (a folder and its thumbnails) share the first's connection. On the
         // S23 on 2026-11-02 four asked at once and each dialled through Tor.
         let opening = Arc::clone(self.opening.lock().expect("opening poisoned").entry(fingerprint.clone()).or_default());
         let _opening = opening.lock().expect("opening poisoned");
@@ -2027,7 +2027,7 @@ impl Qurb {
     /// Reach each of this person's computers now, so that opening one finds
     /// it connected (item 7): asked when the app shows Files. Those that do
     /// not answer within `seconds` are left; opening one tries again.
-    /// The phone moved between networks -- Wi-Fi to mobile data, one Wi-Fi to
+    /// The phone moved between networks: Wi-Fi to mobile data, one Wi-Fi to
     /// another: every computer's kept connection is let go, since it still
     /// describes the phone where it was, and a computer asked to punch to
     /// those addresses reaches nothing. On the S23 on 2026-11-02 that cost a
@@ -2375,8 +2375,8 @@ impl Qurb {
         self.send_from(&source, name, to, false)
     }
 
-    /// Send a copy the app made of something lent only briefly -- a file from
-    /// Android's share sheet -- deleting the copy once the other device has
+    /// Send a copy the app made of something lent only briefly (a file from
+    /// Android's share sheet) deleting the copy once the other device has
     /// it (decision 0060).
     pub fn send_copy(&self, copy: String, name: String, to: String) -> Result<u64, QurbError> {
         self.send_from(&copy, name, to, true)
@@ -2455,8 +2455,8 @@ impl Qurb {
     /// once each, to describe them, and kept in this phone's vault where they
     /// lie; nothing is copied. A photo, video or document gone from WhatsApp
     /// stays, kept by the computer, when the computer has it; a chat backup
-    /// WhatsApp replaced goes. WhatsApp's caches -- its folders whose names
-    /// start with a dot -- are left out. A run that runs out of time says how
+    /// WhatsApp replaced goes. WhatsApp's caches (its folders whose names
+    /// start with a dot) are left out. A run that runs out of time says how
     /// many it left, and the next carries on.
     pub fn back_up_whatsapp(&self, files: Vec<OutsideFile>, seconds: u32) -> Result<BackupRun, QurbError> {
         let prefix = whatsapp_prefix();
@@ -2554,7 +2554,7 @@ impl Qurb {
         let db = engine.store().db();
         let folders = db.own_folders()?;
         let listed: std::collections::HashSet<&str> = folders.iter().map(|f| f.path.as_str()).collect();
-        // A choice of a folder no longer listed -- gone, or emptied -- would
+        // A choice of a folder no longer listed (gone, or emptied) would
         // mark the folder around it as partly chosen for good.
         let choices: Vec<_> = usable_choices(db)?.into_iter().filter(|c| listed.contains(c.folder.as_str())).collect();
         // What is directly in each folder, and of that what is backed up;
@@ -2637,7 +2637,7 @@ impl Qurb {
         Ok(())
     }
 
-    /// Give this phone a picture -- a small JPEG, at most 256 KiB -- or take
+    /// Give this phone a picture (a small JPEG, at most 256 KiB) or take
     /// it away with none.
     pub fn set_own_picture(&self, picture: Option<Vec<u8>>) -> Result<(), QurbError> {
         if picture.as_ref().is_some_and(|p| p.len() > qurb_peer::wire::MAX_PICTURE) {
@@ -2653,7 +2653,7 @@ impl Qurb {
         Ok(self.look()?.store().db().peer_profile(&device)?.and_then(|p| p.picture))
     }
 
-    /// The files of both backups -- WhatsApp's and the chosen folders' -- the
+    /// The files of both backups (WhatsApp's and the chosen folders') the
     /// computer keeping them does not have yet: the first `limit`, how many,
     /// and their bytes (the owner's list of 2026-10-25: Home said *Folders,
     /// 18 files* and nothing of what they were).
@@ -2679,8 +2679,8 @@ impl Qurb {
         Ok(BackupWaiting { files, files_left, bytes_left })
     }
 
-    /// Whether a file this phone keeps outside its folder -- WhatsApp's, or
-    /// one of the folders chosen for backing up -- was found changed when a
+    /// Whether a file this phone keeps outside its folder (WhatsApp's, or
+    /// one of the folders chosen for backing up) was found changed when a
     /// computer asked for it, and has not been read again: the app then
     /// lists its folders now rather than at night (`Store::outsides_changed`).
     pub fn kept_files_changed(&self) -> Result<bool, QurbError> {
@@ -2705,8 +2705,8 @@ impl Qurb {
         }
     }
 
-    /// Whether this phone is on a network that does not count what it carries
-    /// -- Wi-Fi, usually. Only then is the WhatsApp backup offered to the
+    /// Whether this phone is on a network that does not count what it carries:
+    /// Wi-Fi, usually. Only then is the WhatsApp backup offered to the
     /// computer keeping it, which is 9.65 GB the first time on the S23
     /// (decision 0062). The app says so before each sync.
     pub fn set_unmetered(&self, unmetered: bool) -> Result<(), QurbError> {
@@ -2730,7 +2730,7 @@ impl Qurb {
     /// Tell each of this person's computers, and each computer this phone
     /// visits, that this phone removed it, within `seconds` each: before the
     /// phone is reset (decision 0086). Best effort: one that cannot be
-    /// reached hears at its next request -- of a phone that is no longer
+    /// reached hears at its next request, of a phone that is no longer
     /// there, so it sees it away instead.
     pub fn leave(&self, seconds: u32) {
         let Ok(peers) = self.peers() else { return };
@@ -2816,8 +2816,8 @@ fn happenings(
                 path: r.path,
                 size: r.size,
                 // A device since removed is named as it was when it was here.
-                // One never paired here -- where a file began, reaching this
-                // phone through another -- has no name, and is left unnamed
+                // One never paired here (where a file began, reaching this
+                // phone through another) has no name, and is left unnamed
                 // rather than shown as a code: the app says "another device".
                 device: r.device.and_then(|id| names.get(&id).cloned()),
                 detail: r.detail,
@@ -2927,7 +2927,7 @@ impl Qurb {
     ///
     /// The engine is held only to plan and to record: files are read with
     /// it let go. Read under it, a first backup of 9.8 GB on a new OPPO held
-    /// it up to 13 s at a time, and a screen waited 64 s behind it -- the app
+    /// it up to 13 s at a time, and a screen waited 64 s behind it: the app
     /// "really struggling" (the owner, 2026-11-13). A file that cannot be
     /// read is left for the next run: mostly one WhatsApp moved or deleted
     /// in the minute it took to list the folder.
@@ -3002,7 +3002,7 @@ impl Qurb {
     ///
     /// A `source` that is already at `path` inside the tree is indexed where
     /// it lies rather than copied. Copying it would be `std::fs::copy` from a
-    /// file onto itself, which truncates it to nothing — an easy call for an
+    /// file onto itself, which truncates it to nothing: an easy call for an
     /// app to make, and a silent way to destroy the file it was trying to add.
     fn import(&self, source: String, path: String, private: Option<bool>) -> Result<(), QurbError> {
         // Nothing goes into a shared area this phone takes no part in.
@@ -3136,7 +3136,7 @@ impl Qurb {
 
 
 /// Not exported. `#[uniffi::export]` takes every method in the block it is
-/// applied to, and a `MutexGuard` cannot cross an FFI boundary — nor should it.
+/// applied to, and a `MutexGuard` cannot cross an FFI boundary, nor should it.
 impl Qurb {
     /// Visit another person's computer with a guest invite (decision 0060).
     fn visit_with(
@@ -3175,7 +3175,7 @@ impl Qurb {
     }
 
     /// The paired device with this fingerprint, as `peers` gives it: hex, in
-    /// full. Only paired devices -- a fingerprint nobody paired with names
+    /// full. Only paired devices: a fingerprint nobody paired with names
     /// nothing here.
     fn device_of(&self, fingerprint: &str) -> Result<qurb_sync::DeviceId, QurbError> {
         let unknown = || QurbError::NotFound { detail: format!("no paired device {fingerprint}") };
@@ -3196,7 +3196,7 @@ impl Qurb {
     /// This device's network identity, loaded or created on first use.
     /// This phone's permanent identity (decision 0079): made from the
     /// person's key and what Android keeps for this install, so the same
-    /// every time this phone is set up with this person's key -- after a
+    /// every time this phone is set up with this person's key, after a
     /// reinstall, or its data cleared. None until the app has said what
     /// Android keeps (`set_install_id`).
     fn permanent_identity(&self, db: &qurb_storage::db::Db) -> Option<qurb_peer::Identity> {
@@ -3209,7 +3209,7 @@ impl Qurb {
     /// permanent identity, if it is not that already and the computer has not
     /// taken it; then take it, once every computer of this person's seen in
     /// the last month has (decision 0079). A phone set up again is told
-    /// which device it was, and is that device again -- if nothing has been
+    /// which device it was, and is that device again: if nothing has been
     /// made here yet. Briefly, and never a reason for the sync to fail.
     fn become_permanent(
         &self,
@@ -3365,7 +3365,7 @@ impl Qurb {
         let runtime = self.runtime()?;
         // Looked up on every pass: a phone moves between networks, and a
         // relay on a server of one's own is known by its name. A lookup that
-        // fails costs this pass its fallback, not the pass -- a device on the
+        // fails costs this pass its fallback, not the pass: a device on the
         // same network, or with a path that punches, is still reached. None
         // set is the relay beside the rendezvous service, at `/relay`: the
         // way round from a hotspot or a carrier, with nothing to configure.
@@ -3377,7 +3377,7 @@ impl Qurb {
         //
         // Inside the deadline like everything else. Starting means finding a
         // public address and connecting to the rendezvous service, each bounded
-        // on its own, but together they can outlast a short window -- and a
+        // on its own, but together they can outlast a short window, and a
         // window that closes before the phone could reach anybody is every
         // device unreachable, not a pass with work left over. See
         // `SyncOutcome::timed_out` for why the difference matters.
@@ -3438,7 +3438,7 @@ impl Qurb {
 
         // Answer as well as ask, for the length of this pass.
         //
-        // A sync is two devices each dialling the other -- a QUIC handshake's
+        // A sync is two devices each dialling the other: a QUIC handshake's
         // opening packets *are* the hole punch, so a device that only listens
         // has punched nothing and a device that only dials has nobody to reach.
         // Without this the two sides call each other simultaneously and both
@@ -3479,8 +3479,8 @@ impl Qurb {
 
         // Every device at once, and each synced as soon as it answers.
         //
-        // Reaching is mostly waiting -- for an introduction, for a hole punch,
-        // for a switched-off device to fail to answer -- and waiting for them
+        // Reaching is mostly waiting (for an introduction, for a hole punch,
+        // for a switched-off device to fail to answer) and waiting for them
         // one after another let the first absent device use the whole window:
         // with two paired and the first off, the second was never tried, pass
         // after pass, since the order never changes. Reaching is spawned, one
@@ -3507,7 +3507,7 @@ impl Qurb {
                 Ok((peer, Ok(Ok(client)))) => (peer, client),
                 // A device that has not answered by the end of the window did
                 // not answer: unreachable, not "ran out of time". The
-                // difference is what the platform does next -- see
+                // difference is what the platform does next: see
                 // `SyncOutcome::timed_out` and decision 0020.
                 Ok((_, Ok(Err(e)))) => {
                     tracing::debug!(error = %e, "peer unreachable");
@@ -3577,14 +3577,14 @@ impl Qurb {
         // when it is on (2026-11-13). Its own time, not what is left of the
         // window: reaching a computer that cannot be reached now waits out
         // Tor and the Nostr relays, and left nothing, so a send from a phone
-        // on mobile data never went this way -- the case it is for.
+        // on mobile data never went this way, the case it is for.
         let reached: Vec<qurb_peer::Fingerprint> = askers.iter().map(|(peer, _)| *peer).collect();
         self.use_mailbox(&runtime, &reached, MAILBOX_FOR);
 
         // Stay a moment for the others.
         //
         // Every device pulls what it wants, so what this phone has for another
-        // device moves only when that device dials back and asks -- which it
+        // device moves only when that device dials back and asks, which it
         // does the moment it hears the phone, but not before the phone has
         // finished its own pulling. On a fast local network that finish comes
         // in under a second, and the pass used to end there: the phone had
@@ -3596,8 +3596,8 @@ impl Qurb {
         // says so and keeps answering, until it has been collected or
         // `LINGER` has passed, and never beyond the window.
         //
-        // And while a device is actually collecting -- a chunk went within
-        // `COLLECTING` -- it keeps answering past the window, up to `serving`.
+        // And while a device is actually collecting (a chunk went within
+        // `COLLECTING`) it keeps answering past the window, up to `serving`.
         // That is no longer than the window unless the caller asked through
         // `sync_serving`, which it does only where the platform will let it
         // run on.
@@ -3670,8 +3670,8 @@ impl Qurb {
     }
 
     /// Whether a device reached this pass would come and take something:
-    /// a send it has not collected, a shared file only this device has, or --
-    /// when a device keeps this phone's files -- one of those not yet kept.
+    /// a send it has not collected, a shared file only this device has, or
+    /// (when a device keeps this phone's files) one of those not yet kept.
     ///
     /// A private file with nobody chosen to keep it is waiting for no one, and
     /// staying open for it would spend every pass's spare seconds for nothing.
@@ -3814,7 +3814,7 @@ impl Qurb {
 
     /// Sync against a peer already reached. `Ok(None)` means the time ran out.
     /// The device at `peer` removed this one, and said so: forgotten here,
-    /// and remembered as having done it -- what the phone shows ("removed
+    /// and remembered as having done it, what the phone shows ("removed
     /// this phone", with Add it again) until the two are paired again.
     fn removed_by(&self, peer: &qurb_peer::Fingerprint) -> Result<(), QurbError> {
         let engine = self.engine()?;
@@ -3838,7 +3838,7 @@ impl Qurb {
         // The timeouts are constructed *inside* the async blocks. `timeout`
         // needs a reactor when it is built, not when it is awaited, so building
         // one outside `block_on` panics with a message about being called from
-        // outside a runtime -- which is true and reads like it is about the
+        // outside a runtime, which is true and reads like it is about the
         // future it wraps.
         let started = std::time::Instant::now();
         // The computer's list as kept from the last pass, if it says nothing
@@ -3915,7 +3915,7 @@ impl Qurb {
 
         // Before the early return, not after: two devices that agree about
         // everything produce an empty plan every time, and those are exactly
-        // the ones with holdings to report -- content that arrived before
+        // the ones with holdings to report, content that arrived before
         // there was any way to say so is content neither side will transfer
         // again.
         let reader = self.another_store(engine.store().chunk_key())?;
@@ -3943,8 +3943,8 @@ impl Qurb {
                 }
             }
             // A computer of another person keeping this phone's vault, sealed:
-            // what it keeps that this phone does not know of -- a phone set up
-            // again -- and what was opened and is wanted back (decision 0060).
+            // what it keeps that this phone does not know of (a phone set up
+            // again) and what was opened and is wanted back (decision 0060).
             let host = known.relation == qurb_storage::db::Relation::Host;
             if host {
                 runtime.block_on(qurb_peer::learn_kept(client, engine.store_mut(), &known.device_id, &tree));
@@ -3966,7 +3966,7 @@ impl Qurb {
         }
 
         // The transfer itself is not interrupted once started. A partly applied
-        // plan is a valid state -- every file is committed as it lands -- but
+        // plan is a valid state (every file is committed as it lands) but
         // abandoning one mid-file would leave a staging file behind, and the
         // platform's patience is measured in seconds while a chunk is measured
         // in milliseconds.
@@ -3975,7 +3975,7 @@ impl Qurb {
         // the current runtime handle when it is built, and blocks on network
         // I/O for each chunk. `block_in_place` is what lets it do that without
         // stalling the whole scheduler, and it is only available on a worker
-        // thread of a multi-threaded runtime -- which is why `runtime()` builds
+        // thread of a multi-threaded runtime, which is why `runtime()` builds
         // one of those rather than a current-thread runtime.
         let stats = runtime.block_on(async {
             tokio::task::block_in_place(|| {
@@ -4178,8 +4178,8 @@ fn stays_to_answer(reached: bool, collecting: bool, waiting: impl FnOnce() -> bo
 /// Until when a pass that has finished its own syncing waits for a device to
 /// come and collect, when none has yet.
 ///
-/// An ordinary pass gives it `LINGER`, inside its window. A long pass -- one
-/// the platform lets run on past the window -- gives it as long as a device
+/// An ordinary pass gives it `LINGER`, inside its window. A long pass (one
+/// the platform lets run on past the window) gives it as long as a device
 /// that paused part-way is given, `PAUSED`. The collector may be busy: on
 /// 2026-10-13 the laptop was still timing out its connection to the phone's
 /// previous process, 58 seconds after the app was replaced, and two long
@@ -4215,7 +4215,7 @@ const BACKUP_GAP: std::time::Duration = std::time::Duration::from_millis(20);
 /// looked and when it looks now.
 ///
 /// A pass that was frozen answered nobody, so a collector that sent nothing
-/// meanwhile says nothing about whether it is still there -- and its
+/// meanwhile says nothing about whether it is still there, and its
 /// connection may have timed out waiting for this one. After a freeze it is
 /// given as long as one that paused part-way, `PAUSED`, to come back.
 ///
@@ -4338,7 +4338,7 @@ fn same_file(a: &Path, b: &Path) -> bool {
 // **Time is rationed.** iOS `BGTaskScheduler` grants short, unpredictable
 // windows and kills a process that outstays one; Android's `WorkManager` is
 // more generous and still finite. So the entry point that matters is not "sync"
-// but "sync for at most this many seconds, and stop cleanly" — which is what
+// but "sync for at most this many seconds, and stop cleanly", which is what
 // `sync_within` is.
 //
 // **Calls block.** Same contract as the rest of this crate: the platform runs
@@ -4351,7 +4351,7 @@ pub struct PeerInfo {
     pub fingerprint: String,
     /// Short form, for showing to a person.
     pub short: String,
-    /// What the peer calls itself. Chosen by the peer, so display-only — never
+    /// What the peer calls itself. Chosen by the peer, so display-only: never
     /// used to decide anything.
     pub name: String,
     /// Unix seconds.
@@ -4370,9 +4370,9 @@ pub struct PeerInfo {
     pub picture_at: Option<i64>,
 }
 
-/// A pairing that did not happen, said as what it was. A refusal -- different
+/// A pairing that did not happen, said as what it was. A refusal (different
 /// keys, the other person declining, a code that lapsed before anybody
-/// approved -- is not the network, and was filed under it: on 2026-10-11 a
+/// approved) is not the network, and was filed under it: on 2026-10-11 a
 /// key mismatch read "Network problem." on the phone. Said as a sentence, since
 /// the engine words its errors to follow "error:" on a command line.
 fn pairing_failed(e: qurb_peer::Error) -> QurbError {
@@ -4420,7 +4420,7 @@ pub fn engine_version() -> String {
     )
 }
 
-/// Encode `text` -- a pairing code -- as a QR code. Low error correction, as
+/// Encode `text` (a pairing code) as a QR code. Low error correction, as
 /// on the desktop: it is read off a screen, and lower correction means larger
 /// modules at a given size.
 #[uniffi::export]
@@ -4600,8 +4600,8 @@ static NETWORK: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new
 /// One connection to a computer, with what it started.
 struct Link {
     client: qurb_peer::PeerClient,
-    /// Held so that what it started -- announcing, the rendezvous connection
-    /// -- lives as long as the connection.
+    /// Held so that what it started (announcing, the rendezvous connection)
+    /// lives as long as the connection.
     _connector: Arc<qurb_peer::Connector>,
     /// Answering the computer too, as a sync pass does: reaching a device
     /// behind a router is both sides dialling.
@@ -4943,8 +4943,8 @@ impl KeptFolder {
 }
 
 impl KeptFolder {
-    /// Tell the computer this phone removed it, on the connection as it is --
-    /// never dialled again for this -- and close it.
+    /// Tell the computer this phone removed it, on the connection as it is
+    /// (never dialled again for this) and close it.
     fn goodbye(&self) {
         let Ok(link) = self.link.lock() else { return };
         if !link.stale() {
@@ -5196,7 +5196,7 @@ impl Pairing {
         })
     }
 
-    /// Give up waiting, and stop listening -- whether or not `wait` has
+    /// Give up waiting, and stop listening: whether or not `wait` has
     /// started. A permit is stored if nothing is waiting yet, so a `wait` that
     /// starts afterwards returns at once too.
     pub fn cancel(&self) {
@@ -5236,7 +5236,7 @@ mod tests {
         assert!(!keep_answering(at(5), come_by, at_most, false, false, || false));
     }
 
-    /// A device that stops part-way -- restarting, or its Wi-Fi dropping -- is
+    /// A device that stops part-way (restarting, or its Wi-Fi dropping) is
     /// waited for while what it was collecting is still waiting; one that
     /// finished is not, and nor is one gone longer than `PAUSED`.
     #[test]

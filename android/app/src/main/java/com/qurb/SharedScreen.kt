@@ -28,7 +28,7 @@ import uniffi.qurb_mobile.Progress
 /**
  * A computer's shared folder, reached live (decision 0073, item 6; Files
  * draft 4): the folder its own person's phones and its guests' phones can
- * all reach, opened on the computer -- nothing of it is kept on this phone,
+ * all reach, opened on the computer, nothing of it is kept on this phone,
  * and it needs the computer on. Search, folders, files; a new folder, and the
  * plus to add files from this phone. Every change is made by the computer,
  * which says why when it will not.

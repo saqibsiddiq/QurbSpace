@@ -1,7 +1,7 @@
 //! Actually reaching the other device.
 //!
-//! The pieces existed separately — discovery, rendezvous, a transport, a trust
-//! store — and nothing sequenced them. This is the policy that does:
+//! The pieces existed separately (discovery, rendezvous, a transport, a trust
+//! store) and nothing sequenced them. This is the policy that does:
 //!
 //! ```text
 //!   start    bind a socket, ask STUN where it appears from, announce
@@ -48,8 +48,8 @@ const RENDEZVOUS_TIMEOUT: Duration = Duration::from_secs(20);
 /// rather than each one in turn.
 const CANDIDATE_TIMEOUT: Duration = Duration::from_secs(4);
 
-/// What reaching a device is for (the owner, 2026-11-13): to move files --
-/// home Wi-Fi, then directly, then the mailbox -- or to look at it -- home
+/// What reaching a device is for (the owner, 2026-11-13): to move files
+/// (home Wi-Fi, then directly, then the mailbox) or to look at it, home
 /// Wi-Fi, then directly, then Tor or the Nostr relays.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Need {
@@ -154,8 +154,8 @@ pub struct Connector {
     signal: mpsc::UnboundedSender<Command>,
     /// Peers the rendezvous service says have just appeared.
     ///
-    /// The point of it: a device that is only briefly awake -- a phone in a
-    /// background sync window -- is announced for seconds at a time, and a peer
+    /// The point of it: a device that is only briefly awake (a phone in a
+    /// background sync window) is announced for seconds at a time, and a peer
     /// that discovers it by polling on a backoff will almost never be asking
     /// during one. Being told means acting inside the window rather than
     /// hoping to coincide with it.
@@ -170,7 +170,7 @@ pub struct Connector {
     /// A daemon keeps one connector for hours; a phone builds one per sync
     /// pass and drops it at the end. Before this was kept, the phone's passes
     /// each left a reconnect loop, a beacon sender and a beacon listener
-    /// running for the life of the process -- and the reconnect loop held the
+    /// running for the life of the process, and the reconnect loop held the
     /// QUIC endpoint, so its socket stayed open too.
     background: Vec<tokio::task::AbortHandle>,
     /// Where the rendezvous service is, for meetings started later.
@@ -239,8 +239,8 @@ fn hex_short(bytes: &[u8; 32]) -> String {
 /// Whether `text` has the shape of a relay's address: a host and a port, or
 /// a `ws://` or `wss://` URL for one carried by a rendezvous service.
 ///
-/// The host may be a name or an address -- `relay.example.com:9001`,
-/// `203.0.113.5:9001`, `[2001:db8::1]:9001` -- because a relay on a server of
+/// The host may be a name or an address (`relay.example.com:9001`,
+/// `203.0.113.5:9001`, `[2001:db8::1]:9001`) because a relay on a server of
 /// one's own is usually known by name, and names outlive addresses. Checked
 /// without the network, so a setting can be refused as it is typed; whether
 /// the name resolves is a question for [`resolve_relay`], asked each time a
@@ -259,7 +259,7 @@ pub fn relay_address_ok(text: &str) -> std::result::Result<(), String> {
         return Ok(());
     }
     let Some((host, port)) = text.rsplit_once(':') else {
-        return Err(format!("{text} has no port — a relay is host:port, like relay.example.com:9001"));
+        return Err(format!("{text} has no port: a relay is host:port, like relay.example.com:9001"));
     };
     if port.parse::<u16>().map_or(true, |p| p == 0) {
         return Err(format!("{port} is not a port"));
@@ -274,8 +274,8 @@ pub fn relay_address_ok(text: &str) -> std::result::Result<(), String> {
 /// Where a relay is, now: a name looked up, or an address taken as it is.
 ///
 /// Looked up on each start rather than once, because a phone that moves from
-/// Wi-Fi to a mobile network may get a different answer -- on an IPv6-only
-/// network with NAT64, a synthesised address for an IPv4-only server -- and
+/// Wi-Fi to a mobile network may get a different answer (on an IPv6-only
+/// network with NAT64, a synthesised address for an IPv4-only server) and
 /// because a server's address changes more often than its name.
 ///
 /// Of the answers, the first that accepts a connection, tried in the order
@@ -387,7 +387,7 @@ impl Connector {
     ///
     /// `allowed` is the guest list for incoming connections, which in practice
     /// comes from the trust store. [`Finding`] says how much of the outside
-    /// world to involve — tests on one machine have nothing to discover and
+    /// world to involve: tests on one machine have nothing to discover and
     /// should not reach for the network to find that out.
     pub async fn start(
         bind: SocketAddr,
@@ -401,8 +401,8 @@ impl Connector {
         // The relay path registers under the same identifier the rendezvous
         // service uses, so a peer that knows where to look for us there knows
         // it already. Opened now, alongside asking STUN below, since through
-        // a rendezvous service that relays it is a TLS WebSocket's round trips
-        // -- at the start of every pass a phone makes.
+        // a rendezvous service that relays it is a TLS WebSocket's round trips:
+        // at the start of every pass a phone makes.
         let me = *MemberId::derive(&master, identity.fingerprint().as_bytes()).as_bytes();
         let opening = relay.map(|at| (format!("{at:?}"), open_relay(at, me)));
         let socket = nat::bind_dual(bind).map_err(|e| Error::Io { path: bind.to_string().into(), source: e })?;
@@ -454,8 +454,8 @@ impl Connector {
             None => None,
         };
 
-        // Through `dialable`, because binding `0.0.0.0` -- which is what a
-        // device behind a router should do -- makes `local_addr` report
+        // Through `dialable`, because binding `0.0.0.0` (which is what a
+        // device behind a router should do) makes `local_addr` report
         // `0.0.0.0:port`. That is a true statement about the socket and a
         // useless thing to hand a peer: it means "every interface here", and
         // there is no "here" on the other machine.
@@ -486,15 +486,15 @@ impl Connector {
 
         // One connection, held for the life of the device, owned by one task.
         //
-        // The obvious alternative -- opening a connection each time a peer needs
-        // reaching -- announces under this device's identity and then closes,
+        // The obvious alternative (opening a connection each time a peer needs
+        // reaching) announces under this device's identity and then closes,
         // which the server correctly reads as the device going away. A device
         // that called out would stop being reachable the moment it finished,
         // and the failure looks like the *other* device being absent.
         // Best effort, not a precondition.
         //
         // A rendezvous that is down, or absent entirely, used to stop a device
-        // starting at all -- which meant two devices on one Wi-Fi could not
+        // starting at all, which meant two devices on one Wi-Fi could not
         // sync without something on the internet being reachable. They can see
         // each other; nobody needs to introduce them. `stay_signalled` keeps
         // trying in the background, and everything local works meanwhile.
@@ -518,8 +518,8 @@ impl Connector {
 
         let (signal, commands) = mpsc::unbounded_channel();
 
-        // Reconnecting, not just connecting. A rendezvous service restarts --
-        // for a deploy, a reboot, a crash -- and before this a device whose
+        // Reconnecting, not just connecting. A rendezvous service restarts
+        // (for a deploy, a reboot, a crash) and before this a device whose
         // connection went with it stayed silent until the daemon itself was
         // restarted. It kept syncing on its timer, so nothing looked broken;
         // it simply stopped being reachable and stopped being able to say it
@@ -688,7 +688,7 @@ impl Connector {
     ///
     /// Each item is the rendezvous identifier of a device that has just become
     /// reachable. Translate it with [`MemberId::derive`] against the
-    /// fingerprints you care about — the identifier is blinded, so the service
+    /// fingerprints you care about: the identifier is blinded, so the service
     /// cannot link it to a device and neither can a listener without the master
     /// key.
     ///
@@ -700,7 +700,7 @@ impl Connector {
 
     /// Say how this device can be woken while it is not connected.
     ///
-    /// For devices that cannot hold a socket open — phones. A desktop needs
+    /// For devices that cannot hold a socket open: phones. A desktop needs
     /// nothing here: it is already connected, and the service can simply tell
     /// it. `None` withdraws a token that is no longer valid.
     pub fn reachable_via(&self, token: Option<String>) -> Result<()> {
@@ -712,7 +712,7 @@ impl Connector {
     /// Tell a peer there is something for it.
     ///
     /// Sent through the rendezvous service, which forwards it if the peer is
-    /// connected and keeps it if not — so a device asleep at the moment of a
+    /// connected and keeps it if not, so a device asleep at the moment of a
     /// change learns of it on waking rather than at its own next poll.
     ///
     /// Carries who, never what. Best effort: a peer that never hears it syncs
@@ -727,7 +727,7 @@ impl Connector {
     ///
     /// A device that has just started has heard nothing, and the answers to its
     /// own arrival probe take a few hundred milliseconds to come back. Failing
-    /// in that window would mean a short-lived process — a phone's sync pass —
+    /// in that window would mean a short-lived process (a phone's sync pass)
     /// never using local discovery at all, which is exactly what happened.
     ///
     /// The wait is short and only paid when the answer is not already known,
@@ -771,8 +771,8 @@ impl Connector {
     /// Reach a peer through the relay without trying a direct path first.
     ///
     /// Ordinarily [`reach`](Self::reach) falls back on its own. This exists for
-    /// the cases where trying direct is known to be pointless — a network that
-    /// has already been classified as blocking UDP — and for testing the
+    /// the cases where trying direct is known to be pointless (a network that
+    /// has already been classified as blocking UDP) and for testing the
     /// fallback without having to arrange a real failure.
     pub async fn reach_via_relay(&self, peer: Fingerprint) -> Result<PeerClient> {
         let relay = self.relay.as_ref().ok_or(Error::NoRelay)?;
@@ -944,7 +944,7 @@ impl Connector {
 
         // To look at it, Tor to its kept onion address and the Nostr relays as
         // well, a head start behind, all at once. Whichever connects first is
-        // kept -- but the Nostr relays carry tens of kilobytes a second and
+        // kept, but the Nostr relays carry tens of kilobytes a second and
         // Tor far more, so if they win, Tor is given a moment to catch up.
         #[cfg_attr(not(feature = "tor"), allow(dead_code))]
         enum Path {
@@ -1013,7 +1013,7 @@ impl Connector {
 
     /// [`direct_or_relay`](Self::direct_or_relay), and when nothing there got
     /// through and the peer has an onion service, through Tor (decision 0082):
-    /// slow -- seconds to reach, a fraction of a megabyte a second -- but it
+    /// slow (seconds to reach, a fraction of a megabyte a second) but it
     /// passes any network that lets the device out at all.
     async fn or_through_tor(&self, peer: Fingerprint, endpoints: &Endpoints) -> Result<PeerClient> {
         #[cfg(feature = "tor")]
@@ -1071,9 +1071,9 @@ impl Connector {
     /// takes [`CANDIDATE_TIMEOUT`]: on another phone's hotspot on 2026-10-19
     /// the S23 spent eleven of its pass's 25 seconds before asking the relay,
     /// and the pass ran out of time with the relay connected. A direct path
-    /// that answers at all answers well inside the head start -- on the same
+    /// that answers at all answers well inside the head start (on the same
     /// network in milliseconds, punched through a router in a round trip or
-    /// two -- and is still the one kept then.
+    /// two) and is still the one kept then.
     async fn direct_or_relay(&self, peer: Fingerprint, endpoints: &Endpoints) -> Result<PeerClient> {
         let direct = self.race(peer, endpoints);
         tokio::pin!(direct);
@@ -1204,7 +1204,7 @@ impl Connector {
                 // Dropping a handshake that has not finished cancels it, which
                 // is free. Dropping one that *has* finished leaves a
                 // connection established at the far end, holding the send and
-                // receive buffers of a transfer nobody will use — and a device
+                // receive buffers of a transfer nobody will use, and a device
                 // reachable on both a local network and an overlay offers
                 // several addresses that all work, so this is the ordinary
                 // case rather than a rare one. Measured: racing four addresses
@@ -1339,7 +1339,7 @@ struct Reconnect {
 ///
 /// Doubling from a second to a minute. Short at first because the common cause
 /// is a restart that takes seconds, and capped because a service that is down
-/// for an hour should not be asked sixty times a minute — nor left unasked for
+/// for an hour should not be asked sixty times a minute, nor left unasked for
 /// an hour once it returns.
 /// How long to wait for an answer to a local probe before giving up on the
 /// network and asking the rendezvous service.
@@ -1532,8 +1532,8 @@ async fn run_signalling(
                 Some(FromServer::Peers { .. }) => {}
 
                 Some(FromServer::Appeared { peer }) => {
-                    // No receivers is the ordinary case -- nothing is obliged
-                    // to care -- so a send error is not a problem.
+                    // No receivers is the ordinary case (nothing is obliged
+                    // to care) so a send error is not a problem.
                     let _ = arrivals_tx.send((peer.member, false));
                 }
 
@@ -1569,7 +1569,7 @@ async fn run_signalling(
 /// bound to one address is listening on exactly that address, so announcing
 /// the machine's other interfaces advertises places nothing is accepting. A
 /// peer then races addresses that can only fail and concludes the device is
-/// unreachable — which is what happened to a test binding loopback the first
+/// unreachable, which is what happened to a test binding loopback the first
 /// time this was written.
 fn reachable_at(local: SocketAddr) -> Vec<SocketAddr> {
     if !local.ip().is_unspecified() {
@@ -1715,8 +1715,8 @@ mod tests {
     /// machine, and the peer has no way to turn that into somewhere to dial.
     ///
     /// Ordinarily STUN supplies a public address and the useless local one does
-    /// no harm. This matters when there is no STUN — two devices on a network
-    /// with no route to the internet — which is exactly when the local address
+    /// no harm. This matters when there is no STUN (two devices on a network
+    /// with no route to the internet) which is exactly when the local address
     /// is the only one there is.
     #[test]
     fn an_unspecified_bind_is_announced_as_something_dialable() {

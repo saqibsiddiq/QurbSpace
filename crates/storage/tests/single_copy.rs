@@ -2,7 +2,7 @@
 //!
 //! A syncing device writes every file into a folder the user can see. Keeping
 //! an encrypted copy of the same bytes in the chunk store as well means every
-//! synced file costs twice its size — which is the difference between a 10 GB
+//! synced file costs twice its size, which is the difference between a 10 GB
 //! allowance holding 10 GB of files and holding 5.
 //!
 //! With a tree, the file *is* the payload store for content it holds.
@@ -70,7 +70,7 @@ fn a_materialised_file_is_not_stored_twice() {
     );
 }
 
-/// And the content must still be readable — from the file, through the same
+/// And the content must still be readable: from the file, through the same
 /// call everything else uses.
 #[test]
 fn the_content_is_still_readable_chunk_by_chunk() {
@@ -121,7 +121,7 @@ fn without_a_tree_every_payload_is_kept() {
 
 /// A source outside the tree must still be copied in full. Skipping the write
 /// because "there is a tree" would lose content the tree does not actually
-/// hold — the one way this optimisation could destroy data.
+/// hold: the one way this optimisation could destroy data.
 #[test]
 fn a_source_outside_the_tree_is_still_stored() {
     let tree = tempfile::tempdir().unwrap();
@@ -176,7 +176,7 @@ fn an_edited_file_does_not_answer_for_its_old_chunks() {
 }
 
 /// An existing store, written before the tree supplied anything, sheds its
-/// second copy when asked — and the content stays readable afterwards.
+/// second copy when asked, and the content stays readable afterwards.
 #[test]
 fn reclaim_drops_what_the_tree_already_holds() {
     let tree = tempfile::tempdir().unwrap();
@@ -237,7 +237,7 @@ fn a_replica_with_no_tree_reclaims_nothing() {
 ///
 /// The caller that asks this is deciding whether to pull a file over the
 /// network. A store that says "no" about content sitting in the folder does
-/// not fail visibly — it silently re-transfers files the device already has.
+/// not fail visibly: it silently re-transfers files the device already has.
 #[test]
 fn content_in_the_tree_counts_as_held() {
     let tree = tempfile::tempdir().unwrap();

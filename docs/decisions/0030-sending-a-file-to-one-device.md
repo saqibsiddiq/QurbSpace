@@ -1,6 +1,6 @@
-# 0030 — Sending a file to one device
+# 0030: Sending a file to one device
 
-**Status:** Accepted — rules 1 and 4 superseded by [0060](0060-a-computer-keeps-private-folders-for-several-people.md) (no copy kept); rule 3 amended by [0037](0037-a-file-sent-to-a-desktop-is-an-ordinary-file.md) on devices with a downloads directory; extended by [0036](0036-a-phone-keeps-its-own-files.md); rule 2 completed and rule 4 given a phone's form on 2026-10-07; rule 2 amended by [0059](0059-a-send-is-not-its-bytes.md): a send, not its bytes, is taken once
+**Status:** Accepted, rules 1 and 4 superseded by [0060](0060-a-computer-keeps-private-folders-for-several-people.md) (no copy kept); rule 3 amended by [0037](0037-a-file-sent-to-a-desktop-is-an-ordinary-file.md) on devices with a downloads directory; extended by [0036](0036-a-phone-keeps-its-own-files.md); rule 2 completed and rule 4 given a phone's form on 2026-10-07; rule 2 amended by [0059](0059-a-send-is-not-its-bytes.md): a send, not its bytes, is taken once
 **Date:** 2026-09-23
 
 ## Decision
@@ -25,14 +25,14 @@ Four rules, which together are the whole feature:
    ([0026](0026-sharing-while-the-other-device-is-off.md)) that covers content
    delivered before reports existed: `report_holdings` is given the peer's
    tree.)* *(2026-10-10, [0059](0059-a-send-is-not-its-bytes.md): keyed by
-   the send -- sender, name and version -- not by content. Keyed by content,
+   the send (sender, name and version) not by content. Keyed by content,
    the same file sent again was never taken, and nobody was told. A send
    offered again is still taken once; a file sent again is a new send, and
    the sender asks first.)*
 3. **The recipient files it privately.** It lands in their folder like any other
    file, but its index row is scoped to them, so it is never advertised onward.
 4. **The sender releases it first.** Once the recipient confirms, the sender's
-   copy is the first thing dropped when the storage cap bites — before any of
+   copy is the first thing dropped when the storage cap bites: before any of
    the sender's own files. *(Since [0060](0060-a-computer-keeps-private-folders-for-several-people.md)
    there is no copy to release for a new send; this applies to sends made
    before 2026-10-10.)*
@@ -51,7 +51,7 @@ saying that one may be the last copy (`Qurb::sent_copies`,
 
 ## Why the sender keeps its copy at all
 
-The alternative — hand the bytes over and forget them — only works if the
+The alternative (hand the bytes over and forget them) only works if the
 recipient is awake. A phone in a drawer is the ordinary case, not the
 exceptional one, and a feature that requires both devices to be on at the same
 moment is a feature that mostly does not work.
@@ -69,7 +69,7 @@ nothing for it, because the file on disk can be read instead.
 
 A vault entry must not work that way, even when a file of the same name and the
 same content happens to be sitting in the sender's folder. If it did, deleting
-your own `report.pdf` would quietly destroy the copy you sent somebody — and
+your own `report.pdf` would quietly destroy the copy you sent somebody, and
 that is not a say the sender should have over another person's data. Vault
 content is always chunked.
 
@@ -93,7 +93,7 @@ on the sender's side is not the recipient's.
 This is the subtle part, and it was found by a test rather than by reasoning.
 
 The storage cap is allowed to drop a local file when another device is recorded
-as holding the same content. That record — a row in `replicas` — used to mean
+as holding the same content. That record (a row in `replicas`) used to mean
 one thing: somebody has these bytes.
 
 With vaults it can mean two. A device that collected content into its *private
@@ -114,11 +114,11 @@ The releasable-chunk rule that falls out of it:
 > A chunk may be released if it belongs to a vault entry the recipient has
 > collected, **and** no live file anywhere still needs it from the chunk store.
 > "Still needs it" means not materialised in this device's folder and not
-> recorded as reachable — where reachable is an ordinary replica, or a vault
+> recorded as reachable: where reachable is an ordinary replica, or a vault
 > delivery to the very device whose vault the entry is in.
 
 The recipient side has the mirror of the same hazard. When it takes delivery it
-records the sender as holding the content — but as a *vault* record, because
+records the sender as holding the content, but as a *vault* record, because
 the sender is about to release it. Two devices each treating the other as their
 fallback, and each releasing on that basis, would lose the file between them.
 
@@ -127,7 +127,7 @@ fallback, and each releasing on that basis, would lose the file between them.
 The sender names the file the way they think of it. Two people can both have a
 `report.pdf`, and neither is wrong, so an arriving file whose path is already
 taken is filed beside the existing one as
-`report.from-<device>-<when>.pdf` — the same machinery as a conflict name, with
+`report.from-<device>-<when>.pdf`: the same machinery as a conflict name, with
 a different word because nothing went wrong.
 
 ## Protocol version
@@ -137,7 +137,7 @@ from `qurb/0` to `qurb/1`.
 
 That byte is not optional. A build that ignored it would adopt content sent to
 another device's vault as ordinary shared content and advertise it to the whole
-fleet — a silent, immediate, irreversible leak. Refusing to talk to an older
+fleet: a silent, immediate, irreversible leak. Refusing to talk to an older
 build is the correct outcome, and the reason the identifier is versioned.
 
 **Consequence:** every device must be rebuilt together. A phone running an
@@ -150,8 +150,8 @@ older APK will not connect until it is updated.
   one" step.
 - **The sender cannot withdraw a send** once the recipient has it. Deleting the
   sender's row stops future deliveries; it does not reach into the recipient's
-  folder. *(2026-09-25: a send not yet collected can now be cancelled —
-  `Store::cancel_send`, `qurb cancel`, and a button in the window — which does
+  folder. *(2026-09-25: a send not yet collected can now be cancelled
+  (`Store::cancel_send`, `qurb cancel`, and a button in the window) which does
   exactly that and refuses once the recipient has reported holding it.)*
 - **Replicas still cannot hold vault content usefully.** A replica has no
   folder, so a delivery routed through one would be held as chunks and never

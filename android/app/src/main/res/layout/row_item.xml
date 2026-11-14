@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- A row (§18): an icon in its tile, a name, one line of what matters about
-     it — a state as an icon and words — and an action at the end. -->
+     it (a state as an icon and words) and an action at the end. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"

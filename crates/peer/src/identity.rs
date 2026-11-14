@@ -1,7 +1,7 @@
 //! A device's network identity.
 //!
 //! Each device generates one self-signed certificate and keeps it. Its
-//! **fingerprint** — the BLAKE3 hash of the certificate — is how other devices
+//! **fingerprint** (the BLAKE3 hash of the certificate) is how other devices
 //! recognise it.
 //!
 //! Hashing the whole certificate rather than the public key inside it avoids
@@ -12,8 +12,8 @@
 //! # What this is not
 //!
 //! A fingerprint only means something if you already know which one to expect.
-//! Getting that knowledge onto both devices is *pairing* — the QR-code exchange
-//! in [decision 0001](../../../docs/decisions/0001-hybrid-p2p-topology.md) — and
+//! Getting that knowledge onto both devices is *pairing* (the QR-code exchange
+//! in [decision 0001](../../../docs/decisions/0001-hybrid-p2p-topology.md)) and
 //! it is not built. Until it is, the caller supplies the expected fingerprint,
 //! which is why every connection here demands one rather than defaulting to
 //! trusting whoever answers.
@@ -93,8 +93,8 @@ impl Identity {
     }
 
     /// The identity `seed` always makes: the same certificate, byte for byte,
-    /// every time -- an Ed25519 key, whose signatures are deterministic, and
-    /// every field of the certificate fixed -- so the same fingerprint.
+    /// every time (an Ed25519 key, whose signatures are deterministic, and
+    /// every field of the certificate fixed) so the same fingerprint.
     ///
     /// What lets a phone keep one identity across a reinstall or its data
     /// cleared (decision 0079): its seed is made from the person's key and
@@ -124,7 +124,7 @@ impl Identity {
     /// The seed of a device's permanent identity (decision 0079): from the
     /// person's key, as `Purpose::DeviceIdentity` derives it, and what the
     /// platform keeps for this install of the app across a reinstall or its
-    /// data cleared -- Android's `ANDROID_ID`, never sent anywhere as it is.
+    /// data cleared, Android's `ANDROID_ID`, never sent anywhere as it is.
     /// The same phone, set up again with the same person's key, makes the
     /// same seed; another phone, or another person, a different one.
     pub fn permanent_seed(identity_key: &[u8; 32], install: &str) -> [u8; 32] {
@@ -156,7 +156,7 @@ impl Identity {
     ///
     /// For everything that is not setting a device up. A folder moved to the
     /// Trash while the desktop ran had its identity made again, by a window
-    /// showing a pairing code into a folder that was no longer there -- and
+    /// showing a pairing code into a folder that was no longer there, and
     /// the phone paired with that second device. Making an identity is
     /// setup's job alone.
     pub fn load(dir: &Path) -> Result<Self> {

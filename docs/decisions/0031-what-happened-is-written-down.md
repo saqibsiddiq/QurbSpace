@@ -1,11 +1,11 @@
-# 0031 — What happened is written down
+# 0031: What happened is written down
 
 **Status:** Accepted
 **Date:** 2026-09-23
 
 ## Decision
 
-Events go in a table in the index — one row per thing that happened, with the
+Events go in a table in the index: one row per thing that happened, with the
 path, the size, the other device and a sentence where those are not enough.
 `qurb activity` reads it.
 
@@ -27,7 +27,7 @@ reconciliation.
 
 Written at the layer that does the work, not the layer that asks for it.
 `Store::put_file` and `Store::delete_file` record their own events, because the
-bulk pass stores through worker threads with their own handles — recording in
+bulk pass stores through worker threads with their own handles: recording in
 the engine would mean each of those remembering to, which is a rule nothing
 enforces. Transfers and conflicts are recorded in the engine, because only the
 engine knows the other end.
@@ -61,8 +61,8 @@ before)` takes the id of the oldest row already shown.
 Ninety days, and ten thousand rows, whichever bites first. They fail
 differently: age alone lets a busy week grow the table without bound, a count
 alone lets a quiet device keep rows from years ago. Pruned in the same pass as
-garbage collection, because it is the same question — how far back does this
-device remember — and one place to look is better than two.
+garbage collection, because it is the same question (how far back does this
+device remember) and one place to look is better than two.
 
 Ninety days is longer than content retention (a week) because history costs
 bytes where content costs megabytes.
@@ -74,7 +74,7 @@ path in plaintext since the first migration; `activity` holds no content at
 all, and no more paths than `files` does. It is bounded, and it is deleted with
 the store.
 
-What it must never hold — and does not — is anything derived from the recovery
+What it must never hold (and does not) is anything derived from the recovery
 phrase, key material, or file contents. The `detail` column takes error
 messages and conflict filenames, both of which the index already contains.
 

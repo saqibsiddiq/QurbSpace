@@ -1,7 +1,7 @@
 //! Whether anything would actually display a tray icon.
 //!
 //! Creating one succeeds on a desktop that has no tray. The icon is simply
-//! never drawn, and no return value says so — which on GNOME means a background
+//! never drawn, and no return value says so, which on GNOME means a background
 //! program that is running, invisible, and unquittable. Asking first is the
 //! only way to know.
 //!

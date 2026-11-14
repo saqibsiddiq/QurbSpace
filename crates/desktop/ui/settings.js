@@ -639,7 +639,7 @@ const HAPPENED = {
 };
 
 // Activity, as the phone's (the owner's review of 2026-11-03, Y-1, Y-2):
-// chips -- All, Backups, Transfers, Problems --; by day; a batch one row
+// chips (All, Backups, Transfers, Problems); by day; a batch one row
 // ("128 files backed up") with its files' previews and a badge for what
 // happened, the other device under it, the time at the end; words only for
 // a problem. A row opens its entry.

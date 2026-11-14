@@ -9,7 +9,7 @@
 # the library was.
 #
 # The output is checked by eye, not committed. Both platforms' build systems
-# regenerate it — Gradle through a build task, Xcode through a build phase —
+# regenerate it (Gradle through a build task, Xcode through a build phase)
 # because bindings that drift from the library they describe fail at runtime
 # rather than at compile time, and that is a bad way to find out.
 set -euo pipefail

@@ -8,7 +8,7 @@
 //! manager or an app asks, as `stream.rs` plays a video; a guest's, sealed
 //! whole, are unsealed on first read into memory-backed space
 //! (`$XDG_RUNTIME_DIR`), which is what opening one did before. The moment
-//! the folder locks -- *Lock*, ten minutes unused, the computer asleep -- it
+//! the folder locks (*Lock*, ten minutes unused, the computer asleep) it
 //! is unmounted, and the placeholder is back.
 //!
 //! **Read-only.** Files are opened, copied out and previewed; nothing can be
@@ -22,7 +22,7 @@ use std::path::{Path, PathBuf};
 /// What a mounted folder shows.
 pub enum Contents {
     /// One of the owner's phones: its folder, as `qurb_storage::person`
-    /// lists it, shown at the top -- ~/qurb holds a folder for each phone
+    /// lists it, shown at the top, ~/qurb holds a folder for each phone
     /// (the owner, 2026-11-10). This computer's own vault is not shown.
     Phone(qurb_storage::person::DeviceFolder),
     /// A guest's, sealed under their key.
@@ -118,7 +118,7 @@ mod linux {
         writable(&at, false);
         all.insert(person, session?);
         drop(all);
-        // Locked by anything -- Lock, idle, asleep -- and the mount goes.
+        // Locked by anything (Lock, idle, asleep) and the mount goes.
         std::thread::spawn(move || loop {
             std::thread::sleep(WATCH);
             let gone = !mounts().lock().map(|m| m.contains_key(&person)).unwrap_or(false);

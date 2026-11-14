@@ -1,6 +1,6 @@
 //! A phone leaving the shared area (decision 0073, item 2), as the owner
 //! chose: what a computer keeps is let go of on the phone without a word to
-//! anyone -- no tombstone, so nothing is deleted anywhere else -- and what
+//! anyone (no tombstone, so nothing is deleted anywhere else) and what
 //! only the phone has moves into its own vault, so nothing is lost. Bytes on
 //! the phone go only once the computer, asked, has said it holds them.
 
@@ -58,7 +58,7 @@ fn what_a_computer_keeps_goes_and_the_rest_moves_into_the_vault() {
     assert!(!phone.root.join("Photos").exists(), "the folder it emptied left behind");
     assert!(phone.store.shared_tree().unwrap().is_empty(), "something of it offered to the computers");
 
-    // Moved: still here, in the phone's own vault -- a phone's copy is not a
+    // Moved: still here, in the phone's own vault, a phone's copy is not a
     // safe last one (decision 0053), so a file another phone has moves too.
     let me = phone.store.device_id().unwrap();
     for path in ["only-here.txt", "only-on-phones.txt"] {
@@ -71,8 +71,8 @@ fn what_a_computer_keeps_goes_and_the_rest_moves_into_the_vault() {
 }
 
 /// A computer recorded as keeping a file whose bytes are on the phone, not
-/// confirmed: the record may be stale -- the owner's laptop freed its shared
-/// files before decision 0053 on the strength of the S23's copies -- so the
+/// confirmed: the record may be stale (the owner's laptop freed its shared
+/// files before decision 0053 on the strength of the S23's copies) so the
 /// phone keeps the file until the computer, asked, answers. Asked at the next
 /// sync; a yes lets it go, a no moves it into the vault. A row whose bytes
 /// are not here goes on the record alone: forgetting it loses nothing.
@@ -109,8 +109,8 @@ fn bytes_here_go_only_on_the_computers_word() {
     assert!(phone.root.join("freed-there.jpg").is_file(), "the last copy lost");
 }
 
-/// A row with no bytes on the phone goes whoever keeps it -- the S23 kept six
-/// such at every opening, listings of files no device had (2026-10-25) --
+/// A row with no bytes on the phone goes whoever keeps it (the S23 kept six
+/// such at every opening, listings of files no device had (2026-10-25))
 /// and goes alone: a file at its path the index does not call its own stays,
 /// for the scan to take into the vault.
 #[test]

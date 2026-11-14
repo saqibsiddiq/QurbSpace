@@ -3,7 +3,7 @@
 //! A sync product that syncs only after somebody remembers to open it syncs
 //! rarely, and the phone can only meet the laptop while the laptop is running.
 //! So qurb can start at login, with its window hidden, through the freedesktop
-//! autostart directory -- which GNOME, KDE and the rest all read, and which a
+//! autostart directory, which GNOME, KDE and the rest all read, and which a
 //! person can see and remove without qurb's help.
 //!
 //! Every function takes the config directory, so tests never touch the real

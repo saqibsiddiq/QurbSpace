@@ -1,6 +1,6 @@
-# 0014 — Pairing transfers a full fingerprint out of band
+# 0014: Pairing transfers a full fingerprint out of band
 
-**Status:** Accepted — since [0052](0052-the-key-travels-with-the-code.md) a device with no key that presents the token is also given the key, once per code, so the token now guards the key as well; since [0066](0066-six-digits-to-pair.md) six digits fetch the code on the same network, through the exchange this record called "more machinery"
+**Status:** Accepted, since [0052](0052-the-key-travels-with-the-code.md) a device with no key that presents the token is also given the key, once per code, so the token now guards the key as well; since [0066](0066-six-digits-to-pair.md) six digits fetch the code on the same network, through the exchange this record called "more machinery"
 **Date:** 2026-09-16
 **Completes:** [0011](0011-peer-identity-pinning.md), which established pinned
 identity and recorded pairing as the missing half.
@@ -20,7 +20,7 @@ fingerprint**.
 **The out-of-band channel.** An attacker sitting in the network path can do a
 great deal, but cannot change what is printed on a screen or said over a phone.
 Carrying the whole fingerprint across that channel is what authenticates the
-inviter — the same pinning every other connection uses, with the pin finally
+inviter: the same pinning every other connection uses, with the pin finally
 coming from somewhere trustworthy.
 
 The fingerprint is carried in full rather than abbreviated. A short code would
@@ -30,7 +30,7 @@ and more to get wrong. A QR code has room for 32 bytes.
 **TLS authenticates the joiner.** It must present a certificate and sign the
 handshake, so the fingerprint recorded for it is proven rather than claimed.
 Neither side takes the other's word for anything that matters: the device id and
-name are claims, and only the device id is load-bearing — bound, at that moment,
+name are claims, and only the device id is load-bearing, bound, at that moment,
 to a fingerprint that was proven.
 
 ## What the token is and is not
@@ -68,7 +68,7 @@ than from a caller, so the system finally has a notion of "my devices".
 
 ## Consequences
 
-**Invites are short-lived** — five minutes. An invite left lying around is a
+**Invites are short-lived**: five minutes. An invite left lying around is a
 port that accepts strangers. This is a usability cost paid deliberately.
 
 **Re-pairing replaces rather than accumulates.** A device that gets a new
@@ -85,7 +85,7 @@ act a person performs; it needs revisiting when devices come and go on their own
 **Transitive trust.** Pairing A to B and B to C does not pair A to C. The
 architecture describes an append-only device trust graph where an approval is
 signed and distributed, which would make it transitive. That is a larger design
-with real failure modes — revocation, conflicting approvals — and pairing each
+with real failure modes (revocation, conflicting approvals) and pairing each
 pair of devices works today.
 
 **Revocation.** `forget_peer` removes trust locally. Telling other devices that

@@ -1,7 +1,7 @@
 //! Keeping the master key somewhere better than a file.
 //!
 //! On a phone the keystore is Keychain or the Android Keystore, and neither is
-//! reachable from Rust — the app implements [`KeyStore`] and passes it in.
+//! reachable from Rust: the app implements [`KeyStore`] and passes it in.
 //! These tests stand in for the app, which means they check the *contract*:
 //! that the key goes where it was told, comes back, and that opening without
 //! the keystore fails in a way an app can act on.
@@ -119,7 +119,7 @@ fn a_key_from_the_keystore_opens_the_store() {
 
 /// Opening without the keystore must fail, and say why.
 ///
-/// The easy mistake — calling `open` where the app meant `open_protected` —
+/// The easy mistake (calling `open` where the app meant `open_protected`)
 /// must not look like a corrupt store or a wrong passphrase, because the fix is
 /// entirely different.
 #[test]
@@ -143,7 +143,7 @@ fn opening_without_the_keystore_says_what_is_missing() {
 }
 
 /// A keystore that refuses must surface as an error, not a panic across the
-/// FFI boundary — which on some platforms is undefined behaviour.
+/// FFI boundary, which on some platforms is undefined behaviour.
 #[test]
 fn a_broken_keystore_is_an_error_not_a_crash() {
     let dir = tempfile::tempdir().unwrap();

@@ -1,9 +1,9 @@
-# 0073 — The phone works with one computer: no shared files on it, and it may change its own folder there
+# 0073: The phone works with one computer: no shared files on it, and it may change its own folder there
 
 **Status:** Accepted as the design, 2026-10-24. Built on Android the same
-day: every step of the plan below -- the shared folder read, written and
+day: every step of the plan below (the shared folder read, written and
 searched; the phone's own folder there changed from the phone; the phone out
-of the shared area; and Files, drafts 3 and 4 -- with the gaps under
+of the shared area; and Files, drafts 3 and 4) with the gaps under
 *Progress*. The desktop window is not changed yet. The owner's S23 and
 laptop run it since 2026-10-25, 00:07; what the S23 did leaving the shared
 area is not yet read from it. The screens are in the Figma redesign
@@ -120,8 +120,8 @@ and choosing one in Devices is for what it keeps and where Send goes.
 
 ## Backups in a phone's folder there
 
-Asked 2026-10-24 how far the phone may change its backups -- WhatsApp, and the
-folders it backs up -- the owner chose: **opened, saved and sent like any
+Asked 2026-10-24 how far the phone may change its backups (WhatsApp, and the
+folders it backs up) the owner chose: **opened, saved and sent like any
 file, and deleted once the original is gone from the phone.** Rename, move, a
 new folder and adding files are for the Private Vault part of the folder only.
 
@@ -147,8 +147,8 @@ In this order, each built with its tests before the next:
    they could not. Folders shared with only some devices stay theirs: a guest
    is in no such list.
 2. **The shared folder, written** (item 6). Requests to make a folder, rename
-   or move, delete -- to the computer's Recently deleted, saying which device
-   did it -- and add a file, sent in pieces and checked against its hash
+   or move, delete (to the computer's Recently deleted, saying which device
+   did it) and add a file, sent in pieces and checked against its hash
    before it is put in place. Each made by the computer on its own folder, as
    a change of its own, refused with a reason a person can read: a name
    taken, a path outside the folder. Tested as a hostile peer would try it
@@ -215,11 +215,11 @@ Item 5, the device chosen on Home, was built with Home (draft 3).
   the old path deleted (`Store::rename_freed`), so not a byte crosses either
   way. Delete is `delete_kept`: this phone's own files only, into the
   phone's own Recently deleted, and a backup only once its original is gone
-  from the phone -- refused with why while it is still there. Adding files is
+  from the phone, refused with why while it is still there. Adding files is
   the Vault's own import, into the folder on screen.
   **A deletion without the bytes, fixed the same day.** The emulator check
   below found that deleting a file whose bytes were freed to the computer put
-  nothing in Recently deleted -- only a file on the phone's disk went there --
+  nothing in Recently deleted (only a file on the phone's disk went there)
   though the app said it would, and the computer let go of its copy once its
   seven-day window and the chunks' own had passed. Now such a file, or a
   backup's read where it lay, goes into the phone's Recently deleted as an
@@ -239,10 +239,10 @@ Item 5, the device chosen on Home, was built with Home (draft 3).
   in the phone's folder on the computer as a version of the computer's after
   the phone's deletion: the deletion, offered again by a phone not yet told,
   is not taken again (`holding` compares the two). The phone takes it back
-  at its next sync -- a new step, `Action::Restored`, planned only for a path
+  at its next sync (a new step, `Action::Restored`, planned only for a path
   whose last word on the phone is a deletion of that very content, by a
   version after it (`Store::restored_elsewhere`), so nothing else a computer
-  offers becomes a file of the phone's -- from the bytes its own Recently
+  offers becomes a file of the phone's) from the bytes its own Recently
   deleted kept, or left on the computer as before, and out of the phone's
   Recently deleted. Either restore empties the other side's entry. Deleting
   it for good on the computer lets the bytes go at the next collection. Not
@@ -252,7 +252,7 @@ Item 5, the device chosen on Home, was built with Home (draft 3).
   Nor a guest's, sealed. **A gap:** the deleted row on the computer is dated
   by the phone's clock, as every row from another device is, so a deletion
   that reached the computer days late, or from a phone whose clock is wrong,
-  is kept less than the 30 days its entry shows -- restoring it then says
+  is kept less than the 30 days its entry shows, restoring it then says
   the file is no longer there. **And another:** a different file the phone
   makes at that path before it next syncs is the phone's word, and replaces
   the one restored on the computer, which is then lost there. Tested: listed, restored with a version after
@@ -285,7 +285,7 @@ Item 5, the device chosen on Home, was built with Home (draft 3).
   downloaded from the computer afterwards. **Not tested:** a backup's
   deletion refused while its original is on the phone.
   **Not built: a new folder.** A folder with nothing in it is not a thing the
-  index can hold -- it lists files, and a folder is where they are -- so an
+  index can hold (it lists files, and a folder is where they are) so an
   empty one made on the phone would exist nowhere but on that screen. Moving
   a file into a new name's folder makes it.
 - **Step 5, the phone out of the shared area, built 2026-10-24.** An
@@ -294,16 +294,16 @@ Item 5, the device chosen on Home, was built with Home (draft 3).
   device's shared files, nothing added goes into the shared area, and moving
   a file out of the Vault is refused. On each opening with it off,
   `Store::leave_shared_area` does what the owner chose: each shared file a
-  computer keeps is forgotten on the phone -- row and bytes, no tombstone, so
+  computer keeps is forgotten on the phone, row and bytes, no tombstone, so
   nothing is deleted anywhere else and it stays in that computer's Shared
   folder; one only the phone has, or another phone, moves into its Vault (a
   phone's copy is not a safe last one, decision 0053); one with neither its
   bytes here nor a computer known to keep it is left, to be tried again at the
   next opening. **Bytes on the phone go only on the computer's word,
   asked**, changed before it reached the S23: the owner's laptop, about to be
-  updated, turned out to hold none of its 17 shared files -- freed on
+  updated, turned out to hold none of its 17 shared files (freed on
   2026-09-29, before decision 0053, on the strength of the S23's copies
-  before the S23 was set up again -- and a phone re-checks a computer's copy
+  before the S23 was set up again) and a phone re-checks a computer's copy
   only of a file it freed itself, so the S23's record of the laptop keeping
   a file may be stale and its own copy the last. So a file whose bytes are on
   the phone is let go of only once the computer, asked at a sync, has said it
@@ -311,13 +311,13 @@ Item 5, the device chosen on Home, was built with Home (draft 3).
   and a phone's sync asks about such files before anything else it asks
   about (`unconfirmed_holdings`, 16 a pass), a no moving it into the Vault
   at the next opening. A row whose bytes are not on the phone is forgotten,
-  whoever keeps it -- the row alone, never a file at its path the index does
+  whoever keeps it: the row alone, never a file at its path the index does
   not call its own: forgetting it loses nothing, and a phone out of the area
   would never fetch it. (First built to forget such a row only when a
   computer was recorded as keeping it; on the S23 six rows with neither
   stayed at every opening, and its asking queue held its thousands of freed
   WhatsApp files ahead of them. Both changed 2026-10-25.) The area's deletions and sharing rules are forgotten, and
-  folders left empty removed -- any empty folder in the phone's folder, not
+  folders left empty removed: any empty folder in the phone's folder, not
   only those this emptied, which a phone could not make anyway. A file the
   phone moved into its Vault that a computer had without the phone knowing
   stays in that computer's Shared folder as well: two copies, neither lost.
@@ -342,7 +342,7 @@ Item 5, the device chosen on Home, was built with Home (draft 3).
   deleted, Recently deleted there naming the S23. The owner's laptop runs a
   Qurb from before this, whose Shared the S23 cannot open until it is updated.
 - **Step 6, the rest of Files, built 2026-10-24** (drafts 3 and 4).
-  `FilesHome.kt`: *This phone* as three tiles -- Vault, Received, Deleted --
+  `FilesHome.kt`: *This phone* as three tiles (Vault, Received, Deleted)
   then a *Shared* card for each computer, then *Devices*, each of the
   phone's own computers leading to its folder there (`KeptScreen.kt`),
   where the Private Vault part has *Add*, and a file of it *Rename*, *Move
@@ -379,8 +379,8 @@ Item 5, the device chosen on Home, was built with Home (draft 3).
   desktop window; and on the S23 and the owner's laptop, which run it since
   2026-10-25 (below), all of it but the installing.
 - **On the owner's S23 and laptop, 2026-10-25.** Before installing, the
-  laptop's `qurb ls` showed none of its 17 shared files held there -- 15 on
-  no device, 2 *not here*, freed on 2026-09-29 -- which is what made leaving
+  laptop's `qurb ls` showed none of its 17 shared files held there (15 on
+  no device, 2 *not here*, freed on 2026-09-29) which is what made leaving
   wait on a computer's confirmed word (step 5). The laptop's `install.sh`
   copies were replaced with a release build of `bacf491` and the window
   started again at 00:06, the same folder, index schema 27 before and after,

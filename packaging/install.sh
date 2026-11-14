@@ -6,7 +6,7 @@
 #
 # Deliberately per-user rather than system-wide: it needs no root, touches
 # nothing outside $HOME, and `--uninstall` genuinely undoes it. A packaged
-# build for distribution is a separate job -- see docs/phases/phase-4-product.md.
+# build for distribution is a separate job: see docs/phases/phase-4-product.md.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -66,7 +66,7 @@ echo "Installed:"
 echo "    $APPS/qurb.desktop"
 echo "    $ICONS/qurb.svg"
 echo "    $BIN/qurb-desktop, $BIN/qurb-tray  and  $BIN/qurb"
-echo "    $AUTOSTART/qurb.desktop  — qurb starts when you log in; turn that off in its Settings"
+echo "    $AUTOSTART/qurb.desktop: qurb starts when you log in; turn that off in its Settings"
 echo
 
 # The menu entry names the program by its full path, always. It must not

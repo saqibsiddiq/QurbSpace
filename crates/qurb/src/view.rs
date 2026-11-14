@@ -1,7 +1,7 @@
 //! What an interface asks a device, when it is not asking what is happening
 //! right now.
 //!
-//! The engine's surface is `reconcile`, `plan_against`, `apply_plan` — the
+//! The engine's surface is `reconcile`, `plan_against`, `apply_plan`: the
 //! verbs of a sync. An interface needs nouns: what devices, what files, what is
 //! available where, what happened, what is still on its way. Those questions
 //! are all answerable from the index, and this is where they are asked, so that
@@ -10,7 +10,7 @@
 //! # Pull, not push
 //!
 //! Everything here is a *query*. Being told when something changes is a
-//! different mechanism with a different shape — the daemon publishes its live
+//! different mechanism with a different shape: the daemon publishes its live
 //! state on [`crate::status`], a `watch` channel, and an interface holds that
 //! open while polling this for detail.
 //!
@@ -23,7 +23,7 @@
 //! # Read-only, and safe while the daemon runs
 //!
 //! Nothing here writes. The index is SQLite in WAL mode, so these queries run
-//! against a live daemon without blocking it or being blocked — which is what
+//! against a live daemon without blocking it or being blocked, which is what
 //! makes it possible for a window to show a folder while it is being synced.
 //! It is also what `qurb status` has always relied on.
 
@@ -34,13 +34,13 @@ use qurb_sync::DeviceId;
 
 /// A paired device, as far as the index knows.
 ///
-/// Durable facts only. Whether a device is reachable *now* is not one of them —
+/// Durable facts only. Whether a device is reachable *now* is not one of them:
 /// that belongs to the daemon's live state, because it is true for as long as a
 /// connection is open and false a moment later. An interface joins the two.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Device {
     pub id: DeviceId,
-    /// Chosen by that device, so display-only — never used to decide anything.
+    /// Chosen by that device, so display-only: never used to decide anything.
     pub name: String,
     /// Short form of the pinned certificate fingerprint: what pairing shows,
     /// and what a person can compare between two screens.
@@ -111,7 +111,7 @@ pub struct File {
 pub struct Storage {
     /// Files in the folder that the index knows about.
     pub files: u64,
-    /// The chunk store: content with no file behind it here — evicted files,
+    /// The chunk store: content with no file behind it here, evicted files,
     /// things being held for other devices, a replica's whole job.
     pub chunks: u64,
     /// The allowance. Zero means none is set.
@@ -172,7 +172,7 @@ pub struct View<'a> {
 
 impl<'a> View<'a> {
     /// `limit` is the configured storage allowance, which lives in the config
-    /// file rather than the index — passed in because this layer does not read
+    /// file rather than the index: passed in because this layer does not read
     /// configuration and should not start.
     pub fn new(store: &'a Store, limit: u64) -> Self {
         Self { store, limit }
@@ -223,7 +223,7 @@ impl<'a> View<'a> {
     /// The one paired device somebody meant, or why that is not clear.
     ///
     /// Matched on the name they gave it, on the fingerprint `qurb status` and
-    /// the devices screen print, and on the device id — because a person
+    /// the devices screen print, and on the device id, because a person
     /// reading any of those should not have to know which one they are looking
     /// at. Case is ignored: these get retyped.
     ///

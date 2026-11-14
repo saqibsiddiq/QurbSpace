@@ -20,7 +20,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # status bar on macOS, the notification area on Windows.
 #
 # Without libxdo, which only the predefined Copy, Paste and Select All items
-# use -- the tray has none -- and whose library is libxdo.so.4 on Arch and
+# use (the tray has none) and whose library is libxdo.so.4 on Arch and
 # libxdo.so.3 on Debian, Ubuntu and Fedora: a tray built on one did not start
 # on the others (found building 0.1.0, 2026-10-18).
 tray-icon = { version = "0.25", default-features = false, features = ["libappindicator"] }
@@ -32,12 +32,12 @@ notify-rust = "4"
 # panics rather than returning an error if it is not.
 gtk = "0.18"
 # To ask whether anything would actually display a tray icon. GNOME ships no
-# StatusNotifier host, so the icon is created successfully and never appears --
+# StatusNotifier host, so the icon is created successfully and never appears:
 # a failure mode no return value reports.
 #
 # zbus's own default runtime, not its `tokio` feature. Features are merged
 # across everything built in one command, and with `tokio` on, every blocking
-# zbus call starts a Tokio runtime -- which panics when called from a Tokio
+# zbus call starts a Tokio runtime, which panics when called from a Tokio
 # task. Built alongside the tray, the desktop's notifications did exactly that
 # (2026-10-05, a "Cannot start a runtime from within a runtime" panic each
 # session, after which no notification was raised again).

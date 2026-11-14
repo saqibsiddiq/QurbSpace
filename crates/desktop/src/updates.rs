@@ -6,7 +6,7 @@
 //! with the updater key, whose public half is in `tauri.conf.json`: a build
 //! not signed with it is refused, wherever it came from. Looked for a minute
 //! after starting and every six hours. Where an update can be put in place
-//! while the window runs -- an AppImage on Linux -- it is, and takes over at
+//! while the window runs (an AppImage on Linux) it is, and takes over at
 //! the next start; on Windows, where installing closes the window, it is
 //! fetched and waits to be installed from Settings. In place, it restarts
 //! itself into the new one once nobody is using the window (N-2). Installed by a package
@@ -79,7 +79,7 @@ fn asks_first(app: &AppHandle) -> bool {
         .is_some_and(|c| c.ask_before_update)
 }
 
-/// Look now, and fetch what is found -- or, with `fetch` false, only say
+/// Look now, and fetch what is found, or, with `fetch` false, only say
 /// that it is there. Never fails: how it went is the state.
 pub async fn look(app: AppHandle, fetch: bool) {
     set(|h| {
@@ -195,7 +195,7 @@ pub fn apply(app: &AppHandle) -> Result<(), String> {
 const QUIET_LOOK: Duration = Duration::from_secs(120);
 
 /// An update in place restarts the program by itself once nobody is using
-/// it -- the window closed, nothing moving, no person's folder open -- as
+/// it (the window closed, nothing moving, no person's folder open) as
 /// the phone installs while the app is away (the owner's review of
 /// 2026-11-03, N-2): a computer that is everyone's server would otherwise
 /// keep the old one for weeks, waiting for a button.

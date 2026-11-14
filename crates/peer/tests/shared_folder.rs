@@ -1,6 +1,6 @@
 //! A computer's shared folder, reached live from phones (decision 0073, item
 //! 6): by its own person's phones and by its guests, one folder at a time,
-//! with the files' bytes -- and never by anyone else, nor any folder shared
+//! with the files' bytes, and never by anyone else, nor any folder shared
 //! without the asker.
 
 use qurb_engine::Engine;

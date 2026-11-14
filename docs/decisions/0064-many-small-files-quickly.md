@@ -1,4 +1,4 @@
-# 0064 — Many small files, quickly: what limits it, and the order of work
+# 0064: Many small files, quickly: what limits it, and the order of work
 
 **Status:** Accepted as a plan, 2026-10-14. Step 1, answering requests in
 parallel, is built and measured on the laptop, not yet on the S23, where it

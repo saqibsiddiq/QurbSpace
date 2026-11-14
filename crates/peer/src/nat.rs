@@ -12,7 +12,7 @@
 //! ```
 //!
 //! Step 3 is the trick. Neither packet is expected by the receiving router, so
-//! the first ones are dropped — but each *outbound* packet teaches its own
+//! the first ones are dropped, but each *outbound* packet teaches its own
 //! router to expect a reply from that address, so once both have sent, the
 //! packets that follow are let through.
 //!
@@ -21,7 +21,7 @@
 //! A router's mapping belongs to one local port. Discovering an address on one
 //! socket and then connecting on another gets a different mapping, and the hole
 //! punched was for an address nobody is listening on. So the same socket does
-//! the STUN query, the punching, and then QUIC — which is why these functions
+//! the STUN query, the punching, and then QUIC, which is why these functions
 //! take a socket rather than making their own, and why [`endpoint_from`] exists.
 
 use crate::error::{Error, Result};
@@ -210,7 +210,7 @@ pub fn discover(socket: &UdpSocket, timeout: Duration) -> Result<Reflexive> {
 ///
 /// Found by asking the routing table rather than by listing interfaces: a UDP
 /// socket *connected* to a remote address sends nothing at all, but makes the
-/// operating system choose a source address — and the one it chooses is the one
+/// operating system choose a source address, and the one it chooses is the one
 /// that would really be used. Listing interfaces instead means guessing between
 /// a wired connection, a wireless one, a virtual machine bridge and three
 /// container networks.
@@ -232,7 +232,7 @@ pub fn routable_address() -> Option<IpAddr> {
 /// Every address on this machine a peer might reach it at.
 ///
 /// Not just the one the default route uses. A machine on a VPN or an overlay
-/// network — Tailscale, WireGuard, a corporate VPN — has a second address that
+/// network (Tailscale, WireGuard, a corporate VPN) has a second address that
 /// reaches peers the default route cannot, and it is often the *only* one that
 /// works: a laptop at home is `192.168.1.4` to its own network and nothing at
 /// all to a phone on a mobile carrier, while its overlay address reaches both.
@@ -242,7 +242,7 @@ pub fn routable_address() -> Option<IpAddr> {
 /// raced in parallel, so offering several costs a few packets and buys the
 /// cases where the first one cannot work.
 ///
-/// Loopback is excluded — a peer dialling `127.0.0.1` reaches itself — and so
+/// Loopback is excluded (a peer dialling `127.0.0.1` reaches itself) and so
 /// is IPv6 link-local, which needs a scope identifier this cannot carry.
 pub fn local_addresses() -> Vec<IpAddr> {
     let Ok(interfaces) = if_addrs::get_if_addrs() else {
@@ -308,7 +308,7 @@ pub fn punch(socket: &UdpSocket, peer: SocketAddr, attempts: usize) -> Result<()
     const KNOCK: &[u8] = b"qurb-knock";
 
     for _ in 0..attempts.max(1) {
-        // A dropped packet here is the expected case, not a failure — the whole
+        // A dropped packet here is the expected case, not a failure: the whole
         // point is that the first ones do not get through.
         let _ = socket.send_to(KNOCK, as_sent_from(socket, peer));
         std::thread::sleep(Duration::from_millis(20));

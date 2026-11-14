@@ -32,7 +32,7 @@ use tokio::sync::mpsc;
 /// How often to sync regardless of whether anything appeared to change.
 ///
 /// A device is *told* when a peer changes, so this is no longer how news
-/// travels — it is the backstop for the cases being told cannot cover: a
+/// travels: it is the backstop for the cases being told cannot cover: a
 /// notification lost with a dropped connection, a peer that was unreachable
 /// when it changed, or a machine coming back from sleep.
 const SWEEP_INTERVAL: Duration = Duration::from_secs(120);
@@ -40,7 +40,7 @@ const SWEEP_INTERVAL: Duration = Duration::from_secs(120);
 /// How often to look for devices paired, and files sent, since the last check.
 ///
 /// The backstop, now. The window that hosts the daemon says so the moment it
-/// pairs or sends -- see [`Daemon::nudged_by`] -- which is when the wait is
+/// pairs or sends (see [`Daemon::nudged_by`]) which is when the wait is
 /// felt: someone who has just scanned a pairing code is watching the screen.
 /// What remains is the terminal doing either while the window runs, which
 /// waits for this. It was five seconds, and each check opens the index: an
@@ -88,8 +88,8 @@ const MAX_RETRY: Duration = Duration::from_secs(120);
 ///
 /// A folder moved to the Trash keeps its inode and loses its name, and the
 /// daemon's open files go with it. On 2026-10-03 one went on syncing a folder
-/// in the Trash for a day and a half, unseen, while the window -- opening the
-/// folder by name -- made a second device where it had been. Checked on the
+/// in the Trash for a day and a half, unseen, while the window (opening the
+/// folder by name) made a second device where it had been. Checked on the
 /// daemon's timers and before every change it applies; a folder that is not
 /// at its name any more stops the daemon, saying why.
 struct Here((u64, u64));
@@ -148,7 +148,7 @@ pub struct Daemon {
     /// of the daemon is the log. An interface supplies one.
     status: Option<crate::status::Publisher>,
     /// Said to when something this daemon should look at has just happened in
-    /// the same process -- a device paired, a file sent -- so it looks now
+    /// the same process (a device paired, a file sent) so it looks now
     /// rather than at the next [`TRUST_INTERVAL`].
     nudge: Option<std::sync::Arc<tokio::sync::Notify>>,
     /// Said to when the person asks for a sync now (the owner's item 8 of
@@ -277,7 +277,7 @@ impl Daemon {
     /// Tell every trusted peer that this device has something for it.
     ///
     /// Sent through the rendezvous service, which forwards it to those that
-    /// are connected and keeps it for those that are not — so a device asleep
+    /// are connected and keeps it for those that are not, so a device asleep
     /// at the moment of a change hears about it when it wakes, rather than at
     /// its own next poll. On a phone that is the difference between seconds
     /// and a quarter of an hour.
@@ -420,14 +420,14 @@ impl Daemon {
         }
         // Before anything else, and held for the whole run. Two daemons on one
         // store contend on the write lock, answer as the same device, and both
-        // enforce the same storage cap -- and none of that reports an error,
+        // enforce the same storage cap, and none of that reports an error,
         // it just behaves oddly. See [`crate::lock`].
         let _lock = match crate::lock::Lock::take(&self.store_dir)? {
             Some(lock) => lock,
             None => anyhow::bail!(
                 "another qurb is already syncing {}.\n\
                  That is either the desktop app or `qurb run` in another \
-                 terminal — only one can, and they are the same daemon.",
+                 terminal: only one can, and they are the same daemon.",
                 self.root.display()
             ),
         };
@@ -473,7 +473,7 @@ impl Daemon {
         // has, and fixing it properly means a listener that can be reconfigured.
         // A live set, not a snapshot. `qurb pair` is a separate process writing
         // to the trust store, so a listener holding the list it read at startup
-        // refuses a device paired a minute later -- and "pair once" then means
+        // refuses a device paired a minute later, and "pair once" then means
         // "pair once, then restart the daemon", which is not what anyone reads
         // it as. Refreshed on every sweep below.
         let trust = qurb_peer::tls::TrustList::new(qurb_peer::accepted_fingerprints(
@@ -504,8 +504,8 @@ impl Daemon {
         );
         // Counted here, before any networking. What this device holds is
         // knowable without reaching anything, and an interface that shows
-        // "0 files" while the store has hundreds -- because the rendezvous
-        // service happens to be down -- is worse than showing nothing.
+        // "0 files" while the store has hundreds (because the rendezvous
+        // service happens to be down) is worse than showing nothing.
         if let Ok(counted) = self.count() {
             self.report(|status| {
                 status.files = counted.files;
@@ -565,7 +565,7 @@ impl Daemon {
             "listening"
         );
         // Tor, the slow last resort (decision 0082): this computer's onion
-        // service, started in the background -- seconds the first time -- and
+        // service, started in the background (seconds the first time) and
         // announced with its addresses once published, so a phone whose
         // network lets nothing direct through can still open its files.
         #[cfg(feature = "tor")]
@@ -797,7 +797,7 @@ impl Daemon {
                 }
 
                 // Which devices are connected, kept current between sync
-                // passes -- which may be minutes apart -- so a device that
+                // passes (which may be minutes apart) so a device that
                 // went away stops being shown as connected within the
                 // half-minute it takes the connection to time out. Only while
                 // something is connected: an arm switched off is not polled,
@@ -842,8 +842,8 @@ impl Daemon {
                 // A peer has just become reachable.
                 //
                 // This is what makes syncing with a phone work. A phone is
-                // announced only while it is awake -- twenty-odd seconds in a
-                // background window -- and a daemon that discovers it by
+                // announced only while it is awake (twenty-odd seconds in a
+                // background window) and a daemon that discovers it by
                 // retrying on a backoff is not asking during those seconds.
                 // Worse, the backoff grows *because* the phone keeps being
                 // absent, so the two drift further apart the longer it goes on.
@@ -873,8 +873,8 @@ impl Daemon {
                     // (2026-10-28).
                     // Unless it says it has news: a phone that has just sent
                     // something says so, and its news did not come down the
-                    // connection listened on -- a phone's pass starts afresh
-                    // -- so a send waited 25 s for that connection to lapse
+                    // connection listened on (a phone's pass starts afresh)
+                    // so a send waited 25 s for that connection to lapse
                     // (the owner, 2026-11-13: "isnt instant as hell").
                     let arrived: std::collections::BTreeSet<Fingerprint> = arrived
                         .into_iter()
@@ -928,7 +928,7 @@ impl Daemon {
             // One gone and one come in the same look is, nearly always, a
             // device that took its permanent identity (decision 0079): the
             // same device under a new fingerprint, not a pairing and a
-            // removal -- which is how it read in the log on 2026-11-01.
+            // removal, which is how it read in the log on 2026-11-01.
             if added.len() == 1 && removed.len() == 1 {
                 tracing::info!(from = %removed[0].short(), to = %added[0].short(), "a device took a new identity");
             } else {
@@ -990,8 +990,8 @@ impl Daemon {
     /// The storage allowance, read fresh.
     ///
     /// From the file rather than from the copy loaded at startup, so that
-    /// changing it — with `qurb config`, or by moving the slider in the
-    /// window — takes effect on a daemon that is already running. A setting
+    /// changing it (with `qurb config`, or by moving the slider in the
+    /// window) takes effect on a daemon that is already running. A setting
     /// that needs a restart to apply is a setting people will think is broken.
     fn limit(&self) -> u64 {
         Config::load(&self.store_dir).map(|c| c.limit).unwrap_or(self.config.limit)
@@ -1149,8 +1149,8 @@ impl Daemon {
     /// private, read fresh, for the same reason as [`limit`]: both are
     /// switches in the window's Settings.
     ///
-    /// A downloads setting that fails to resolve -- a hand-edited file naming
-    /// somewhere inside the folder -- leaves the engine where it was and says
+    /// A downloads setting that fails to resolve (a hand-edited file naming
+    /// somewhere inside the folder) leaves the engine where it was and says
     /// so, rather than starting to write deliveries somewhere that would sync
     /// them.
     ///
@@ -1204,7 +1204,7 @@ impl Daemon {
         let mut attempted = peers.ready();
         // A device that just said it is there first, then the others by when
         // each was last reached. In turn and 21 s each, devices that never
-        // answer -- a phone's identities from before it was set up again --
+        // answer (a phone's identities from before it was set up again)
         // otherwise came before a phone that had just gone onto mobile data,
         // and it was reached only once it was home again (2026-11-13).
         if let Ok(store) = self.open_store() {
@@ -1243,7 +1243,7 @@ impl Daemon {
                     if moved > 0 {
                         tracing::info!(peer = %peer.short(), files = moved, "synced");
                         // What arrived from one peer is news for the others.
-                        // Not for the peer it came from, which already knows —
+                        // Not for the peer it came from, which already knows:
                         // telling it back would have the two of them nudging
                         // each other about the same change indefinitely.
                         generation.bump();
@@ -1253,7 +1253,7 @@ impl Daemon {
                 Err(e) => {
                     // Not an error worth stopping for. A peer that is switched
                     // off is the normal case in a system built on the
-                    // assumption that devices are not always on -- so that is
+                    // assumption that devices are not always on, so that is
                     // only worth a debug line. One the rendezvous service has
                     // just said is there is different: it is on, and the path
                     // to it failed, which is the thing to know when a sync
@@ -1484,7 +1484,7 @@ impl Daemon {
         }
 
         // The paths before applying, because a plan is consumed by it. These
-        // are what a "recently synced" list is made of -- files arriving from
+        // are what a "recently synced" list is made of: files arriving from
         // another device, which is the part a person did not do themselves and
         // therefore the part worth telling them about.
         //
@@ -1543,7 +1543,7 @@ impl Daemon {
 /// How often a transfer's progress is published, at most.
 ///
 /// Often enough that a bar moves smoothly to the eye, rarely enough that a
-/// fast local transfer -- hundreds of megabytes a second -- is not spending
+/// fast local transfer (hundreds of megabytes a second) is not spending
 /// its time telling a window about itself.
 const PUBLISH_EVERY: std::time::Duration = std::time::Duration::from_millis(250);
 
@@ -1708,8 +1708,8 @@ impl Peers {
 
     /// Which trusted peer a rendezvous identifier belongs to.
     ///
-    /// The identifier is blinded — derived from the master key and the peer's
-    /// fingerprint — so the rendezvous service cannot link it to a device, and
+    /// The identifier is blinded (derived from the master key and the peer's
+    /// fingerprint) so the rendezvous service cannot link it to a device, and
     /// neither can anyone without the key. Recovering the fingerprint means
     /// re-deriving the identifier for each peer we trust and looking for a
     /// match. That is a handful of hashes against a list of a person's own
@@ -1780,7 +1780,7 @@ impl Peers {
     async fn next_change(&mut self) -> Fingerprint {
         match self.changes.1.recv().await {
             Some(peer) => peer,
-            // The sender is held by this struct, so this cannot happen -- but
+            // The sender is held by this struct, so this cannot happen, but
             // returning would busy-loop the select, so wait instead.
             None => std::future::pending().await,
         }
@@ -1885,7 +1885,7 @@ impl Peers {
     }
 
     /// Record a failure. Returns whether the peer had just been announced as
-    /// there -- in which case the failure is news rather than routine.
+    /// there: in which case the failure is news rather than routine.
     fn failed(&mut self, peer: Fingerprint) -> bool {
         let expected = self.announced.remove(&peer);
         self.connections.remove(&peer);
@@ -1958,7 +1958,7 @@ mod tests {
     }
 
     /// A transfer is shown while it moves and gone the moment it stops, with
-    /// its bytes counted -- including those that arrived since the last time
+    /// its bytes counted: including those that arrived since the last time
     /// anything was published.
     #[test]
     fn a_transfer_appears_moves_and_goes() {
@@ -2090,7 +2090,7 @@ mod tests {
     }
 
     /// A device removed from the trust store is let go of: its connection
-    /// closed, not merely forgotten -- the peer's watcher holds a reference of
+    /// closed, not merely forgotten, the peer's watcher holds a reference of
     /// its own, and a connection kept open by it would keep syncing.
     #[tokio::test(flavor = "multi_thread")]
     async fn a_removed_device_is_disconnected() {
@@ -2132,7 +2132,7 @@ mod tests {
 
     /// A device shown as connected is one a connection is actually held to,
     /// with the route it takes, and stops being shown the moment that
-    /// connection ends -- not at the next sync pass, which may be minutes away.
+    /// connection ends, not at the next sync pass, which may be minutes away.
     #[tokio::test(flavor = "multi_thread")]
     async fn a_connection_that_ends_stops_being_shown() {
         let dir = tempfile::tempdir().unwrap();

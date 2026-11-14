@@ -45,7 +45,7 @@ import uniffi.qurb_mobile.KeptFolder
  * a sheet or slides by their pages, turned into a PDF by the computer
  * (LibreOffice there); anything else, its kind and size and *Open in an app*.
  * At the top, close, the name, where it is in the folder, *Open*; at the
- * foot, what the folder page gives -- Share, Copy, Details, Delete.
+ * foot, what the folder page gives: Share, Copy, Details, Delete.
  */
 object Peek {
 

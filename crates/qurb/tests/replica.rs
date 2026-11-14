@@ -65,7 +65,7 @@ fn a_replica_materialises_nothing() {
 /// A replica's directory is empty by design. If it ran the ordinary
 /// reconciliation, the walk would find nothing, conclude that every file it
 /// holds had been deleted, and propagate those tombstones to every device that
-/// trusts it — destroying the library it exists to protect.
+/// trusts it: destroying the library it exists to protect.
 #[test]
 fn a_replica_does_not_tombstone_what_it_holds() {
     let dir = tempfile::tempdir().unwrap();

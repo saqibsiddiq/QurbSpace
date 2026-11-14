@@ -12,8 +12,8 @@
 //! entries in place of the kept ones, and checks the result against the
 //! fingerprint of the other device's whole list as it is now. A counter that
 //! missed a change therefore costs a fetch, never a wrong list. A device that
-//! does not send changes -- too old, too much changed, or a computer keeping
-//! this device's vault sealed -- is asked the fingerprint alone, and the list
+//! does not send changes (too old, too much changed, or a computer keeping
+//! this device's vault sealed) is asked the fingerprint alone, and the list
 //! is fetched whole only when it differs from the kept one's.
 //!
 //! [`Request::TreeSince`]: crate::wire::Request::TreeSince
@@ -155,8 +155,8 @@ fn rebuilt(kept: Vec<FileVersion>, changed: Vec<FileVersion>) -> Vec<FileVersion
 
 impl PeerClient {
     /// What changed in this device's list since its counter stood at `since`,
-    /// or `None` from a device too old to say -- which fails the one request,
-    /// and the connection goes on -- or with too much changed to send apart.
+    /// or `None` from a device too old to say (which fails the one request,
+    /// and the connection goes on) or with too much changed to send apart.
     pub async fn tree_since(&self, since: u64) -> Result<Option<ListChanges>> {
         match self.request(Request::TreeSince { since }).await {
             Ok(Response::TreeDelta { now, digest, changed }) => Ok(Some(ListChanges { now, digest, changed })),
@@ -195,8 +195,8 @@ impl PeerClient {
                     }
                     tracing::info!(peer = %peer.short(), changed = count, "its file list rebuilt did not match; fetching it whole");
                 }
-                // Not sending changes -- a computer keeping this device's
-                // vault sealed, or too much changed -- it may still say
+                // Not sending changes (a computer keeping this device's
+                // vault sealed, or too much changed) it may still say
                 // whether the list is the one kept (decision 0071).
                 None => {
                     if self.tree_digest().await? == Some(kept.digest) {

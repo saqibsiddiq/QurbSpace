@@ -1,6 +1,6 @@
 # qurb-relay
 
-The fallback path, for when two devices cannot reach each other directly — a
+The fallback path, for when two devices cannot reach each other directly: a
 symmetric NAT at both ends, or UDP blocked outright.
 
 ```
@@ -19,12 +19,12 @@ the first one already solved.
 So the relay forwards **datagrams**, and an ordinary QUIC session runs inside:
 same pinned certificates, same handshake, same encryption. Nothing above the
 transport knows the relay is there. The relay sees ciphertext addressed to an
-identifier it cannot link to a person, and can only pass bytes on or drop them —
+identifier it cannot link to a person, and can only pass bytes on or drop them:
 and dropping is what every router between any two computers can already do.
 
 `RelaySocket` implements quinn's `AsyncUdpSocket`, so a relay connection *is* a
 socket as far as QUIC is concerned. Relayed peers are given addresses from the
-RFC 5737 documentation range, which is never routed — if one appears in a log it
+RFC 5737 documentation range, which is never routed: if one appears in a log it
 is unambiguously relayed rather than somewhere a packet really went.
 
 The mapping between those addresses and relay identifiers goes both ways and is
@@ -48,8 +48,8 @@ that carries only TLS by name. The frames are the same either way.
 ## Staying on
 
 A socket made with `RelaySocket::connect` or `RelaySocket::redialling` dials
-its relay again when the connection goes -- a restart, a reboot, a rendezvous
-service that came up after the device -- waiting one second and doubling to a
+its relay again when the connection goes (a restart, a reboot, a rendezvous
+service that came up after the device) waiting one second and doubling to a
 minute, and registers every name it holds on the new connection. Until it is
 back, what QUIC sends is dropped, as over any lost path, and `link()` says
 `Down`, so a device does not dial a peer through it. A socket made `over` one
@@ -71,7 +71,7 @@ carries. A connection that has not registered cannot forward anything, so this
 is not an open proxy for whoever finds the port.
 
 Registration is self-asserted. The identifier is not guessable, so claiming
-someone else's means already knowing it — which means being inside a group whose
+someone else's means already knowing it, which means being inside a group whose
 devices have paired. **The residual risk:** someone who learns an identifier can
 receive that device's relayed packets. They cannot read them, but they can stop
 the real device getting them. See

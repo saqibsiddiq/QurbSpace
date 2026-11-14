@@ -2,8 +2,8 @@
 //!
 //! A file opened from a person's folder is written into memory-backed space
 //! (`$XDG_RUNTIME_DIR/qurb-open`, decision 0067), since nothing of it may be
-//! left readable on disk. That space is a slice of memory -- 1.6 GB on the
-//! owner's laptop -- and on 2026-10-15 a 1.6 GB episode did not fit: the
+//! left readable on disk. That space is a slice of memory (1.6 GB on the
+//! owner's laptop) and on 2026-10-15 a 1.6 GB episode did not fit: the
 //! write failed, and what it had written filled the space, which the
 //! desktop's own sessions keep their sockets in.
 //!
@@ -82,7 +82,7 @@ pub fn media_type(name: &str) -> Option<&'static str> {
     })
 }
 
-/// Serve `content` -- a file of `person`'s folder, called `name`, of `kind` --
+/// Serve `content` (a file of `person`'s folder, called `name`, of `kind`)
 /// from the store at `store_dir`, and return the address a player opens it at.
 pub fn serve(
     store_dir: &Path,
@@ -255,8 +255,8 @@ fn answer(stream: TcpStream) -> std::io::Result<()> {
     };
     while index < chunks.len() && starts[index] < end {
         // The folder locked while this played: stopped, within a chunk. By
-        // the window, or by itself -- idle ten minutes, or the computer
-        // asleep longer -- which until 2026-10-18 left the address playing
+        // the window, or by itself (idle ten minutes, or the computer
+        // asleep longer) which until 2026-10-18 left the address playing
         // on. Playing is using it, so the idle time starts again.
         let still = SERVER.get().and_then(|s| s.open.lock().ok().map(|open| open.contains_key(token)));
         if still != Some(true) || served.person.is_some_and(|p| qurb_peer::openings::key(&p).is_none()) {
@@ -357,7 +357,7 @@ mod tests {
         let wrong = url.replace(url.split('/').nth(3).unwrap(), "0000");
         assert!(get(&wrong, None).0.starts_with("HTTP/1.1 404"));
 
-        // Locked other than from the window -- idle, or asleep -- and the
+        // Locked other than from the window (idle, or asleep) and the
         // address plays nothing more.
         qurb_peer::openings::lock(&person);
         assert!(get(&url, None).1.is_empty(), "played on after the folder locked");

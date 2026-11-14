@@ -16,7 +16,7 @@
 //! ```
 //!
 //! Start with [`Store`]. The layers beneath it are public so that the sync
-//! engine can work at whatever level it needs — chunk by chunk when talking to
+//! engine can work at whatever level it needs: chunk by chunk when talking to
 //! a peer, whole files when talking to the filesystem.
 //!
 //! See ../../docs/CODEBASE.md for how this fits into the wider system.

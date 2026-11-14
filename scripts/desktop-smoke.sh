@@ -11,21 +11,21 @@
 #                                              # second device that runs
 #
 # Sets a device up through the window, opens every place, adds a second device
-# by the code the window shows, and sends it a file -- through the real
+# by the code the window shows, and sends it a file: through the real
 # application, its real commands and the real engine. Fails if any command the
 # window calls returns an error. See scripts/desktop_smoke.py for the steps.
 #
 # Why this exists: the fixture page (experiments/desktop-fixtures) answers the
 # window's commands from made-up data, so it cannot see a command that fails
 # in the application itself. "Show a code" failed that way every time for five
-# days -- a synchronous command opening a QUIC endpoint outside the Tokio
-# runtime -- while the fixture showed a working screen.
+# days (a synchronous command opening a QUIC endpoint outside the Tokio
+# runtime) while the fixture showed a working screen.
 #
 # How, without synthetic input (which does not reach a window under Wayland):
 # Tauri lets WebKit's own WebDriver control its web view when
 # TAURI_WEBVIEW_AUTOMATION=true, and GTK's Broadway backend gives the window a
 # display of its own that is not on anybody's screen. Everything else is
-# isolated too: its own home, config, runtime directory -- so it neither finds
+# isolated too: its own home, config, runtime directory, so it neither finds
 # your running qurb nor writes to your folder.
 #
 # Needs broadwayd (GTK 3), WebKitWebDriver (webkit2gtk-4.1) and python3.

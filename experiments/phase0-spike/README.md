@@ -32,7 +32,7 @@ cargo build --release
 ```
 
 ```bash
-# NAT classification — run on every network you care about
+# NAT classification: run on every network you care about
 ./target/release/quictest stun
 ```
 
@@ -43,7 +43,7 @@ cargo build --release
 ```
 
 Running `chunkbench` with no argument generates a 2 GiB synthetic corpus. Set
-`SPIKE_SCRATCH` to a disk-backed path first — it defaults to `/tmp`, which on
+`SPIKE_SCRATCH` to a disk-backed path first: it defaults to `/tmp`, which on
 many Linux systems is a RAM-backed tmpfs the corpus will fill.
 
 Prefer real files over the synthetic corpus. The synthetic deduplication figure
@@ -59,7 +59,7 @@ These are why this code is disposable:
   has to solve.
 - **No encryption or compression.** Chunks are stored in the clear. The real
   engine compresses with Zstd and encrypts with ChaCha20-Poly1305 before writing.
-- **`mmap` without handling concurrent truncation** — SIGBUS if another process
+- **`mmap` without handling concurrent truncation**: SIGBUS if another process
   truncates a file mid-read.
 - **QUIC peer verification disabled.** Real peer identity comes from Noise IK
   over static Curve25519 keys, not the web PKI. The self-signed certificates

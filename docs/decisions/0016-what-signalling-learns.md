@@ -1,4 +1,4 @@
-# 0016 — What the signalling server is allowed to learn
+# 0016: What the signalling server is allowed to learn
 
 **Status:** Accepted
 **Date:** 2026-09-16
@@ -24,8 +24,8 @@ no filename, and never sees a chunk.
 
 A rendezvous service has an unavoidable weakness: it exists to introduce devices,
 so it necessarily learns that some set of addresses belong together. Run
-naively — devices registering under an account name, or under their real
-fingerprints — it would also learn *whose* devices these are, and could build a
+naively (devices registering under an account name, or under their real
+fingerprints) it would also learn *whose* devices these are, and could build a
 map of every user, their devices, and their locations over time. That is a more
 valuable database than the files it was carefully prevented from seeing.
 
@@ -45,7 +45,7 @@ is inherent to being a rendezvous point.
 
 **The group identifier is a bearer secret.** Anyone holding one can enumerate
 that group's addresses. It is derived from the master key precisely so that only
-the user's own devices have it — but it means the signalling channel must be
+the user's own devices have it, but it means the signalling channel must be
 encrypted, and the client refuses a plain `ws://` URL to anywhere but the local
 machine. Connections still require pinned certificates, so a leaked identifier
 exposes addresses rather than data.
@@ -57,8 +57,8 @@ groups are active and when.
 
 The data plane is QUIC over UDP, and reusing it here would have been tidier.
 
-It would also fail exactly when it is needed. If UDP is blocked — which is
-precisely the situation in which a device most needs coordinating — a UDP
+It would also fail exactly when it is needed. If UDP is blocked (which is
+precisely the situation in which a device most needs coordinating) a UDP
 control channel cannot even tell that device that it needs a relay. The channel
 that arranges the fallback has to work where the fallback is needed.
 

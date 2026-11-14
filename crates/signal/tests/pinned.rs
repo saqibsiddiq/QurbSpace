@@ -3,7 +3,7 @@
 //! This is what a small deployment actually looks like: a host with an IP
 //! address, no domain name, and nobody willing to sign a certificate for
 //! `203.0.113.5`. The connection still has to be encrypted, because the
-//! identifiers devices announce under are bearer secrets — so the certificate
+//! identifiers devices announce under are bearer secrets, so the certificate
 //! is self-signed and the device is told its fingerprint in advance.
 
 use qurb_keys::MasterKey;

@@ -8,7 +8,7 @@
 //!
 //! That reasoning had never been exercised, and it turned out to be wrong. The
 //! writer decides which chunks it already has *before* opening the transaction
-//! that references them, so collection could remove one in the gap — the lock
+//! that references them, so collection could remove one in the gap: the lock
 //! protects the collector's own work, not a check someone else made earlier.
 //!
 //! SQLite caught it as a foreign-key violation rather than letting a dangling
@@ -174,7 +174,7 @@ fn collecting_while_another_connection_writes_never_removes_live_data() {
 #[test]
 fn rewriting_content_that_collection_just_removed_succeeds() {
     // The race, forced rather than waited for. Content is written, deleted, and
-    // collected — so its chunks are gone from both the index and the disk — and
+    // collected (so its chunks are gone from both the index and the disk) and
     // then the identical content is written again. A writer that trusted a
     // stale check would reference chunks that no longer exist.
     let dir = tempfile::tempdir().unwrap();

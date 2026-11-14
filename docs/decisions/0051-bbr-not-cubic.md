@@ -1,6 +1,6 @@
-# 0051 — QUIC paces by measured bandwidth (BBR), not by loss (Cubic)
+# 0051: QUIC paces by measured bandwidth (BBR), not by loss (Cubic)
 
-**Status:** Accepted — built; measured with the spike and through the app,
+**Status:** Accepted, built; measured with the spike and through the app,
 10.6–12.1 MB/s against 5 (see *Checked, and not*); explains what
 [0050](0050-large-files-from-a-phone.md)'s eight-in-flight did not
 **Date:** 2026-10-05

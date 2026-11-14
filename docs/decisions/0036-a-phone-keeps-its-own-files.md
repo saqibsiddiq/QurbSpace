@@ -1,9 +1,9 @@
-# 0036 — A phone keeps its own files, and another device holds them for it
+# 0036: A phone keeps its own files, and another device holds them for it
 
-**Status:** Accepted — built in the engine, on the desktop and in the phone app, and verified between a Galaxy S23 and the laptop.
+**Status:** Accepted, built in the engine, on the desktop and in the phone app, and verified between a Galaxy S23 and the laptop.
 Amended by [0049](0049-adding-a-file-puts-it-where-you-are-looking.md): a file
-added with a choice of area — *Add files* in Files or Private Vault, or the
-share sheet's choice — goes into that area; the default below governs the rest.
+added with a choice of area (*Add files* in Files or Private Vault, or the
+share sheet's choice) goes into that area; the default below governs the rest.
 And by [0073](0073-the-phone-works-with-its-computer.md), 2026-10-24: a phone
 keeps no shared area, so everything it adds goes into its vault, and the app's
 *Keep new files private* is gone; the setting remains for desktops (`own-files`).
@@ -33,7 +33,7 @@ again.
 
 The two alternatives each lose half of that:
 
-- **Shared by default** — today's behaviour — makes every photo on the phone
+- **Shared by default** (today's behaviour) makes every photo on the phone
   appear on the desktop. That is the opposite of a private vault.
 - **Private, held nowhere else** means "Free phone space" can never be offered.
   [Decision 0030](0030-sending-a-file-to-one-device.md) forbids counting a copy
@@ -53,7 +53,7 @@ The two alternatives each lose half of that:
   recipient takes it. A held vault is kept until the owner deletes the file, and
   then for the retention window like any other tombstone.
 - **On the owner, the holder's copy counts.** It is recorded as a copy the owner
-  can ask back — the non-private kind of replica record — so the storage cap and
+  can ask back (the non-private kind of replica record) so the storage cap and
   "Free local space" may rely on it. This is the one case in which a copy inside
   a vault counts, and it counts only for that vault's owner.
 - **The holder's allowance applies, and it never drops a held copy to make
@@ -70,7 +70,7 @@ What stops the desktop showing the phone's vault is the protocol and the
 desktop's own code, not cryptography.
 
 Making it cryptographic was considered and rejected. It needs a vault key the
-holder never has, and the 24 words could not restore that key either — so
+holder never has, and the 24 words could not restore that key either, so
 losing the phone would also lose the copy the desktop was keeping for it. The
 backup would fail in exactly the case it exists for.
 
@@ -111,7 +111,7 @@ protocol version bump like 0030's. That is settled when it is built.
   [phase 5](../phases/phase-5-mobile.md), "A file sent to the phone came straight
   back"). Making the vault a phone's *default* makes clashes ordinary rather
   than rare, so this decision has to give the two areas separate places on
-  disk, or an equally structural answer — not rely on the refusal.
+  disk, or an equally structural answer, not rely on the refusal.
 - **Which devices hold by default.** The brief's picture is "the desktop". The
   engine has no notion of device kind, so the first version lets the owner
   choose, offering every paired device that has a folder and an allowance.
@@ -141,8 +141,8 @@ file another device's private files into its own folder, so the protocol goes
 from `qurb/1` to `qurb/2` and the two refuse to talk.
 
 **On the holder, a held row is marked as such** (`files.held`, index schema
-V12). It sits in the owner's vault like a send does — scope is the owner, bytes
-in the chunk store, nothing in the folder — and differs in three ways that each
+V12). It sits in the owner's vault like a send does (scope is the owner, bytes
+in the chunk store, nothing in the folder) and differs in three ways that each
 matter:
 
 - it is **never released**. Releasing a send once the recipient has it is right;
@@ -157,7 +157,7 @@ A send the owner has collected becomes held when the owner's list names it:
 the same bytes, now kept for the owner rather than on the way to them.
 
 **The owner keeps a list of holders** (`holders`), and its server shows its own
-vault, as *hold*, only to a device on that list — tree, manifest and chunk
+vault, as *hold*, only to a device on that list: tree, manifest and chunk
 alike, checked the way decision 0029's checks are.
 
 **A phone's new files go into its own vault.** A store flag, set by the phone
@@ -168,9 +168,9 @@ than the shared area. A desktop leaves it off.
 taken into a held row; a *hold* tombstone tombstones it. A file that is simply
 absent from the owner's list is **left alone**. The alternative, deleting what
 the owner no longer lists, would make a phone that was wiped, or whose index was
-lost, delete its own backup on the holder at the first sync — the backup
+lost, delete its own backup on the holder at the first sync: the backup
 failing in exactly the case it exists for. The cost is that a holder away for
-longer than the owner keeps tombstones — seven days — keeps a file the owner
+longer than the owner keeps tombstones (seven days) keeps a file the owner
 deleted. That is disk, not data.
 
 **The owner counts the holder's copy.** The holder confirms each file it holds
@@ -195,9 +195,9 @@ for one works as for the shared area, from the holder's *held* entries.
 
 ## Progress
 
-- **2026-09-27 — the four areas and `qurb/2`.** On the wire; nothing produced
+- **2026-09-27: the four areas and `qurb/2`.** On the wire; nothing produced
   or acted on them yet.
-- **2026-09-27 — storage.** Index schema V12: `files.held` and the `holders`
+- **2026-09-27: storage.** Index schema V12: `files.held` and the `holders`
   list. A store can be told to file new local files in its own vault; a holder
   can keep a file for its owner (`hold_file`) and drop it only on the owner's
   tombstone (`unhold`); freeing space covers a device's own vault. Held rows
@@ -207,8 +207,8 @@ for one works as for the shared area, from the holder's *held* entries.
   Found on the way: the list of sends waiting to be collected included every
   row in this device's *own* vault, so a device keeping received files in its
   folder would have listed them as waiting for itself.
-- **2026-09-27 — the server and the engine.** A device's own vault is shown,
-  as *hold*, only to its holders -- tree, manifest and chunk. A holder keeps
+- **2026-09-27 (the server and the engine.** A device's own vault is shown,
+  as *hold*, only to its holders) tree, manifest and chunk. A holder keeps
   what it is shown and drops it on a tombstone; the owner fetches its own freed
   files back from the entries marked *held*. The desktop gained `own-files =
   private`, `qurb holders` and `qurb free`.
@@ -220,23 +220,23 @@ for one works as for the shared area, from the holder's *held* entries.
 
   **Verified** with two devices on the laptop, one set to `own-files =
   private`: a 3 MiB photo was held by the other within about 2 seconds and
-  appeared nowhere on it -- not in its folder, its listing or its history.
+  appeared nowhere on it, not in its folder, its listing or its history.
   Freeing it on the phone was refused until then, and allowed after. Fetched
   back in about 8 seconds, SHA-256 identical. Deleting it on the phone made the
   holder let go within about 2 seconds. Also 6 engine tests and a network test;
   the privacy checks were each removed and their tests seen to fail.
-- **2026-09-27 — the phone's interface.** The FFI can now keep a phone's new
+- **2026-09-27: the phone's interface.** The FFI can now keep a phone's new
   files private (`Settings.ownFilesPrivate`), name and list holders, free a
   file (`OnlyCopy` when nobody else has it), fetch it back, send, cancel a
   send, and read history; tested through the same calls the app will make.
-- **2026-09-27 — the phone app.** Files added on the phone are private by
+- **2026-09-27: the phone app.** Files added on the phone are private by
   default, with *Keep new files private* in Settings to turn that off from the
   next file (`set_own_files_private`, tested). The Devices screen chooses who
   keeps them; the Vault says where each file's bytes are and offers *Free phone
   space* and *Download*; Home says how many files are only on the phone and
   what to do about it. Installed on a Galaxy S23 and its screens checked
   against the phone's real data.
-- **2026-09-27 — verified on hardware.** The Galaxy S23 and the laptop's own
+- **2026-09-27: verified on hardware.** The Galaxy S23 and the laptop's own
   `~/qurb`, on the same Wi-Fi, with no rendezvous service reachable from the
   phone, driven through the phone's screens. The desktop chosen on the Devices
   screen; a 3 MiB file of random bytes added through the system picker went in
@@ -257,9 +257,9 @@ for one works as for the shared area, from the holder's *held* entries.
 - ~~**Not yet:** the app using any of it. The setting stays off until the
   rebuilt screens can name a holder, so a phone's files still go to the shared
   area.~~ Written before the 2026-09-27 entries above, and overtaken by them.
-- **2026-09-29 — the designed app.** Private Vault became a place inside
+- **2026-09-29 (the designed app.** Private Vault became a place inside
   Files, each with its own *Add files*, and an add goes into the area it was
-  made from — [0049](0049-adding-a-file-puts-it-where-you-are-looking.md).
+  made from) [0049](0049-adding-a-file-puts-it-where-you-are-looking.md).
 
 ## Reversing it
 

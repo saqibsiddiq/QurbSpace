@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Write components/icon-paths.ts: the Lucide icons the site uses, taken from
 // the desktop window's own sprite (crates/desktop/ui/icons.js), so the site
-// and the app draw exactly the same icons. To add one, add its name below --
+// and the app draw exactly the same icons. To add one, add its name below:
 // and, if the window does not have it yet, to scripts/desktop-icons.py first.
 //
 //     node scripts/icons.mjs

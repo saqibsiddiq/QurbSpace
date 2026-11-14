@@ -54,7 +54,7 @@ object Devices {
      * A picture from the photo picker as this phone gives it: the middle
      * square, [SIDE] pixels across, as a JPEG. Turned upright on Android 9
      * and later, whose decoder reads the camera's orientation; on 8 a photo
-     * taken sideways stays sideways (a known gap -- the S23 runs 14).
+     * taken sideways stays sideways (a known gap: the S23 runs 14).
      */
     fun encode(context: Context, uri: Uri): ByteArray {
         val whole = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {

@@ -1,4 +1,4 @@
-# 0063 — Backing up a phone's folders, chosen on the desktop
+# 0063: Backing up a phone's folders, chosen on the desktop
 
 **Status:** Accepted, 2026-10-14, with the owner's answers below. Amended
 2026-10-25: chosen as a tree, at any depth (below). Built the
@@ -262,7 +262,7 @@ showed *Backing up*, 18 folder files waiting for the laptop; one sync over
 the Wi-Fi at 11:47 took them, and Home said *All synced*. The laptop's index,
 read afterwards: chosen for the S23, *Android/media*, *DCIM/Camera*,
 *DCIM/Screenshots*, *Download*, *Movies* and *Pictures*; held of them, 38,075
-files, 26.3 GB -- *Android* 36,166 files and 11.4 GB of it, since
+files, 26.3 GB, *Android* 36,166 files and 11.4 GB of it, since
 *Android/media* holds WhatsApp's folder, which the WhatsApp backup keeps as
 well: the same bytes stored once, the files listed twice. Not seen: the
 S23's *Folders* page itself, by anyone but the owner.

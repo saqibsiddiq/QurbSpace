@@ -21,8 +21,8 @@ import uniffi.qurb_mobile.PeerInfo
 /**
  * Which of this phone's folders back up (decision 0063), as a file explorer
  * shows them (the owner's review of 2026-11-02, F-1 to F-4): one page for each
- * folder, its folders as rows -- name, size, a tick, and an arrow to open it
- * -- a path at the top, a search through every folder, and *Select all* for
+ * folder, its folders as rows (name, size, a tick, and an arrow to open it)
+ * a path at the top, a search through every folder, and *Select all* for
  * the folder on screen. A tick is all of a folder, a dash some of what is
  * inside it, empty none; ticking a folder takes everything inside it, folders
  * added later too. What is chosen, and that it goes over Wi-Fi only, stays
@@ -184,7 +184,7 @@ class FoldersScreen(
     }
 
     /** A row: the folder's icon, name and size, its tick, and an arrow when
-     *  there are folders inside it -- the row then opens it, the tick chooses. */
+     *  there are folders inside it: the row then opens it, the tick chooses. */
     private fun line(folder: OwnFolder?, name: String, under: String?, tick: FolderTick, opens: Boolean,
                      keeper: PeerInfo, onTick: () -> Unit): View {
         val row = LinearLayout(app).apply {

@@ -1,7 +1,7 @@
 //! Folders shared with chosen devices (decision 0044).
 //!
 //! Three devices, each serving the others only what its own rules let that
-//! device see -- the tree a real connection would carry -- and each taking
+//! device see (the tree a real connection would carry) and each taking
 //! only what its own rules let it take. The promise under test: a device a
 //! folder is not shared with never receives what is in it, cannot put itself
 //! back in, and keeps what it already had.
@@ -105,7 +105,7 @@ fn a_folder_shared_with_some_devices_never_reaches_the_others() {
     assert_eq!(phone.read("Family/beach.jpg").as_deref(), Some("the beach"));
     assert_eq!(tablet.read("Family/beach.jpg"), None, "the tablet was shown a folder not shared with it");
     assert_eq!(tablet.read("notes.txt").as_deref(), Some("for everyone"));
-    // It knows the rule -- which is how it knows not to ask -- and nothing more.
+    // It knows the rule (which is how it knows not to ask) and nothing more.
     assert!(tablet.engine.store().sharing().unwrap().covering("Family/x").is_some());
 
     // And asking for the bytes by hash is refused as well as not listed.

@@ -2,7 +2,7 @@
 //!
 //! Both sides present a certificate and both sides check the other against a
 //! list they were given in advance. There is no certificate authority and no
-//! name checking — a device's identity *is* its certificate, so the only
+//! name checking: a device's identity *is* its certificate, so the only
 //! question is whether this is the certificate we were told to expect.
 //!
 //! # Why the signature check matters
@@ -50,7 +50,7 @@ fn provider() -> Arc<CryptoProvider> {
 /// "Pair once" has to mean once.
 ///
 /// A read lock is taken per handshake, which is a handful of fingerprint
-/// comparisons against a list of one person's own devices — not a hot path.
+/// comparisons against a list of one person's own devices, not a hot path.
 #[derive(Clone, Default)]
 pub struct TrustList {
     allowed: Arc<std::sync::RwLock<Vec<Fingerprint>>>,
@@ -89,10 +89,10 @@ impl TrustList {
     }
 
     /// Re-read the trust store, through `reread`, when a peer not in the list
-    /// connects -- at most once a second -- and accept it if it is there now.
+    /// connects (at most once a second) and accept it if it is there now.
     ///
-    /// A device paired by another process -- `qurb pair` beside the window's
-    /// daemon -- was refused on its first connection: the list here was a
+    /// A device paired by another process (`qurb pair` beside the window's
+    /// daemon) was refused on its first connection: the list here was a
     /// copy, refreshed on a timer, and the phone's first sync after joining
     /// came four seconds too early (2026-10-05). The limit is so that an
     /// unknown device knocking repeatedly costs one read a second, not one per
@@ -146,7 +146,7 @@ struct Pinned {
     /// Hole punching opens a handshake it *wants* to fail: the packets are the
     /// point, and it pins its own fingerprint so nothing can complete. Without
     /// this flag every punch logs `WARN rejected an unrecognised peer`, which
-    /// reads exactly like a device being refused for real — and sent one
+    /// reads exactly like a device being refused for real, and sent one
     /// investigation chasing a trust bug that did not exist while the actual
     /// failure sat two lines above in DEBUG.
     expect_rejection: bool,
@@ -506,8 +506,8 @@ fn client_config_inner(
 ///
 /// Cubic reads every lost packet as congestion and backs off, and Wi-Fi loses
 /// a fraction of a percent of packets for reasons that have nothing to do with
-/// congestion. From a Galaxy S23 to the laptop over home Wi-Fi -- a path that
-/// carried 15 MB/s of raw UDP at 0.1–0.4% loss -- Cubic sent 5.2 to 5.3 MB/s
+/// congestion. From a Galaxy S23 to the laptop over home Wi-Fi (a path that
+/// carried 15 MB/s of raw UDP at 0.1–0.4% loss) Cubic sent 5.2 to 5.3 MB/s
 /// and BBR 12.5 to 14.0. See decision 0051.
 fn paced_by_bandwidth(transport: &mut quinn::TransportConfig) {
     transport.congestion_controller_factory(Arc::new(quinn::congestion::BbrConfig::default()));
@@ -567,7 +567,7 @@ mod trust_tests {
     }
 
     /// Clones share one list. If they did not, the daemon would be updating a
-    /// copy nobody consults — which is exactly the bug this replaced, in a
+    /// copy nobody consults, which is exactly the bug this replaced, in a
     /// harder-to-see form.
     #[test]
     fn clones_share_one_list() {

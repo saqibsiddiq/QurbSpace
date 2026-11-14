@@ -48,7 +48,7 @@ impl Manifest {
 
 /// Split a file into content-defined chunks and hash each one.
 ///
-/// Memory-maps the input so the peak RSS stays flat regardless of file size --
+/// Memory-maps the input so the peak RSS stays flat regardless of file size:
 /// the OS pages it in and out under us. That property is the whole reason this
 /// can run inside an iOS FileProvider extension later.
 pub fn chunk_file(path: &Path) -> Result<Manifest> {
@@ -59,7 +59,7 @@ pub fn chunk_file(path: &Path) -> Result<Manifest> {
         return Ok(Manifest { file_hash: blake3::hash(b""), size: 0, chunks: Vec::new() });
     }
 
-    // SAFETY: we accept the usual mmap caveat -- if another process truncates
+    // SAFETY: we accept the usual mmap caveat, if another process truncates
     // this file mid-read we get a SIGBUS. Fine for a spike; the real engine
     // will need to handle concurrent modification anyway.
     let mmap = unsafe { memmap2::Mmap::map(&file)? };

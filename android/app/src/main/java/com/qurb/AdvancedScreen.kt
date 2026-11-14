@@ -95,7 +95,7 @@ class AdvancedScreen(app: MainActivity) : Screen(app) {
     }
 
     /**
-     * The relay, for when two devices cannot reach each other directly --
+     * The relay, for when two devices cannot reach each other directly:
      * which on mobile data is often. Checked by the engine's own rule as it is
      * saved, so a mistyped address is refused here rather than found out by
      * every sync after.

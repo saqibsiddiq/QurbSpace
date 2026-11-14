@@ -1,4 +1,4 @@
-# 0085 — `~/qurb` holds Shared and a folder for each phone
+# 0085: `~/qurb` holds Shared and a folder for each phone
 
 **Status:** Accepted and built, 2026-11-10 (`999486a`, `1e1af78`), at the
 owner's word during the S23 pass ([testing.md](../testing.md), pass 4).
@@ -42,8 +42,8 @@ only, yes.
   owner's look after the change has not happened yet.
 
 - **Each phone opens only its own folder** (2026-11-12). An ask for a
-  phone's folder is filed under that phone -- the one in use now, following a
-  folder's newest identity to whatever replaced it -- and the computer
+  phone's folder is filed under that phone (the one in use now, following a
+  folder's newest identity to whatever replaced it) and the computer
   answers *Asks* and *Unlock* from one of the owner's phones about that
   phone's own folder only, knowing the phone by its certificate. No change to
   the wire: the phone never named a folder, and still does not need to.
@@ -62,8 +62,8 @@ only, yes.
   person's key, and any of their phones opens it; the phone's question says
   "this phone's folder" there too, which is not quite so for a guest with
   two phones.
-- A phone folder whose phone is gone for good -- removed, never set up again
-  -- can no longer be opened: no phone is left to say yes. Before, any other
+- A phone folder whose phone is gone for good (removed, never set up again)
+  can no longer be opened: no phone is left to say yes. Before, any other
   of the owner's phones could.
 
 Measured 2026-11-12 on the owner's laptop, with everything kept locally and

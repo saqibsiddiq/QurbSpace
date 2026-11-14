@@ -153,7 +153,7 @@ async fn another_devices_vault_cannot_be_fetched_by_hash() {
         .set_scope("secret.txt", Some(&third.device_id()))
         .unwrap();
 
-    // The guest knows the content hash — it is just a hash of the bytes, and a
+    // The guest knows the content hash: it is just a hash of the bytes, and a
     // guest that once saw the file, or guessed, would have it.
     let content = blake3::hash(secret);
     let chunks = host
@@ -180,7 +180,7 @@ async fn another_devices_vault_cannot_be_fetched_by_hash() {
 }
 
 /// The owner of a vault can read it. "Private" means private from others, not
-/// write-only — a device must be able to get its own data back.
+/// write-only: a device must be able to get its own data back.
 #[tokio::test(flavor = "multi_thread")]
 async fn a_device_can_read_its_own_vault() {
     let mut host = Device::new();
@@ -247,8 +247,8 @@ async fn a_sent_file_arrives_in_the_recipients_folder() {
 
     host.write("shared.txt", b"everybody sees this");
 
-    // The sender picks a file from anywhere -- a share sheet hands over a path
-    // outside the synced folder -- and names it for the recipient.
+    // The sender picks a file from anywhere (a share sheet hands over a path
+    // outside the synced folder) and names it for the recipient.
     let outgoing = host.root.parent().unwrap().join("outgoing.bin");
     fs::write(&outgoing, b"for the guest, and nobody else").unwrap();
     host.engine
@@ -478,7 +478,7 @@ async fn a_delivery_onto_an_occupied_name_is_filed_beside_it() {
     assert_eq!(fs::read(guest.root.join(&filed[0])).unwrap(), b"the host's report");
 
     // Taken, under the name it was filed as: the next sync takes nothing.
-    // It used to be taken again on every one -- recorded as taken only under
+    // It used to be taken again on every one: recorded as taken only under
     // the name it was filed as, it was looked for under the name it was sent
     // as, and never found (the S23, 2026-10-19).
     let (addr, fingerprint) = serve(&host, &[guest.identity.fingerprint()]);

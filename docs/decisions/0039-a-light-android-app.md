@@ -1,7 +1,7 @@
-# 0039 — A light Android app, on the platform's own views
+# 0039: A light Android app, on the platform's own views
 
 **Status:** Accepted. Amended 2026-10-15: the development phone runs a release
-built with the debug key — see [The phone ran a debug build](#the-phone-ran-a-debug-build).
+built with the debug key, see [The phone ran a debug build](#the-phone-ran-a-debug-build).
 **Date:** 2026-09-27
 
 ## Decision
@@ -25,8 +25,8 @@ set as the goal when asked which interface toolkit to use. Concretely:
 ## Measured
 
 Galaxy S23 (SM-S911B), Android 16, 2026-09-27. Each build installed over the
-previous one with the same signing key, so the app's data — 21 files, one
-paired device — was the same throughout. Cold start is `am start -W` TotalTime,
+previous one with the same signing key, so the app's data (21 files, one
+paired device) was the same throughout. Cold start is `am start -W` TotalTime,
 15 launches, force-stopped between, screen woken before each; a launch behind
 the lock screen aborts the run.
 
@@ -34,7 +34,7 @@ the lock screen aborts the run.
 |---|---|---|---|
 | APK | 46.7 MB | 26.6 MB | **10.7 MB** |
 | engine library, arm64 | 9.1 MB | 9.1 MB | **7.7 MB** |
-| app code, dex | — | 14.2 MB | **3.0 MB** |
+| app code, dex | none | 14.2 MB | **3.0 MB** |
 | code in memory (PSS) | 26.4 MB | 16.5 MB | **8.1 MB** |
 | Java heap (PSS) | 13.6 MB | 6.3 MB | **5.5 MB** |
 | cold start, median | 524 ms ¹ | 177 ms / 200 ms ² | **174 ms / 176 ms** ² |
@@ -86,7 +86,7 @@ divided by 1024.
 ## The designed app, measured
 
 On 2026-09-29 the five tabs were rebuilt to the design direction
-([0048](0048-the-design-direction.md)) — still on the platform's views, with
+([0048](0048-the-design-direction.md)): still on the platform's views, with
 no new UI library. What it added that a phone carries: three weights of Inter
 (246,724 bytes of TrueType), 53 Lucide icons as vector drawables, and a few
 dozen layer and shape drawables for the glass. Sheets blur what is behind them
@@ -148,7 +148,7 @@ conditions for both.)
 ## Why not Compose
 
 Compose would bring its own UI runtime and compiler plugin into every build,
-and on a fresh install its code runs interpreted until Android compiles it —
+and on a fresh install its code runs interpreted until Android compiles it:
 which is exactly the cold start the goal is about. The app is a handful of
 lists, a few forms and a camera preview; the platform's views do all of that,
 are already here, and cost nothing extra. The design system the product brief

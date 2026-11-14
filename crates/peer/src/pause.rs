@@ -5,7 +5,7 @@
 //!
 //! Paused, a device behaves as one that is off: it starts no passes, and a
 //! connection from another device is closed at its next request, so the
-//! other side sees it unreachable -- quietly, as it would a computer asleep --
+//! other side sees it unreachable (quietly, as it would a computer asleep)
 //! rather than failing file by file.
 
 use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};

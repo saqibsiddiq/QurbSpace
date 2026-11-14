@@ -87,8 +87,8 @@ Two things this changes:
   backup is encrypted, and reports differ on whether a new phone can open a
   `.crypt14` one copied into place (the key may come from WhatsApp's servers
   after the number is verified, or may stay on the old phone). Testing it
-  needs WhatsApp registered on the emulator -- whose official APK carries
-  x86_64 code and starts there -- with a number that is not anybody's active
+  needs WhatsApp registered on the emulator (whose official APK carries
+  x86_64 code and starts there) with a number that is not anybody's active
   WhatsApp. There is none yet.
 - **Writing into WhatsApp's folder on a Samsung phone.** Shown on the
   emulator; not tried on the S23.

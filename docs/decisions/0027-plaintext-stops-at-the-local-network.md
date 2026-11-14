@@ -1,4 +1,4 @@
-# 0027 — Plaintext rendezvous stops at the local network
+# 0027: Plaintext rendezvous stops at the local network
 
 **Status:** Accepted
 **Date:** 2026-09-22
@@ -6,7 +6,7 @@
 ## Decision
 
 A plain `ws://` rendezvous URL is accepted for **this machine and the local
-network** — loopback, RFC 1918 and link-local addresses — and refused for
+network** (loopback, RFC 1918 and link-local addresses) and refused for
 anywhere else. Reaching a rendezvous service across the internet requires
 `wss://`, and the client now has TLS to do it with.
 
@@ -18,7 +18,7 @@ data shares one of those with the rest of the carrier.
 qurb's whole promise is syncing from anywhere. Tested from mobile data for the
 first time, it did not sync at all, and the reasons were instructive:
 
-1. The phone was configured with `ws://192.168.1.4:9000` — the laptop's address
+1. The phone was configured with `ws://192.168.1.4:9000`: the laptop's address
    on its home network, which from a mobile carrier is not an address at all.
    Nothing could have worked.
 2. There was no rendezvous service reachable from the internet to point it at.
@@ -28,7 +28,7 @@ first time, it did not sync at all, and the reasons were instructive:
 
 The third is the one worth a decision record, because the code already
 contained the right rule and did not apply it. `SignalClient::connect` refused
-plaintext to a remote host, exactly as its documentation said — and every
+plaintext to a remote host, exactly as its documentation said, and every
 caller in the codebase used `connect_insecure` instead. The guard existed, was
 documented, was tested, and was bypassed everywhere.
 
@@ -65,4 +65,4 @@ and it has the same deployment question.
 
 **A hostname is treated as remote**, even one that resolves to a private
 address. It could resolve anywhere, and a name is precisely the case where a
-certificate is obtainable — so the rule costs nothing there.
+certificate is obtainable, so the rule costs nothing there.

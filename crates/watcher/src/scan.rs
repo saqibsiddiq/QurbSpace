@@ -81,7 +81,7 @@ fn prefer(entry: &ScanEntry) -> (bool, &Path) {
 
 /// Entries whose distinct filenames normalise to one logical path.
 ///
-/// Only possible on a filesystem that keeps the spellings apart — `café`
+/// Only possible on a filesystem that keeps the spellings apart: `café`
 /// written two ways is two files on Linux and one on macOS. Since the index is
 /// keyed by the normalised path it can hold only one of them, so indexing both
 /// would silently drop whichever was written second, and syncing them would
@@ -91,7 +91,7 @@ fn prefer(entry: &ScanEntry) -> (bool, &Path) {
 /// decision. The caller drops the extra entries and tells the user.
 ///
 /// Takes a slice ordered as [`scan`] returns it, and preserves that order
-/// within each group — so the entry to keep is the first, and every device
+/// within each group, so the entry to keep is the first, and every device
 /// keeping the first keeps the same one.
 pub fn normalization_collisions(entries: &[ScanEntry]) -> Vec<Vec<ScanEntry>> {
     let mut groups: Vec<Vec<ScanEntry>> = Vec::new();
@@ -125,7 +125,7 @@ pub fn normalization_collisions(entries: &[ScanEntry]) -> Vec<Vec<ScanEntry>> {
 /// Both normalisations exist for one reason: the logical path is what gets
 /// stored in the index and sent to peers, so two devices looking at the same
 /// file must produce the same string. A file synced from Windows as
-/// `notes\a.txt` must be the same file on Linux, not a second one — and a file
+/// `notes\a.txt` must be the same file on Linux, not a second one, and a file
 /// named `café` must be the same file on macOS, which is the harder case.
 ///
 /// See [`normalize`] for why the Unicode half matters.
@@ -315,7 +315,7 @@ mod tests {
     #[test]
     fn this_filesystem_is_probed_not_assumed() {
         // Asserts the probe runs and agrees with what the platform actually
-        // does, rather than asserting a particular answer -- the answer depends
+        // does, rather than asserting a particular answer: the answer depends
         // on the machine the tests are run on.
         let dir = tempfile::tempdir().unwrap();
         let detected = is_case_insensitive(dir.path());

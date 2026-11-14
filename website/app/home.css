@@ -2182,7 +2182,7 @@ html.lenis {
   will-change: transform;
   animation: room-drift 9s linear infinite;
 }
-/* One tile's distance, so it loops seamlessly — moved, not repainted. */
+/* One tile's distance, so it loops seamlessly: moved, not repainted. */
 @keyframes room-drift {
   to {
     transform: translate3d(46px, -46px, 0);

@@ -1,8 +1,8 @@
 //! A connector lets go of everything it started when it is dropped.
 //!
 //! A phone builds one for every sync pass and drops it at the end
-//! (decision 0020). What it started in the background -- the beacon sender and
-//! listener, the loop that keeps reconnecting to the rendezvous service -- was
+//! (decision 0020). What it started in the background (the beacon sender and
+//! listener, the loop that keeps reconnecting to the rendezvous service) was
 //! never stopped. Found on a Galaxy S23 a minute after a pass: three beacon
 //! listeners, one per pass since the app started, a reconnect loop still
 //! looking up a rendezvous address every twenty seconds, and beacons still

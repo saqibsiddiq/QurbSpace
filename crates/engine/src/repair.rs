@@ -2,14 +2,14 @@
 //!
 //! Verification finds chunks that are missing or that no longer hash to their
 //! own name. Finding them is not the same as fixing them, and until now nothing
-//! did the second part — a corrupt chunk was detected and then left in place,
+//! did the second part: a corrupt chunk was detected and then left in place,
 //! making every file that used it permanently unreadable on this device even
 //! though a peer had a perfect copy.
 //!
 //! Repair is only possible because content is addressed by hash. A damaged
 //! chunk is not a lost chunk: it is a chunk whose bytes are wrong, and any peer
 //! holding the same content can supply the right ones. Nothing has to be
-//! reconciled or agreed — the hash says exactly what is wanted.
+//! reconciled or agreed: the hash says exactly what is wanted.
 
 use crate::peer::ContentSource;
 use crate::{Engine, Error, Result};
@@ -45,8 +45,8 @@ impl Engine {
     /// # Order of operations
     ///
     /// The damaged payload is discarded *before* the replacement is fetched.
-    /// That looks backwards — it widens the window in which the file is
-    /// unreadable — but the alternative is worse: storing the refetched content
+    /// That looks backwards (it widens the window in which the file is
+    /// unreadable) but the alternative is worse: storing the refetched content
     /// while the bad payload is still on disk would find the chunk already
     /// "present" and keep the damaged copy, leaving repair silently doing
     /// nothing. A file that was already unreadable is not made worse by being
@@ -132,7 +132,7 @@ impl Engine {
         // from a bad disk look like an edit and propagate it to every peer.
         //
         // `rewrite_payloads` rather than `adopt`, because adopt trusts the index
-        // when the content hash matches — which it does here, since the bytes
+        // when the content hash matches, which it does here, since the bytes
         // are the ones that were supposed to be on disk all along.
         self.store_mut().rewrite_payloads(&version, &bytes, mtime)?;
         Ok(())

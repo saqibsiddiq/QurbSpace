@@ -186,7 +186,7 @@ function closePanel() {}
 // One row for each device files are going to or coming from, as on the
 // phone (the owner's review of 2026-11-03, H-1): which way, the device's
 // circle and name, a stack of the files' previews with a ring over the one
-// moving, a number, a size, and a chip only when it waits on something --
+// moving, a number, a size, and a chip only when it waits on something,
 // "Open the app" for a phone, which takes what it was sent only while
 // QurbSpace is open on it (decision 0082), "Off" for a computer.
 
@@ -234,7 +234,7 @@ function docFace(path) {
 
 /** A file's preview into `el` when it can be had here: a picture's own, a
  * document's page, its kind's icon otherwise. Put first, so that what is
- * laid over it -- a ring, a tick -- stays over it. */
+ * laid over it (a ring, a tick) stays over it. */
 function previewInto(el, path) {
   const kind = kindOf(path);
   const face = kind === "text" || kind === "code" ? docFace(path) : icon(fileIcon(path));
@@ -274,7 +274,7 @@ function waitingWho(g) {
 
 /** One row of Waiting as option A (the owner, 2026-11-03; D2): one picture
  * with the other device's face on its corner, a title whose verb says the
- * way, one quiet line -- amber only when it waits on you -- and how far it
+ * way, one quiet line (amber only when it waits on you) and how far it
  * has got. */
 function waitingRow(g, onclick) {
   const n = g.files.length;

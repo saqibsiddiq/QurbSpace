@@ -9,7 +9,7 @@
 //! # Why this exists at all
 //!
 //! The servers hold no key, so nobody can reset a forgotten one. These words
-//! are not a backup of the key — they *are* the key, in a form a person can
+//! are not a backup of the key: they *are* the key, in a form a person can
 //! write on paper. Everything about how they are presented follows from that.
 
 use crate::error::{Error, Result};
@@ -47,7 +47,7 @@ impl RecoveryPhrase {
     ///
     /// Tolerant about presentation and strict about content: any run of
     /// whitespace separates words, case is ignored, and surrounding space is
-    /// dropped — but the checksum must be right and the words must be real.
+    /// dropped, but the checksum must be right and the words must be real.
     /// People copy these off paper, across line breaks, with a trailing space.
     pub fn parse(input: &str) -> Result<Self> {
         let normalised = input.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase();

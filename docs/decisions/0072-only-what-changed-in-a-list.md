@@ -1,4 +1,4 @@
-# 0072 — Only what changed in a device's file list is sent
+# 0072: Only what changed in a device's file list is sent
 
 **Status:** Accepted, 2026-10-20. Built in `qurb_storage` (index schema 27)
 and `qurb_peer` (`wire`, `server`, `trees`). The laptop has run it since

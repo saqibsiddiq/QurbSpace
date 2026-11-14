@@ -1,11 +1,11 @@
-# Phase 2 — Adversarial correctness
+# Phase 2: Adversarial correctness
 
-**Status:** complete — kill criterion passed 2026-09-16
+**Status:** complete, kill criterion passed 2026-09-16
 **Target:** months 4–5
 **Kill criterion:** convergence failures that cannot be explained.
 
 The phase most projects skip and then regret. Phase 1 proved the system works;
-this one is about what it does when things go wrong — and whether we find out
+this one is about what it does when things go wrong, and whether we find out
 before users do.
 
 ## Progress
@@ -24,14 +24,14 @@ before users do.
 
 293 tests pass across six crates; clippy is clean.
 
-**The kill criterion — convergence failures that cannot be explained — was not
+**The kill criterion (convergence failures that cannot be explained) was not
 met.** Every failure this phase produced was explained, and four of them were
 real defects that are now fixed.
 
 ## Property-based testing
 
 The Phase 1 convergence tests ran a hand-rolled loop over fixed seeds. That
-found a real bug, which is why it existed — but it could only find bugs inside
+found a real bug, which is why it existed, but it could only find bugs inside
 the shapes the generator happened to produce, and a failure arrived as a 30-step
 transcript to read by hand.
 
@@ -42,18 +42,18 @@ becomes a permanent regression test rather than something seen once.
 
 Twenty-one properties, in three groups.
 
-**The version vector algebra** — comparison is antisymmetric, merge is
+**The version vector algebra**: comparison is antisymmetric, merge is
 commutative, associative and idempotent, a merge dominates both inputs,
 absorbing something already seen changes nothing, incrementing moves strictly
 forward, encoding round-trips, and equal vectors encode identically however they
 were built. These are the laws every higher-level guarantee rests on.
 
-**Resolution** — the outcome is symmetric (both devices reach the same answer
+**Resolution**: the outcome is symmetric (both devices reach the same answer
 with no negotiation), every resolution dominates both sides, identical content
 never conflicts, and a conflict always keeps both contents. That last one is
 decision 0005's promise expressed as a property rather than an example.
 
-**Whole histories** — random sequences of edits, deletes and syncs across two
+**Whole histories**: random sequences of edits, deletes and syncs across two
 and three devices, asserting convergence of both visible state and recorded
 history, that no work remains afterwards, that syncing again changes nothing,
 that no content appears which nobody wrote, and that settling never takes more
@@ -66,8 +66,8 @@ two devices trading files forever while the battery drains.
 ## Crash injection
 
 Not simulated. A real child process writes into a store and is killed with
-`SIGKILL` — no unwinding, no destructors, no flush of anything not already
-fsynced — and the store is then opened and checked.
+`SIGKILL` (no unwinding, no destructors, no flush of anything not already
+fsynced) and the store is then opened and checked.
 
 The invariant being defended is the one the write ordering exists for: **a chunk
 referenced by the index always exists on disk.** Writes go payload-first, so a
@@ -80,7 +80,7 @@ drift, every indexed file readable, and everything the writer confirmed still
 present.
 
 A check that the test is not vacuous: at a 150ms kill the writer had confirmed
-11 files and 12 chunk files existed on disk. That twelfth chunk is the orphan —
+11 files and 12 chunk files existed on disk. That twelfth chunk is the orphan:
 the kill landed mid-write, which is exactly the window being tested.
 
 The surviving-data assertion is worth stating precisely. SQLite in WAL mode with
@@ -90,7 +90,7 @@ lose nothing it confirmed, and the tests assert that rather than assuming it.
 
 ## Clock skew
 
-Ordering never consults wall-clock time — that is the version vector's job — and
+Ordering never consults wall-clock time (that is the version vector's job) and
 these tests exist to prove it rather than assert it.
 
 A device three days in the past, another ten years in the future, three devices
@@ -136,7 +136,7 @@ Now handled, as [decision 0013](../decisions/0013-case-collisions.md):
   phone joins.
 
 Folding is ASCII-only, via SQLite's `lower()`. That misses collisions in other
-scripts — Turkish dotted I among them — and catches what actually occurs. A full
+scripts (Turkish dotted I among them) and catches what actually occurs. A full
 Unicode fold belongs with normalisation work, which this is not.
 
 ## Repairing damage
@@ -151,8 +151,8 @@ a chunk whose bytes are wrong, and the hash says exactly what is wanted. Nothing
 has to be reconciled or agreed.
 
 Two details worth recording. The damaged payload is discarded **before** the
-replacement is fetched, which widens the window in which the file is unreadable
-— but the alternative leaves the bad payload in place, and the refetched content
+replacement is fetched, which widens the window in which the file is unreadable:
+but the alternative leaves the bad payload in place, and the refetched content
 then finds the chunk already "present" and keeps the damaged copy, so repair
 silently does nothing. And the source is **not trusted**: refetched bytes are
 checked against the hash before being written, because writing unverified bytes
@@ -162,7 +162,7 @@ undetectable one.
 ### A bug found while building it
 
 Repair did not work at first, for an instructive reason. `put_file` short-
-circuits when the content hash already matches the index — the optimisation that
+circuits when the content hash already matches the index: the optimisation that
 makes an unchanged file cost a stat instead of a read, and the reason a warm
 re-index of 100k files takes 1.13 seconds.
 
@@ -182,7 +182,7 @@ free or catastrophically expensive.
 
 Renaming `project` to `archive` sorts the additions first, so the content is
 still on disk under the old name and nothing crosses the wire. Renaming
-`project` to `renamed` sorts the deletions first — so the old paths are
+`project` to `renamed` sorts the deletions first, so the old paths are
 tombstoned, the content lookup finds nothing, and **the entire tree is
 re-transferred**.
 
@@ -191,7 +191,7 @@ zero in the other. A user tidying up a folder would have re-downloaded their
 library or not, depending on the alphabet.
 
 Two fixes. Content is now looked up **by hash across all paths including
-tombstoned ones** — "do we have these bytes?" is a question about chunks, not
+tombstoned ones**: "do we have these bytes?" is a question about chunks, not
 about names, and a deleted file's chunks survive the retention window. And
 `apply_plan` now orders **additions before removals**, which also shortens the
 window in which a renamed file exists at neither path.
@@ -203,7 +203,7 @@ The test now covers both sort directions, because the bug only appeared in one.
 Renaming or deleting a directory propagated correctly in the index and left the
 other device holding a skeleton of empty folders. Every file was in the right
 place and what the user saw was their old directory apparently half-deleted.
-Empty parents are now pruned up to — never including — the synced root.
+Empty parents are now pruned up to (never including) the synced root.
 
 ## Hostile peers
 
@@ -233,7 +233,7 @@ been exercised.
 a live writer produced a foreign-key violation within seconds.
 
 The writer decides which chunks it already holds *before* opening the
-transaction that references them. Collection can remove one in that gap — and it
+transaction that references them. Collection can remove one in that gap, and it
 only ever removes chunks nothing references, which is exactly what a chunk about
 to be referenced looks like until the reference exists. The write lock protects
 the collector's own work; it does nothing about a check somebody else made
@@ -252,7 +252,7 @@ and the store, and anything that vanished is written again before the reference
 is made. The ordinary case costs one query per chunk and writes nothing.
 
 `rewriting_content_that_collection_just_removed_succeeds` forces the race
-deterministically rather than waiting for it — write, delete, collect twice so
+deterministically rather than waiting for it: write, delete, collect twice so
 the payloads are genuinely gone, then write the identical content again.
 
 One thing this also made deliberate rather than accidental: the busy timeout is
@@ -276,7 +276,7 @@ Five real defects, none of which any Phase 1 test would have caught:
 5. **Contention behaviour was undecided**, inherited from a library default.
 
 Every one is the same shape: **correct in isolation, wrong in combination.**
-Each component did what its own tests said. The defects lived in the seams —
+Each component did what its own tests said. The defects lived in the seams:
 between an optimisation and a recovery path, between an ordering and a lookup,
 between two connections to one database.
 
@@ -296,7 +296,7 @@ core the earlier phases built is sound. What this phase found were the joins.
   can lose recent commits when the machine loses power, which a `SIGKILL` does
   not exercise. Testing it properly needs a virtual machine that can be cut off
   mid-write.
-- **Filesystem-level corruption** beyond a flipped bit in a chunk — a truncated
+- **Filesystem-level corruption** beyond a flipped bit in a chunk: a truncated
   index, a damaged WAL, a disk returning stale reads.
 - **Unicode normalisation.** Case folding is handled; macOS storing NFD where
   Linux stores NFC is the larger half of the same problem and is untouched.

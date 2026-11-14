@@ -1,4 +1,4 @@
-# 0086 — The person's controls, on the phone and the computer
+# 0086: The person's controls, on the phone and the computer
 
 **Status:** Accepted and built, 2026-11-12. The engine's parts are covered by
 tests (`qurb_peer::pause`, `tests/pause.rs`, `qurb_cli::reset`, the config

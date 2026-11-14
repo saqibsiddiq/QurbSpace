@@ -26,7 +26,7 @@ pub struct SignalClient {
     /// The reader task parks on the socket waiting for a message that may never
     /// come, so it cannot notice on its own that nobody is listening any more.
     /// Without this a dropped client leaves its connection open until something
-    /// else happens to it — one leaked connection per abandoned client, and the
+    /// else happens to it: one leaked connection per abandoned client, and the
     /// server goes on offering its stale address to peers.
     tasks: Vec<tokio::task::JoinHandle<()>>,
 }
@@ -43,8 +43,8 @@ impl SignalClient {
     /// Connect and announce.
     ///
     /// Refuses a plain `ws://` URL to anywhere but this machine. Rendezvous
-    /// identifiers are bearer secrets — anyone who sees one can enumerate that
-    /// group's addresses — so sending them unencrypted across a network would
+    /// identifiers are bearer secrets (anyone who sees one can enumerate that
+    /// group's addresses) so sending them unencrypted across a network would
     /// hand them to everyone on the path. Tests and local development use
     /// [`connect_insecure`](Self::connect_insecure), which says what it is.
     pub async fn connect(
@@ -106,7 +106,7 @@ impl SignalClient {
             })
         };
         // Bounded, because nothing else bounds it. A service that accepts the
-        // connection and never answers used to hold this forever -- and with
+        // connection and never answers used to hold this forever, and with
         // it a phone's sync, whatever deadline the phone had asked for, and a
         // desktop's start. A refused or unroutable address fails by itself;
         // only a silent one needs this.
@@ -197,7 +197,7 @@ impl SignalClient {
 
     /// Say how this device can be woken while it is not connected.
     ///
-    /// For devices that cannot hold a socket open — phones. A desktop never
+    /// For devices that cannot hold a socket open: phones. A desktop never
     /// needs this: it is already here. `None` withdraws it.
     pub fn reachable_via(&self, token: Option<String>) -> Result<()> {
         self.send(FromClient::Reachable { via: token })
@@ -214,7 +214,7 @@ impl SignalClient {
 
 /// Whether plaintext to this URL stays off the open internet.
 ///
-/// Two places it does. This machine, obviously. And the local network — a
+/// Two places it does. This machine, obviously. And the local network: a
 /// laptop and a phone on the same Wi-Fi, which is how qurb is set up before
 /// anyone has hosted anything, and where requiring a certificate would mean
 /// requiring a certificate for `192.168.1.4`, which nobody can get.
@@ -253,7 +253,7 @@ pub(crate) fn is_local(url: &str) -> bool {
             // Not carrier-grade NAT (100.64/10), and the reason is worth
             // stating because it is not obvious. That range is where overlay
             // networks like Tailscale put their addresses, and traffic on one
-            // of those is already encrypted — plaintext there would be fine.
+            // of those is already encrypted: plaintext there would be fine.
             // It is also where a mobile carrier puts its subscribers. From a
             // URL there is no way to tell the two apart, and the failure is
             // one-directional: treating an overlay as untrusted costs a
@@ -272,7 +272,7 @@ pub(crate) fn is_local(url: &str) -> bool {
                 || (ip.segments()[0] & 0xfe00) == 0xfc00
                 || (ip.segments()[0] & 0xffc0) == 0xfe80
         }
-        // A hostname. It could resolve anywhere, so it is treated as remote —
+        // A hostname. It could resolve anywhere, so it is treated as remote:
         // which for a name means `wss://`, and a name is exactly the case
         // where getting a certificate is possible.
         Err(_) => false,

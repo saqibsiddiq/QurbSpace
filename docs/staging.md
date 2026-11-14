@@ -14,7 +14,7 @@ Chosen 2026-11-01, with no money or card for a server yet. Costs nothing:
   127.0.0.1:9000` with push), published by **Tailscale Funnel** at
   `wss://saqib.tail86283c.ts.net`. The relay is the one `qurb signal` carries
   at `/relay` beside it, which every device uses when nothing else is set
-  (`relay_for`) — over HTTPS, so it also passes networks that let only web
+  (`relay_for`): over HTTPS, so it also passes networks that let only web
   traffic out. Checked from the public internet on 2026-11-01: a WebSocket
   at `/` and at `/relay` answered 101 through Funnel's public address.
 - **Apps**: releases name this address as their default
@@ -24,22 +24,22 @@ Chosen 2026-11-01, with no money or card for a server yet. Costs nothing:
 - **Dashboard**: Grafana Cloud's free tier, fed by Grafana Alloy on the
   laptop: `sudo packaging/staging/install-alloy.sh` installs Grafana's own
   release of it (v1.21.3), checked against its published SHA-256, as a
-  service of its own user — not a distribution package: on 2026-11-01 every
+  service of its own user, not a distribution package: on 2026-11-01 every
   Arch and CachyOS mirror answered 404 for the build the laptop's package
   list named, and Grafana's one-line installer is for Debian and Red Hat
   only. It asks for the stack's values and keeps the token root-only, and
   installs [packaging/staging/config.alloy](../packaging/staging/config.alloy).
   It sends the laptop's traffic, CPU, memory and disk, and **only the
-  rendezvous service's log** — narrower than Grafana's template, which sends
+  rendezvous service's log**: narrower than Grafana's template, which sends
   every program's journal, and the QurbSpace app's log, which names files.
 
 **What this lacks**, stated: staging is up only while the laptop is awake
-and online — it suspends when idle, by the owner's choice — and the
+and online (it suspends when idle, by the owner's choice) and the
 laptop's upload is every tester's relay. Moving to a server later is steps
 1–4 below, and a new `QURB_DEFAULT_SIGNAL`.
 
 **Found while checking it**: the rendezvous test tool's introductions time
-out intermittently — 2 to 6 of 8 back-to-back runs at worst, locally and
+out intermittently, 2 to 6 of 8 back-to-back runs at worst, locally and
 through Funnel alike, 8 of 8 at other times. Not Funnel; not yet explained.
 Being looked into separately.
 
@@ -70,8 +70,8 @@ tried on real networks before anyone else sees it:
   the phone). No separate staging build is needed.
 - **The dashboard** is Grafana Cloud's free tier, fed by a small agent
   (Grafana Alloy) on the server: the services' logs and the server's
-  traffic. Counts of QurbSpace's own — devices connected, introductions,
-  bytes relayed — need the services to report them, which they do not yet
+  traffic. Counts of QurbSpace's own (devices connected, introductions,
+  bytes relayed) need the services to report them, which they do not yet
   (step 6).
 - **The website** stays on Vercel; every branch already gets a preview
   address there, free.
@@ -80,7 +80,7 @@ tried on real networks before anyone else sees it:
 
 | what | where | cost |
 |---|---|---|
-| server | Hetzner Cloud, smallest shared x86 plan (2 vCPU, 4 GB), Germany or Finland | about €4–5 a month — check the price shown when ordering — with 20 TB of traffic included, which is what the relay spends |
+| server | Hetzner Cloud, smallest shared x86 plan (2 vCPU, 4 GB), Germany or Finland | about €4–5 a month (check the price shown when ordering) with 20 TB of traffic included, which is what the relay spends |
 | domain | qurb.cloud, already yours | nothing more: two names under it |
 | dashboard | Grafana Cloud free tier | nothing (14 days of logs; ample for one server) |
 | website | Vercel, as now | nothing |
@@ -94,41 +94,41 @@ are.
 
 ## The steps
 
-**1. Server — you.** Make an account at hetzner.com/cloud (a card or PayPal
+**1. Server: you.** Make an account at hetzner.com/cloud (a card or PayPal
 is asked for). *Create server*: location Nuremberg, Falkenstein or Helsinki;
 image Ubuntu 24.04; the smallest shared x86 type; under *SSH keys*, add the
-laptop's — the one line in `~/.ssh/id_ed25519.pub`. Create it, and send the
+laptop's, the one line in `~/.ssh/id_ed25519.pub`. Create it, and send the
 **IPv4 address** it shows. Under *Firewalls*, nothing yet: step 3 sets it.
 
-**2. Two names — you.** Where qurb.cloud's DNS is managed (Vercel, under
+**2. Two names (you.** Where qurb.cloud's DNS is managed (Vercel, under
 *Domains*, if it was bought there): two **A records** pointing at the
-server's IPv4 address — `signal.staging` and `relay.staging`.
+server's IPv4 address) `signal.staging` and `relay.staging`.
 
-**3. Services — me**, over SSH from the laptop, with what is in
+**3. Services: me**, over SSH from the laptop, with what is in
 `packaging/server/`: a user that owns nothing, the rendezvous and relay
 services, Caddy for `signal.staging.qurb.cloud`, the server's firewall open
 for 80, 443 and 9001 only, automatic security updates. Then a check from the
 laptop across the internet, as `deploy.sh` does: two devices introduced, a
 transfer through the relay.
 
-**4. Dashboard — you, then me.** Make a free account at grafana.com and a
+**4. Dashboard (you, then me.** Make a free account at grafana.com and a
 *stack*; under *Connections → Add new connection → Linux server*, it shows an
-install command with a token — send that. I install the agent, send the
+install command with a token) send that. I install the agent, send the
 services' and Caddy's logs and the server's traffic, and make one dashboard:
 traffic in and out, the services up or down, their logs searchable.
 
-**5. Apps — me, then you.** *Done 2026-11-01, for updates:* the first beta,
+**5. Apps: me, then you.** *Done 2026-11-01, for updates:* the first beta,
 [v0.2.0-beta.1](https://github.com/saqibsiddiq/QurbSpace/tree/v0.2.0-beta.1) (its release since deleted),
 built and signed by `.github/workflows/release.yml` and updating itself
 ([updates.md](updates.md)); the laptop runs its AppImage, the S23 its APK
 (reinstalled once onto the release key). Still to do here: pointing both at
 staging once the server is up. A pre-release on GitHub: the desktop app (Linux
 .deb and AppImage; Windows built, untested) and the phone APK, **signed with
-the release key** — see below. Then on your phone and laptop: point both at
+the release key**, see below. Then on your phone and laptop: point both at
 `wss://signal.staging.qurb.cloud` and `relay.staging.qurb.cloud:9001`, and
 try syncing with the phone on mobile data.
 
-**6. QurbSpace's own numbers — me.** The services report counts on a local
+**6. QurbSpace's own numbers: me.** The services report counts on a local
 port the agent reads: devices connected, introductions, relay sessions and
 bytes. Never anything about a device beyond counts. Then they appear on the
 dashboard.
@@ -137,12 +137,12 @@ dashboard.
 
 **Sign every phone build with the release key from now on.** Android will
 not update an app signed with another key without uninstalling it, which
-loses the app's data — and the install marker that keeps one phone from
+loses the app's data, and the install marker that keeps one phone from
 being counted twice ([0077](decisions/0077-one-device-is-counted-once.md))
 is per signing key. The owner's S23 runs a build signed with the debug key
 today; it moves to the release key once, at step 5, and is paired again.
-That one move is **not** caught by the marker — Android gives an app signed
-with another key another `ANDROID_ID` — so the new pairing is linked to the
+That one move is **not** caught by the marker (Android gives an app signed
+with another key another `ANDROID_ID`) so the new pairing is linked to the
 old by its name, or by the owner's word on its page. The release key's file and password are
 backed up somewhere other than this laptop before anything is published.
 

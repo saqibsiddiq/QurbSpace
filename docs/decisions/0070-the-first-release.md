@@ -1,4 +1,4 @@
-# 0070 — The first release, 0.1.0: what is built, for what, and how far it is checked
+# 0070: The first release, 0.1.0: what is built, for what, and how far it is checked
 
 **Status:** Accepted, 2026-10-18. Built on the owner's laptop on 2026-10-18
 and 19; nothing published, as he asked. What has run on what is in
@@ -29,18 +29,18 @@ Wine is not installed, so the Windows programs have not run at all.
   before (`packaging/arch`), now named by the release's version.
 - **The programs need glibc 2.34 or newer**, measured: nothing in them asks
   for a later symbol (`objdump -T`). That is Ubuntu 22.04, Debian 12 and
-  Fedora 35 onwards, and not openSUSE Leap 15 (2.31) -- no lower than Tauri
+  Fedora 35 onwards, and not openSUSE Leap 15 (2.31): no lower than Tauri
   2's own floor, which is WebKitGTK 4.1. Building on this machine (glibc 2.44) did not raise it
   except in two places, both fixed: the tray asked for glibc 2.43's `atan2f`,
   and for `libxdo.so.4`, which only Arch names so.
 - **The `qurb` program alone, linked statically** against musl, for x86_64
-  and arm64: no library asked of the system at all, so it runs on any Linux
-  -- an old server, a Raspberry Pi, a distribution not named above. It is
+  and arm64: no library asked of the system at all, so it runs on any Linux,
+  an old server, a Raspberry Pi, a distribution not named above. It is
   what a rendezvous service and relay run as (0068). Built with Zig as the C
   compiler, for SQLite's sake.
 
-**Every Android phone:** one APK for each of the four ABIs Android has --
-arm64-v8a, armeabi-v7a, x86, x86_64 -- one holding all four, and an app
+**Every Android phone:** one APK for each of the four ABIs Android has
+(arm64-v8a, armeabi-v7a, x86, x86_64) one holding all four, and an app
 bundle for a store; Android 8.0 (API 26) and later; signed with the release
 key (0047).
 
@@ -55,12 +55,12 @@ of the debug information dropped. `SHA256SUMS` beside them.
 ## Why this way
 
 - **deb and rpm, not one package for all.** Each uses the system's own
-  WebKitGTK, kept up to date by the distribution -- the engine that shows the
+  WebKitGTK, kept up to date by the distribution: the engine that shows the
   window is a browser engine, and one frozen into a package goes stale.
 - **No AppImage in 0.1.0.** One was built and measured: it carries 191 of the
   building machine's libraries, and WebKitGTK's ask for glibc 2.44, so it
-  would start only on the newest distributions -- which the deb, rpm and Arch
-  package serve already -- and fail everywhere else. An AppImage has to be
+  would start only on the newest distributions (which the deb, rpm and Arch
+  package serve already) and fail everywhere else. An AppImage has to be
   built on the oldest system it is for, and this machine has no container to
   be one.
 - **The static program** is what makes "every distribution" true for the

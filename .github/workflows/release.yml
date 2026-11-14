@@ -1,8 +1,8 @@
 # A beta release, from a tag: `git tag v0.2.0-beta.1 && git push origin v0.2.0-beta.1`.
 #
 # Builds the desktop app for Linux (an AppImage, which updates itself, and a
-# .deb) on Ubuntu 22.04 -- so it runs on distributions that old and newer,
-# which a build on the owner's laptop (glibc 2.44) does not -- and for
+# .deb) on Ubuntu 22.04 (so it runs on distributions that old and newer,
+# which a build on the owner's laptop (glibc 2.44) does not) and for
 # Windows (not yet run on Windows); and the phone app, signed with the
 # release key. Then publishes them as the latest release, with the two files
 # every installed app reads to find it: latest.json for the desktop's
@@ -126,8 +126,8 @@ jobs:
 
   publish:
     needs: [desktop, android]
-    # The Linux and phone builds go out even if Windows -- never yet run
-    # there -- did not build.
+    # The Linux and phone builds go out even if Windows (never yet run
+    # there) did not build.
     if: ${{ !cancelled() && needs.android.result == 'success' }}
     runs-on: ubuntu-22.04
     steps:

@@ -58,7 +58,7 @@ impl Fixture {
     }
 }
 
-// -- reconciliation ----------------------------------------------------------
+// , reconciliation ----------------------------------------------------------
 
 #[test]
 fn reconcile_stores_everything_it_finds() {
@@ -168,7 +168,7 @@ fn reconcile_restores_a_file_that_came_back() {
     assert_eq!(f.engine.store().read_file("flaky.txt").unwrap(), b"came back");
 }
 
-// -- applying watcher changes ------------------------------------------------
+// , applying watcher changes ------------------------------------------------
 
 #[test]
 fn apply_stores_an_upserted_file() {
@@ -278,7 +278,7 @@ fn changes_outside_the_root_are_ignored() {
     assert!(f.stored().is_empty());
 }
 
-// -- robustness --------------------------------------------------------------
+// , robustness --------------------------------------------------------------
 
 #[test]
 fn one_unreadable_file_does_not_stop_the_others() {
@@ -339,7 +339,7 @@ fn content_survives_a_full_cycle_and_verifies() {
     assert!(report.is_healthy(), "{report:?}");
 }
 
-// -- end to end --------------------------------------------------------------
+// , end to end --------------------------------------------------------------
 
 /// The only test that exercises the real loop: a live watcher feeding the
 /// engine, on the multi-threaded runtime `Engine::run` requires.

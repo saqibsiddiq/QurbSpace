@@ -17,10 +17,10 @@ removed (decision 0089):
 |---|---|---|
 | the app itself (`dumpsys diskstats`) | 26 MB | 26 MB |
 | all its data | 140 MB | 916 MB |
-| a file in the Private Vault, the person's own | -- | 387 MB |
+| a file in the Private Vault, the person's own |, | 387 MB |
 | Drive mailbox, arrivals no plan used | 34 MB | 346 MB |
 | the index, and its write-ahead log | 35 + 11 MB | 42 + 15 MB |
-| copies of the index before upgrades | -- | 2 x 38 MB |
+| copies of the index before upgrades |, | 2 x 38 MB |
 | Tor's directory | 20 MB | 28 MB |
 | other devices' lists (`trees`) | 15 MB | 17 MB |
 | files opened, cached | 12 MB | 0 |
@@ -31,7 +31,7 @@ Nothing is written to shared storage in the app's name (MediaStore, owner
 these, while Recently deleted still held files.
 
 **Changed** (built and tested by the suites; measured again on the OPPO only
-as far as item 1 -- opened files 12 MB to none -- and the mailbox's growth
+as far as item 1 (opened files 12 MB to none) and the mailbox's growth
 below):
 
 1. Opened files kept an hour, not a day, and 32 MB at most, not 200; tidied
@@ -227,7 +227,7 @@ app followed the phone's auto-rotate. (4) and (5) asked about.
 **Sends not instant, and Recently deleted** (the owner, 2026-11-13: "why is
 sending from phone to laptop isnt instant as hell", and a screenshot). A send
 from the S23 at 14:11:18 UTC was announced on the home network within the
-second, and the laptop ignored it -- "announced, and already listened to" --
+second, and the laptop ignored it ("announced, and already listened to")
 waiting for news on the connection it held to the S23, which came at
 14:11:43 when that lapsed: a phone's pass starts afresh, and its news never
 comes down the old connection. An announcement now says whether it carries
@@ -388,29 +388,29 @@ data kept. Background sync on the S23 is set to *Off*. The phone's side was
 driven over adb where the owner asked, and stopped whenever he was using
 the phone.
 
-1. **Home on both** -- each sees the other. Passed; found *Found and fixed*,
+1. **Home on both**: each sees the other. Passed; found *Found and fixed*,
    4.
-2. **The laptop sends to the phone** -- `qurb send` from the laptop. The
+2. **The laptop sends to the phone**: `qurb send` from the laptop. The
    first try was misread: the laptop's *sent* means queued (*collected* is
-   the event for a send taken), and it was never collected -- the open app
+   the event for a send taken), and it was never collected, the open app
    did not sync (*Found and fixed*, 6), and the file, in a temporary folder,
    went with the reboot; the phone's Activity then showed the raw error of
    *Found and fixed*, 9. Done again on 2026-11-10: collected twenty seconds
    after it was sent, nothing tapped; in Received; its text as sent. Passed.
-3. **The phone sends to the laptop** -- a photo, in the laptop's
+3. **The phone sends to the laptop**: a photo, in the laptop's
    Downloads/qurb at 18:08. Passed.
-4. **A phone folder backed up** -- a screenshot taken: not read until the
+4. **A phone folder backed up**: a screenshot taken: not read until the
    night's run, by design (decision 0063), and with no way to start one by
    hand (*Found and fixed*, 8).
-5. **The owner's folder opened on the laptop** -- asked, approved on the
+5. **The owner's folder opened on the laptop**: asked, approved on the
    phone, opened. Found *Found and fixed*, 5 to 7 and 10 to 11.
-6. **The space limit on the phone** -- *28.1 GB used, 10.9 GB free of 39.0
+6. **The space limit on the phone**: *28.1 GB used, 10.9 GB free of 39.0
    GB*, the laptop's own figures. Passed.
-7. **Recently deleted on the phone** -- a received file deleted, shown in
+7. **Recently deleted on the phone**: a received file deleted, shown in
    Recently deleted, restored alone, back in Received. Passed.
-8. **The scanner on the S23** -- *Point at the code*, the torch offered: the
+8. **The scanner on the S23**: *Point at the code*, the torch offered: the
    reader is there. Passed.
-9. **The phone's Activity** -- the day's sends, the arrival, the deletion,
+9. **The phone's Activity**: the day's sends, the arrival, the deletion,
    the earlier failure. Passed.
 
 **2026-11-12, after the fixes.** The S23 on the build of 2026-11-12 (with

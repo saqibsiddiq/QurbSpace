@@ -4,7 +4,7 @@
 //! is expected to survive: a device whose clock is badly wrong, a device that
 //! was switched off for a month, a device that has been edited heavily while
 //! disconnected. The interesting thing about all of them is that nothing
-//! *fails* — they either converge or they quietly corrupt, and only a test
+//! *fails*: they either converge or they quietly corrupt, and only a test
 //! looking for it can tell which.
 
 mod model;
@@ -12,7 +12,7 @@ mod model;
 use model::{assert_converged, sync_until_stable, Device, A, B, C};
 use qurb_sync::reconcile;
 
-// -- clocks ------------------------------------------------------------------
+// , clocks ------------------------------------------------------------------
 
 #[test]
 fn a_device_with_a_badly_wrong_clock_still_converges() {
@@ -46,7 +46,7 @@ fn a_device_far_in_the_future_does_not_win_everything() {
     sync_until_stable(&mut a, &mut b);
 
     // A is a decade ahead but has seen B's change, so its edit legitimately
-    // supersedes -- by causality, not by clock.
+    // supersedes: by causality, not by clock.
     a.edit("notes.txt", 2);
     sync_until_stable(&mut a, &mut b);
     assert_eq!(b.visible().get("notes.txt").map(|h| h[0]), Some(2));
@@ -93,7 +93,7 @@ fn clock_skew_does_not_change_who_wins_a_conflict() {
     }
 }
 
-// -- long absences -----------------------------------------------------------
+// , long absences -----------------------------------------------------------
 
 #[test]
 fn a_device_offline_for_a_month_catches_up() {
@@ -170,7 +170,7 @@ fn a_device_that_worked_offline_merges_rather_than_being_overwritten() {
 fn a_deletion_made_while_offline_is_not_undone_by_rejoining() {
     // A peer that never learned about a deletion still has the file and will
     // offer it back. Without a tombstone crossing, the deletion silently
-    // reverses itself -- one of the most confusing bugs a sync engine has.
+    // reverses itself: one of the most confusing bugs a sync engine has.
     let mut home = Device::new(A);
     let mut laptop = Device::new(B);
 

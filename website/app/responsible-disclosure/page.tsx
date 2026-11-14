@@ -13,7 +13,7 @@ export default function DisclosurePage() {
   return (
     <DocPage
       title="Reporting a vulnerability"
-      intro="If you’ve found a way into someone’s files, keys or devices through Qurb, thank you — and please tell us before anyone else."
+      intro="If you’ve found a way into someone’s files, keys or devices through Qurb, thank you, and please tell us before anyone else."
     >
       <h2>How</h2>
       <p>
@@ -32,14 +32,14 @@ export default function DisclosurePage() {
 
       <h2>What helps</h2>
       <ul>
-        <li>What you did, on which devices and which version — every build says its own: <code>qurb version</code>, or Settings → Version.</li>
+        <li>What you did, on which devices and which version: every build says its own: <code>qurb version</code>, or Settings → Version.</li>
         <li>What you could reach that you shouldn’t have: files, filenames, keys, a device you weren’t paired with.</li>
         <li>Whether it needs the other person’s device, their network, or neither.</li>
       </ul>
 
       <h2>What Qurb already says about itself</h2>
       <p>
-        Some limits are known and written down rather than hidden — your devices share one key, and removing a device
+        Some limits are known and written down rather than hidden: your devices share one key, and removing a device
         doesn’t take that key away. They’re on the <Link href="/security-policy">security page</Link>; a report
         about one of them is still welcome if it goes further than the page says.
       </p>

@@ -9,13 +9,13 @@ rendezvous service runs on the laptop as a user unit
 (`packaging/install-rendezvous.sh`, with push), published by Tailscale Funnel
 so the phone needs no Tailscale of its own. A Galaxy S23 on its mobile network
 reached the laptop directly and was woken by push about five seconds after a
-change — see [the server guide](../packaging/server/README.md#no-server-at-all).
+change: see [the server guide](../packaging/server/README.md#no-server-at-all).
 What is not deployed is the **relay**: a network that blocks a direct path
 cannot sync yet. A server of the owner's own, running both, is next after the
 design pass.
 
 Everything below needs a rendezvous service somewhere both devices can reach;
-by default there is no such thing — it runs wherever someone runs it.
+by default there is no such thing: it runs wherever someone runs it.
 
 ## What has to be reachable, and what does not
 
@@ -29,7 +29,7 @@ design: see [decisions/0006](decisions/0006-availability-gap.md).
 
 So "syncing from anywhere" needs one small service with a public name, and
 nothing else. Whether a direct connection can then be made depends on the two
-networks — run `qurb netcheck` on each to find out. A laptop behind an
+networks: run `qurb netcheck` on each to find out. A laptop behind an
 endpoint-independent NAT, which is the common case, can be reached from almost
 anywhere.
 
@@ -44,7 +44,7 @@ The least work, no money, and no holes in anything.
 
 [Tailscale](https://tailscale.com) is a mesh VPN on WireGuard. Its personal
 plan is free. Devices on a tailnet reach each other from any network, behind
-any NAT, with no port forwarding — and it will issue a real certificate for a
+any NAT, with no port forwarding, and it will issue a real certificate for a
 machine's name, which is what lets qurb use `wss://` without buying a domain.
 
 On the laptop:
@@ -100,8 +100,8 @@ product answer.
 ## Being woken, rather than looking
 
 A device that is connected can be told there is something for it, and acts
-within a second. A phone that is asleep cannot be told anything — Android stops
-a background app's socket within minutes of the screen going off — so it finds
+within a second. A phone that is asleep cannot be told anything (Android stops
+a background app's socket within minutes of the screen going off) so it finds
 out at its next scheduled look, about fifteen minutes away and longer while
 dozing.
 
@@ -127,7 +127,7 @@ dropped into `android/app/` before building. Its presence is what switches the
 whole thing on: without it the Firebase SDK is not even linked, and the app
 behaves exactly as it does today.
 
-The poke carries nothing — no filenames, no sizes, not even which peer. What
+The poke carries nothing: no filenames, no sizes, not even which peer. What
 Google learns is that a device was poked and when.
 [decisions/0028](decisions/0028-waking-a-sleeping-device.md) sets out that
 trade in full, including why there is no alternative and what it does *not*
@@ -165,7 +165,7 @@ devices, so two devices that are never on at the same moment never meet,
 however well each can be reached. Paying for a rendezvous service does not
 change that: it never holds content.
 
-The answer is on the next page — the same host can run a replica.
+The answer is on the next page: the same host can run a replica.
 
 ## Holding content for devices that are asleep
 
@@ -197,7 +197,7 @@ after the phone had stopped.
 ### What a replica is not
 
 **It is not a backup.** It holds what its peers have. A file deleted on a
-device is deleted on the replica too, once the deletion reaches it — that is
+device is deleted on the replica too, once the deletion reaches it: that is
 what syncing means.
 
 **It does not make a small box hold a large library.** A replica keeps every

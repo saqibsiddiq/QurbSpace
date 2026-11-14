@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
  * in the person's Google account (decision 0062).
  *
  * Android lets an app read another app's folder under `Android/media` only
- * through a folder the person picks, once, in the system's own picker -- which
+ * through a folder the person picks, once, in the system's own picker, which
  * opens right at WhatsApp's. The grant is kept, and each night the folder is
  * listed through it and handed to the engine, which keeps every file in the
  * vault where it lies, copying nothing, and offers it to the computer keeping
@@ -81,7 +81,7 @@ object WhatsApp {
 
     /**
      * The folder the person picked. Kept only if it is WhatsApp's: any other
-     * would be backed up under WhatsApp's name. Read only -- writing into it
+     * would be backed up under WhatsApp's name. Read only: writing into it
      * is for restoring, which asks again.
      */
     fun accept(context: Context, picked: Uri): Boolean {
@@ -121,7 +121,7 @@ object WhatsApp {
 
     /**
      * List WhatsApp's folder through the grant and hand it to the engine. Its
-     * caches -- the folders whose names start with a dot -- are not walked.
+     * caches (the folders whose names start with a dot) are not walked.
      */
     suspend fun run(context: Context): BackupRun? = withContext(Dispatchers.IO) {
         val tree = tree(context) ?: return@withContext null
@@ -196,7 +196,7 @@ object WhatsApp {
 
     /**
      * Each night, charging and on Wi-Fi: after WhatsApp's own backup, and the
-     * folders chosen on the computer with it (decision 0063). Not at once --
+     * folders chosen on the computer with it (decision 0063). Not at once:
      * a periodic request runs straight away, beside the first run [runNow]
      * starts, and two ran together on the emulator.
      */
@@ -279,7 +279,7 @@ object WhatsApp {
             if (run == null && folders == null) return Result.success()
             // Always: what an earlier run found may still be on its way.
             SyncWorker.runNow(applicationContext)
-            // A first run reads more than one window allows -- 3.5 GB of the
+            // A first run reads more than one window allows: 3.5 GB of the
             // S23's 9.65 in its seven minutes. The rest carries on now, on
             // Wi-Fi, rather than over the nights that follow.
             // A file that could not be read does not hold the rest up: it is

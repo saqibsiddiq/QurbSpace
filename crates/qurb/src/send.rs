@@ -1,6 +1,6 @@
 //! What sending some files and folders to a device actually sends.
 //!
-//! A person picks things — three photos, or a folder of them — and the
+//! A person picks things (three photos, or a folder of them) and the
 //! recipient should find the same things: the photos under their own names,
 //! the folder as a folder. The store sends one file at a time, so this turns
 //! what was picked into a list of files and the names the recipient will see.
@@ -29,8 +29,8 @@ pub struct Plan {
 ///
 /// A file is sent under its own name. A folder is sent whole, under its own
 /// name, with everything beneath it: `Photos/2026/beach.jpg`. Links inside a
-/// folder are not followed — a link can point anywhere, including back up the
-/// tree — and a qurb store inside one is never sent, because it holds this
+/// folder are not followed (a link can point anywhere, including back up the
+/// tree) and a qurb store inside one is never sent, because it holds this
 /// device's keys. Something picked directly is followed, since that is what
 /// the person chose.
 pub fn plan(picked: &[PathBuf]) -> Plan {
@@ -102,7 +102,7 @@ fn walk(plan: &mut Plan, taken: &mut HashSet<String>, dir: &Path, sent_as: Strin
 
 /// Add one file, under a name nothing else in this send has used.
 ///
-/// Two things picked together can share a name — `notes.txt` from two
+/// Two things picked together can share a name: `notes.txt` from two
 /// different folders. Sent under one name, the second would replace the first
 /// before either arrived, and the recipient would get one file where two were
 /// sent. The second is sent as `notes (2).txt` instead.

@@ -22,8 +22,8 @@ import androidx.core.app.ServiceCompat
  * and nothing could tell it; this is the way Syncthing and Tailscale take.
  *
  * Its notification is the least Android allows: its own channel at the
- * lowest importance -- no sound, no vibration, no icon in the status bar on
- * most phones, folded at the foot of the shade -- one word, in the app's
+ * lowest importance (no sound, no vibration, no icon in the status bar on
+ * most phones, folded at the foot of the shade) one word, in the app's
  * green. Connected by the person with Home's Sync, and disconnected by
  * tapping the notification, which goes with it (the owner, 2026-11-14:
  * "users can just click on the notification incase they want to

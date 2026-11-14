@@ -2,7 +2,7 @@
 //!
 //! Two daemons on one store is not a theoretical problem. They contend on the
 //! SQLite write lock, both answer as the same device on the network, both
-//! reconcile the same directory, and both enforce the same storage cap — and
+//! reconcile the same directory, and both enforce the same storage cap, and
 //! the symptoms are not "an error", they are slowness and confusion.
 //!
 //! It is easy to end up there by accident: the desktop app launched from the
@@ -28,7 +28,7 @@ pub struct Lock {
 impl Lock {
     /// Take the lock for a store, or say who has it.
     ///
-    /// `Ok(None)` means another process holds it — a normal situation with a
+    /// `Ok(None)` means another process holds it: a normal situation with a
     /// clear explanation, not an error to propagate.
     pub fn take(store_dir: &Path) -> Result<Option<Lock>> {
         std::fs::create_dir_all(store_dir)

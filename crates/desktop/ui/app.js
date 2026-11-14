@@ -1,4 +1,4 @@
-// The window: three places, as on the phone — Home, Files, Settings — with
+// The window: three places, as on the phone (Home, Files, Settings) with
 // devices and people reached through Home's circle (docs/design/desktop.md).
 //
 // Two rhythms (decision 0032), and the lesson of 2026-10-28 kept: a beat is

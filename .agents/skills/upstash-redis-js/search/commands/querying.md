@@ -255,7 +255,7 @@ Combine filters using boolean operators:
 
 ### Common mistake: `$should` next to `$must` does NOT filter
 
-Adding `$must` silently turns sibling `$should` clauses into **score boosters only** —
+Adding `$must` silently turns sibling `$should` clauses into **score boosters only**:
 documents are *not* required to match them. Membership is decided entirely by `$must`,
 so the query "always finds something" even for nonsense terms (matches come back, just
 with a low score). This is the most common search bug.
@@ -288,7 +288,7 @@ with a low score). This is the most common search bug.
 
 > There is no minimum-score / cutoff option on `query()`. Don't filter by the returned
 > `score` (scores are relative and shift with `$boost`, so a fixed threshold isn't
-> reliable) — instead make the term required as above so non-matches are excluded.
+> reliable): instead make the term required as above so non-matches are excluded.
 
 ### Boosting
 

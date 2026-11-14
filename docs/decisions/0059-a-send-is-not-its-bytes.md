@@ -1,6 +1,6 @@
-# 0059 — A send is not its bytes: the same file sent again arrives again
+# 0059: A send is not its bytes: the same file sent again arrives again
 
-**Status:** Accepted — built in the engine, the command line, the desktop and
+**Status:** Accepted, built in the engine, the command line, the desktop and
 Android; amends rule 2 of [0030](0030-sending-a-file-to-one-device.md) and
 what [0037](0037-a-file-sent-to-a-desktop-is-an-ordinary-file.md) remembers
 **Date:** 2026-10-10

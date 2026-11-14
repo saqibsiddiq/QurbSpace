@@ -34,8 +34,8 @@ pub struct Running {
     pub store: Store,
     /// The daemon's live account of itself.
     pub status: Watcher,
-    /// Kept so that pairing can open a store of its own. Pairing *writes* --
-    /// it records a peer -- and handing it the window's read handle would mean
+    /// Kept so that pairing can open a store of its own. Pairing *writes*
+    /// (it records a peer) and handing it the window's read handle would mean
     /// passing a `&Store` where an owned one is needed.
     pub key: ChunkKey,
     /// What a device joining with this one's code is given, so that it
@@ -220,7 +220,7 @@ impl Hosted {
     /// commands.
     ///
     /// Idempotent in the harmless direction: asked twice, the second does
-    /// nothing rather than starting a second daemon on one folder — which the
+    /// nothing rather than starting a second daemon on one folder, which the
     /// advisory lock would refuse anyway, but later and with a worse message.
     pub fn start(&self, passphrase: impl FnOnce() -> Result<String>) -> Result<()> {
         if self.is_running() {

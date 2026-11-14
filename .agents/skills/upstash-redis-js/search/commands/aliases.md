@@ -79,4 +79,4 @@ const oldIndex = redis.search.index({ name: oldIndexName });
 await oldIndex.drop();
 ```
 
-After step 4 the alias resolves to `products-v2`, so dropping by the alias name would drop the new index — resolve it before the swap.
+After step 4 the alias resolves to `products-v2`, so dropping by the alias name would drop the new index: resolve it before the swap.

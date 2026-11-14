@@ -15,17 +15,17 @@ import kotlin.coroutines.resumeWithException
  * This phone's key, kept by Google Play services' Block Store (decision 0052).
  *
  * Kept across a reinstall, and not across *Clear data*, which empties it with
- * the rest -- both seen on the S23 on 2026-10-08. A cleared phone joins its
+ * the rest: both seen on the S23 on 2026-10-08. A cleared phone joins its
  * other devices with a code.
  *
  * Instead of a person writing 24 words down: Block Store keeps a few bytes for
- * an app, carries them across a reinstall, and — when the phone has a screen
- * lock — backs them up end to end encrypted with it, so a new phone restored
+ * an app, carries them across a reinstall, and (when the phone has a screen
+ * lock) backs them up end to end encrypted with it, so a new phone restored
  * from this one's backup gets them back and Google cannot read them.
  *
  * What it brings back is the key, not the files. Files live on the person's
- * devices; a key restored here reads whatever of theirs still exists — another
- * device, or a replica — and nothing else. A phone with no screen lock keeps
+ * devices; a key restored here reads whatever of theirs still exists (another
+ * device, or a replica) and nothing else. A phone with no screen lock keeps
  * the key on this device only, which survives a reinstall and not a lost
  * phone; that is said where the key is shown, not hidden.
  */
@@ -40,7 +40,7 @@ object Backup {
             .getOrDefault(false)
 
     /**
-     * Keep the key — as its 24 words, the form the engine gives it in. Backed
+     * Keep the key: as its 24 words, the form the engine gives it in. Backed
      * up to the cloud only when that is end to end encrypted; otherwise kept
      * on this phone only. A failure is logged and otherwise ignored: the
      * phone works without it, as every phone did before.

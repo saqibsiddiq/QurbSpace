@@ -1,6 +1,6 @@
-# 0075 — The website says QurbSpace, keeps a waitlist, and downloads from GitHub Releases
+# 0075: The website says QurbSpace, keeps a waitlist, and downloads from GitHub Releases
 
-**Status:** Accepted — the landing page since 2026-10-27, merged to `main`
+**Status:** Accepted, the landing page since 2026-10-27, merged to `main`
 the day it was built. The waitlist works: Upstash for Redis provisioned
 (`upstash-kv-charcoal-canvas`) and connected to the project `qurb` for
 production, preview and development the same day; an address posted locally
@@ -19,14 +19,14 @@ downloads should come from, "upstash and github releases".
 ## Decision
 
 1. **QurbSpace** on the website, everywhere it names the product. The address
-   stays qurb.cloud, and *Qurb* (قرب, nearness) is what the name means — said
+   stays qurb.cloud, and *Qurb* (قرب, nearness) is what the name means: said
    once, in the footer.
 2. **A waitlist of email addresses**, posted to `/api/waitlist` and added to
    one Redis set, `waitlist`, in **Upstash Redis** through the Vercel
    Marketplace (its REST address and token in the project's environment).
    Only the address is kept: no name, no device, no IP address written
    anywhere by the site. Without the integration the route answers 503 and
-   the page says the waitlist is not open yet — it never pretends to have
+   the page says the waitlist is not open yet: it never pretends to have
    taken an address.
 3. **Downloads from GitHub Releases**, by the file names in
    [releasing.md](../releasing.md), offered for the visitor's own device:
@@ -39,8 +39,8 @@ downloads should come from, "upstash and github releases".
 ## Why
 
 - The site had stored nothing about anyone, and its privacy page said so. A
-  waitlist changes that, so it keeps the least that does the job — one
-  address, for one message — and says so: on the docs' *What this website
+  waitlist changes that, so it keeps the least that does the job (one
+  address, for one message) and says so: on the docs' *What this website
   keeps*, since the owner took the privacy page out of the new design.
 - Upstash is a set and a REST call: no database schema, no server to run, and
   it comes through the Vercel project the site already deploys from.
@@ -59,7 +59,7 @@ downloads should come from, "upstash and github releases".
 
 ## Tradeoff accepted
 
-- The site now holds personal data — email addresses — and Upstash holds them
+- The site now holds personal data (email addresses) and Upstash holds them
   for it. The privacy page has to change with it, and someone has to send the
   one message and then delete the list.
 - No rate limit on `/api/waitlist` yet: a script could fill the set with

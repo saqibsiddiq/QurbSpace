@@ -1,6 +1,6 @@
-# 0053 — Pairing is approved, checks the key, and a phone's copy is not a safe last one
+# 0053: Pairing is approved, checks the key, and a phone's copy is not a safe last one
 
-**Status:** Accepted — built and tested on the command line, the desktop and
+**Status:** Accepted, built and tested on the command line, the desktop and
 Android; watched on the S23 with the laptop's command line on 2026-10-07,
 not in the desktop window (see *Checked, and not*); amends
 [0014](0014-pairing.md), [0025](0025-a-storage-cap-that-cannot-lose-data.md),

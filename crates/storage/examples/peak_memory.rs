@@ -3,7 +3,7 @@
 //! An iOS FileProvider extension runs under a memory ceiling in the tens of
 //! megabytes. A path that holds a whole file in memory works on a desktop and
 //! is killed on a phone, so the number that matters is peak resident memory
-//! against file size — it should be flat.
+//! against file size: it should be flat.
 
 use qurb_storage::{ChunkKey, Store};
 use std::io::Write;
@@ -32,13 +32,13 @@ fn anon_kib() -> u64 {
     status("RssAnon:")
 }
 
-/// Pages backed by a file — mappings, mostly. Reported for contrast rather than
+/// Pages backed by a file: mappings, mostly. Reported for contrast rather than
 /// because it is a cost.
 fn file_kib() -> u64 {
     status("RssFile:")
 }
 
-/// Peak is a high-water mark, so one process cannot separate three operations —
+/// Peak is a high-water mark, so one process cannot separate three operations:
 /// whichever costs most sets the number for all of them. Each mode runs alone.
 fn main() {
     let mode = std::env::args().nth(1).unwrap_or_else(|| "help".into());

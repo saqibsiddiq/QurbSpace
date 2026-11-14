@@ -17,7 +17,7 @@ import uniffi.qurb_mobile.StoragePart
 /**
  * Settings → Manage storage → Devices (the owner's list of 2026-11-01, item
  * 8, and his review of 2026-11-02, SE-3 and SE-6): each of this person's
- * computers as a card -- what QurbSpace uses on it, as a bar of the space it
+ * computers as a card, what QurbSpace uses on it, as a bar of the space it
  * is given there, not the whole disk. Tapped, what fills it
  * ([DeviceStorageScreen]).
  *

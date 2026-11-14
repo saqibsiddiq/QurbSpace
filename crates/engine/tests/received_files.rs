@@ -2,13 +2,13 @@
 //!
 //! The folder holds two kinds of file: content shared with every device, and
 //! content sent to *this* device. Both are written into the same folder,
-//! because a person asked for a file and should find a file — but only one of
+//! because a person asked for a file and should find a file, but only one of
 //! them is anybody else's business.
 //!
 //! Everything that walks the folder has to know that. This is the test that
 //! says so, and it was written after watching a phone receive a file, index it
 //! as shared on its next scan, and advertise it straight back to the laptop
-//! that had sent it — which then wrote it into the user's synced folder.
+//! that had sent it, which then wrote it into the user's synced folder.
 
 use qurb_engine::{Engine, Error, PlanStats, StoreSource};
 use qurb_storage::{ChunkKey, Store};
@@ -67,7 +67,7 @@ impl Device {
     ///
     /// Asked of the table directly rather than by path through `scope_of`,
     /// which answers for one row and so cannot tell a received file from a
-    /// shared namesake -- the very case several of these tests are about.
+    /// shared namesake: the very case several of these tests are about.
     fn scopes(&self, path: &str) -> Vec<String> {
         let me = self.engine.store().device_id().unwrap();
         let db = self.engine.store().db();
@@ -105,7 +105,7 @@ fn receive(device: &mut Device, name: &str, contents: &[u8]) -> FileVersion {
         area: qurb_sync::Area::Sent,
     };
 
-    // Written where a delivery writes it, then adopted privately — the two
+    // Written where a delivery writes it, then adopted privately: the two
     // halves `Engine::take` performs.
     let path = device.root.join(name);
     fs::write(&path, contents).unwrap();
@@ -129,7 +129,7 @@ fn a_received_file_is_not_advertised_to_anybody() {
 ///
 /// The file is in the folder, so the next scan of the folder finds it. Before
 /// this, the scan looked only at shared rows, concluded the file was new, and
-/// indexed it as shared — at which point it was advertised to every device,
+/// indexed it as shared: at which point it was advertised to every device,
 /// including the one that had sent it.
 #[test]
 fn a_scan_does_not_turn_a_received_file_into_a_shared_one() {
@@ -282,8 +282,8 @@ fn an_ordinary_file_is_still_shared() {
 /// Another device deleted a shared file of the same name. That deletion is
 /// about the shared area, and the file here is not in it.
 ///
-/// Before, the deletion removed whatever was at the path on disk -- the file
-/// somebody had sent -- and the next scan then recorded it as deleted by the
+/// Before, the deletion removed whatever was at the path on disk (the file
+/// somebody had sent) and the next scan then recorded it as deleted by the
 /// person who had just been given it.
 #[test]
 fn a_deletion_elsewhere_leaves_a_received_namesake_alone() {
@@ -350,7 +350,7 @@ fn a_shared_file_waits_for_a_received_namesake() {
 ///
 /// The rule that keeps a received file private when it is edited applies to
 /// changes made *here*. Applied to a version from elsewhere, it re-filed the
-/// shared file into this device's vault -- taking it out of the shared area on
+/// shared file into this device's vault: taking it out of the shared area on
 /// this device alone, and overwriting the received file's record with it.
 #[test]
 fn a_version_from_elsewhere_is_not_refiled_as_private() {
@@ -378,7 +378,7 @@ fn a_version_from_elsewhere_is_not_refiled_as_private() {
     );
 }
 
-/// A received file, deleted, stays deleted -- past the retention window too.
+/// A received file, deleted, stays deleted: past the retention window too.
 ///
 /// The sender goes on offering what it sent for as long as it keeps the entry.
 /// The only record of having taken it was the file's own row, and a deleted

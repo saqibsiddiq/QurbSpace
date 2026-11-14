@@ -1,4 +1,4 @@
-Qurb for Windows -- built, NOT tested on Windows
+Qurb for Windows: built, NOT tested on Windows
 ===============================================
 
 Read this first. These programs were cross-compiled on Linux. Nobody has run
@@ -33,4 +33,4 @@ Where Qurb keeps things
   Its key and its index:   the hidden .qurb folder inside the synced folder
   Which folders it runs:   %APPDATA%\qurb
 
-More: https://github.com/saqibsiddiq/QurbSpace -- docs/releasing.md
+More: https://github.com/saqibsiddiq/QurbSpace, docs/releasing.md

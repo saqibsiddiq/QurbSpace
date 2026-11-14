@@ -1,4 +1,4 @@
-# 0061 — The relay carries meetings: one connection, several names
+# 0061: The relay carries meetings: one connection, several names
 
 **Status:** Accepted, 2026-10-11. Amends [0017](0017-relay.md) (the relay's
 wire format) and closes a gap [0060](0060-a-computer-keeps-private-folders-for-several-people.md)

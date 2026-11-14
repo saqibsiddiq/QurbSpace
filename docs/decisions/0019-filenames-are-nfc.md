@@ -1,4 +1,4 @@
-# 0019 — Filenames are normalised to NFC
+# 0019: Filenames are normalised to NFC
 
 **Status:** Accepted
 **Date:** 2026-09-17
@@ -6,8 +6,8 @@
 ## Decision
 
 Every path stored in the index or sent to a peer is in **Unicode Normalization
-Form C**, the composed form. Normalisation happens at one place —
-`qurb_watcher::logical_path`, where a path on disk becomes a logical path — and
+Form C**, the composed form. Normalisation happens at one place
+(`qurb_watcher::logical_path`, where a path on disk becomes a logical path) and
 nowhere else.
 
 Where two files in one directory normalise to the same logical path, one is
@@ -17,7 +17,7 @@ indexed and the rest are reported to the user. Nothing is renamed automatically.
 
 `é` can be written two ways: one code point (U+00E9), or `e` followed by a
 combining acute accent (U+0301). They render identically, mean the same thing,
-and are different strings — therefore different filenames.
+and are different strings: therefore different filenames.
 
 Filesystems disagree about which to keep:
 
@@ -65,7 +65,7 @@ person decide.
 ## The tie-break, and why it is not obvious
 
 The first version kept "the first by sort order" and was wrong. The entries were
-sorted by *logical* path — and the colliding entries have the same logical path
+sorted by *logical* path, and the colliding entries have the same logical path
 by definition, so the tie fell through to directory-read order, which differs
 between machines. Two devices resolving the same collision could keep different
 files under one name, which is worse than either outcome alone.
@@ -90,7 +90,7 @@ reliably share. It is now:
 - `SyncStats::collided` counts skipped files, and both `qurb status` and the
   daemon report them. A silent skip would be indistinguishable from data loss.
 - Case collisions remain a separate problem with separate handling. The two are
-  siblings — both are "this filesystem cannot tell these names apart" — but they
+  siblings (both are "this filesystem cannot tell these names apart") but they
   have different causes and different advice for the user.
 - Existing indexes predate this. A store built before it that contains
   decomposed paths will re-index those files under composed names at the next

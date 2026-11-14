@@ -29,7 +29,7 @@ const SEALING_BUDGET: u64 = 256 << 20;
 /// sign on this side that a file is on its way, since a peer asks for content
 /// by hash and the sender never knows which file it is part of until the
 /// caller looks. Called after the bytes are read and before they are written
-/// out, so it counts what was served rather than what was received -- the
+/// out, so it counts what was served rather than what was received: the
 /// receiver's `Got` is the evidence of that.
 pub trait Served: Send + Sync {
     fn served(&self, to: &Fingerprint, chunk: &blake3::Hash, bytes: u64);
@@ -39,7 +39,7 @@ pub trait Served: Send + Sync {
     /// after the trust check its first request passed.
     ///
     /// What lets a phone whose own pass could not reach a computer still know
-    /// the computer is there, when the computer reached the phone -- through a
+    /// the computer is there, when the computer reached the phone: through a
     /// relay, say. Without it the phone called a computer off that had just
     /// collected from it (2026-10-24, on an emulator).
     fn asked_by(&self, _from: &Fingerprint) {}
@@ -60,7 +60,7 @@ pub struct PeerServer {
 /// immediate if anything has happened since.
 ///
 /// It need not survive a restart. A peer holding a number from before will see
-/// one that does not match, which is exactly the right conclusion — the device
+/// one that does not match, which is exactly the right conclusion: the device
 /// it was watching has been away, and its state may well have moved.
 #[derive(Debug, Default)]
 pub struct Generation {
@@ -153,7 +153,7 @@ impl PeerServer {
     /// Listen on `addr`, accepting the devices this store has paired with.
     ///
     /// The list is read once, at bind. A device paired afterwards will not be
-    /// accepted until the listener is rebuilt — acceptable while pairing is a
+    /// accepted until the listener is rebuilt: acceptable while pairing is a
     /// deliberate act a person performs, and something to revisit when devices
     /// come and go on their own.
     pub fn bind_trusting(addr: SocketAddr, identity: &Identity, store: &Store) -> Result<Self> {
@@ -236,7 +236,7 @@ pub fn trusted_fingerprints(store: &Store) -> Result<Vec<Fingerprint>> {
 
 /// The devices a listener lets connect: the trusted, and the ones this device
 /// removed, let through only to be answered [`Response::Removed`] to whatever
-/// they ask -- how the removed side learns it, rather than trying forever.
+/// they ask, how the removed side learns it, rather than trying forever.
 /// Dialled, synced with or shown anything, they are not.
 pub fn accepted_fingerprints(store: &Store) -> Result<Vec<Fingerprint>> {
     let mut accepted = trusted_fingerprints(store)?;
@@ -314,7 +314,7 @@ async fn serve_connection_inner(
     // property QUIC was chosen for: a large chunk in flight does not hold up
     // the small requests behind it.
     // Taken once, from the certificate this connection authenticated with. A
-    // request that says something about the sender -- `Got` does -- must be
+    // request that says something about the sender (`Got` does) must be
     // attributed to whoever the TLS handshake proved them to be, never to
     // whatever the message claims.
     let asker = fingerprint_of(&connection);
@@ -323,7 +323,7 @@ async fn serve_connection_inner(
     while let Ok((send, recv)) = connection.accept_bi().await {
         // Trust is asked again for every request, not only at the handshake.
         // A device removed while it was connected must stop being answered
-        // now, not whenever its connection happens to end -- which for a
+        // now, not whenever its connection happens to end, which for a
         // device that keeps one open could be never. A long wait for changes
         // already in progress still finishes, within its ninety seconds; what
         // follows it is refused.
@@ -612,7 +612,7 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
     // claims. Every answer below is scoped to it: the shared area plus that
     // device's own vault, never anybody else's.
     //
-    // `None` -- an unrecognised certificate -- is treated as a device entitled
+    // `None` (an unrecognised certificate) is treated as a device entitled
     // to nothing rather than as a device entitled to everything. That is the
     // safe direction, and the only one: a peer that cannot be identified
     // cannot be shown a vault.
@@ -620,7 +620,7 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
     // is `Unplaced`: it owns no vault here, so it is shown none, and it is not
     // refused the shared area either. The connection already proved it is
     // trusted, and being stricter would break a paired device whose
-    // bookkeeping is incomplete while buying nothing — vaults stay invisible
+    // bookkeeping is incomplete while buying nothing: vaults stay invisible
     // to it either way.
     let known = asker.and_then(|fingerprint| {
         store.db().peer_by_fingerprint(fingerprint.as_bytes()).ok().flatten()
@@ -634,8 +634,8 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
         }
     }
     let owner = known.as_ref().map(|peer| peer.device_id);
-    // Another person's device -- a guest of this computer, or a computer this
-    // device visits -- is shown only what was sent to it, decided here on
+    // Another person's device (a guest of this computer, or a computer this
+    // device visits) is shown only what was sent to it, decided here on
     // every request from what the store says it is (decision 0060).
     let other_person = known.as_ref().is_some_and(|peer| peer.relation.is_other_person());
     let audience = match &owner {
@@ -645,8 +645,8 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
     };
 
     // Who may reach this computer's shared folder live (decision 0073, item
-    // 6): its guests -- not a computer this device visits, whose person is as
-    // much a stranger to the folder -- and its own person's phones. Its own
+    // 6): its guests (not a computer this device visits, whose person is as
+    // much a stranger to the folder) and its own person's phones. Its own
     // computers sync the shared area instead. A guest is given the files'
     // bytes, which it otherwise is not; it is still never sent the list.
     let guest_here = known.as_ref().is_some_and(|peer| peer.relation == qurb_storage::db::Relation::Guest);
@@ -1007,9 +1007,9 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
             // whole disk (the owner's review of 2026-11-02, SE-6).
             let usage = store.usage()?;
             let used = usage.files + usage.chunks;
-            // Against what it gives QurbSpace where that is set; otherwise --
-            // a computer keeps everything (the owner's review of 2026-11-03,
-            // F-3) -- against what its disk has free.
+            // Against what it gives QurbSpace where that is set; otherwise
+            // (a computer keeps everything (the owner's review of 2026-11-03,
+            // F-3)) against what its disk has free.
             let given = match crate::disk::allowance() {
                 0 => match crate::disk::space(store.root()) {
                     (0, _) => 0,
@@ -1081,7 +1081,7 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
 
         // One of this person's own devices becoming its permanent identity
         // (decision 0079): its fingerprint turned to that one's, keeping its
-        // device id -- or, set up again and that identity already known
+        // device id, or, set up again and that identity already known
         // here, the device it was, which it then is again.
         Request::Become { cert } => {
             let Some(asker) = asker else { return Ok(Answer::Now(Response::NotFound)) };
@@ -1133,8 +1133,8 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
             None => Response::NotFound,
         },
 
-        // This device's name and picture, to any device it trusts -- its
-        // person's and another's alike, who see its name already -- when
+        // This device's name and picture, to any device it trusts (its
+        // person's and another's alike, who see its name already) when
         // they changed after what the asker last heard (the owner's list of
         // 2026-10-26, item 7). Not found when nothing is newer, or nothing
         // was ever set.
@@ -1170,7 +1170,7 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
 
         // A peer reporting that it now holds some content. Recorded against
         // the device the connection proves it to be, not against anything the
-        // message says -- otherwise one peer could claim delivery on another's
+        // message says: otherwise one peer could claim delivery on another's
         // behalf, and this record is what a storage cap trusts before dropping
         // a local copy.
         //

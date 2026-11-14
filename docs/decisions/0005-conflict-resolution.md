@@ -1,4 +1,4 @@
-# 0005 — Conflict resolution never discards an edit
+# 0005: Conflict resolution never discards an edit
 
 **Status:** Accepted
 **Date:** 2026-09-07
@@ -17,8 +17,8 @@ renamed with the originating device and a timestamp.
 
 Ordering, in full:
 
-1. If one change causally precedes the other — its vector clock is
-   component-wise less than or equal to the other's — the later change wins
+1. If one change causally precedes the other (its vector clock is
+   component-wise less than or equal to the other's) the later change wins
    outright. This is not a conflict, just a normal update.
 2. Otherwise the changes are concurrent. Both are retained. The version whose
    content hash sorts higher lexicographically keeps the original path; the
@@ -30,7 +30,7 @@ Ordering, in full:
 The original architecture document specified that "the mutation containing the
 highest vector generation index takes precedence." This rule is not sound.
 
-Concurrent vector clocks are by definition unordered — neither dominates. Any
+Concurrent vector clocks are by definition unordered: neither dominates. Any
 tiebreak that compares magnitudes, such as taking the maximum component or the
 sum, produces a winner that depends on **how much unrelated activity happened on
 other devices.** A laptop that has been busy syncing other files would win
@@ -45,7 +45,7 @@ why it must not be used to destroy the loser.
 
 The rule that actually protects users is step 2's retention clause. A sync
 engine that silently discards an edit is a sync engine that eats work, and users
-do not forgive it — reasonably, since they usually cannot tell it happened until
+do not forgive it: reasonably, since they usually cannot tell it happened until
 much later.
 
 ## Tradeoff accepted

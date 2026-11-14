@@ -11,7 +11,7 @@ use tray_icon::{TrayIcon, TrayIconBuilder};
 /// Show the interface and run until the user quits.
 pub fn show(root: PathBuf, watcher: Watcher) -> Result<()> {
     // Asked before anything is built. Creating a tray icon *succeeds* on a
-    // desktop that cannot show one -- it is simply never drawn -- so the only
+    // desktop that cannot show one (it is simply never drawn) so the only
     // way to avoid becoming an invisible, unquittable background process is to
     // find out first.
     if let Err(why) = crate::host::available() {
@@ -24,7 +24,7 @@ pub fn show(root: PathBuf, watcher: Watcher) -> Result<()> {
 
         // A window instead. Printing to stderr is fine for someone who started
         // this in a terminal and useless for someone who launched it from the
-        // applications menu -- which is how a program is normally started, and
+        // applications menu, which is how a program is normally started, and
         // which would otherwise show nothing at all.
         #[cfg(target_os = "linux")]
         if gtk::init().is_ok() {
@@ -86,7 +86,7 @@ fn menu(status: &Status) -> Items {
 
     // The headline, not clickable: a menu that opens to tell you nothing is
     // a menu nobody opens twice.
-    let heading = MenuItem::new(format!("Qurb — {}", status.state.summary()), false, None);
+    let heading = MenuItem::new(format!("Qurb: {}", status.state.summary()), false, None);
     let _ = menu.append(&heading);
 
     let detail = MenuItem::new(
@@ -186,12 +186,12 @@ fn run_headless(mut watcher: Watcher) -> Result<()> {
         // Compared as the rendered line rather than by state.
         //
         // Printing only on a state change meant a file count that grew while
-        // the state stayed "up to date" was never shown -- the display sat on
+        // the state stayed "up to date" was never shown: the display sat on
         // "5 files" with six in the index, which is precisely the kind of quiet
         // wrongness an interface exists to prevent. Comparing the text shows
         // every change worth showing and cannot repeat itself.
         let line = format!(
-            "qurb: {} — {} file{}, {}",
+            "qurb: {}; {} file{}, {}",
             status.state.summary(),
             status.files,
             if status.files == 1 { "" } else { "s" },
@@ -212,7 +212,7 @@ fn run_headless(mut watcher: Watcher) -> Result<()> {
         if watcher.has_changed().is_err() {
             // Read once more before giving up. The daemon reports *why* it is
             // stopping and then stops, so the last update and the end of the
-            // channel arrive together -- and printing the state from before
+            // channel arrive together, and printing the state from before
             // that update means telling the user the last thing that was true
             // rather than the thing that went wrong.
             let final_status = watcher.borrow().clone();
@@ -238,7 +238,7 @@ fn open_folder(root: &Path) {
 }
 
 fn tooltip(status: &Status) -> String {
-    format!("Qurb — {}\n{}", status.state.summary(), devices(status))
+    format!("Qurb: {}\n{}", status.state.summary(), devices(status))
 }
 
 pub(crate) fn devices(status: &Status) -> String {
@@ -260,7 +260,7 @@ fn plural(n: usize) -> &'static str {
 
 /// A path short enough for a menu, keeping the end.
 ///
-/// The end, because that is where the filename is — a truncated
+/// The end, because that is where the filename is: a truncated
 /// `Documents/Projects/2026/…` tells you nothing about which file arrived.
 pub(crate) fn shorten(path: &str) -> String {
     const MAX: usize = 32;

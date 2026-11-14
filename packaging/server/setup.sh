@@ -2,7 +2,7 @@
 # Set up the rendezvous service and the relay on a server of your own.
 #
 # Run as root on the server, from a directory holding this file and the unit
-# files beside it -- which is what deploy.sh arranges from your computer:
+# files beside it, which is what deploy.sh arranges from your computer:
 #
 #   sudo bash setup.sh --binary ./qurb            # a qurb built elsewhere
 #   sudo bash setup.sh --source ./qurb-src.tar    # build it here from source
@@ -13,7 +13,7 @@
 # Written for Ubuntu, as Oracle's and most small servers' images are; it says
 # so and stops on anything without apt and systemd.
 #
-# What it does not do: open the cloud provider's own firewall -- a firewall
+# What it does not do: open the cloud provider's own firewall, a firewall
 # rule on Google Cloud, the subnet's security list on Oracle Cloud, both in the
 # web console. This prints how.
 set -euo pipefail
@@ -38,7 +38,7 @@ command -v apt-get >/dev/null && command -v systemctl >/dev/null \
 [[ -n $BINARY || -n $SOURCE || -x /usr/local/bin/qurb ]] \
     || fail "give --binary or --source; there is no qurb installed yet"
 
-# -- qurb itself ----------------------------------------------------------------
+# , qurb itself ----------------------------------------------------------------
 
 if [[ -n $BINARY ]]; then
     say "installing the qurb that was sent"
@@ -76,7 +76,7 @@ fi
 /usr/local/bin/qurb 2>&1 | head -1 | grep -q "qurb" \
     || fail "the installed qurb does not run on this machine; try --source"
 
-# -- the address devices will use -------------------------------------------------
+# , the address devices will use -------------------------------------------------
 
 if [[ -z $ADDRESS ]]; then
     ADDRESS=$(curl -fsS --max-time 5 https://api.ipify.org || curl -fsS --max-time 5 https://ifconfig.me || true)
@@ -84,7 +84,7 @@ fi
 [[ $ADDRESS =~ ^[0-9.]+$|: ]] || fail "could not find this server's public address; give --address"
 say "devices will reach this server at $ADDRESS"
 
-# -- the services -------------------------------------------------------------------
+# , the services -------------------------------------------------------------------
 
 say "installing the services"
 id qurb >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin qurb
@@ -95,7 +95,7 @@ systemctl disable --now qurb-signal 2>/dev/null || true
 systemctl enable --now qurb-signal-tls qurb-relay
 systemctl restart qurb-signal-tls qurb-relay
 
-# -- this machine's own firewall ----------------------------------------------------
+# , this machine's own firewall ----------------------------------------------------
 #
 # The relay is TCP, like the rendezvous service. Oracle's Ubuntu images reject
 # everything but SSH in iptables, below any ufw; both are handled.
@@ -120,7 +120,7 @@ for tool in iptables ip6tables; do
 done
 command -v netfilter-persistent >/dev/null && netfilter-persistent save >/dev/null 2>&1 || true
 
-# -- what to tell the devices -------------------------------------------------------
+# , what to tell the devices -------------------------------------------------------
 
 say "waiting for the rendezvous service to print its address"
 url=""

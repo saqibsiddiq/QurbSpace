@@ -225,7 +225,7 @@ async fn files_written_into_a_brand_new_directory_are_not_lost() {
     // subdirectory only after that directory exists, so anything written in
     // the gap produces no event whatsoever. Unpacking an archive or cloning a
     // repository into the synced folder does exactly this, and the failure is
-    // silent -- files simply never sync.
+    // silent: files simply never sync.
     //
     // The watcher closes the gap by walking any directory it is told about.
     let dir = tempfile::tempdir().unwrap();

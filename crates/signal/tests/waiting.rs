@@ -1,7 +1,7 @@
 //! Telling a device there is something for it.
 //!
 //! The service arranges meetings; this is the part where one device asks for a
-//! meeting the other does not yet know it wants. It carries who, never what —
+//! meeting the other does not yet know it wants. It carries who, never what:
 //! so the rendezvous service still learns nothing about anybody's files.
 
 use qurb_keys::MasterKey;
@@ -124,7 +124,7 @@ async fn many_notes_collapse_into_one() {
 }
 
 /// A device that has not announced cannot file notes, and a note is filed
-/// under the group the connection announced into — so one group cannot reach
+/// under the group the connection announced into, so one group cannot reach
 /// into another.
 #[tokio::test(flavor = "multi_thread")]
 async fn a_note_cannot_cross_groups() {

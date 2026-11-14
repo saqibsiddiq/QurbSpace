@@ -1,7 +1,7 @@
 //! The daemon and the pieces around it, as a library.
 //!
 //! `qurb` is a command-line program, and this exists so that something other
-//! than a terminal can drive the same daemon — an interface should be a
+//! than a terminal can drive the same daemon: an interface should be a
 //! *display* of the engine rather than a second implementation of it.
 //!
 //! The binary in `main.rs` is the terminal front end. `qurb-tray` is another.
@@ -76,7 +76,7 @@ pub fn open_with(
     let vault = Vault::at(&store_dir);
     if !vault.exists() {
         bail!(
-            "{} is not set up yet — run `qurb init {}` first",
+            "{} is not set up yet: run `qurb init {}` first",
             root.display(),
             root.display()
         );

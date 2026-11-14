@@ -79,7 +79,7 @@ impl Action {
 ///
 /// Paths present on only one side are not automatically "new". A path the
 /// remote has never heard of may be one we deleted long ago, which is exactly
-/// why tombstones are offered rather than skipped — otherwise the remote would
+/// why tombstones are offered rather than skipped: otherwise the remote would
 /// send the file back and the deletion would undo itself.
 pub fn reconcile(local: &[FileVersion], remote: &[FileVersion]) -> Vec<Action> {
     let local: BTreeMap<&str, &FileVersion> =
@@ -101,7 +101,7 @@ pub fn reconcile(local: &[FileVersion], remote: &[FileVersion]) -> Vec<Action> {
                         // Both devices must land on byte-identical metadata, or
                         // they would still disagree about this path. The
                         // content is the same either way, so the choice only
-                        // affects who is shown as having last touched it --
+                        // affects who is shown as having last touched it:
                         // decided by device id purely because both sides can
                         // compute it without consulting a clock.
                         let keeper = if l.modified_by <= r.modified_by { *l } else { *r };

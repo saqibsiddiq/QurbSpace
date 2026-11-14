@@ -1,7 +1,7 @@
 //! The whole system, running.
 //!
 //! ```bash
-//! cargo run --release -p qurb-peer --example demo -- /tmp/device-a /tmp/device-b
+//! cargo run --release -p qurb-peer --example demo: /tmp/device-a /tmp/device-b
 //! ```
 //!
 //! Starts a signalling service and a relay, brings up two devices in the two
@@ -101,7 +101,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    // -- infrastructure ------------------------------------------------------
+    // , infrastructure ------------------------------------------------------
     step(1, "Starting the servers");
 
     let signal = Arc::new(SignalServer::bind("127.0.0.1:0".parse()?).await?);
@@ -119,7 +119,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("    relay       {relay_addr}");
     println!("                forwards ciphertext it has no key for");
 
-    // -- devices -------------------------------------------------------------
+    // , devices -------------------------------------------------------------
     step(2, "Opening the two devices");
 
     let (desktop, phrase) = Device::open("A", &a_root, None);
@@ -138,7 +138,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n    They share a master key, which is what makes them one person's");
     println!("    devices. Neither has the other's network identity yet.");
 
-    // -- pairing -------------------------------------------------------------
+    // , pairing -------------------------------------------------------------
     step(3, "Pairing, out of band");
 
     if desktop.trusted().is_empty() {
@@ -168,7 +168,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("    already paired ({} trusted device(s))", desktop.trusted().len());
     }
 
-    // -- index what is there -------------------------------------------------
+    // , index what is there -------------------------------------------------
     step(4, "Indexing what is already in the directories");
 
     for device in [&desktop, &laptop] {
@@ -179,7 +179,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    // -- connect -------------------------------------------------------------
+    // , connect -------------------------------------------------------------
     step(5, "Finding each other and connecting");
 
     let a_conn = Arc::new(
@@ -239,7 +239,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n    Identity is pinned at both ends: each proved it holds the key");
     println!("    behind the fingerprint the other recorded when pairing.");
 
-    // -- sync ----------------------------------------------------------------
+    // , sync ----------------------------------------------------------------
     step(6, "Syncing, then watching for changes");
     println!("    Drop files into either directory. Ctrl-C to stop.\n");
 

@@ -115,7 +115,7 @@ fn the_folder_list_names_the_same_folder_from_anywhere() {
 }
 
 /// A folder not set up yet joins with the code another device shows, and
-/// comes out holding the same key -- no 24 words typed (decision 0052).
+/// comes out holding the same key: no 24 words typed (decision 0052).
 #[test]
 fn a_new_folder_joins_with_a_code_and_takes_the_key() {
     use std::io::{BufRead, BufReader};

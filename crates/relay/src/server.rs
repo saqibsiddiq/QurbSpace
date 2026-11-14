@@ -44,7 +44,7 @@ impl RelayStats {
 pub const MAX_IDENTITIES: usize = 64;
 
 /// Where packets for a registered identifier go, and whether the connection
-/// behind it holds more than one -- and so has to be told which each is for.
+/// behind it holds more than one, and so has to be told which each is for.
 #[derive(Clone)]
 struct Outbox {
     channel: mpsc::UnboundedSender<Frame>,
@@ -102,7 +102,7 @@ impl RelayServer {
     /// Listen on `addr`.
     ///
     /// Plain TCP here; in production this belongs behind TLS on port 443, which
-    /// is the entire reason the relay is TCP rather than UDP — it exists for
+    /// is the entire reason the relay is TCP rather than UDP: it exists for
     /// networks that block everything else.
     pub async fn bind(addr: SocketAddr) -> Result<Self> {
         Ok(Self { listener: TcpListener::bind(addr).await?, relay: Relay::new() })

@@ -77,8 +77,8 @@ pub enum Error {
 
     /// Every candidate failed. In production this is where a relay takes over.
     ///
-    /// `tried` says how each address failed -- "timed out", or what the
-    /// handshake said -- because "could not reach" alone cannot tell a path a
+    /// `tried` says how each address failed ("timed out", or what the
+    /// handshake said) because "could not reach" alone cannot tell a path a
     /// network would not open from a device that answered and refused.
     #[error("could not reach peer {peer}: {tried}")]
     Unreachable { peer: String, tried: String },
@@ -120,7 +120,7 @@ pub enum Error {
     #[error("peer does not have content {hash}")]
     ContentUnavailable { hash: String },
 
-    /// Asked for content, the peer said it does not hold it -- before any
+    /// Asked for content, the peer said it does not hold it: before any
     /// bytes moved. An answer rather than a failure: the content was freed
     /// there, is kept for it elsewhere, or is gone.
     #[error("the other device does not have content {hash}")]

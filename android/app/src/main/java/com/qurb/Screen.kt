@@ -7,7 +7,7 @@ import uniffi.qurb_mobile.Qurb
 
 /**
  * One place in the app: one of the four under the tab bar, or one reached
- * from them -- Private Vault from Files, Activity from Home -- which lights up the tab it belongs to and goes back to it.
+ * from them (Private Vault from Files, Activity from Home) which lights up the tab it belongs to and goes back to it.
  *
  * Plain classes holding their views, not Fragments. The four are built the
  * first time each is shown and kept for the life of the activity, and changing
@@ -33,7 +33,7 @@ abstract class Screen(protected val app: MainActivity) {
 
     /**
      * Back was pressed while this screen is showing. Returns whether it used
-     * it -- a folder going up -- or the app should do the usual.
+     * it (a folder going up) or the app should do the usual.
      */
     open fun back(): Boolean = false
 
@@ -60,8 +60,8 @@ abstract class Screen(protected val app: MainActivity) {
      * A refresh's work, one at a time. One asked for while another runs is
      * run once after it, however many were asked. Until 2026-10-15 each ran
      * at once: a burst of changes queued that many rounds of queries behind
-     * the engine's one lock -- on the S23 a screen waited up to 1.2 s behind
-     * them -- and they could finish out of order, an older answer drawn over
+     * the engine's one lock (on the S23 a screen waited up to 1.2 s behind
+     * them) and they could finish out of order, an older answer drawn over
      * a newer one.
      */
     protected fun refreshing(work: suspend () -> Unit) {

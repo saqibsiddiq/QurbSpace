@@ -2,7 +2,7 @@
 //!
 //! Lifted out of the terminal front end because the window needs exactly the
 //! same steps, and an interface that reimplemented them would be a second
-//! definition of what a set-up device *is* — with its own bugs about which
+//! definition of what a set-up device *is*: with its own bugs about which
 //! files get written and in what order.
 //!
 //! # The recovery phrase
@@ -13,7 +13,7 @@
 //! put in any debugging output. It reaches the person who owns it and nowhere
 //! else.
 //!
-//! It can be shown again later — [`reveal`] derives it from the stored key —
+//! It can be shown again later ([`reveal`] derives it from the stored key)
 //! because the key is already on this device and anybody who can read it can
 //! read the files anyway. What cannot happen is recovering it from somewhere
 //! else: there is nowhere else.
@@ -39,7 +39,7 @@ pub struct Folder {
     /// case; a full one is allowed and worth mentioning, because every file in
     /// it is about to be synced to every other device.
     pub empty: bool,
-    /// Whether it could be written to — tested against the nearest existing
+    /// Whether it could be written to: tested against the nearest existing
     /// ancestor when the folder itself does not exist yet.
     pub writable: bool,
     /// How many files are already there, if it exists. Capped while counting,
@@ -90,7 +90,7 @@ pub fn inspect(path: &Path) -> Folder {
 ///
 /// The caller is responsible for showing the phrase and for not keeping it. It
 /// is not stored anywhere by this function and cannot be asked for again from
-/// the return value — only re-derived, from the key, by [`reveal`].
+/// the return value: only re-derived, from the key, by [`reveal`].
 pub fn create(root: &Path) -> Result<RecoveryPhrase> {
     let dir = store_dir(root);
     std::fs::create_dir_all(root).with_context(|| format!("creating {}", root.display()))?;
@@ -118,7 +118,7 @@ pub fn create(root: &Path) -> Result<RecoveryPhrase> {
 /// Set up `root` with a key that already exists elsewhere.
 ///
 /// This is what makes two devices *yours*. It does not introduce them to each
-/// other — that is pairing, and it is separate on purpose.
+/// other: that is pairing, and it is separate on purpose.
 pub fn enrol(root: &Path, phrase: &RecoveryPhrase) -> Result<()> {
     let dir = store_dir(root);
     std::fs::create_dir_all(root).with_context(|| format!("creating {}", root.display()))?;
@@ -222,7 +222,7 @@ pub fn allowance(text: &str) -> Result<u64> {
         _ => unit,
     };
     let bytes = crate::config::parse_size(&unit)
-        .map_err(|_| anyhow::anyhow!("`{}` is not an amount of space — try 75 or 1.5 TB", text.trim()))?;
+        .map_err(|_| anyhow::anyhow!("`{}` is not an amount of space: try 75 or 1.5 TB", text.trim()))?;
     if bytes == 0 {
         bail!("an allowance of nothing would leave qurb unable to keep a file");
     }

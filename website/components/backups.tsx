@@ -7,7 +7,7 @@ import { TALL_PAIR } from './tall'
 import { press, show, tap, type Keys } from './timeline'
 
 // The backups scene, the owner's addition to the brief: folders chosen on the
-// phone — WhatsApp, Camera, Documents — go to the computer and keep going
+// phone (WhatsApp, Camera, Documents) go to the computer and keep going
 // there on their own, and come back when they are needed. As docs/features.md
 // has it: WhatsApp's folder kept on the computer, the phone's folders as a
 // tree with a checkbox each, chosen on the phone or the computer; a file

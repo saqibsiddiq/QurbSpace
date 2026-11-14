@@ -1,4 +1,4 @@
-# 0081 — The Vault switch apart from the backups
+# 0081: The Vault switch apart from the backups
 
 **Status:** Accepted, 2026-11-02. Built the same day; tested in the engine
 (`crates/storage/tests/outside.rs`), not yet on a phone.

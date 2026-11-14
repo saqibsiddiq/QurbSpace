@@ -629,8 +629,8 @@ CREATE TABLE IF NOT EXISTS outside_sources (
 /// keeping its vault (the owner's item 10, 2026-10-14): each choice, ticked or
 /// not, with when it was made, so that the later one wins wherever it was made.
 ///
-/// New tables rather than new columns, so that running it again -- an index
-/// rewound by a build undone and then redone -- keeps every choice, an untick
+/// New tables rather than new columns, so that running it again (an index
+/// rewound by a build undone and then redone) keeps every choice, an untick
 /// included: `INSERT OR IGNORE` takes the V23 rows, all of them ticks then,
 /// only where there is nothing yet. V23's two tables are left, unused.
 /// A counter every change to a file's listing moves (decision 0072): what lets
@@ -639,7 +639,7 @@ CREATE TABLE IF NOT EXISTS outside_sources (
 ///
 /// Kept by triggers, so that no write can forget it. **A migration that
 /// rebuilds `files` must create the triggers again**; one that does not would
-/// leave lists sent whole, not wrong -- the asker checks what it rebuilt
+/// leave lists sent whole, not wrong: the asker checks what it rebuilt
 /// against the list's fingerprint and fetches it whole on any difference.
 const V27: &str = r#"
 CREATE TABLE IF NOT EXISTS list_counter (
@@ -792,8 +792,8 @@ const ANY_PATH_WITH_CONTENT: &str = "SELECT path FROM files
 /// Every row's content findable without reading them all.
 ///
 /// The index on `content_hash` covered live rows only, and the questions that
-/// accept a deleted row too -- `any_file_with_content`, asked for every file
-/// a device serves, and `any_path_with_content` -- could not use it: each read
+/// accept a deleted row too (`any_file_with_content`, asked for every file
+/// a device serves, and `any_path_with_content`) could not use it: each read
 /// the whole of `files`. Measured on 2026-10-14 with the scale example, a first
 /// sync took 2.4 ms a file at 5,000 files, 3.6 at 10,000 and 4.8 at 20,000,
 /// most of it in that scan, under the store's lock (decision 0065). One index
@@ -841,8 +841,8 @@ CREATE TABLE IF NOT EXISTS backup_choices (
 /// known to be out of reach (decision 0055). For a query over `replicas r`.
 ///
 /// What a person is shown as "on another device". A copy recorded for a device
-/// never paired with this one -- the device that made a file, reached through
-/// another -- or for one since removed is a copy this device cannot get back.
+/// never paired with this one (the device that made a file, reached through
+/// another) or for one since removed is a copy this device cannot get back.
 ///
 /// Only one of this person's own devices: a guest's copy, or a host's, is
 /// another person's, and nothing here can ask for it back (decision 0060).
@@ -858,7 +858,7 @@ const SAFE_ELSEWHERE: &str = "NOT EXISTS (SELECT 1 FROM peer_kinds k
 
 /// Excludes qurb's own bookkeeping from anything a person is shown or a
 /// storage cap may drop: the sharing rules themselves, and the folders kept
-/// outside the vault's own (decision 0062) -- WhatsApp's files are not the
+/// outside the vault's own (decision 0062), WhatsApp's files are not the
 /// person's files in qurb, and are shown as a backup instead. For a query
 /// over `files` with no alias. Both prefixes are 14 characters.
 const NOT_RULES: &str =
@@ -880,7 +880,7 @@ const UNDELIVERED: &str = "f.deleted_at IS NULL
 pub const OUTSIDE: &str = ".qurb-outside";
 
 /// A shared-area row's `path` lies outside every folder shared without the
-/// device in SQL parameter `device` -- the per-device half of what it may see
+/// device in SQL parameter `device`: the per-device half of what it may see
 /// (decision 0044). A NULL device is in no folder's list.
 fn shared_with(path: &str, device: &str) -> String {
     format!(
@@ -931,7 +931,7 @@ impl Db {
         if applied as usize > MIGRATIONS.len() {
             return Err(Error::Corrupt {
                 detail: format!(
-                    "this index was written by a newer qurb (schema {applied}; this build knows up to {}) — \
+                    "this index was written by a newer qurb (schema {applied}; this build knows up to {}): \
                      run the newer build, or the one it was upgraded from",
                     MIGRATIONS.len()
                 ),
@@ -968,7 +968,7 @@ impl Db {
 
     /// Keep the index small on disk (the owner, 2026-11-14: the apps "as
     /// little space as possible"): the write-ahead log folded in and cut back
-    /// to nothing -- 15 MB on the S23 -- and the file rewritten without its
+    /// to nothing (15 MB on the S23) and the file rewritten without its
     /// free pages once they are a quarter of it and 8 MB or more. And an
     /// upgrade's copy (decision 0047) let go of a fortnight on, when the
     /// build it would go back to has long been replaced.
@@ -1007,7 +1007,7 @@ impl Db {
         // Deliberately off until the migrations have run, and on afterwards.
         //
         // A migration that rebuilds a table has to drop the old one, and
-        // `file_chunks` cascades from `files` — dropping it with foreign keys
+        // `file_chunks` cascades from `files`: dropping it with foreign keys
         // enforced would delete every chunk reference in the store. SQLite's
         // own documented procedure for a schema change of that shape is to
         // turn them off around it, and migrations are the only place schema
@@ -1029,7 +1029,7 @@ impl Db {
         for (i, migration) in MIGRATIONS.iter().enumerate().skip(applied as usize) {
             // One transaction for a migration and its number. Apart, a crash
             // between them left a migration applied but not recorded, and the
-            // next open ran it again -- which an `ADD COLUMN` cannot survive,
+            // next open ran it again, which an `ADD COLUMN` cannot survive,
             // so the store would never open again. Found when the crash test
             // failed under load, the kill landing during the first migrations.
             let tx = conn.unchecked_transaction()?;
@@ -1063,7 +1063,7 @@ impl Db {
         &mut self.conn
     }
 
-    // -- chunks --------------------------------------------------------------
+    // , chunks --------------------------------------------------------------
 
     pub fn chunk(&self, hash: &blake3::Hash) -> Result<Option<ChunkRow>> {
         self.conn
@@ -1111,7 +1111,7 @@ impl Db {
         Ok((a as u64, b as u64))
     }
 
-    // -- files ---------------------------------------------------------------
+    // , files ---------------------------------------------------------------
 
     pub fn file_by_path(&self, path: &str) -> Result<Option<FileRow>> {
         self.conn
@@ -1150,7 +1150,7 @@ impl Db {
 
     /// Where a chunk's bytes can be found inside a live file.
     ///
-    /// Returns the logical path, the byte offset within it, and the length —
+    /// Returns the logical path, the byte offset within it, and the length:
     /// enough to read the plaintext straight from the file the user can see,
     /// without keeping a second encrypted copy of it.
     ///
@@ -1159,7 +1159,7 @@ impl Db {
     /// determines. Scoped to a single holder first, so the window function runs
     /// over one file's chunks rather than every chunk in the index.
     ///
-    /// `None` when no live file provides it — the content was deleted, or this
+    /// `None` when no live file provides it: the content was deleted, or this
     /// device never materialised it (a replica holds chunks and no tree).
     pub fn locate_chunk(&self, hash: &blake3::Hash) -> Result<Option<(String, u64, u64)>> {
         let found = self.conn.query_row(
@@ -1202,7 +1202,7 @@ impl Db {
     /// Where a live send's chunk can be read from: the send's original file,
     /// the offset of the chunk in it, and its length (decision 0060).
     ///
-    /// Only a send still waiting -- not yet collected -- is read from: after
+    /// Only a send still waiting (not yet collected) is read from: after
     /// that the file is the person's own again, and qurb has no business
     /// opening it.
     pub fn locate_send_chunk(&self, hash: &blake3::Hash) -> Result<Option<(String, u64, u64)>> {
@@ -1624,7 +1624,7 @@ impl Db {
     ///
     /// Written when a transfer of this content completes, in either direction:
     /// a peer that fetched it from us has it, and a peer we fetched it from had
-    /// it. This is what makes eviction safe -- see [`Db::evictable`].
+    /// it. This is what makes eviction safe: see [`Db::evictable`].
     pub fn note_replica(&self, content: &blake3::Hash, device: &DeviceId) -> Result<()> {
         self.record_replica(content, device, false)
     }
@@ -1712,7 +1712,7 @@ impl Db {
     /// with it asks, a few at a time (decision 0055). Three kinds:
     ///
     /// - files freed here that it is recorded as holding, on the word of
-    ///   whoever made them -- which nothing withdrew when that device freed
+    ///   whoever made them, which nothing withdrew when that device freed
     ///   its own;
     /// - files whose copy there is marked out of reach. Removing a device
     ///   marks all of them, and pairing it again restored none: on
@@ -1729,8 +1729,8 @@ impl Db {
     /// once a computer has said so (decision 0073, item 2).
     pub fn unconfirmed_holdings(&self, device: &DeviceId, limit: usize) -> Result<Vec<blake3::Hash>> {
         // Asked first: a phone holds them back from leaving the shared area
-        // until answered, and the rest of what it asks about -- its freed
-        // files, WhatsApp's tens of thousands among them -- would keep them
+        // until answered, and the rest of what it asks about (its freed
+        // files, WhatsApp's tens of thousands among them) would keep them
         // waiting for weeks at a few a pass.
         let (leaving, first) = match self.local_kind()?.as_deref() == Some("phone") {
             true => (
@@ -1776,8 +1776,8 @@ impl Db {
         rows.collect::<std::result::Result<_, _>>().map_err(Into::into)
     }
 
-    /// Files of this device's own vault -- its Private Vault, and WhatsApp's
-    /// and chosen folders' kept where they lie -- with no record of `device`
+    /// Files of this device's own vault (its Private Vault, and WhatsApp's
+    /// and chosen folders' kept where they lie) with no record of `device`
     /// holding them: up to `limit`, chosen at random, to ask it about
     /// (`qurb_peer::confirm_kept`). At random, so that files it has not
     /// collected yet, asked and answered no, do not stand in front of the
@@ -1958,7 +1958,7 @@ impl Db {
     /// Live files whose path contains `text`, case-insensitively.
     ///
     /// By path, not by content. Searching contents would mean an index of what
-    /// every file says — a second database, and a much larger promise than this
+    /// every file says: a second database, and a much larger promise than this
     /// product has made. Searching names is what people do most of the time and
     /// is answerable from what the index already holds.
     ///
@@ -2166,7 +2166,7 @@ impl Db {
     ///
     /// The honest answer to "has my photo reached the desktop yet". A file
     /// counts as outstanding while this device is the only known holder of its
-    /// content — which is exactly the condition under which losing this device
+    /// content, which is exactly the condition under which losing this device
     /// would lose the file.
     ///
     /// Restricted to content this device *made*. A file received from
@@ -2216,8 +2216,8 @@ impl Db {
 
     /// Everything whose bytes no other device is known to hold: what would be
     /// gone if this device were wiped, largest first, with whether each is
-    /// private (decision 0053). Wherever it came from -- made here, sent here,
-    /// or left here when another device freed its copy -- and including sends
+    /// private (decision 0053). Wherever it came from (made here, sent here,
+    /// or left here when another device freed its copy) and including sends
     /// not collected yet; not what this device keeps for another, whose owner
     /// has it.
     pub fn only_here(&self) -> Result<Vec<(String, u64, bool)>> {
@@ -2241,7 +2241,7 @@ impl Db {
     ///
     /// The peer's own "waiting to be delivered" list is made of files it made
     /// that it believes nobody else has. This is the answer to that, for the
-    /// files it is wrong about — everything it made that is sitting here.
+    /// files it is wrong about: everything it made that is sitting here.
     ///
     /// Limited, because on a library where one device made everything this
     /// would otherwise be the whole library in one pass. What is left over is
@@ -2303,7 +2303,7 @@ impl Db {
     /// Live paths at or beneath `prefix`, treated as a directory.
     ///
     /// A filesystem watcher reporting a removal cannot say whether the path was
-    /// a file or a directory — it is gone either way. The index is what
+    /// a file or a directory: it is gone either way. The index is what
     /// remembers, so removal is resolved by asking what used to live there.
     ///
     /// The trailing separator matters: a prefix of `docs` must match
@@ -2381,7 +2381,7 @@ impl Db {
     }
 
     /// What a paired device said its name and picture are: kept, and its name
-    /// put where every list of devices reads it -- a device renaming itself
+    /// put where every list of devices reads it, a device renaming itself
     /// was known by its pairing name for good until this.
     pub fn set_peer_profile(&self, device: &DeviceId, profile: &Profile) -> Result<()> {
         let tx = self.conn.unchecked_transaction()?;
@@ -2421,7 +2421,7 @@ impl Db {
         rows.collect::<std::result::Result<_, _>>().map_err(Into::into)
     }
 
-    // -- local identity and version vectors ----------------------------------
+    // , local identity and version vectors ----------------------------------
 
     /// Create this device's identity if it does not already have one.
     fn ensure_local_identity(&self) -> Result<()> {
@@ -2506,7 +2506,7 @@ impl Db {
             }
             Audience::Guest(asker) => {
                 // Only what is its own: sends into its vault, and what this
-                // computer keeps for its person -- sealed, by them, so nothing
+                // computer keeps for its person, sealed, by them, so nothing
                 // here can read it. Never the shared area, never anything kept
                 // for anyone else (decision 0060).
                 let person = self.person_of(asker)?.unwrap_or(*asker);
@@ -2671,8 +2671,8 @@ impl Db {
     }
 
     /// The entry this one joins, if any: the newest, when it is of the same
-    /// kind, device and detail, and of the same sort of path -- a backup's,
-    /// or not -- within a quarter of an hour; for a failure, the same file.
+    /// kind, device and detail, and of the same sort of path (a backup's,
+    /// or not) within a quarter of an hour; for a failure, the same file.
     /// Never what a person did one at a time: a send, a delivery, a pairing,
     /// a restore, two versions.
     fn merge_into(&self, kind: &Event, path: Option<&str>, device: Option<&DeviceId>, detail: Option<&str>) -> Result<Option<i64>> {
@@ -2877,7 +2877,7 @@ impl Db {
 
     /// What happened to one path, newest first.
     ///
-    /// This is the answer to "why is my file not here?" — the question the
+    /// This is the answer to "why is my file not here?": the question the
     /// product specification asks for and the one a log cannot answer after a
     /// restart.
     pub fn activity_for(&self, path: &str, limit: usize) -> Result<Vec<Activity>> {
@@ -3007,7 +3007,7 @@ impl Db {
     ///
     /// The folder holds two kinds of file: content shared with every device,
     /// and content somebody sent to this one. Both are written into it, because
-    /// a person asked for a file and should find a file — so anything that
+    /// a person asked for a file and should find a file, so anything that
     /// walks the folder and asks the index "do I know about this" has to look
     /// in both places.
     ///
@@ -3093,7 +3093,7 @@ impl Db {
 
     /// Where the index stands: the rows changed through this connection, and
     /// the count SQLite moves whenever another connection commits. Equal
-    /// twice, nothing in the index changed in between -- which is what lets a
+    /// twice, nothing in the index changed in between, which is what lets a
     /// summary that reads every row be kept and given again (the phone's
     /// backups, read on every refresh of its Home).
     pub fn change_mark(&self) -> Result<(u64, i64)> {
@@ -3110,7 +3110,7 @@ impl Db {
     ///
     /// Files kept where they lie (`OUTSIDE`, decision 0062) are left out:
     /// they are never in the folder, and until 2026-10-15 the scan asked
-    /// about each of them in turn -- 37,500 questions on the S23, holding
+    /// about each of them in turn, 37,500 questions on the S23, holding
     /// the engine over a second every time the app came back.
     pub fn folder_paths(&self) -> Result<Vec<String>> {
         let me = self.local_device()?;
@@ -3152,8 +3152,8 @@ impl Db {
     /// the same.
     ///
     /// What was taken before sends were told apart is recorded by content
-    /// alone. It answers only for a version made before it was taken -- that
-    /// is the old send offered again -- so that nothing already received
+    /// alone. It answers only for a version made before it was taken (that
+    /// is the old send offered again) so that nothing already received
     /// arrives twice, and a file sent again since still does. The two clocks
     /// compared are different devices', which is the cost of a record that
     /// never held more.
@@ -3215,7 +3215,7 @@ impl Db {
     /// the name it sent them under and when (decision 0059).
     ///
     /// Asked before sending, so that sending a file again is a choice the
-    /// person makes knowing it went before. Tombstones count -- a send let go
+    /// person makes knowing it went before. Tombstones count: a send let go
     /// of after it arrived was still sent.
     pub fn sent_before(
         &self,
@@ -3238,7 +3238,7 @@ impl Db {
     ///
     /// A file whose size is not among them was certainly never sent there,
     /// so only the rest need hashing before [`sent_before`](Self::sent_before)
-    /// can be asked -- a folder of a thousand photos is not read twice to
+    /// can be asked, a folder of a thousand photos is not read twice to
     /// find the one sent last week.
     pub fn sizes_sent_to(&self, device: &DeviceId) -> Result<std::collections::HashSet<u64>> {
         let mut stmt = self.conn.prepare(
@@ -3253,7 +3253,7 @@ impl Db {
     ///
     /// Collected is judged by a record of the device holding the bytes. Left
     /// in place, the record from the first time would count the new send as
-    /// collected the moment it was made -- and a sender that lets go of what
+    /// collected the moment it was made, and a sender that lets go of what
     /// has arrived would let go of it before it had. Only a record that the
     /// device holds them in its own vault is dropped; one that it holds them
     /// in the shared area is a copy it can hand back, whatever was sent.
@@ -3301,7 +3301,7 @@ impl Db {
     }
 
     /// Stop letting `device` hold this device's vault. What it already holds
-    /// it keeps -- nothing here reaches into another device -- but it is shown
+    /// it keeps (nothing here reaches into another device) but it is shown
     /// nothing more.
     pub fn remove_holder(&self, device: &DeviceId) -> Result<bool> {
         let n = self.conn.execute(
@@ -3513,8 +3513,8 @@ impl Db {
     }
 
     /// The live files of the shared area under `dir` (every one, at any
-    /// depth; `""` for all of it) that `device` may see -- outside every
-    /// folder shared without it -- as `(path, size, mtime_ns, content)`.
+    /// depth; `""` for all of it) that `device` may see (outside every
+    /// folder shared without it) as `(path, size, mtime_ns, content)`.
     pub fn shared_entries_under(&self, dir: &str, device: &DeviceId) -> Result<Vec<(String, u64, i64, blake3::Hash)>> {
         self.shared_entries_where(dir, device, "1")
     }
@@ -3522,7 +3522,7 @@ impl Db {
     /// The same, only the files whose bytes are in this device's folder: the
     /// shared folder as it is on disk, which a phone reaching it is shown
     /// (the owner's list of 2026-10-26, item 14). A file listed with no bytes
-    /// here -- freed, or on no device since -- is not in the folder; the
+    /// here (freed, or on no device since) is not in the folder; the
     /// owner's laptop listed 17 such, its folder empty, and the S23 showed
     /// them all.
     pub fn shared_entries_here(&self, dir: &str, device: &DeviceId) -> Result<Vec<(String, u64, i64, blake3::Hash)>> {
@@ -3655,7 +3655,7 @@ impl Db {
     ///
     /// Two conditions, and the second is the one that makes this safe to run
     /// without asking. The chunk must belong to a vault entry whose content
-    /// another device is recorded as holding — and **no** live file anywhere in
+    /// another device is recorded as holding, and **no** live file anywhere in
     /// this store may still need it from the chunk store. A chunk shared with a
     /// file that has no other way to be read is left alone, whatever else
     /// references it.
@@ -3665,10 +3665,10 @@ impl Db {
     /// records count as reachable, and the distinction is the whole reason
     /// `replicas.private` exists:
     ///
-    /// - an ordinary replica (`private = 0`) -- some device holds it in the
+    /// - an ordinary replica (`private = 0`) (some device holds it in the
     ///   shared area and will hand it back on request;
-    /// - a vault delivery to the very device whose vault the entry is in --
-    ///   the recipient has their own copy, so this one was only ever a
+    /// - a vault delivery to the very device whose vault the entry is in)
+    /// the recipient has their own copy, so this one was only ever a
     ///   courtesy.
     ///
     /// A vault delivery to *someone else* counts as neither, because this
@@ -3783,7 +3783,7 @@ impl Db {
     /// does not mean its content is.
     ///
     /// This matters more than it sounds. Renaming a directory arrives as a set
-    /// of additions and a set of deletions, applied in path order — so whether
+    /// of additions and a set of deletions, applied in path order, so whether
     /// the old path is still live when the new one is written depends on how the
     /// two names happen to sort. Asking only about live paths made a rename to
     /// an alphabetically later name re-transfer the entire tree, and a rename to
@@ -3796,11 +3796,11 @@ impl Db {
     /// Content is resolved to a row directly because a path is no longer a
     /// unique handle: the same name can be in the shared area and in a vault,
     /// and going by way of the path would find whichever the namespace filter
-    /// happened to allow — which for content lookups is the wrong question
+    /// happened to allow, which for content lookups is the wrong question
     /// entirely. Whether this device *holds the bytes* has nothing to do with
     /// which namespace they sit in.
     ///
-    /// Only a row whose chunk list is complete -- its chunks add up to its
+    /// Only a row whose chunk list is complete: its chunks add up to its
     /// size. A file deleted from the folder keeps its row as a tombstone but
     /// loses the references to payloads that left with it, and an empty or
     /// partial list read back as this content assembles the wrong bytes: found
@@ -3828,7 +3828,7 @@ impl Db {
             .map_err(Into::into)
     }
 
-    // -- trusted peers -------------------------------------------------------
+    // , trusted peers -------------------------------------------------------
 
     /// Record a device as trusted.
     ///
@@ -3906,7 +3906,7 @@ impl Db {
     ///
     /// - `holders`: it no longer keeps this device's own vault.
     /// - `replicas`: every copy it was known to hold becomes one this device
-    ///   cannot ask for -- the meaning `private` already has. Left counting as
+    ///   cannot ask for, the meaning `private` already has. Left counting as
     ///   an ordinary copy, it would let freeing space drop a file whose only
     ///   other copy is on a device nothing will connect to again. Marked rather
     ///   than deleted, because the same rows are what say a send was
@@ -4347,8 +4347,8 @@ impl Db {
         Ok(qurb_sync::sharing::Rules::new(rules))
     }
 
-    /// Live paths in the folder -- the shared area and this device's own
-    /// vault -- containing `text`, in path order.
+    /// Live paths in the folder (the shared area and this device's own
+    /// vault) containing `text`, in path order.
     pub fn folder_paths_containing(&self, text: &str) -> Result<Vec<String>> {
         let mut stmt = self.conn.prepare(
             "SELECT path FROM files
@@ -4362,7 +4362,7 @@ impl Db {
         rows.collect::<std::result::Result<_, _>>().map_err(Into::into)
     }
 
-    /// Remember a file just moved to the trash, and return its id -- which is
+    /// Remember a file just moved to the trash, and return its id, which is
     /// also its name under `trash/`.
     pub fn add_trash(&self, entry: &NewTrash<'_>) -> Result<i64> {
         self.conn.execute(
@@ -4589,8 +4589,8 @@ impl Db {
         Ok(found)
     }
 
-    /// Where a live file of the folder is read from outside it -- a path, or a
-    /// picked folder's `content:` address -- if it is one.
+    /// Where a live file of the folder is read from outside it (a path, or a
+    /// picked folder's `content:` address) if it is one.
     pub fn outside_source(&self, path: &str) -> Result<Option<String>> {
         Ok(self
             .conn
@@ -4643,8 +4643,8 @@ impl Db {
         Ok(self.conn.query_row("SELECT n FROM list_counter WHERE id = 1", [], |r| r.get::<_, i64>(0))? as u64)
     }
 
-    /// Which listings changed after `since`, by where each is listed -- 0 the
-    /// shared area, 2 this device's own vault, 1 any other vault -- and path:
+    /// Which listings changed after `since`, by where each is listed (0 the
+    /// shared area, 2 this device's own vault, 1 any other vault) and path:
     /// the class a list's entry carries in its area (decision 0072).
     pub fn listed_since(&self, since: u64) -> Result<ChangedListings> {
         let me = self.local_device()?;
@@ -4747,7 +4747,7 @@ impl Db {
     /// how many files and bytes that is. Not [`held_for`](Self::held_for)
     /// summed: one phone's WhatsApp backed up both as WhatsApp and inside a
     /// chosen folder, and again for itself before it was set up again, is
-    /// stored once and was counted three times -- 41.6 GB listed for 26.8 GB
+    /// stored once and was counted three times, 41.6 GB listed for 26.8 GB
     /// of content on the owner's laptop, 2026-10-31.
     pub fn held_once(&self, owners: &[DeviceId]) -> Result<(u64, u64)> {
         let (mut files, mut bytes) = (0u64, 0u64);
@@ -4768,7 +4768,7 @@ impl Db {
         Ok((files, bytes))
     }
 
-    /// What `owners` -- a person's phones -- deleted from their Private Vault
+    /// What `owners` (a person's phones) deleted from their Private Vault
     /// since `since` (unix seconds), as this device still lists it: path,
     /// size, when, whose. Not their backups' files, which go when the
     /// phone's own folders let go of them. The newest first.
@@ -4850,7 +4850,7 @@ impl Db {
 
     /// The person's word about `older`, a device of theirs paired before:
     /// that it is `newer`, set up again (`Same::Is`), or that it is no other
-    /// device at all (`Same::Not`) -- which no rule below can see past.
+    /// device at all (`Same::Not`), which no rule below can see past.
     /// Wanted when a phone set up again under another name, and from before
     /// it could say its install (on 2026-10-31 the owner's S23, first
     /// "SM-S911B", set up again as "skib phone", was listed twice).
@@ -4903,7 +4903,7 @@ impl Db {
 
     /// Take `id` as this device's own, in a store nothing has been written to
     /// yet: a phone set up again, told by a computer which device it was
-    /// (decision 0079). Refused -- false -- once anything has been made here,
+    /// (decision 0079). Refused (false) once anything has been made here,
     /// since every version counts against the id it was made under.
     pub fn adopt_local_device(&self, id: &DeviceId) -> Result<bool> {
         let me = self.local_device()?;
@@ -4923,8 +4923,8 @@ impl Db {
         Ok(true)
     }
 
-    /// What the platform keeps for this install of the app -- on a phone,
-    /// `ANDROID_ID` -- as it is: the seed of the permanent identity (decision
+    /// What the platform keeps for this install of the app (on a phone,
+    /// `ANDROID_ID`) as it is: the seed of the permanent identity (decision
     /// 0079). Kept here only, in the app's own storage, and never sent; the
     /// marker made from it (`install_marker`) is what other devices are told.
     pub fn set_install_source(&self, id: &str) -> Result<()> {
@@ -4962,14 +4962,14 @@ impl Db {
     /// 1. **The person's word** ([`set_same_device`](Self::set_same_device)),
     ///    either way.
     /// 2. **The same install** (`install_marker`): another identity made
-    ///    by the same install of the app -- after its data was cleared, or
-    ///    it was reinstalled -- is that device again, whatever its name.
+    ///    by the same install of the app (after its data was cleared, or
+    ///    it was reinstalled) is that device again, whatever its name.
     /// 3. **The same name and kind**, for devices from before installs were
     ///    told.
     ///
     /// Either rule 2 or 3 also wants both the same person's, the newer paired
     /// after the older, and the older not seen since: a device still in use
-    /// beside the newer is a second device -- two folders set up on one
+    /// beside the newer is a second device, two folders set up on one
     /// computer share its install. Of several that fit, the first paired
     /// after it: set up again twice is a chain, each the next one's earlier.
     pub fn became(&self, older: &DeviceId) -> Result<Option<DeviceId>> {
@@ -4997,8 +4997,8 @@ impl Db {
             {
                 continue;
             }
-            // A device already said to be another -- the passing pairing of a
-            // phone set up again (decision 0079), or one the person named --
+            // A device already said to be another (the passing pairing of a
+            // phone set up again (decision 0079), or one the person named)
             // is nobody's later self. Without this, the permanent identity,
             // named alike and last seen before the passing one was paired,
             // was taken to have become it: each the other's (2026-11-01).
@@ -5140,9 +5140,9 @@ impl Db {
     }
 
     /// The files under `prefix` in this device's own vault that no device
-    /// it may count on holds yet -- what a backup still has to give the
+    /// it may count on holds yet (what a backup still has to give the
     /// computer keeping it, as [`outside_summary`](Self::outside_summary)
-    /// counts them -- the first `limit` by path, with how many there are and
+    /// counts them) the first `limit` by path, with how many there are and
     /// their bytes: what Home and the notice name (the owner's list of
     /// 2026-10-25).
     pub fn outside_waiting(&self, prefix: &str, limit: usize) -> Result<(Vec<(String, u64)>, u64, u64)> {
@@ -5196,7 +5196,7 @@ impl Db {
     /// apart from `path`.
     ///
     /// Folding uses SQLite's `lower()`, which is ASCII-only. That misses
-    /// collisions in other scripts — Turkish dotted I, for one — and catches the
+    /// collisions in other scripts (Turkish dotted I, for one) and catches the
     /// cases that actually occur in practice. A full Unicode fold belongs with
     /// proper normalisation work, which this is not.
     pub fn live_path_colliding_with(&self, path: &str) -> Result<Option<String>> {
@@ -5276,7 +5276,7 @@ impl Db {
         rows.collect::<std::result::Result<_, _>>().map_err(Into::into)
     }
 
-    // -- integrity -----------------------------------------------------------
+    // , integrity -----------------------------------------------------------
 
     /// Re-derive every reference count from `file_chunks` and report any chunk
     /// whose stored count disagrees.
@@ -5310,9 +5310,9 @@ pub enum Same {
     Not,
 }
 
-/// An install of the app, as told to other devices: `platform` -- what the
+/// An install of the app, as told to other devices: `platform` (what the
 /// platform keeps for this app across a reinstall or cleared data, Android's
-/// `ANDROID_ID`, a computer's machine id -- one way, and never sent as it is.
+/// `ANDROID_ID`, a computer's machine id) one way, and never sent as it is.
 pub fn install_marker(platform: &str) -> [u8; 16] {
     let whole = blake3::derive_key("qurb 2026-10-31 install marker", platform.trim().as_bytes());
     let mut marker = [0u8; 16];
@@ -5372,7 +5372,7 @@ fn removed_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<Result<Removed>> {
 pub struct TrustedPeer {
     pub device_id: DeviceId,
     pub fingerprint: [u8; 32],
-    /// What the user calls it. Chosen by the peer, so display-only — never
+    /// What the user calls it. Chosen by the peer, so display-only: never
     /// used to decide anything.
     pub name: String,
     pub paired_at: i64,
@@ -5473,7 +5473,7 @@ fn file_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<FileRow> {
 ///
 /// More than two values. A file that is here and also on another device, and
 /// a file that is here and nowhere else in the world, look identical to
-/// anything that only checks whether the bytes are on disk -- and offering to
+/// anything that only checks whether the bytes are on disk, and offering to
 /// free the second is offering to delete it. So do, from the other side, a
 /// file freed here that another device has and one no device has any more
 /// (decision 0055). Decided here, once, so that the desktop's window and the
@@ -5866,7 +5866,7 @@ pub struct Activity {
 /// What kind of thing happened.
 ///
 /// Stored as text rather than as an integer so that a database opened by hand
-/// — which is how most of this project's debugging happens — reads as
+/// (which is how most of this project's debugging happens) reads as
 /// sentences instead of as a legend to look up. An unknown string from a newer
 /// build is kept rather than dropped, because losing history to a downgrade is
 /// worse than showing one unfamiliar word.
@@ -5952,7 +5952,7 @@ impl fmt::Display for Event {
 /// Who is asking, for the purpose of what they may see.
 ///
 /// Three cases, and conflating any two of them is a bug with a security
-/// consequence — which is why this is an enum rather than an `Option`.
+/// consequence, which is why this is an enum rather than an `Option`.
 #[derive(Debug, Clone, Copy)]
 pub enum Audience<'a> {
     /// This device itself. Sees everything it holds: an interface showing
@@ -5962,13 +5962,13 @@ pub enum Audience<'a> {
     /// that device's own vault, and never anybody else's.
     Device(&'a DeviceId),
     /// A device of another person: a guest of this computer, or a computer
-    /// this device visits (decision 0060). Sees only what was sent to it --
+    /// this device visits (decision 0060). Sees only what was sent to it:
     /// never the shared area, never a vault kept for anyone.
     Guest(&'a DeviceId),
     /// A peer that authenticated but whose device is not recorded here. Sees
     /// the shared area only.
     ///
-    /// It owns no vault as far as this device knows, so it is shown none — but
+    /// It owns no vault as far as this device knows, so it is shown none, but
     /// it is not refused outright, because the connection already proved it is
     /// trusted and the shared area is what trust entitles a device to. Being
     /// stricter here would break a paired device whose bookkeeping is
@@ -6055,7 +6055,7 @@ mod tests {
     /// A phone set up again is the device it was by the same install,
     /// whatever its new name (the owner's S23, 2026-10-31: "SM-S911B", then
     /// "skib phone"); by the same name, from before installs were told; or
-    /// on the person's word -- which also says, past every rule, that two
+    /// on the person's word, which also says, past every rule, that two
     /// are not the same.
     #[test]
     fn a_device_set_up_again_is_known_for_what_it_was() {
@@ -6083,7 +6083,7 @@ mod tests {
     /// A phone set up again joins under a passing pairing of the same name,
     /// which the computer says is the phone it was: the phone's permanent
     /// identity must not be taken by the name rule to have become that
-    /// passing one -- which made each the other's (2026-11-01).
+    /// passing one, which made each the other's (2026-11-01).
     #[test]
     fn a_passing_pairing_is_nobodys_later_self() {
         let db = Db::open_in_memory().unwrap();
@@ -6095,7 +6095,7 @@ mod tests {
     }
 
     /// The same name still finds a device from before installs were told;
-    /// and nothing finds one still in use after the newer was paired --
+    /// and nothing finds one still in use after the newer was paired:
     /// a second phone of the same model, or a second folder on one computer.
     #[test]
     fn a_device_still_in_use_is_a_second_device() {

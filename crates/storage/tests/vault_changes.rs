@@ -1,8 +1,8 @@
 //! A phone changing its own folder on a computer as one changes files on a
 //! computer (the owner's list of 2026-10-26, item 13): copying a file or a
 //! whole folder, pasting where its name is taken, moving and renaming a
-//! folder -- each a change of the phone's own vault, which the computer
-//! follows -- whether the bytes are on the phone or freed to the computer.
+//! folder (each a change of the phone's own vault, which the computer
+//! follows) whether the bytes are on the phone or freed to the computer.
 
 use qurb_storage::{ChunkKey, Store};
 use std::path::PathBuf;

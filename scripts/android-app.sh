@@ -8,8 +8,8 @@
 #                                       # the engine built with the `mobile`
 #                                       # profile, the code shrunk by R8
 #   ./scripts/android-app.sh install    # debug APK, installed on a connected device
-#   ./scripts/android-app.sh release-all  # a formal release: every ABI -- arm64-v8a,
-#                                       # armeabi-v7a, x86, x86_64 -- one APK each,
+#   ./scripts/android-app.sh release-all  # a formal release: every ABI (arm64-v8a,
+#                                       # armeabi-v7a, x86, x86_64) one APK each,
 #                                       # one holding all four, and an app bundle;
 #                                       # what has run on which is docs/releasing.md
 #   ./scripts/android-app.sh fast       # a release built with the debug key: shrunk,
@@ -58,7 +58,7 @@ else
     PROFILE=release
     # Only the two ABIs the app ships. The others build and have never been run
     # on hardware, and shipping an untested binary is a claim this project has
-    # not earned -- see app/build.gradle.kts.
+    # not earned: see app/build.gradle.kts.
     declare -A ABI=( [arm64-v8a]=aarch64-linux-android [x86_64]=x86_64-linux-android )
     ANDROID_TARGETS="aarch64-linux-android x86_64-linux-android" ./scripts/android-build.sh --release
 fi
@@ -93,7 +93,7 @@ cp -r target/bindings/kotlin/uniffi android/app/src/main/java/
 echo "   $(find android/app/src/main/java/uniffi -name '*.kt' | wc -l) file(s)"
 
 echo "== 3/3  Gradle"
-# `|| true`: on a machine with no wrapper cache -- CI -- the folder is not
+# `|| true`: on a machine with no wrapper cache (CI) the folder is not
 # there, and under `set -e` the failed search would end the script unsaid.
 GRADLE=$(find "$HOME/.gradle/wrapper/dists" -name gradle -type f -path '*/bin/*' 2>/dev/null | head -1 || true)
 GRADLE=${GRADLE:-$(command -v gradle || true)}

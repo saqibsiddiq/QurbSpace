@@ -4,7 +4,7 @@
 //! carrying PNG files and a decoder for an image sixteen pixels across.
 //!
 //! It is the mark (decision 0048): a rounded tile, a ring for your space, a
-//! stem that makes it a q, and a point of Qurb light inside — the same drawing
+//! stem that makes it a q, and a point of Qurb light inside, the same drawing
 //! as the window's and `packaging/qurb.svg`, in the same 32-unit coordinates,
 //! so the panel and the applications menu agree. What changes with the state
 //! is the tile's colour and whether the ring is whole. At this size an icon is
@@ -148,7 +148,7 @@ fn inside_tile(x: f32, y: f32) -> bool {
 
 /// The gap in the ring, for the looks that have one: the lower left, from
 /// about seven o'clock to nine, where the stem does not cover it. Reads as
-/// "in motion" without animating — a tray icon that animates is a tray icon
+/// "in motion" without animating: a tray icon that animates is a tray icon
 /// people turn off.
 fn in_gap(dx: f32, dy: f32) -> bool {
     // y grows downwards, so a positive angle is below the centre. In f64:
@@ -180,7 +180,7 @@ mod tests {
 
     /// Every look must actually draw something. An icon that renders empty is
     /// invisible in the tray, which is indistinguishable from the program not
-    /// running — the one thing this must never look like.
+    /// running: the one thing this must never look like.
     #[test]
     fn every_look_draws_visible_pixels() {
         for look in [Look::Settled, Look::Working, Look::Alone, Look::Problem] {
@@ -200,7 +200,7 @@ mod tests {
     }
 
     /// It is the mark: a tile with rounded corners, white where the ring and
-    /// the stem are, the light at the centre — and a gap only while working.
+    /// the stem are, the light at the centre, and a gap only while working.
     #[test]
     fn it_draws_the_mark() {
         let (settled, _, _) = render(Look::Settled);

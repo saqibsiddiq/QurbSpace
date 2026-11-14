@@ -8,7 +8,7 @@ import uniffi.qurb_mobile.PeerInfo
 
 /**
  * Putting backups back on this phone (the owner's review of 2026-11-02,
- * D-2): everything, WhatsApp, one folder, or files chosen -- from the
+ * D-2): everything, WhatsApp, one folder, or files chosen, from the
  * computer whose page it is. Each file goes back where it came from: into
  * WhatsApp's folder, the phone folder it was backed up from, or the Private
  * Vault. One already there is skipped (his answer to (a)).

@@ -1,7 +1,7 @@
 //! Deciding what changed and what to do about it.
 //!
 //! This crate is the part of the sync engine that has to be *right*. It holds
-//! no data, touches no disk, and reads no clock — it takes two views of the
+//! no data, touches no disk, and reads no clock: it takes two views of the
 //! world and says what should happen. That makes it exhaustively testable,
 //! which matters, because the failure mode here is losing a user's work.
 //!

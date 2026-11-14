@@ -1,5 +1,5 @@
 //! Changes a phone asks of a computer's shared folder, made by the computer
-//! (decision 0073, item 6): the rules, without a network -- what a name may
+//! (decision 0073, item 6): the rules, without a network, what a name may
 //! be, where it may go, that a file is put only once its bytes are what was
 //! said, and who a deletion is recorded as.
 
@@ -127,7 +127,7 @@ fn a_folder_moves_and_is_deleted_file_by_file_into_recently_deleted() {
 
 /// The shared folder as a phone sees it is the folder on the computer's disk
 /// (the owner's list of 2026-10-26, item 14): a file the index lists with no
-/// bytes here -- freed, or on no device since -- is neither listed nor found,
+/// bytes here (freed, or on no device since) is neither listed nor found,
 /// and a folder holding only such files is not shown either.
 #[test]
 fn a_phone_sees_only_what_is_in_the_folder() {

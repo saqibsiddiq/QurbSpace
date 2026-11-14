@@ -7,7 +7,7 @@ import { TALL_WALK } from './tall'
 import { press, show, tap, type Keys } from './timeline'
 
 // The walkthrough under the hero (docs/design/website-brief.md): a laptop and
-// a phone, in three chapters —
+// a phone, in three chapters,
 // pairing once with the QR code, opening the computer's folders from the
 // phone, and changing them from the phone with the computer following. The
 // screens are the app's, simplified: its green, its circle, its sheets and
@@ -19,7 +19,7 @@ import { press, show, tap, type Keys } from './timeline'
 // by the scroll until the owner found that too unlike the rest of the page.
 
 const TIMELINE: Record<string, Keys> = {
-  // Chapter 1 — connect once
+  // Chapter 1: connect once
   'ch-1': { o: [[0, 1], [0.28, 1], [0.31, 0]], y: [[0.28, 0], [0.31, -16]] },
   phone: {
     x: [[0.065, 0], [0.13, -150], [0.25, -150], [0.31, 0]],
@@ -46,7 +46,7 @@ const TIMELINE: Record<string, Keys> = {
   'l-ok': { o: show(0.215, 0.225) },
   'l-ok-check': { s: [[0.215, 0.5], [0.235, 1]] },
 
-  // Chapter 2 — your computer, in your pocket
+  // Chapter 2: your computer, in your pocket
   'ch-2': { o: show(0.31, 0.34, 0.61, 0.64), y: [[0.31, 16], [0.34, 0], [0.61, 0], [0.64, -16]] },
   'l-files': { o: show(0.31, 0.34) },
   'tap-circle': tap(0.36),
@@ -68,7 +68,7 @@ const TIMELINE: Record<string, Keys> = {
   'tap-pdf': tap(0.598),
   'p-pdf': { o: show(0.603, 0.612, 0.623, 0.63), s: [[0.603, 0.94], [0.616, 1]] },
 
-  // Chapter 3 — change it from your phone
+  // Chapter 3: change it from your phone
   'ch-3': { o: show(0.63, 0.66), y: [[0.63, 16], [0.66, 0]] },
   'tap-notes': { o: [[0.67, 0], [0.675, 0.5], [0.7, 0]], s: [[0.67, 0.3], [0.7, 1.7]] },
   'p-act-1': { o: show(0.685, 0.7, 0.728, 0.738) },
@@ -95,7 +95,7 @@ const TIMELINE: Record<string, Keys> = {
 }
 
 
-// A QR code's look — finder squares and dots — not a code anything reads.
+// A QR code's look (finder squares and dots) not a code anything reads.
 function Qr() {
   const n = 25
   const cells: [number, number][] = []

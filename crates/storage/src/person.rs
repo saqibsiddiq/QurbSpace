@@ -1,5 +1,5 @@
 //! A person's folder as it is shown (decision 0067): one folder per phone,
-//! and in each what a computer keeps for it -- WhatsApp under *WhatsApp*,
+//! and in each what a computer keeps for it, WhatsApp under *WhatsApp*,
 //! each backed-up folder under its own name, and the phone's Private Vault
 //! under *Private Vault*. One definition, so that the window and the phone
 //! draw the same tree.
@@ -40,15 +40,15 @@ pub fn shown_as(path: &str) -> Option<String> {
 }
 
 /// One device's folder: the name it is shown under, and every identity it
-/// has had -- the current one first, then each it was before it was set up
+/// has had, the current one first, then each it was before it was set up
 /// again (`Db::earlier_selves`), the latest first. One device is one folder,
 /// however many identities it has had: on 2026-11-01 the owner's S23, three
 /// identities after two reinstalls, showed as three folders.
 pub type DeviceFolder = (String, Vec<DeviceId>);
 
 /// Everything kept for one device's identities, each place in its folder
-/// once: where two identities kept a file at the same place -- a phone set
-/// up again backs up the same photos again -- the newest identity's.
+/// once: where two identities kept a file at the same place (a phone set
+/// up again backs up the same photos again) the newest identity's.
 fn merged(db: &Db, name: &str, ids: &[DeviceId]) -> Result<Vec<(String, Shown)>> {
     let mut seen = std::collections::HashSet::new();
     let mut out = Vec::new();
@@ -179,7 +179,7 @@ mod tests {
         assert_eq!(shown_as(".qurb-outside/other/d"), None);
     }
 
-    /// One phone with three identities -- set up again twice -- is one
+    /// One phone with three identities (set up again twice) is one
     /// folder: what each kept, merged, and a file kept by two at the same
     /// place shown once, the newest identity's (2026-11-01).
     #[test]

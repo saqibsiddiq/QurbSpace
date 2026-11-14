@@ -11,7 +11,7 @@
 //! # What makes this different from ordinary key handling
 //!
 //! The servers hold nothing. There is no reset, no support ticket, no escrow.
-//! If a user loses the master key and their phrase, the data is gone — not by
+//! If a user loses the master key and their phrase, the data is gone, not by
 //! policy but as a fact about the mathematics, because nothing else can decrypt
 //! their chunks.
 //!

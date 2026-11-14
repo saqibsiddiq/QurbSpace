@@ -18,7 +18,7 @@ import com.google.android.material.theme.MaterialComponentsViewInflater
  *
  * AppCompat (1.7.0, `AppCompatTextHelper.updateTypefaceAndStyle`) reads a
  * text view's appearance, then its own attributes, and the second reading
- * sets the weight back to unspecified -- having already cleared bold for it --
+ * sets the weight back to unspecified (having already cleared bold for it)
  * and finds Inter again in the theme's `android:fontFamily`, which then
  * resolves regular. So from Android 9 every semibold or medium appearance set
  * in a layout came out regular: Home's state, setup's titles. Set from code

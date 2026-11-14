@@ -9,7 +9,7 @@ import { press, show, tap, type Keys } from './timeline'
 // Scene 3 of the website brief (docs/design/website-brief.md): sending,
 // which works both ways. A photo leaves the phone, folds into a paper dart
 // and lands on the laptop; then a PDF leaves the laptop, folds into a
-// different plane — a broader glider, with a loop on the way — and lands on
+// different plane (a broader glider, with a loop on the way) and lands on
 // the phone. It plays once, by the clock, when it comes into view, rests on
 // the last frame, and plays again when clicked; with reduced motion it shows that frame still.
 

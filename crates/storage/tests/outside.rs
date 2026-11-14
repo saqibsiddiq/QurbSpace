@@ -3,7 +3,7 @@
 //!
 //! What matters is that nothing is copied, that a device keeping the vault can
 //! still be given every byte, and that a file going from the outside folder
-//! becomes the right thing -- kept by that device, or deleted -- and never
+//! becomes the right thing (kept by that device, or deleted) and never
 //! anything the folder scan mistakes for a deletion of its own.
 
 use qurb_storage::db::Audience;
@@ -100,7 +100,7 @@ fn a_file_kept_outside_is_in_the_vault_and_read_where_it_lies() {
     assert!(phone.store.verify(false).unwrap().missing.is_empty());
 
     // And it is offered on a network that does not count what it carries: a
-    // holder is shown it in the area it keeps -- and not on mobile data.
+    // holder is shown it in the area it keeps, and not on mobile data.
     phone.store.db().add_holder(&computer()).unwrap();
     let shown = phone.store.tree_for(Audience::Device(&computer())).unwrap();
     assert!(shown.iter().all(|v| !v.path.starts_with(".qurb-outside/")), "offered on mobile data");
@@ -114,7 +114,7 @@ fn a_file_kept_outside_is_in_the_vault_and_read_where_it_lies() {
 }
 
 /// The scan of qurb's own folder deletes what the index has and the folder
-/// does not -- except what it knows is not here, as a freed file is not. A
+/// does not: except what it knows is not here, as a freed file is not. A
 /// file kept outside must be one of those, or the first scan would delete the
 /// whole backup.
 #[test]
@@ -228,7 +228,7 @@ fn a_run_stops_at_its_deadline_and_the_next_carries_on() {
 
 /// A file changed where it lies, with a listing that has not caught up: what
 /// was recorded is not what is there, so nothing is served under the old
-/// hashes -- the next listing makes it a new version instead.
+/// hashes, the next listing makes it a new version instead.
 #[test]
 fn a_file_changed_behind_the_listing_is_not_served_as_the_old_one() {
     let mut phone = Phone::new();
@@ -263,7 +263,7 @@ fn a_file_that_comes_back_is_read_where_it_lies_again() {
 
 /// WhatsApp's files are a backup, not the person's files in qurb: not listed,
 /// not found by a search, not counted, not "waiting to reach your devices",
-/// and not among what clearing the app's data would lose -- it would lose
+/// and not among what clearing the app's data would lose, it would lose
 /// none of them, since they are WhatsApp's.
 #[test]
 fn a_folder_kept_outside_is_in_no_list_a_person_is_shown() {
@@ -344,9 +344,9 @@ fn timing_many_small_files() {
     println!("total {:?}", started.elapsed());
 }
 
-/// The same file found another way -- WhatsApp's folder listed through a
+/// The same file found another way (WhatsApp's folder listed through a
 /// picked folder, then directly once the phone has "All files access"
-/// (decision 0063) -- is read from where it was found this time, without
+/// (decision 0063)) is read from where it was found this time, without
 /// reading it again.
 #[test]
 fn a_file_found_another_way_is_read_from_there_without_reading_it_again() {
@@ -388,9 +388,9 @@ fn files_kept_where_they_lie_are_not_expected_in_the_folder() {
     assert_eq!(phone.store.db().folder_paths().unwrap(), vec!["notes.txt".to_string()]);
 }
 
-/// The index's change mark moves with every change -- made through this
+/// The index's change mark moves with every change (made through this
 /// connection, or committed through another, as the server answering a
-/// computer records what it holds -- and with nothing else. A summary is
+/// computer records what it holds) and with nothing else. A summary is
 /// kept on the strength of it (the phone's backups on Home), so a change it
 /// missed would leave a screen saying something no longer true.
 #[test]

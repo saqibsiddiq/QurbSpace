@@ -38,7 +38,7 @@ avoidable, prefer the cost.
 
 The invariant says the chunk *exists*, not that it exists in the chunk store.
 On a device that materialises files, the file in the folder is where most of
-them live — see below.
+them live: see below.
 
 **2. Reference counts equal the links that exist.**
 
@@ -52,17 +52,17 @@ re-derives them from scratch and is asserted in tests.
 
 A syncing device writes every file into a folder somebody can see. Keeping an
 encrypted copy of those same bytes in `chunks/` as well makes every synced file
-cost **twice** its size — which is the difference between a 10 GB allowance
+cost **twice** its size, which is the difference between a 10 GB allowance
 holding 10 GB of files and holding 5.
 
-So with a folder attached — `Store::in_tree` — the chunk store keeps only what
+So with a folder attached (`Store::in_tree`) the chunk store keeps only what
 the folder cannot supply, and `read_chunk` falls back to the file: seeking to
 the chunk's offset, which `Db::locate_chunk` computes as the running sum of the
 chunks before it, and hashing what it finds before returning it. A file edited
 behind qurb's back therefore makes its *old* chunks fail to read rather than
 answer with the wrong content.
 
-Without a folder — a storage-only replica — every payload is kept, because
+Without a folder (a storage-only replica) every payload is kept, because
 nothing else has them. That is not a special case bolted on: a replica is
 precisely the device whose content is not materialised.
 
@@ -70,7 +70,7 @@ Two things follow that are easy to get wrong, and both were:
 
 - **`has_chunk` must consult the folder.** Asking only the chunk store calls
   almost every chunk absent on a device that syncs a folder, and the caller that
-  asks is usually deciding whether to pull content over the network — so it
+  asks is usually deciding whether to pull content over the network, so it
   silently re-transfers files the device already has.
 - **Deleting a file destroys its superseded versions.** Their bytes left with
   the file, so a tombstone cannot keep them restorable however long it is held.
@@ -91,8 +91,8 @@ The record it consults is written when a peer says it holds something. See
 [decision 0025](../../docs/decisions/0025-a-storage-cap-that-cannot-lose-data.md).
 
 Two questions an interface asks of the same record. `Db::freeable` is what
-could be freed right now without losing anything — the files, their total and
-the largest of them — and applies the test `Store::free_local` applies before
+could be freed right now without losing anything (the files, their total and
+the largest of them) and applies the test `Store::free_local` applies before
 freeing, so a file it offers is one that will be freed. `Db::holders_of_content`
 names the devices that would hand a file's bytes back, which is what a file's
 details list under the devices that have it. The desktop's Storage place and
@@ -116,13 +116,13 @@ referenced looks exactly like one until the reference exists. The write lock
 covers the collector's work, not a check made earlier by someone else.
 
 The foreign key on `file_chunks` is what caught that, refusing the insert rather
-than allowing a reference to nothing — worth remembering when it looks like a
+than allowing a reference to nothing: worth remembering when it looks like a
 constraint that exists only for tidiness.
 
 ## Deletion and retention
 
 Deleting a file writes a tombstone: the row stays, its chunk references stay,
-and the content remains restorable. Garbage collection runs in two stages —
+and the content remains restorable. Garbage collection runs in two stages:
 expire tombstones past the retention window, then reclaim chunks nothing points
 at any more.
 
@@ -137,8 +137,8 @@ real disk cost when choosing the window.
 ### Deleted files
 
 On a device with a folder, the file in the folder is the only copy of its
-bytes. A file taken out of the folder by a deletion — made here, or arriving
-from another device — is *moved* into `trash/` in the store directory, and a
+bytes. A file taken out of the folder by a deletion (made here, or arriving
+from another device) is *moved* into `trash/` in the store directory, and a
 row in `trash` remembers its path, size, who deleted it and when. Until
 2026-11-14 that was Recently deleted, kept thirty days and restorable
 ([decision 0042](../../docs/decisions/0042-recently-deleted.md)); since then
@@ -165,13 +165,13 @@ for good on the computer lets its bytes go at the next collection.
 Every row has a `scope`: `NULL` for the shared area, a device id for that
 device's vault ([decision 0029](../../docs/decisions/0029-two-areas-shared-and-private.md)).
 `put_file_in` stores a file in an area already decided, which is how files qurb
-writes itself — a sharing rule, a restored file, a settled conflict — keep the
+writes itself (a sharing rule, a restored file, a settled conflict) keep the
 area they belong in on a phone that files new things privately.
 
 Within the shared area, a folder can be shared with chosen devices. The rules
 are ordinary files under `.qurb-sharing/`; `refresh_shares` derives the
 `shares` and `share_members` tables from them, and the queries that decide what
-a peer may be shown — its tree, a chunk, a content hash — filter through
+a peer may be shown (its tree, a chunk, a content hash) filter through
 `shared_with()`
 ([decision 0044](../../docs/decisions/0044-sharing-with-chosen-devices.md)).
 `remote_folders`, never synced, lists folders this device only lists:
@@ -207,7 +207,7 @@ cargo test -p qurb-storage
 `tests/crash.rs` kills a real writing process with `SIGKILL` at seven different
 moments and checks what survives. The invariant is the one the write ordering
 exists for: a chunk referenced by the index always exists on disk. A crash may
-orphan a chunk — wasted space — but must never leave a reference to a payload
+orphan a chunk (wasted space) but must never leave a reference to a payload
 that was never written.
 
 The garbage collection tests carry the rest of the weight. `gc_never_removes_a_chunk_a_live_file_still_needs`
@@ -218,7 +218,7 @@ destroys data in a file the user never touched, without raising an error.
 ## Version vectors
 
 Since schema v2 the index records, per path, the version vector it carries and
-which device last changed it — plus this store's own identity and the counter it
+which device last changed it: plus this store's own identity and the counter it
 stamps onto local changes.
 
 The distinction that matters is between a change made *here* and a version
@@ -234,7 +234,7 @@ clock, or a touched file would start beating a peer's genuinely newer version.
 ## Reading without holding the file
 
 `read_file` returns the bytes. `read_file_into` and `read_content_into` write
-them out a chunk at a time, so peak memory is one chunk — at most 2 MiB —
+them out a chunk at a time, so peak memory is one chunk (at most 2 MiB)
 however large the file is. `adopt_file` is the same idea for the other
 direction: it maps a file the caller has already written rather than taking a
 buffer.
@@ -244,7 +244,7 @@ them. Which to use is not a matter of taste:
 [decision 0018](../../docs/decisions/0018-file-contents-never-cross-the-ffi.md)
 says why anything a phone can reach must stream.
 
-All of them verify the whole-file hash — but only once the last byte is written,
+All of them verify the whole-file hash, but only once the last byte is written,
 which is the earliest it can be known. A destination is therefore not
 trustworthy until the call returns.
 
@@ -276,8 +276,8 @@ vault where they lie, under `.qurb-outside/whatsapp/` and
 [0063](../../docs/decisions/0063-backing-up-a-phones-folders-chosen-on-the-desktop.md));
 `Db::outside_summary` says how many and how much of them a computer is known
 to keep. On the computer, `person.rs` maps what is kept for a phone to where a
-person looks for it — *WhatsApp*, each backed-up folder under its own name,
-*Private Vault* — one tree for the window and the phone alike
+person looks for it (*WhatsApp*, each backed-up folder under its own name,
+*Private Vault*) one tree for the window and the phone alike
 ([decision 0067](../../docs/decisions/0067-a-folder-for-each-person.md));
 `own_phones` names a phone's folders, its own and its *earlier selves'*
 (`Db::earlier_selves`: the same phone set up again, whose kept content that
@@ -293,6 +293,6 @@ sync.
 - **Key rotation.** There is no way to change the master secret without
   re-encrypting every chunk, and nothing does that.
 - **Dropping payloads without a folder.** `evict` removes a file from the
-  folder, so a replica — which has no folder — cannot free space under a
+  folder, so a replica (which has no folder) cannot free space under a
   storage cap at all. It reports the overrun instead. Doing it properly means
   dropping chunk payloads, which is a different operation.

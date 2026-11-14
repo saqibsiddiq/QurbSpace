@@ -27,7 +27,7 @@ import uniffi.qurb_mobile.OnlyHere
  * button that says nothing about what it costs. Declared as the app's
  * `manageSpaceActivity`, this screen takes that button's place. It says what
  * exists only on this phone before anything goes, offers to free space that
- * costs nothing, and still lets the person delete everything -- that is their
+ * costs nothing, and still lets the person delete everything: that is their
  * right, and they should do it knowing.
  */
 class ManageSpaceActivity : AppCompatActivity() {
@@ -132,7 +132,7 @@ class ManageSpaceActivity : AppCompatActivity() {
         }
     }
 
-    /** Still possible, as it should be -- after saying what it costs. */
+    /** Still possible, as it should be: after saying what it costs. */
     private fun deleteButton(only: List<OnlyHere>, sent: ULong = 0uL) {
         button("Delete everything Qurb keeps here…", danger = true) {
             val files = if (only.isEmpty()) "Nothing in your folders exists only on this phone."

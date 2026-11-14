@@ -1,4 +1,4 @@
-# 0069 — A file read moments after it was written is read again
+# 0069: A file read moments after it was written is read again
 
 **Status:** Accepted, 2026-10-18. Built in the store and the engine, index
 schema 26. Reproduced on this machine by a test that fails without it, and
@@ -16,8 +16,8 @@ engine test failed there that passes on the laptop:
 an_edit_propagates: left: Some("version one"), right: Some("version two")
 ```
 
-The test writes `version one`, syncs, writes `version two` -- the same length
--- and syncs. The second write never left the device.
+The test writes `version one`, syncs, writes `version two` (the same length)
+and syncs. The second write never left the device.
 
 A scan takes a file whose size and modification time match the index as
 unchanged, without reading it (`Engine::looks_unchanged`). That is the
@@ -32,7 +32,7 @@ because its kernel (7.2, with fine-grained timestamps) never gave the two
 writes one time.
 
 It matters beyond a test: a program that rewrites a file twice in quick
-succession -- a save that writes, then writes again -- could leave a version on
+succession (a save that writes, then writes again) could leave a version on
 one device that the others never get, with nothing to say so.
 
 ## Decision
@@ -48,9 +48,9 @@ as new as the index itself ("racily clean").
 - A scan reads the marked paths once and does not trust a size-and-time match
   for them. A re-read that finds the same bytes stores nothing and makes no
   version (`put_manifest` already knows identical content).
-- The same for files kept where they lie -- WhatsApp's, and a phone's folders
+- The same for files kept where they lie (WhatsApp's, and a phone's folders
   chosen on a computer ([0062](0062-backing-up-whatsapp.md),
-  [0063](0063-backing-up-a-phones-folders-chosen-on-the-desktop.md)) -- which are
+  [0063](0063-backing-up-a-phones-folders-chosen-on-the-desktop.md))) which are
   told apart by the same two numbers.
 - A time more than three seconds in the future is not marked: nothing could be
   done for it, and it would be read on every scan forever.

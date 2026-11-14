@@ -1,10 +1,10 @@
-# 0071 — A device's file list is fetched only when it changed, and the relay is tried alongside a slow direct path
+# 0071: A device's file list is fetched only when it changed, and the relay is tried alongside a slow direct path
 
 **Status:** Accepted, 2026-10-19. Built in `qurb_peer` (`trees`, `wire`,
 `connect`), used by the phone and the laptop's daemon. Measured on the S23 on
 another phone's hotspot. **It does not finish the job**: a pass after the other
 side changed anything still fetches the whole list, which on that hotspot is
-more than a pass can carry -- see *What is left*. Amended 2026-10-20 by
+more than a pass can carry, see *What is left*. Amended 2026-10-20 by
 [0072](0072-only-what-changed-in-a-list.md), which sends only the changes
 and fingerprints a list in a different order (so a list kept by this build is
 fetched again once); the fingerprint is still asked of a device that sends its
@@ -13,9 +13,9 @@ list only whole.
 
 ## What was found
 
-Testing the S23 on another phone's hotspot -- the owner's report of
+Testing the S23 on another phone's hotspot (the owner's report of
 2026-10-15, "unable to sync files when my phone was connected to my another
-phone's wifi" -- the phone connected to the laptop, directly or through the
+phone's wifi") the phone connected to the laptop, directly or through the
 relay, and every pass still ended "Ran out of time before reaching a device".
 
 Two things spent the pass's 25 seconds (the background worker's are 20):
@@ -39,14 +39,14 @@ Two things spent the pass's 25 seconds (the background worker's are 20):
    (`trees::Trees`, `.qurb/trees/`), and fetches the list only when the
    fingerprint differs. A kept list is used only if its own fingerprint
    matches, so a damaged one is fetched again. A device too old to answer
-   fails that one request -- the connection goes on -- and is asked for the
+   fails that one request (the connection goes on) and is asked for the
    list as before.
 2. **The relay alongside, after a head start.** The announced addresses are
    raced as before; if none has answered within four seconds
    (`RELAY_HEAD_START`), the relay is tried as well, and whichever connects
    first is kept. A direct path that answers at all answers well inside that
-   -- on the same network in milliseconds, punched through a router in a
-   round trip or two -- so it is still the one kept wherever it works.
+   (on the same network in milliseconds, punched through a router in a
+   round trip or two) so it is still the one kept wherever it works.
 
 ## Measured
 
@@ -68,7 +68,7 @@ that hotspot:
 
 - **The list's changes only**: rows changed since the list the asker holds,
   which needs a change counter every write to the list moves, deletions
-  included, or a kept list goes stale -- a correctness question, not a speed
+  included, or a kept list goes stale, a correctness question, not a speed
   one, and to be decided before it is built.
 - **Not listing a phone's own backups back to it**: the phone is their source,
   and learns what the computer keeps another way (`confirm_kept`). Most of the

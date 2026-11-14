@@ -4,7 +4,7 @@
 //! and a laptop that stops syncing whenever its window is closed only syncs
 //! while somebody is looking. Which means opening qurb from the applications
 //! menu while it is already running must show the window that is there, not
-//! start another -- a second one would find the folder's daemon lock taken and
+//! start another: a second one would find the folder's daemon lock taken and
 //! could only say so.
 //!
 //! A Unix socket in the runtime directory, rather than a plugin: the first
