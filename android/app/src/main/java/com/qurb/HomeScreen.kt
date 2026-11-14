@@ -59,7 +59,15 @@ class HomeScreen(app: MainActivity) : Screen(app) {
             app.sync()
         }
         // Paused: the tap asks to resume rather than syncing (decision 0086).
-        views.mark.setOnClickListener { if (Controls.pausedUntil(app) != null) ControlSheets(app).pause { refresh() } else app.sync() }
+        // And connects: the phone then listens for its computers until the
+        // person taps the notification (StayConnected, the owner's word of
+        // 2026-11-14).
+        views.mark.setOnClickListener {
+            if (Controls.pausedUntil(app) != null) ControlSheets(app).pause { refresh() } else {
+                StayConnected.connect(app)
+                app.sync()
+            }
+        }
         views.add.setOnClickListener { app.pair() }
     }
 

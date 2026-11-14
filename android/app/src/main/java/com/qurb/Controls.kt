@@ -99,11 +99,12 @@ object Controls {
 
     // ---------- Stay connected ----------
 
-    /** Whether the app stays awake listening for the person's computers
-     *  ([StayConnected]); on unless turned off. */
-    fun stayConnected(context: Context): Boolean = prefs(context).getBoolean("stay_connected", true)
+    /** Whether the person connected the phone with Home's Sync and has not
+     *  disconnected it from the notification since ([StayConnected]). Off
+     *  until then. */
+    fun stayConnected(context: Context): Boolean = prefs(context).getBoolean("connected", false)
 
-    fun setStayConnected(context: Context, on: Boolean) = prefs(context).edit().putBoolean("stay_connected", on).apply()
+    fun setStayConnected(context: Context, on: Boolean) = prefs(context).edit().putBoolean("connected", on).apply()
 
     // ---------- App lock ----------
 

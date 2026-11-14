@@ -23,7 +23,7 @@ also optional".
 
 ## Decided
 
-- **Stay connected**, on unless turned off (Settings → Connection): a
+- **Stay connected** (connected by hand since the amendment below): a
   foreground service (`StayConnected.kt`) waits for one of the person's
   computers to say it has news (`Qurb::wait_for_news`: the home Wi-Fi's
   beacons, and the meeting point from anywhere), and runs a sync pass when
@@ -61,3 +61,23 @@ send was not collected in four minutes.
 
 - Not measured: battery over a day, whether the OPPO
   keeps it running.
+
+## Amended 2026-11-14: connected by hand, disconnected from the notification
+
+The owner: "when the user opens the application, it will have manually have
+to click on sync button to get connected and users can just click on the
+notification incase they want to disconnect".
+
+- Nothing connects on its own. **Home's Sync connects** (and syncs, as it
+  did); the phone then listens until the person **taps the notification**,
+  which disconnects and takes the notification away. Its words: *Connected*,
+  *Tap to disconnect*.
+- The switch in Settings → Connection is gone: the button and the
+  notification are the switch.
+- A phone left connected stays so through a restart and an update (`StartAgain`,
+  each background pass); one disconnected stays disconnected.
+
+Tried on the S23 the same evening: not connected on opening; connected on
+Sync, the notification shown; disconnected on tapping it, service and
+notification gone; connected again on Sync.
+

@@ -24,7 +24,10 @@ import androidx.core.app.ServiceCompat
  * Its notification is the least Android allows: its own channel at the
  * lowest importance -- no sound, no vibration, no icon in the status bar on
  * most phones, folded at the foot of the shade -- one word, in the app's
- * green. Off in Settings → Connection, and the notification goes with it.
+ * green. Connected by the person with Home's Sync, and disconnected by
+ * tapping the notification, which goes with it (the owner, 2026-11-14:
+ * "users can just click on the notification incase they want to
+ * disconnect"). A phone connected stays so through a restart or an update.
  */
 class StayConnected : Service() {
     @Volatile private var running = false
@@ -32,6 +35,13 @@ class StayConnected : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == DISCONNECT) {
+            Controls.setStayConnected(this, false)
+            running = false
+            ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+            stopSelf()
+            return START_NOT_STICKY
+        }
         val type = if (Build.VERSION.SDK_INT >= 34) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
         runCatching { ServiceCompat.startForeground(this, ID, notification(this), type) }
             .onFailure { Log.w(TAG, "could not stay connected", it); stopSelf(); return START_NOT_STICKY }
@@ -69,6 +79,7 @@ class StayConnected : Service() {
 
     companion object {
         private const val TAG = "QurbConnected"
+        private const val DISCONNECT = "com.qurb.DISCONNECT"
         private const val CHANNEL = "connected"
         private const val ID = 7301
         /** How long one wait listens before starting afresh: a phone that
@@ -85,8 +96,10 @@ class StayConnected : Service() {
                 .onFailure { Log.i(TAG, "not started now", it) }
         }
 
-        fun stop(context: Context) {
-            context.stopService(Intent(context, StayConnected::class.java))
+        /** Home's Sync: connected from now until the notification is tapped. */
+        fun connect(context: Context) {
+            Controls.setStayConnected(context, true)
+            start(context)
         }
 
         private fun notification(context: Context): Notification {
@@ -101,16 +114,18 @@ class StayConnected : Service() {
                     }
                 )
             }
-            val open = PendingIntent.getActivity(
+            // A tap disconnects.
+            val disconnect = PendingIntent.getService(
                 context, 0,
-                Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                Intent(context, StayConnected::class.java).setAction(DISCONNECT),
                 PendingIntent.FLAG_IMMUTABLE,
             )
             return NotificationCompat.Builder(context, CHANNEL)
                 .setSmallIcon(R.drawable.qurb_glyph)
                 .setColor(context.getColor(R.color.green))
                 .setContentTitle("Connected")
-                .setContentIntent(open)
+                .setContentText("Tap to disconnect")
+                .setContentIntent(disconnect)
                 .setOngoing(true)
                 .setSilent(true)
                 .setShowWhen(false)
