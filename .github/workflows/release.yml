@@ -62,6 +62,10 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # Google Drive's two clients, built in so every computer can turn
+          # the mailbox on (docs/beta.md); empty, Drive is not offered.
+          QURB_GOOGLE_DESKTOP_CLIENT: ${{ secrets.GOOGLE_DESKTOP_CLIENT }}
+          QURB_GOOGLE_WEB_CLIENT: ${{ secrets.GOOGLE_WEB_CLIENT }}
         run: |
           cd crates/desktop
           cargo tauri build --config tauri.beta.conf.json --config "{\"version\":\"$VERSION\"}" --bundles ${{ matrix.bundles }}
