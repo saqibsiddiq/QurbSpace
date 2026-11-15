@@ -38,14 +38,14 @@ never stored on a server of ours. Your computer is your cloud.
 
 ## Get the beta
 
-Download from the **[latest release](https://github.com/saqibsiddiq/QurbSpace/releases/latest)**:
+Tap the one for your device; the download starts at once.
 
-| Device | File | Notes |
+| Device | Download | Then |
 |---|---|---|
-| Android 8 or later | `QurbSpace-…-android.apk` | Allow installing from your browser when asked. It updates itself. |
-| Linux | `qurb_…_amd64.AppImage` | Make it executable and run it. Updates itself. |
-| Debian, Ubuntu | `qurb_…_amd64.deb` | `sudo apt install ./qurb_…_amd64.deb` |
-| Windows 10 and 11 | `qurb_…_x64-setup.exe` | **Never run by us yet.** Tell us how it goes. |
+| Android 8 or later | **[QurbSpace for Android](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-android.apk)** | Open it, and allow installing from your browser when asked. It updates itself. |
+| Linux | **[QurbSpace for Linux](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-linux.AppImage)** | Make it executable (right click, Properties, allow running) and open it. It updates itself. |
+| Ubuntu, Debian | **[QurbSpace .deb](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-linux.deb)** | `sudo apt install ./QurbSpace-linux.deb` |
+| Windows 10 and 11 | **[QurbSpace for Windows](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-windows-setup.exe)** | **Never run by us yet.** Tell us how it goes. |
 
 Then:
 

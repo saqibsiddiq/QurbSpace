@@ -139,6 +139,15 @@ jobs:
           merge-multiple: true
       - name: What each installed app reads to find this release
         run: python3 scripts/release-manifests.py "$VERSION" assets "https://github.com/${{ github.repository }}/releases/download/$GITHUB_REF_NAME"
+      - name: The same files under names without the version, for the README's links
+        # releases/latest/download/<name> then always gives the newest build, so
+        # the README links straight to each file. Made after the manifests, which
+        # point at the versioned names.
+        run: |
+          cp assets/QurbSpace-*-android.apk assets/QurbSpace-android.apk
+          cp assets/qurb_*_amd64.AppImage assets/QurbSpace-linux.AppImage
+          cp assets/qurb_*_amd64.deb assets/QurbSpace-linux.deb
+          cp assets/qurb_*_x64-setup.exe assets/QurbSpace-windows-setup.exe
       - name: Publish, as the latest release
         env:
           GH_TOKEN: ${{ github.token }}
