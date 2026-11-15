@@ -1,85 +1,88 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { DocPage, LinkRow } from '@/components/doc-page'
 import { Icon } from '@/components/icon'
-import { repoDoc, repoUrl } from '../site-config'
+import { downloads, repoDoc } from '../site-config'
 
 export const metadata: Metadata = {
   title: 'Get QurbSpace',
-  description: 'How to install QurbSpace today: built from source on Linux, and the Android app from the same repository.'
+  description: 'Download QurbSpace for Android, Windows and Linux: the newest beta, straight from here.'
 }
 
 export default function DownloadPage() {
   return (
     <DocPage
       title="Get QurbSpace"
-      intro="There’s no release to download yet. QurbSpace builds from its source on Linux, and the Android app builds from the same repository: this is how."
+      intro="The open beta, for your phone and your computer. Pick yours; the download starts at once."
     >
       <p className="callout">
         <Icon name="circle-check" size={20} />
         <span>
-          <b>Linux and Android, first.</b> Both work today, and a formal release for both is planned. macOS, Windows
-          and iOS come after them; nothing is built for those yet.
+          <b>A beta.</b> It works every day between an Android phone and a Linux computer. Keep your own copy of
+          anything you can’t lose, and read <a href={repoDoc('README.md#known-gaps')}>what isn’t finished yet</a>.
         </span>
       </p>
 
-      <h2>On Linux</h2>
-      <p>
-        You need the source and a Rust toolchain. On Arch and its derivatives, a package of the checkout installs the
-        app, the tray icon and the command line for everyone on the computer:
-      </p>
-      <pre>
-        {`git clone ${repoUrl}.git && cd Qurb
-cd packaging/arch && makepkg -si`}
-      </pre>
-      <p>On any other distribution, for your user only:</p>
-      <pre>
-        {`cargo build --release -p qurb-cli -p qurb-tray -p qurb-desktop
-./packaging/install.sh`}
-      </pre>
-      <p>
-        Then open <strong>Qurb</strong> from your applications menu. It asks where your files should live and how much
-        of the disk it may use, then shows the 24 words that are your key and asks you to type three of them back.
-      </p>
+      <h2>Your phone</h2>
+      <div className="rows">
+        <LinkRow
+          href={downloads.android}
+          icon="smartphone"
+          title="QurbSpace for Android"
+          text="Android 8 or later. Open the file and allow installing when asked. It updates itself."
+        />
+      </div>
 
-      <h2>On Android</h2>
-      <p>
-        The app builds from the same repository. It needs the Android NDK, because the engine inside it is the same Rust
-        the desktop runs, and JDK 17. With your phone connected over ADB:
-      </p>
-      <pre>{`./scripts/android-app.sh install`}</pre>
-      <p>
-        On first launch it offers to set up a new key or to use the 24 words from your computer. The key is kept in the
-        Android Keystore.
-      </p>
+      <h2>Your computer</h2>
+      <div className="rows">
+        <LinkRow
+          href={downloads.windows}
+          icon="laptop"
+          title="QurbSpace for Windows"
+          text="Windows 10 or 11. Run the installer. Not yet tested by us: tell us how it goes."
+        />
+        <LinkRow
+          href={downloads.deb}
+          icon="laptop"
+          title="QurbSpace for Ubuntu and Debian"
+          text="Also Mint and Pop!_OS. Open the file to install it. It doesn’t update itself yet."
+        />
+        <LinkRow
+          href={downloads.appImage}
+          icon="laptop"
+          title="QurbSpace for any Linux"
+          text="Fedora, Arch and the rest. Allow it to run (Properties, Permissions), then open it. It updates itself."
+        />
+      </div>
+      <p>Not sure which Linux you have? The last one works on all of them. Mac and iPhone aren’t ready yet.</p>
 
-      <h2>Adding your phone</h2>
+      <h2>Then</h2>
       <ol>
         <li>
-          On the computer: <strong>Devices</strong> → <strong>Add a device</strong> → <strong>Show a code</strong>.
+          Open QurbSpace on the computer. It sets itself up; go to <strong>Devices</strong>, then{' '}
+          <strong>Add a device</strong>.
         </li>
         <li>
-          On the phone: <strong>Devices</strong> → <strong>Add</strong>, and scan it. The code works once, for five
-          minutes.
+          Open QurbSpace on the phone and join with the <strong>QR code</strong> or the <strong>six digits</strong> the
+          computer shows. Check both screens show the same number, then approve on the computer.
         </li>
         <li>
-          On the same Wi‑Fi they find each other with no server at all. To sync from anywhere else, they need a small
-          service both can reach, which you run yourself.
+          On the phone, tap <strong>Tap to connect</strong>. While it says <em>Connected</em>, anything the computer
+          sends arrives in seconds. Tap the notification to disconnect.
         </li>
       </ol>
+      <p>
+        At home they talk straight across your WiFi. Away from home they still find each other, with nothing for you to
+        set up. More in <Link href="/docs">the guide</Link>.
+      </p>
 
-      <h2>Step by step</h2>
+      <h2>Building it yourself</h2>
       <div className="rows">
         <LinkRow
           href={repoDoc('docs/trying-it.md')}
           icon="file-text"
-          title="Trying it on your own hardware"
-          text="From one machine to a phone, every step run and checked"
-        />
-        <LinkRow
-          href={repoDoc('docs/anywhere.md')}
-          icon="arrow-up-down"
-          title="Syncing from outside the house"
-          text="What has to be reachable, and a free way to get there"
+          title="From the source"
+          text="Every step, from one computer to a phone"
         />
         <LinkRow
           href={repoDoc('android/README.md')}

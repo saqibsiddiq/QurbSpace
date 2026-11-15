@@ -7,13 +7,15 @@ export const siteUrl = 'https://www.qurb.cloud'
 /** Where the code is. Public, so every page may link into it. */
 export const repoUrl = 'https://github.com/saqibsiddiq/QurbSpace'
 
-/** The release the download buttons offer, from GitHub Releases. Until it is
- *  published there, `published` stays false and the buttons say *Coming soon*
- *  and point to the waitlist: a link to a file that is not there yet would
- *  fail for the person who followed it. File names are docs/releasing.md's. */
-export const release = { version: '0.1.0', tag: 'v0.1.0', published: false }
-export const releaseFile = (name: string) => `${repoUrl}/releases/download/${release.tag}/${name}`
-export const releasesUrl = `${repoUrl}/releases`
+/** The newest release's files, by the names each release also carries without
+ *  its version (.github/workflows/release.yml), so a link never goes stale. */
+export const latestFile = (name: string) => `${repoUrl}/releases/latest/download/${name}`
+export const downloads = {
+  android: latestFile('QurbSpace-android.apk'),
+  windows: latestFile('QurbSpace-windows-setup.exe'),
+  deb: latestFile('QurbSpace-linux.deb'),
+  appImage: latestFile('QurbSpace-linux.AppImage')
+}
 
 /** A document in the repository, as GitHub shows it. */
 export const repoDoc = (path: string) => `${repoUrl}/blob/main/${path}`

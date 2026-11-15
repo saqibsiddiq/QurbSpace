@@ -22,7 +22,7 @@ export default function SecurityPage() {
       </p>
       <p>
         On a computer you choose how it’s kept: in a file only you can read, in the system keystore, or behind a
-        passphrase. On Android it’s kept in the Android Keystore, where only Qurb on that phone can use it.
+        passphrase. On Android it’s kept in the Android Keystore, where only QurbSpace on that phone can use it.
       </p>
 
       <h2>Your files</h2>
@@ -33,22 +33,23 @@ export default function SecurityPage() {
           talks to devices you added.
         </li>
         <li>
-          <strong>On a device</strong>, the files in your Qurb folder are ordinary files, protected the way the rest of
-          your disk is. What Qurb keeps in its own store: copies held for your other devices, the parts of files not
+          <strong>On a device</strong>, the files in your QurbSpace folder are ordinary files, protected the way the rest of
+          your disk is. What QurbSpace keeps in its own store: copies held for your other devices, the parts of files not
           in the folder: is compressed and encrypted with XChaCha20-Poly1305.
         </li>
         <li>
           <strong>Anything a peer sends is checked</strong> before it is written: content is named by its BLAKE3 hash and
-          verified against it, and a path that tries to leave the folder or reach Qurb’s own store is refused.
+          verified against it, and a path that tries to leave the folder or reach QurbSpace’s own store is refused.
         </li>
       </ul>
 
       <h2>The services</h2>
       <p>
-        The service that introduces devices across networks learns their network addresses and that they want to meet,
-        under identifiers it can’t link to a person: never a filename, a file or a key. A relay, where one is
-        used, forwards encrypted traffic it cannot read. If you set up push, Google learns that a phone was woken, and
-        when: nothing about why. You run both services yourself; Qurb runs neither.
+        Your devices meet through public Nostr relays, which learn their network addresses and when they meet, under
+        names that change every day and can’t be linked to a person: never a filename, a file or a key. Where there is
+        no direct path, the same encrypted connection runs through those relays or Tor, which see only opaque packets.
+        If you turn on Google Drive, Google holds sealed files it cannot read, in QurbSpace’s own hidden folder, and
+        learns when and how much. QurbSpace runs no service of its own.
       </p>
 
       <h2>What it doesn’t protect against yet</h2>

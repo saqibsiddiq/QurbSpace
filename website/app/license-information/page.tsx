@@ -17,9 +17,9 @@ const thirdParty = [
 export default function LicencesPage() {
   return (
     <DocPage title="Licences" intro="QurbSpace’s own licence, and the licences of what it and this site are built with.">
-      <h2>Qurb</h2>
+      <h2>QurbSpace</h2>
       <p>
-        Qurb’s Rust code declares its licence as <strong>MIT OR Apache-2.0</strong>, in its{' '}
+        QurbSpace’s Rust code declares its licence as <strong>MIT OR Apache-2.0</strong>, in its{' '}
         <a href={repoDoc('Cargo.toml')}>workspace manifest</a>. The licence texts themselves are not in the repository
         yet.
       </p>

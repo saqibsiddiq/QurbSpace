@@ -25,7 +25,7 @@ export default function DisclosurePage() {
       <p className="callout draft">
         <Icon name="clock" size={20} />
         <span>
-          <b>No bounty, and no promised response time yet.</b> Qurb is pre-release and has no company behind it. What it
+          <b>No bounty, and no promised response time yet.</b> QurbSpace is in open beta and has no company behind it. What it
           can promise is that a report is taken seriously, fixed in the open, and credited if you want it to be.
         </span>
       </p>

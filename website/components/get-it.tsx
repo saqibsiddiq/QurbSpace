@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import { Rise } from './rise'
-import { release, releaseFile, releasesUrl, repoUrl } from '../app/site-config'
+import { downloads, repoUrl } from '../app/site-config'
 
 // The last part of the landing page (docs/design/website-brief.md): getting
 // it, kept plain, no drawing and none of the hero's words, at the owner's
@@ -10,8 +10,8 @@ import { release, releaseFile, releasesUrl, repoUrl } from '../app/site-config'
 // One button that knows the visitor's device (Android and Linux download,
 // Windows downloads marked early (built, never run on Windows: releasing.md),
 // Mac and iPhone have no app and are offered the waitlist instead) then the
-// waitlist itself and the code. Until the release is published on GitHub
-// (site-config's `release`), no button links to a file that is not there.
+// waitlist itself and the code. Each button is the newest release's file
+// itself (site-config's `downloads`), so nobody has to find it on GitHub.
 
 type Os = 'android' | 'linux' | 'windows' | 'mac' | 'ios' | 'other'
 
@@ -25,11 +25,9 @@ function detect(): Os {
   return 'other'
 }
 
-const v = release.version
 const LINUX = [
-  ['Ubuntu, Debian, Mint', `qurb_${v}_amd64.deb`],
-  ['Fedora, openSUSE', `qurb-${v}-1.x86_64.rpm`],
-  ['Arch, CachyOS, Manjaro', `qurb-${v}-1-x86_64.pkg.tar.zst`]
+  ['Ubuntu, Debian, Mint', downloads.deb],
+  ['Any other Linux', downloads.appImage]
 ] as const
 
 export function GetIt() {
@@ -44,7 +42,7 @@ export function GetIt() {
     setOs(as ? (as as Os) : detect())
   }, [])
 
-  const waitlistFirst = !release.published || os === 'mac' || os === 'ios'
+  const waitlistFirst = os === 'mac' || os === 'ios'
   const forWhom = os === 'mac' ? 'Mac' : os === 'ios' ? 'iPhone' : null
 
   async function join(e: FormEvent) {
@@ -65,25 +63,25 @@ export function GetIt() {
       {!waitlistFirst && (
         <div className="gi-get">
           {os === 'android' && (
-            <a className="gi-btn" href={releaseFile(`qurb-${v}-android.apk`)}>Download for Android</a>
+            <a className="gi-btn" href={downloads.android}>Download for Android</a>
           )}
           {os === 'windows' && (
             <>
-              <a className="gi-btn" href={releaseFile(`qurb-${v}-windows-x86_64.zip`)}>Download for Windows</a>
+              <a className="gi-btn" href={downloads.windows}>Download for Windows</a>
               <small>Early: built, but not yet tested on Windows.</small>
             </>
           )}
           {os === 'linux' && (
             <div className="gi-linux">
-              {LINUX.map(([who, file]) => (
-                <a key={file} className="gi-btn gi-btn-small" href={releaseFile(file)}>
+              {LINUX.map(([who, href]) => (
+                <a key={href} className="gi-btn gi-btn-small" href={href}>
                   {who}
                 </a>
               ))}
             </div>
           )}
-          {os === 'other' && <a className="gi-btn" href={releasesUrl}>Download QurbSpace</a>}
-          <a className="gi-more" href={releasesUrl}>All downloads</a>
+          {os === 'other' && <a className="gi-btn" href="/download">Download QurbSpace</a>}
+          <a className="gi-more" href="/download">All downloads</a>
         </div>
       )}
 
@@ -91,7 +89,7 @@ export function GetIt() {
         <p className="gi-note">
           {forWhom
             ? `QurbSpace for ${forWhom} isn’t ready yet. Join the waitlist and we’ll tell you when it is.`
-            : 'Coming soon to Android and Linux. Join the waitlist and we’ll tell you the day it’s out.'}
+            : 'Join the waitlist and we’ll tell you when there is something new.'}
         </p>
       )}
 

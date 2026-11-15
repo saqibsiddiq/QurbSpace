@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { Cmd, Note, Steps } from '../../components/doc-parts'
-import { repoDoc } from '../site-config'
+import { downloads, repoDoc } from '../site-config'
 
 // The docs: how-to pages for the people the landing page is for, and
 // technical pages for the privacy-minded and curious, each linking to its
@@ -19,25 +19,19 @@ export const SECTIONS: Section[] = [
       {
         slug: 'install-on-your-computer',
         title: 'Install on your computer',
-        summary: 'QurbSpace for Linux today, Windows early, and Mac later.',
+        summary: 'QurbSpace for Linux and Windows today, and Mac later.',
         body: (
           <>
-            <Note tone="soon">
-              QurbSpace 0.1.0 isn’t published yet. The day it is, the downloads appear on the <Link href="/#get">Get QurbSpace</Link> part of the home page.
-            </Note>
             <h2>Pick the one for your computer</h2>
             <ul className="doc-list">
               <li>
-                <b>Ubuntu, Debian, Mint, Pop!_OS:</b> the <em>.deb</em> package. Open it and choose Install, or in a terminal: <Cmd>sudo apt install ./qurb_0.1.0_amd64.deb</Cmd>
+                <b>Ubuntu, Debian, Mint, Pop!_OS:</b> <a href={downloads.deb}>QurbSpace for Ubuntu and Debian</a>. Open it and choose Install, or in a terminal: <Cmd>sudo apt install ./QurbSpace-linux.deb</Cmd> It doesn’t update itself yet; download it again for a new version.
               </li>
               <li>
-                <b>Fedora, openSUSE:</b> the <em>.rpm</em> package. <Cmd>sudo dnf install ./qurb-0.1.0-1.x86_64.rpm</Cmd>
+                <b>Any other Linux</b> (Fedora, Arch and the rest): <a href={downloads.appImage}>QurbSpace for any Linux</a>. Allow it to run (Properties, Permissions), then open it. It updates itself.
               </li>
               <li>
-                <b>Arch, CachyOS, EndeavourOS, Manjaro:</b> the Arch package. <Cmd>sudo pacman -U qurb-0.1.0-1-x86_64.pkg.tar.zst</Cmd>
-              </li>
-              <li>
-                <b>Windows 10 and 11:</b> the zip. It is built, but nobody has run it on Windows yet, so treat it as early.
+                <b>Windows 10 and 11:</b> <a href={downloads.windows}>QurbSpace for Windows</a>. It is built, but we haven’t run it on Windows yet, so treat it as early.
               </li>
               <li>
                 <b>Mac:</b> not yet. Join the waitlist and we’ll tell you when it is.
@@ -58,11 +52,10 @@ export const SECTIONS: Section[] = [
         summary: 'Any Android phone from Android 8 on. iPhone is on the waitlist.',
         body: (
           <>
-            <Note tone="soon">The Android app is published with 0.1.0, which isn’t out yet.</Note>
             <Steps>
-              <li>On your phone, download the QurbSpace app (the file ending in <em>.apk</em>).</li>
+              <li>On your phone, download <a href={downloads.android}>QurbSpace for Android</a>.</li>
               <li>Open it. Android asks whether your browser may install apps: allow it, just this once.</li>
-              <li>Open QurbSpace and choose <b>Start here</b>.</li>
+              <li>Open QurbSpace, and scan the code your computer shows (next page).</li>
             </Steps>
             <p>There is no account to make, and no password. Your phone makes its own key, and keeps it safe for you. See <Link href="/docs/your-key">Your key, and a new phone</Link>.</p>
           </>
@@ -101,9 +94,7 @@ export const SECTIONS: Section[] = [
               </li>
               <li>Tap any file to open it. A long video starts playing while the rest of it is still on its way.</li>
             </Steps>
-            <Note tone="soon">
-              Today this works when your phone can reach the computer: at home, on the same WiFi. From anywhere else is coming soon.
-            </Note>
+            <p>At home it goes straight across your WiFi. Away from home it works too, with nothing to set up; the first look can take a few seconds.</p>
           </>
         )
       },
@@ -122,7 +113,7 @@ export const SECTIONS: Section[] = [
                 In <b>Shared</b>, you can rename and delete.
               </li>
             </Steps>
-            <p>Nothing is lost by mistake: what you delete waits in <b>Recently deleted</b> for 30 days, and you can put it back.</p>
+            <p>Deleting is for good, on every device, so QurbSpace asks before it deletes anything.</p>
           </>
         )
       },
@@ -149,6 +140,10 @@ export const SECTIONS: Section[] = [
               </li>
             </Steps>
             <p>If the other device is switched off, it collects the file the next time it’s on. Nothing keeps a copy on the way.</p>
+            <h2>Getting files on your phone in seconds</h2>
+            <p>
+              On Home, tap <b>Tap to connect</b>. While the notification says <b>Connected</b>, your phone listens for your computer, and what it sends arrives in seconds. Tap the notification to disconnect.
+            </p>
           </>
         )
       },
@@ -277,7 +272,7 @@ export const SECTIONS: Section[] = [
                 <b>The data goes between your devices.</b> Files, their names and their contents travel only between devices you have connected, encrypted on the way.
               </li>
               <li>
-                <b>Servers only help them meet.</b> On one WiFi they need none. Across networks, a rendezvous service introduces them and, if no direct path exists, a relay forwards traffic it can’t read.
+                <b>Others only help them meet.</b> On one WiFi they need nobody. Across networks they meet through public Nostr relays and connect directly where the networks allow; where not, the encrypted connection goes through those relays or Tor. If you turn it on, files can also wait for each other, sealed, in your own Google Drive.
               </li>
               <li>
                 <b>Nothing is central.</b> There are no accounts and no registry of devices: each device keeps its own list of the devices it trusts, filled by pairing and emptied when you remove one.
@@ -309,11 +304,11 @@ export const SECTIONS: Section[] = [
                 <b>Versions, not overwrites.</b> If two devices change one file at the same moment, both versions are kept, and you choose which to keep. An edit is never silently lost.
               </li>
               <li>
-                <b>Deletions are recorded,</b> so another device can tell a deleted file from one it hasn’t received yet. A deleted file is kept whole in Recently deleted for thirty days.
+                <b>Deletions are recorded,</b> so another device can tell a deleted file from one it hasn’t received yet. Deleting is for good: there is no Recently deleted.
               </li>
             </ul>
             <p className="doc-more">
-              Design records: <a href={repoDoc('docs/decisions/0004-chunk-parameters.md')}>chunk sizes, measured</a> · <a href={repoDoc('docs/decisions/0005-conflict-resolution.md')}>two edits at once</a> · <a href={repoDoc('docs/decisions/0042-recently-deleted.md')}>Recently deleted</a>
+              Design records: <a href={repoDoc('docs/decisions/0004-chunk-parameters.md')}>chunk sizes, measured</a>, <a href={repoDoc('docs/decisions/0005-conflict-resolution.md')}>two edits at once</a>, <a href={repoDoc('docs/decisions/0089-no-recently-deleted.md')}>deleting is for good</a>
             </p>
           </>
         )
@@ -345,7 +340,7 @@ export const SECTIONS: Section[] = [
             </ul>
             <Note>All your devices hold the key; nobody else ever does. If you lose the 24 words and every device, no one can recover your files.</Note>
             <p className="doc-more">
-              Design records: <a href={repoDoc('docs/decisions/0012-key-hierarchy-and-recovery.md')}>keys and recovery</a> · <a href={repoDoc('docs/decisions/0052-the-key-travels-with-the-code.md')}>the key travels with the code</a>
+              Design records: <a href={repoDoc('docs/decisions/0012-key-hierarchy-and-recovery.md')}>keys and recovery</a>, <a href={repoDoc('docs/decisions/0052-the-key-travels-with-the-code.md')}>the key travels with the code</a>
             </p>
           </>
         )
@@ -413,13 +408,13 @@ export const SECTIONS: Section[] = [
                 <b>Your devices</b> see your files. Nobody else does.
               </li>
               <li>
-                <b>The rendezvous service</b> learns your devices’ network addresses and that they want to meet, under identifiers it can’t link to a person. Never a file, a file’s name or a key.
+                <b>The public Nostr relays</b> where your devices meet learn their network addresses and when they meet, under names that change every day and can’t be linked to a person. Never a file, a file’s name or a key.
               </li>
               <li>
-                <b>A relay,</b> when one is used, forwards encrypted traffic it cannot read.
+                <b>Tor,</b> when it is used, works as Tor does: no single relay learns both ends, and the traffic stays encrypted.
               </li>
               <li>
-                <b>Google,</b> if push is set up to wake your phone, learns that it was woken, and when. Nothing about why.
+                <b>Google,</b> only if you turn on Google Drive, holds sealed files it cannot read in QurbSpace’s own hidden folder, and learns when and how much.
               </li>
               <li>
                 <b>The apps</b> send no analytics and no crash reports, and there is no account.
@@ -493,42 +488,42 @@ export const SECTIONS: Section[] = [
       },
       {
         slug: 'rendezvous',
-        title: 'The rendezvous service',
-        summary: 'Introduces your devices across networks. Never sees a file.',
+        title: 'Where your devices meet',
+        summary: 'Public Nostr relays introduce your devices across networks. They never see a file.',
         body: (
           <>
             <ul className="doc-list">
               <li>
-                <b>What it does:</b> tells devices on different networks where to find each other, keeps a short message for a device that is away, and can wake a sleeping phone through push.
+                <b>What they do:</b> your devices tell each other where to find them through public Nostr relays, and say when one has something for the other.
               </li>
               <li>
-                <b>What it sees:</b> your devices announce themselves under identifiers derived from your key, the same group for all your devices, so it sees opaque bytes. It holds no key, learns no file name, and never sees a piece of a file.
+                <b>What they see:</b> sealed messages under names derived from your key that change every day, so they see opaque bytes. They hold no key, learn no file name, and never see a piece of a file.
               </li>
               <li>
-                <b>Who runs it:</b> today, you do. <Cmd>qurb signal</Cmd> runs one, on any Linux server or computer. One that anyone can use is coming; until then, QurbSpace works away from home only for those who run their own.
+                <b>Who runs them:</b> volunteers, for everyone who uses Nostr. QurbSpace uses several at once, so one going away changes nothing. There is nothing for you to run or set up.
               </li>
             </ul>
             <p className="doc-more">
-              Design records: <a href={repoDoc('docs/decisions/0016-what-signalling-learns.md')}>what it learns</a> · <a href={repoDoc('docs/decisions/0022-the-service-announces-arrivals.md')}>how it tells a device there is work</a>
+              Design records: <a href={repoDoc('docs/decisions/0016-what-signalling-learns.md')}>what it learns</a>, <a href={repoDoc('docs/decisions/0087-quic-over-nostr-relays.md')}>the Nostr relays</a>
             </p>
           </>
         )
       },
       {
         slug: 'relay',
-        title: 'The relay',
-        summary: 'When there is no direct path, it forwards traffic it cannot read.',
+        title: 'When there is no direct path',
+        summary: 'The same encrypted connection, through the relays or Tor; files through your own Drive.',
         body: (
           <>
             <p>
-              Some networks stop two devices reaching each other directly. Then they connect through a relay, which forwards opaque packets: the same encrypted QUIC session, with the same pinned certificates, runs inside it.
+              Some networks, mobile ones especially, stop two devices reaching each other directly. Then the same encrypted QUIC session, with the same pinned certificates, runs through the Nostr relays or Tor, which see only opaque packets.
             </p>
             <ul className="doc-list">
-              <li>It is reached over TCP on port 443, so it gets through networks that allow only the web.</li>
-              <li>The rendezvous service carries one at <em>/relay</em>, so a device needs nothing set to use it.</li>
+              <li>Both go over the web’s own ports, so they get through networks that allow only the web.</li>
+              <li>Moving files is kept to direct paths, which are fast. When there is none, files wait for each other, sealed, in your own Google Drive, if you turn it on.</li>
             </ul>
             <p className="doc-more">
-              Design records: <a href={repoDoc('docs/decisions/0017-relay.md')}>the relay</a> · <a href={repoDoc('docs/decisions/0068-the-rendezvous-service-relays.md')}>the rendezvous service relays</a>
+              Design records: <a href={repoDoc('docs/decisions/0087-quic-over-nostr-relays.md')}>through the relays</a>, <a href={repoDoc('docs/decisions/0088-a-mailbox-in-the-persons-google-drive.md')}>a mailbox in your Google Drive</a>
             </p>
           </>
         )
@@ -551,7 +546,7 @@ export const SECTIONS: Section[] = [
               </li>
             </ul>
             <p className="doc-more">
-              Design records: <a href={repoDoc('docs/decisions/0053-approval-same-key-and-safe-copies.md')}>approval by number</a> · <a href={repoDoc('docs/decisions/0066-six-digits-to-pair.md')}>six digits</a>
+              Design records: <a href={repoDoc('docs/decisions/0053-approval-same-key-and-safe-copies.md')}>approval by number</a>, <a href={repoDoc('docs/decisions/0066-six-digits-to-pair.md')}>six digits</a>
             </p>
           </>
         )
@@ -568,7 +563,7 @@ export const SECTIONS: Section[] = [
         body: (
           <Steps>
             <li>Is the computer on, awake, and is QurbSpace running on it? On your phone, its dot is blue when it’s on and red when it’s off.</li>
-            <li>Are they on the same WiFi? Away from home is coming soon.</li>
+            <li>Away from home, is mobile data on, and allowed in QurbSpace’s Settings, Mobile data? The first connection can take a few seconds.</li>
             <li>Some WiFi, in offices, hotels and cafés, stops devices finding each other. Use the QR code to connect there.</li>
           </Steps>
         )

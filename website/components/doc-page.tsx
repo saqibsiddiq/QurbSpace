@@ -26,7 +26,7 @@ export function DocPage({
         <article className="doc glass-frosted">
           <Link href="/" className="back">
             <Icon name="arrow-right" size={16} />
-            Qurb
+            QurbSpace
           </Link>
           <h1>{title}</h1>
           <p className="intro">{intro}</p>

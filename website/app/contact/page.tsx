@@ -5,7 +5,7 @@ import { repoUrl } from '../site-config'
 
 export const metadata: Metadata = {
   title: 'Contact',
-  description: 'How to reach the people building Qurb.'
+  description: 'How to reach the people building QurbSpace.'
 }
 
 export default function ContactPage() {

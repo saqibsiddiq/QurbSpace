@@ -192,7 +192,7 @@ const CHAPTERS = {
     duration: 9500,
     title: 'Your computer, in your pocket.',
     line: 'Open its folders from your phone. Watch its videos, look through its photos, read its documents, as if you were sitting at it.',
-    soon: true
+    soon: false
   },
   change: {
     range: [0.655, 0.975] as [number, number],

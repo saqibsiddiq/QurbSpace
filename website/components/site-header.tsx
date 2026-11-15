@@ -32,7 +32,7 @@ export function SiteHeader({ current }: { current?: string }) {
             <Icon name="external-link" />
           </a>
           <Link className="btn primary small" href="/download">
-            Get Qurb
+            Get QurbSpace
           </Link>
         </div>
       </div>
