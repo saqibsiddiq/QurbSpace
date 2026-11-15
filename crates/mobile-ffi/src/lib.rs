@@ -730,6 +730,10 @@ pub struct Qurb {
     /// computers it reaches (`Request::DriveCode`), and whether one took it.
     drive_code: Mutex<Option<String>>,
     drive_code_handed: std::sync::atomic::AtomicBool,
+    /// Counted up each time a pass takes in files from a device, read without
+    /// the engine (`arrived`), so the app can say what came while the pass
+    /// goes on waiting for the others.
+    arrived: std::sync::atomic::AtomicU64,
     /// Each computer reached to browse it, kept while its connection lasts
     /// (the owner's list of 2026-11-01, item 7): opening a computer built
     /// a whole connection from nothing every time (an endpoint, the relay,
@@ -1733,6 +1737,14 @@ impl Qurb {
     /// anywhere through the meeting point, where a computer says it on every
     /// round while something waits (`announce_deliveries`). Holds no engine:
     /// the pass the app then runs does the work.
+    ///
+    /// It answers, too, on the address it is heard at. Its beacons and the
+    /// meeting point say where it is, and a computer hearing it dials there;
+    /// listening only, it left the computer waiting 10 s on a port nothing
+    /// answered, every time it started again, and a send to the phone waited
+    /// behind that (the owner, 2026-11-15: "shouldnt it be instantaneous").
+    /// Answering is what a pass does; a computer reached this way collects
+    /// what the phone has for it at once, and is told no when paused.
     pub fn wait_for_news(&self, seconds: u32) -> Result<bool, QurbError> {
         let window = std::time::Duration::from_secs(seconds.max(1) as u64);
         if qurb_peer::pause::paused() {
@@ -1773,6 +1785,29 @@ impl Qurb {
             )
             .await;
             let Ok(Ok(connector)) = started else { return Ok(false) };
+            let mut answering = Vec::new();
+            if let Ok(served) = self.shared_store() {
+                let generation = qurb_peer::Generation::new();
+                for endpoint in [Some(connector.endpoint().clone()), connector.nostr_endpoint().cloned()]
+                    .into_iter()
+                    .flatten()
+                {
+                    let (store, generation, trust) = (Arc::clone(&served), Arc::clone(&generation), trust.clone());
+                    let watcher = Arc::clone(&self.serving);
+                    answering.push(tokio::spawn(async move {
+                        while let Some(incoming) = endpoint.accept().await {
+                            let (store, generation, trust) = (Arc::clone(&store), Arc::clone(&generation), trust.clone());
+                            let watcher: Arc<dyn qurb_peer::Served> = watcher.clone();
+                            tokio::spawn(async move {
+                                if let Ok(connection) = incoming.await {
+                                    qurb_peer::server::serve_connection_watched(connection, store, generation, watcher, &trust)
+                                        .await;
+                                }
+                            });
+                        }
+                    }));
+                }
+            }
             let mut arrivals = connector.arrivals();
             let heard = tokio::time::timeout(window, async {
                 loop {
@@ -1785,6 +1820,9 @@ impl Qurb {
             })
             .await
             .unwrap_or(false);
+            for task in answering {
+                task.abort();
+            }
             Ok(heard)
         })
     }
@@ -2054,6 +2092,18 @@ impl Qurb {
         if let Ok(mut held) = self.drive_code.lock() {
             *held = code.filter(|c| !c.is_empty());
         }
+    }
+
+    /// How many times passes have taken in files, since the app started.
+    ///
+    /// Without the engine, so it answers while a pass holds it. A pass
+    /// reaches every device at once and ends when the last has answered or
+    /// its window closed: a file from the computer was in at once, and
+    /// *sent you a file* came 20 s later, when a phone away had failed to
+    /// answer (2026-11-15). The app watches this during the pass and says
+    /// what came when it changes.
+    pub fn arrived(&self) -> u64 {
+        self.arrived.load(std::sync::atomic::Ordering::Relaxed)
     }
 
     /// Whether a computer took the code since last asked.
@@ -2891,7 +2941,12 @@ impl Qurb {
                         }
                     }
                     match mailbox.collect(&holds, &peer, each).await {
-                        Ok(c) if c.packs + c.applied > 0 => tracing::info!(peer = %fp.short(), packs = c.packs, bytes = c.bytes, applied = c.applied, waiting = c.waiting, "collected through the mailbox"),
+                        Ok(c) if c.packs + c.applied > 0 => {
+                            tracing::info!(peer = %fp.short(), packs = c.packs, bytes = c.bytes, applied = c.applied, waiting = c.waiting, "collected through the mailbox");
+                            if c.applied > 0 {
+                                self.arrived.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                            }
+                        }
                         Ok(_) => {}
                         Err(e) => {
                             if refused(&e) {
@@ -3119,6 +3174,7 @@ impl Qurb {
             drive_refused: std::sync::atomic::AtomicBool::new(false),
             drive_code: Mutex::new(None),
             drive_code_handed: std::sync::atomic::AtomicBool::new(false),
+            arrived: std::sync::atomic::AtomicU64::new(0),
             kept_open: Mutex::new(std::collections::HashMap::new()),
             opening: Mutex::new(std::collections::HashMap::new()),
             reach_states: Arc::new(Mutex::new(std::collections::HashMap::new())),
@@ -3370,6 +3426,7 @@ impl Qurb {
         // set is the relay beside the rendezvous service, at `/relay`: the
         // way round from a hotspot or a carrier, with nothing to configure.
         let relay = runtime.block_on(qurb_peer::relay_for(self.relay.as_deref(), &self.signal_url));
+        tracing::debug!(ms = started.elapsed().as_millis() as u64, "the relay looked up");
 
         // Built per pass rather than kept. A phone's address changes with every
         // move between Wi-Fi and cellular, and a connector holding a stale
@@ -3409,6 +3466,7 @@ impl Qurb {
             )
             .await
         });
+        tracing::debug!(ms = started.elapsed().as_millis() as u64, "the pass's connector started");
         let connector = match started_connector {
             Ok(started) => started.map_err(|e| QurbError::Network { detail: e.to_string() })?,
             Err(_) => {
@@ -3919,7 +3977,42 @@ impl Qurb {
         // there was any way to say so is content neither side will transfer
         // again.
         let reader = self.another_store(engine.store().chunk_key())?;
-        if let Ok(Some(known)) = engine.store().db().peer_by_fingerprint(peer.as_bytes()) {
+        // What came first, then the bookkeeping. The steps below each ask
+        // the computer something, and a file sent to the phone waited behind
+        // all of them, 4.8 s of a 3 MB send on the same Wi-Fi (2026-11-15).
+        let stats = if plan.is_empty() {
+            qurb_engine::PlanStats::default()
+        } else if budget.checked_sub(started.elapsed()).is_none() {
+            return Ok(None);
+        } else {
+            // The transfer itself is not interrupted once started. A partly applied
+            // plan is a valid state (every file is committed as it lands) but
+            // abandoning one mid-file would leave a staging file behind, and the
+            // platform's patience is measured in seconds while a chunk is measured
+            // in milliseconds.
+            //
+            // Inside `block_on` and then `block_in_place`: `NetworkSource` captures
+            // the current runtime handle when it is built, and blocks on network
+            // I/O for each chunk. `block_in_place` is what lets it do that without
+            // stalling the whole scheduler, and it is only available on a worker
+            // thread of a multi-threaded runtime, which is why `runtime()` builds
+            // one of those rather than a current-thread runtime.
+            runtime.block_on(async {
+                tokio::task::block_in_place(|| {
+                    let mut source = qurb_peer::NetworkSource::new(client, &reader).for_peer(peer_device);
+                    engine.apply_plan(&plan, &mut source)
+                })
+            })?
+        };
+        // Said at once, and the engine let go of: the app saves and shows
+        // what came while the steps below talk to the computer, which they do
+        // through a store of their own (`arrived`).
+        if stats.adopted > 0 {
+            self.arrived.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+        drop(engine);
+
+        if let Ok(Some(known)) = reader.db().peer_by_fingerprint(peer.as_bytes()) {
             runtime.block_on(qurb_peer::report_holdings(
                 client,
                 &reader,
@@ -3936,7 +4029,7 @@ impl Qurb {
             // And what a computer keeping this phone's vault keeps that the
             // phone was not told of, a `Got` lost on the way: asked about, a
             // few each pass (`confirm_kept`).
-            if engine.store().db().is_holder(&known.device_id).unwrap_or(false) {
+            if reader.db().is_holder(&known.device_id).unwrap_or(false) {
                 let learned = runtime.block_on(qurb_peer::confirm_kept(client, &reader, &known.device_id, 64));
                 if learned > 0 {
                     tracing::info!(learned, "learned of files a computer keeps that this phone was not told of");
@@ -3947,42 +4040,16 @@ impl Qurb {
             // again) and what was opened and is wanted back (decision 0060).
             let host = known.relation == qurb_storage::db::Relation::Host;
             if host {
+                let mut engine = self.engine()?;
                 runtime.block_on(qurb_peer::learn_kept(client, engine.store_mut(), &known.device_id, &tree));
                 runtime.block_on(qurb_peer::fetch_kept(client, engine.store_mut(), &known.device_id, &tree));
             }
             // Asked to open this phone's folder there (0060's step 5, 0067).
-            if self.may_ask(engine.store(), &known) {
-                let key = self.key_to_open(engine.store(), &known);
+            if self.may_ask(&reader, &known) {
+                let key = self.key_to_open(&reader, &known);
                 self.trade_asks(runtime, client, &known, key);
             }
         }
-
-        if plan.is_empty() {
-            return Ok(Some(qurb_engine::PlanStats::default()));
-        }
-
-        if budget.checked_sub(started.elapsed()).is_none() {
-            return Ok(None);
-        }
-
-        // The transfer itself is not interrupted once started. A partly applied
-        // plan is a valid state (every file is committed as it lands) but
-        // abandoning one mid-file would leave a staging file behind, and the
-        // platform's patience is measured in seconds while a chunk is measured
-        // in milliseconds.
-        //
-        // Inside `block_on` and then `block_in_place`: `NetworkSource` captures
-        // the current runtime handle when it is built, and blocks on network
-        // I/O for each chunk. `block_in_place` is what lets it do that without
-        // stalling the whole scheduler, and it is only available on a worker
-        // thread of a multi-threaded runtime, which is why `runtime()` builds
-        // one of those rather than a current-thread runtime.
-        let stats = runtime.block_on(async {
-            tokio::task::block_in_place(|| {
-                let mut source = qurb_peer::NetworkSource::new(client, &reader).for_peer(peer_device);
-                engine.apply_plan(&plan, &mut source)
-            })
-        })?;
 
         Ok(Some(stats))
     }

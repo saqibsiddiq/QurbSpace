@@ -413,6 +413,7 @@ impl Connector {
         // Before the endpoint exists, because afterwards QUIC owns the socket
         // and nothing else can send through it. The router mapping this creates
         // belongs to this port and is the one peers will be told about.
+        let looked = std::time::Instant::now();
         let public = if discover {
             match nat::discover(&socket, Duration::from_secs(3)) {
                 Ok(reflexive) => Some(reflexive.public),
@@ -427,6 +428,7 @@ impl Connector {
             None
         };
 
+        tracing::debug!(ms = looked.elapsed().as_millis() as u64, found = public.is_some(), "asked for a public address");
         let server_config = tls::server_config(&identity, allowed)?;
         let endpoint = nat::endpoint_from(socket, Some(server_config))?;
 
@@ -498,6 +500,7 @@ impl Connector {
         // sync without something on the internet being reachable. They can see
         // each other; nobody needs to introduce them. `stay_signalled` keeps
         // trying in the background, and everything local works meanwhile.
+        let meeting = std::time::Instant::now();
         let client = match SignalClient::connect(
             &signal_url,
             GroupId::derive(&master),
@@ -516,6 +519,7 @@ impl Connector {
             }
         };
 
+        tracing::debug!(ms = meeting.elapsed().as_millis() as u64, up = client.is_some(), "the meeting point");
         let (signal, commands) = mpsc::unbounded_channel();
 
         // Reconnecting, not just connecting. A rendezvous service restarts

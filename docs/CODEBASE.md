@@ -1093,7 +1093,10 @@ qurb/
 │       │                                      device and watch it collected
 │       │                  AndroidKeyStore.kt  the platform half of decision 0021
 │       │                  SyncWorker.kt       background sync, on WorkManager;
-│       │                                      a long pass in the foreground
+│       │                                      a long pass in the foreground;
+│       │                                      a quick one to collect or send
+│       │                  StayConnected.kt    *Connected*: waits for news and
+│       │                                      collects (decision 0090)
 │       │                  Transfers.kt        the notification a long transfer
 │       │                                      runs under, and its progress; a
 │       │                                      backup's, *Backing up to …*
@@ -1675,6 +1678,20 @@ second that finds a long pass running does an ordinary pass instead. The
 notification is posted again only when what it says changes. The app watches the worker's passes, shows them as syncing and runs
 its own after them, and *Sync now* queues behind a running pass rather than
 replacing it.
+
+While the phone is connected (*Stay connected*,
+[decision 0090](decisions/0090-stay-connected.md)) a foreground service waits
+for news (`wait_for_news`): beacons on the Wi-Fi and the meeting point, on a
+connector of its own that also answers, as a pass does, so the address a
+computer hears for it is one that works. News starts a pass that only
+collects (`SyncWorker`'s `collect`: no update check, scan, chosen folders or
+counts first); a share starts one that skips all but the counts (`quick`).
+Within a pass the file comes before the bookkeeping with the computer
+(`sync_reached`), and the pass counts what arrived outside the engine
+(`arrived`), which the app watches so it saves and says what came at once,
+not when the last device has answered. On the S23 beside the laptop: 3.4 to
+4.3 s from hearing the news to *sent you a file*, was 28 s
+([testing.md, 2026-11-15](testing.md)).
 
 **A real phone and a real laptop sync both ways**, verified on hardware: a
 4.7 MB photo crossed from a Galaxy S23 to a laptop, byte-identical by SHA-256.

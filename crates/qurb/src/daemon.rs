@@ -1196,6 +1196,10 @@ impl Daemon {
             self.report(|status| status.state = crate::status::State::Paused);
             return;
         }
+        // A device with something waiting hears so before any device is
+        // dialled: one that does not answer costs a dial its 10 s, and a send
+        // made meanwhile was told only after (2026-11-15).
+        self.announce_deliveries(engine, connector, peers);
         self.back_up_folders(engine);
         let mut reached = 0usize;
         // Set by whichever peer brought something new, so the others can be

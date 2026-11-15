@@ -147,7 +147,7 @@ class ShareActivity : AppCompatActivity() {
             }
             val engine = Engine.open(this@ShareActivity)
             val from = withContext(Dispatchers.IO) { engine.serving().bytes }
-            SyncWorker.runNow(this@ShareActivity)
+            SyncWorker.runNow(this@ShareActivity, quick = true)
             going.hide?.isEnabled = true
             going.sheet.dialog.setCancelable(true)
             val total = sending.sumOf { it.file.length() }.coerceAtLeast(1L)
@@ -272,7 +272,7 @@ class ShareActivity : AppCompatActivity() {
             // not hold the screen open while the phone looks for a computer
             // that may be off, and the worker outlives this screen and tries
             // again on its own.
-            SyncWorker.runNow(this@ShareActivity)
+            SyncWorker.runNow(this@ShareActivity, quick = true)
             outcome(
                 if (failed > 0) Outcome.ATTENTION else Outcome.DONE,
                 if (failed > 0) "Saved $saved of ${saved + failed}" else "Saved to Vault",

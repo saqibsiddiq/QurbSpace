@@ -13,7 +13,7 @@ which.
 | phone app | the APK from the GitHub release, as now; it updates itself (decision 0078) |
 | computers | Linux and Windows; no macOS build |
 | when | this week |
-| version | `v0.2.0-beta.10`, the number the builds since beta.9 already carry |
+| version | `v0.2.0-beta.10` as planned; opened on `v0.2.0-beta.11` (2026-11-15), the first with download links that do not change between versions |
 
 ## What testers are told
 
@@ -35,7 +35,7 @@ Said plainly on the release page and in the guide, not hidden:
 
 Built by Claude unless marked **owner**.
 
-- [ ] **Google Drive's clients in the release.** The laptop reads them only
+- [x] **Google Drive's clients in the release.** Done for beta.10 (secrets set by the owner, 2026-11-15). The laptop reads them only
   from `~/.config/qurb/` (`qurb::drive_account`), which exists on the owner's
   laptop alone, so no tester could turn Drive on. Built into the program from
   two release secrets, the file still read first where it exists.
@@ -44,20 +44,20 @@ Built by Claude unless marked **owner**.
   Note: the web client's secret then ships inside the program, as the desktop
   client's does; Google treats a desktop client's secret as public, not a web
   client's. Acceptable for a beta; to revisit before public release.
-- [ ] **Who may sign in to Drive.** While the consent screen is in *Testing*,
+- [ ] **Who may sign in to Drive.** Open on 2026-11-15, being done. While the consent screen is in *Testing*,
   only listed test users can (100 at most), and they sign in again every
   seven days. **Owner:** check in the console whether `drive.appdata` counts
   as a non-sensitive scope; if so, publishing the consent screen needs only
   the brand details (home page, privacy policy link) and lifts both limits.
   If not, Drive stays for testers who send their address.
-- [ ] **A privacy policy and a home page**, short, for the release page and
+- [x] **A privacy policy and a home page** ([PRIVACY.md](../PRIVACY.md), qurb.cloud)., short, for the release page and
   Google's consent screen. Drafted by Claude; **owner** publishes them.
-- [ ] **A tester's guide**: install on the phone and the computer, pair, what
+- [x] **A tester's guide** (the README's downloads by device and the website's download page).: install on the phone and the computer, pair, what
   to try, how to report. Drafted by Claude.
-- [ ] **Reporting**: GitHub Issues with a template asking for phone, Android
+- [x] **Reporting** (issue templates, *Save a report* on both apps; issues open, checked 2026-11-15): GitHub Issues with a template asking for phone, Android
   version, carrier, computer and what happened; *Send a report* on both apps
   saves a file to attach. **Owner:** confirm the repository's issues are open.
-- [ ] **The release page's words**: what is new since beta.9, the notice
+- [x] **The release page's words** (`docs/release-notes/`): what is new since beta.9, the notice
   above, the downloads by device.
 
 ## The device pass
@@ -111,6 +111,28 @@ beta.5, which cannot open the current folder (testing.md, *Found, and left*).
 2. The release's own files installed on both phones and the laptop, not the
    local builds, and items 1 and 4 run once more on them.
 3. The release page's words and the guide's link put up; the beta opened.
+
+### Done on 2026-11-15, for beta.11
+
+- The S23 already ran the release's own APK (its checksum the release's),
+  having updated itself to it. The laptop was moved from a local build to
+  the release's AppImage (the one before kept as
+  `~/.local/bin/QurbSpace.AppImage.before-beta.11`).
+- Item 4 again, release files on both, home Wi-Fi, a 3.2 MB file of random
+  bytes each way, checksums identical:
+  - phone to laptop, shared to QurbSpace: **5.0 s** from the tap to the file
+    in `~/Downloads/qurb`.
+  - laptop to phone (`qurb send`), the S23 connected (Stay connected): **49 s**
+    to its notification. The laptop's first direct try went to a port the
+    phone no longer listened on and timed out after 10 s; it connected on the
+    next news, 27 s after the send. Slower than the 11.2 s of item 4b; not
+    yet looked into.
+- Item 1 (setting up from nothing) was not run again: no device free to reset.
+- The 49 s was looked into the same day and made 3.4 to 4.3 s, from the phone
+  hearing the laptop to *sent you a file* (testing.md, 2026-11-15; decision
+  0090, amended), for beta.12. Phone to laptop not timed on that build yet.
+- The website's downloads, the README's and the release's version-less files
+  all answer (HTTP 200); the waitlist takes addresses.
 
 ## During the beta
 

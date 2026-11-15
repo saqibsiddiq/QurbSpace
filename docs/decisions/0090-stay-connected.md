@@ -104,3 +104,23 @@ Tried on the S23: no pass in the 20 s after opening; disconnected from the
 notification, Home read *Tap to connect*; tapped, the service started and a
 pass reached the laptop.
 
+## Amended 2026-11-15: answering where it is heard, and collecting first
+
+A file sent from the laptop to the S23 beside it took 49 s (testing.md,
+2026-11-15). Two parts of it were this decision's:
+
+- **The listener answers.** It said where it was, by beacon and at the
+  meeting point, and accepted nothing there, so each time it started again
+  the laptop dialled it and waited 10 s, with every other device waiting
+  behind. It now serves on its endpoint as a pass does, so whatever a device
+  hears of it is true. A computer reaching it this way may collect what the
+  phone has for it (a send, a backup), as it may during any pass; pausing
+  and the mobile-data hold still refuse it (decision 0086).
+- **A pass woken by news only collects** (`SyncWorker`'s `collect`): no update
+  check, scan, chosen folders, or counts of what waits for others and of the
+  backups; those run on the next pass the person starts. What comes is said
+  as soon as it is in, not when the other devices have answered.
+
+From the phone hearing the laptop to *sent you a file*: 28 s before, 3.4 to
+4.3 s after (three runs, testing.md).
+

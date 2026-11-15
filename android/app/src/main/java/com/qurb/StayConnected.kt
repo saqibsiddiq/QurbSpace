@@ -66,7 +66,7 @@ class StayConnected : Service() {
                 heard.isFailure -> Thread.sleep(30_000)
                 heard.getOrDefault(false) -> {
                     Log.i(TAG, "a computer has something for this phone; syncing")
-                    SyncWorker.runNow(this)
+                    SyncWorker.runNow(this, collect = true)
                     // A computer says it on every round while something
                     // waits: one pass for it, not one for each saying.
                     Thread.sleep(10_000)

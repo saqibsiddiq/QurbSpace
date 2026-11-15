@@ -34,6 +34,14 @@ object GoogleDrive {
     /** Kept as the account until its address is known. */
     private const val PLACEHOLDER = "Google account"
 
+    /** How long a token is used before another is asked for: Google's last
+     *  an hour. Asked for before every pass, it cost each about 2 s, the
+     *  longest part of a send from the laptop beside the phone (2026-11-15). */
+    private const val TOKEN_KEPT_MS = 40 * 60_000L
+
+    /** The engine given the last token, and when; a new engine has none. */
+    @Volatile private var given: Pair<Any, Long>? = null
+
     /** The web client the codes are made for (docs/google-drive-setup.md,
      *  step 8). An identifier, not a secret: it is in every copy of the app. */
     const val WEB_CLIENT_ID = "892093025334-8v20aphgklli5jjitd85ehh58chpg8jp.apps.googleusercontent.com"
@@ -96,12 +104,18 @@ object GoogleDrive {
     suspend fun refresh(context: Context, engine: uniffi.qurb_mobile.Qurb) = withContext(Dispatchers.IO) {
         if (account(context) == null) return@withContext
         if (engine.driveCodeHanded()) prefs(context).edit().putLong(HANDED, System.currentTimeMillis()).apply()
+        // Refused by Google since (revoked, or expired early): another now.
+        val refused = engine.driveTokenRefused()
+        val last = given
+        if (!refused && last != null && last.first === engine &&
+            System.currentTimeMillis() - last.second < TOKEN_KEPT_MS) return@withContext
         val result = runCatching {
             Tasks.await(Identity.getAuthorizationClient(context).authorize(request(code = false)), 20, TimeUnit.SECONDS)
         }.onFailure { Log.w(TAG, "no Google Drive token", it) }.getOrNull() ?: return@withContext
         if (result.hasResolution()) return@withContext
         val token = result.accessToken ?: return@withContext
         engine.setDriveToken(token)
+        given = engine to System.currentTimeMillis()
         // The address, where the sign-in did not say it: Settings showed
         // "Google account" on the S23 (the device pass of 2026-11-14).
         if (account(context) == PLACEHOLDER) address(token)?.let { prefs(context).edit().putString(ACCOUNT, it).apply() }

@@ -16,6 +16,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkQuery
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
+import uniffi.qurb_mobile.Qurb
 
 /**
  * Sync in the background, on the platform's terms.
@@ -52,9 +54,21 @@ class SyncWorker(context: Context, params: WorkerParameters) :
     CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        // A file going or coming, and somebody waiting for it: a computer
+        // has something for this phone (Stay connected), or the person has
+        // just shared something. That first, and nothing before it. The
+        // update check, the scan and the chosen folders' backup took the
+        // first seconds of every such pass, and a file sent from the laptop
+        // beside the phone waited for them (2026-11-15). They run on the
+        // next pass the person starts.
+        // And woken only to collect (Stay connected): not what waits for the
+        // other devices nor how far the backups are, two counts over every
+        // file kept, 3 to 7 s on the S23 before it reached for the laptop.
+        val collect = inputData.getBoolean(COLLECT, false)
+        val quick = collect || inputData.getBoolean(QUICK, false)
         // Updates first, set up or not (decision 0078): a phone that cannot
         // get past setting up is the one that most needs a newer build.
-        Updates.run(applicationContext, install = !Notices.onScreen && Controls.autoUpdate(applicationContext))
+        if (!quick) Updates.run(applicationContext, install = !Notices.onScreen && Controls.autoUpdate(applicationContext))
         if (!Engine.isSetUp(applicationContext)) return Result.success()
         // Back after a restart, or after Android stopped it.
         StayConnected.start(applicationContext)
@@ -67,7 +81,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             // roughly ten minutes before it is stopped, but spending them is
             // how an app's future windows get rationed, and a sync that needs
             // longer can simply have the next one.
-            engine.scan()
+            if (!quick) engine.scan()
 
             // A large collection waiting: run in the foreground and keep
             // answering while a device collects (decision 0050). Refused when
@@ -82,18 +96,18 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             // counts what is waiting, so they go in this pass. Briefly; a
             // large first backup carries on over the following passes and the
             // nightly run. Its failure is not the sync's.
-            if (Controls.backupsAllowedNow(applicationContext)) {
+            if (!quick && Controls.backupsAllowedNow(applicationContext)) {
                 runCatching { Folders.run(applicationContext, engine, FOLDERS_SECONDS) }
                     .onFailure { Log.w(TAG, "backing up the chosen folders failed", it) }
             }
-            val forOthers = runCatching { engine.waitingForOthersBytes() }.getOrDefault(0uL)
+            val forOthers = if (collect) 0uL else runCatching { engine.waitingForOthersBytes() }.getOrDefault(0uL)
             // Named on the notice when there is one device to name.
             val to = Transfers.collector(engine)
             // A backup still going when the pass starts: named on the notice,
             // and *Backed up* if the pass sees it done (the owner's list of
             // 2026-10-25).
-            val backupBefore = runCatching { engine.backupWaiting(1u) }.getOrNull()
-            val keeper = BackingUp.keeper(engine)
+            val backupBefore = if (collect) null else runCatching { engine.backupWaiting(1u) }.getOrNull()
+            val keeper = if (collect) null else BackingUp.keeper(engine)
             val long = forOthers >= LONG_PASS_BYTES && startLong(forOthers, started, to)
             // Another pass is the long one, and is already answering.
             val elsewhere = !long && LONG_PASS.get()
@@ -132,7 +146,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
                             }
                         }
                     }
-                } else BackingUp.watch(applicationContext, engine, this, keeper)
+                } else if (collect) launch { } else BackingUp.watch(applicationContext, engine, this, keeper)
                 // A computer's ask, looked for every second of every pass:
                 // somebody there is waiting, and a phone woken for it by push
                 // hears it as soon as it has reached the computer, not when the
@@ -145,6 +159,22 @@ class SyncWorker(context: Context, params: WorkerParameters) :
                         runCatching { Notices.asked(applicationContext, engine) }
                     }
                 }
+                // What came, said when it came: the pass goes on for the
+                // devices still to answer, and a phone away took the rest of
+                // the window before *sent you a file* (2026-11-15). Read
+                // without the engine; saying it waits for the engine, which
+                // a pass lets go of between devices.
+                val arrivedBefore = engine.arrived()
+                val arriving = launch(Dispatchers.IO) {
+                    var seen = arrivedBefore
+                    while (true) {
+                        delay(300)
+                        val now = engine.arrived()
+                        if (now == seen) continue
+                        seen = now
+                        tellArrived(engine)
+                    }
+                }
                 try {
                     withContext(Dispatchers.IO) {
                         Engine.hearingTheNetwork(applicationContext) {
@@ -154,8 +184,9 @@ class SyncWorker(context: Context, params: WorkerParameters) :
                     }
                 } finally {
                     asking.cancel()
+                    arriving.cancel()
                     // Long or not, *Backed up* when the pass saw the round done.
-                    BackingUp.finish(applicationContext, engine, backupBefore, showing, keeper)
+                    if (collect) showing.cancel() else BackingUp.finish(applicationContext, engine, backupBefore, showing, keeper)
                 }
             }
 
@@ -191,8 +222,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             // device was there for it: reached, or collecting on its own
             // connection: say so, with the way to carry on.
             // What is worth telling the person, now nobody is looking.
-            Notices.tell(applicationContext, engine)
-            ReceivedOut.save(applicationContext, engine)
+            tellArrived(engine)
             Notices.asked(applicationContext, engine)
 
             if (long || elsewhere || forOthers < LONG_PASS_BYTES) {
@@ -297,8 +327,22 @@ class SyncWorker(context: Context, params: WorkerParameters) :
         }
     }
 
+    /** Said and saved: what came. Both remember what they have handled, so
+     *  saying it during a pass and again at its end says each thing once;
+     *  one at a time, so the two do not both take the same new thing. */
+    private fun tellArrived(engine: Qurb) = synchronized(TELLING) {
+        Notices.tell(applicationContext, engine)
+        ReceivedOut.save(applicationContext, engine)
+    }
+
     companion object {
         private const val TAG = "qurb"
+
+        /** Input: a file going or coming, and nothing else first. */
+        private const val QUICK = "quick"
+        /** Input: only collecting what a computer has for this phone. */
+        private const val COLLECT = "collect"
+        private val TELLING = Any()
 
         /** What a pass spends on the chosen folders before syncing. */
         private val FOLDERS_SECONDS = 15u
@@ -492,8 +536,9 @@ class SyncWorker(context: Context, params: WorkerParameters) :
          * the periodic schedule uses, which is the only way to find out that
          * path works without waiting fifteen minutes for it to not.
          */
-        fun runNow(context: Context) {
+        fun runNow(context: Context, quick: Boolean = false, collect: Boolean = false) {
             val request = OneTimeWorkRequestBuilder<SyncWorker>()
+                .setInputData(workDataOf(QUICK to quick, COLLECT to collect))
                 .setConstraints(
                     Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)

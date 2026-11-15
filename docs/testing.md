@@ -4,6 +4,56 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-15: a send between the laptop and the phone beside it
+
+The owner, on the release-day check's 49 s: "shouldnt it be instantaneous
+considering either theyre on same wifi or using google drive".
+
+Conditions throughout: the Galaxy S23 (Android 16) and the owner's laptop
+(CachyOS) on the same home Wi-Fi; the S23 connected (*Stay connected*,
+decision 0090), its screen in other apps; a file of 3,200,000 random bytes
+sent with `qurb send` from the laptop; checksums compared on both ends,
+identical every time. The laptop's tree is 77,7xx files.
+
+**Before, beta.11 as released**: 49 s from the send to *sent you a file*,
+made of:
+
+| | s | why |
+|---|---|---|
+| the laptop telling | 21 | `qurb send` is another process, heard by the app at its next 30 s check; and the app was 10 s on the next row |
+| a dial into nothing | 10 | the phone's listener (`wait_for_news`) said where it was, in beacons and at the meeting point, and answered nobody there; the laptop dialled it each time it started again and waited out the timeout |
+| the phone starting | 6 | the update check, the scan, the chosen folders, a Google token asked for, and two counts over every kept file, before the phone dialled |
+| the notice | 20 | the file was in after about 2 s, *sent you a file* only when the pass ended: the OPPO, away, had the rest of the window |
+
+**After** (beta.12, built locally, the same version on the S23 and the
+laptop): from the phone hearing the news to *sent you a file*, three runs:
+**4.3 s, 4.3 s, 3.4 s** (it was 28 s). Of the last: 1.0 s to the laptop
+reached, 1.2 s for the laptop's file list brought up to date, 1.1 s for the
+file and the notice. What changed:
+
+- the listener answers where it says it is (a pass's own way of answering),
+  so the laptop reaches it at once instead of waiting 10 s;
+- a pass woken to collect skips everything but collecting (the update check,
+  the scan, the chosen folders, and the two counts, 3 to 7 s between them);
+  a pass started by a share skips all but the counts;
+- a Google token is used for 40 minutes, not asked for before every pass
+  (about 2 s each time);
+- the file is fetched before the bookkeeping with the computer, and the
+  engine let go of during it;
+- what came is saved and said as soon as it is in (the pass counts arrivals
+  outside the engine, the app watches the count), not when the pass ends.
+
+Not measured, and why: the time from the laptop's *Send* button to the phone
+hearing. A send made in the app tells the phone at once (`nudge`); the one
+made here with `qurb send` is heard at the app's next check, up to 30 s, which
+is why the runs are timed from the phone hearing. Nor phone to laptop on the
+new build: a share needs a tap on the phone, which was in use (5.0 s on
+beta.11, timed from the tap, beta.md).
+
+Left: the laptop's file list brought up to date takes 1.2 to 1.5 s each pass
+(77,7xx files); a pass started while another is running waits for it
+(WorkManager appends), seen once as 3.7 s before the work began.
+
 ## 2026-11-14: what the phone apps take, and taking less
 
 The owner: "why are phone apps taking so much space? 1.39gb and 0.94gb ... i
