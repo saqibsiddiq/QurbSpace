@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>QurbSpace launch video</title>
+<!-- The launch video's 60 seconds (docs/brand/launch-video.md), drawn by one
+     clock: `seek(t)` sets every element for second `t`, so a frame is the
+     same however it is reached. render.mjs steps it at 30 frames a second. -->
+<style>
+  @font-face { font-family: 'Inter'; src: url('../../website/public/fonts/inter-latin.woff2') format('woff2'); font-weight: 100 900; }
+  :root {
+    --bg: #0b100e; --green: #2f6b57; --green-hi: #3c806a; --green-lo: #22503f;
+    --mint: #bde7d6; --ink: #f1f4f2; --quiet: #9fb3aa;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+  body { font-family: 'Inter', sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .abs { position: absolute; }
+  #glow { inset: 0; background:
+    radial-gradient(900px 700px at 22% 30%, rgba(60,128,106,.32), transparent 70%),
+    radial-gradient(900px 700px at 80% 78%, rgba(189,231,214,.10), transparent 70%); }
+  #grain { inset: 0; opacity: .05; background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 4px 4px; }
+
+  /* The mark: the tile and its two circles, drawn so the circles can move. */
+  .mark { width: 220px; height: 220px; }
+  .mark .tile { position: absolute; inset: 0; border-radius: 64px; background: linear-gradient(135deg, var(--green-hi), var(--green-lo)); box-shadow: 0 40px 120px rgba(47,107,87,.45); }
+  .mark .c { position: absolute; top: 50%; width: 33%; height: 33%; border-radius: 50%; transform: translate(-50%, -50%); }
+  .mark .c1 { background: #fff; }
+  .mark .c2 { background: var(--mint); }
+
+  .word { font-weight: 650; letter-spacing: -0.035em; white-space: nowrap; }
+  .line { font-weight: 650; letter-spacing: -0.03em; white-space: nowrap; text-align: center; }
+  .quiet { color: var(--quiet); font-weight: 500; }
+
+  /* Devices. */
+  .phone { width: 372px; height: 780px; border-radius: 58px; background: #0d0f0e; padding: 13px; box-shadow: 0 50px 140px rgba(0,0,0,.6), 0 0 0 2px #2a302d inset, 0 0 0 1px #3a423e; }
+  .phone .screen { width: 100%; height: 100%; border-radius: 46px; overflow: hidden; background: #f6f6f3; position: relative; }
+  .phone video, .phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .phone .island { position: absolute; top: 14px; left: 50%; width: 96px; height: 26px; margin-left: -48px; border-radius: 13px; background: #000; }
+  .laptop { width: 1000px; }
+  .laptop .lid { width: 1000px; height: 626px; border-radius: 22px 22px 6px 6px; background: #0d0f0e; padding: 14px 14px 18px; box-shadow: 0 50px 140px rgba(0,0,0,.55), 0 0 0 1px #3a423e; }
+  .laptop .screen { width: 100%; height: 100%; border-radius: 8px; overflow: hidden; background: #f6f6f3; }
+  .laptop img { width: 100%; height: 100%; object-fit: cover; object-position: top left; display: block; }
+  .laptop .base { width: 1120px; height: 22px; margin-left: -60px; border-radius: 0 0 20px 20px; background: linear-gradient(#cfd5d2, #8e9692); }
+
+  .beam { height: 4px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--mint), transparent); filter: drop-shadow(0 0 12px var(--mint)); }
+  .chip { display: inline-flex; align-items: center; gap: 18px; padding: 22px 34px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10); font-size: 40px; font-weight: 600; letter-spacing: -0.02em; }
+  .chip svg { width: 44px; height: 44px; stroke: var(--mint); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .big { font-size: 128px; font-weight: 700; letter-spacing: -0.045em; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="glow" class="abs"></div>
+<div id="grain" class="abs"></div>
+
+<!-- 1, 8: the mark and the name -->
+<div id="mark" class="abs mark" style="left:850px;top:300px"><div class="tile"></div><div class="c c1"></div><div class="c c2"></div></div>
+<div id="word" class="abs word" style="font-size:132px;left:0;width:1920px;text-align:center;top:560px">QurbSpace</div>
+<div id="tag" class="abs line quiet" style="font-size:52px;left:0;width:1920px;top:740px">Your files. Always near.</div>
+<div id="beta" class="abs line" style="font-size:44px;left:0;width:1920px;top:735px;color:var(--mint)">Open beta</div>
+<div id="platforms" class="abs line quiet" style="font-size:40px;left:0;width:1920px;top:810px">Android&nbsp;&nbsp;&nbsp;Windows&nbsp;&nbsp;&nbsp;Linux</div>
+<div id="site" class="abs line" style="font-size:64px;left:0;width:1920px;top:900px">qurb.cloud</div>
+
+<!-- Captions above the devices -->
+<div id="cap1" class="abs line" style="font-size:84px;left:0;width:1920px;top:70px"></div>
+<div id="cap2" class="abs line quiet" style="font-size:46px;left:0;width:1920px;top:178px"></div>
+
+<!-- 2 to 5: the devices -->
+<div id="laptop" class="abs laptop" style="left:200px;top:330px"><div class="lid"><div class="screen"><img id="laptopImg" alt="" /></div></div><div class="base"></div></div>
+<div id="beam" class="abs beam" style="left:1180px;top:640px;width:320px"></div>
+<div id="phone" class="abs phone" style="left:1350px;top:270px"><div class="screen"><video id="clip" muted playsinline preload="auto"></video><img id="phoneImg" alt="" /><div class="island"></div></div></div>
+
+<!-- 6: any network, and the Drive -->
+<div id="nets" class="abs" style="left:0;width:1920px;top:420px;display:flex;justify-content:center;gap:40px">
+  <div class="chip" id="net1"><svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/></svg>Home Wi-Fi</div>
+  <div class="chip" id="net2"><svg viewBox="0 0 24 24"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>Mobile data</div>
+  <div class="chip" id="net3"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Anywhere</div>
+</div>
+<div id="drive" class="abs" style="left:0;width:1920px;top:660px;display:flex;justify-content:center;align-items:center;gap:56px">
+  <div class="chip" id="seal"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Sealed</div>
+  <div id="arrow" style="width:160px;height:4px;border-radius:2px;background:linear-gradient(90deg,rgba(189,231,214,.2),var(--mint))"></div>
+  <div class="chip" id="cloud"><svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>Your Drive</div>
+</div>
+
+<!-- 7: three words -->
+<div id="p1" class="abs big" style="left:0;width:1920px;text-align:center;top:250px">Encrypted end to end.</div>
+<div id="p2" class="abs big" style="left:0;width:1920px;text-align:center;top:450px;color:var(--mint)">No account.</div>
+<div id="p3" class="abs big" style="left:0;width:1920px;text-align:center;top:650px">No cloud of ours.</div>
+
+<script>
+const $ = (id) => document.getElementById(id)
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x))
+const out3 = (x) => 1 - Math.pow(1 - clamp(x), 3)
+const inOut = (x) => { x = clamp(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2 }
+const rise = (t, at, d = 0.7) => out3((t - at) / d)
+// Shown from `a` to `b`, faded in over `fi` and out over `fo`.
+const span = (t, a, b, fi = 0.6, fo = 0.5) => Math.min(rise(t, a, fi), 1 - clamp((t - (b - fo)) / fo))
+const set = (id, o, y = 0, s = 1, x = 0) => {
+  const e = $(id); e.style.opacity = o.toFixed(3)
+  e.style.transform = `translate(${x}px, ${y}px) scale(${s})`
+  e.style.visibility = o < 0.001 ? 'hidden' : 'visible'
+}
+
+// The scenes, in seconds. Clips: files in assets/, each with where in it the
+// scene starts; laptop images likewise. Missing files leave the screen blank.
+const SCENES = [
+  { from: 0, to: 5 },
+  { from: 5, to: 12, cap: ['Your phone and your computer.', 'In sync. Nothing in between.'], clip: 'phone-home.mp4', at: 0, laptop: 'laptop-home.png' },
+  { from: 12, to: 20, cap: ['Send in seconds.', 'Both ways.'], clip: 'phone-send.mp4', at: 0, laptop: 'laptop-received.png' },
+  { from: 20, to: 28, cap: ['Back up WhatsApp and photos.', 'To your own computer.'], clip: 'phone-backup.mp4', at: 0, laptop: 'laptop-backups.png' },
+  { from: 28, to: 36, cap: ['Open your computer from your phone.', 'From anywhere.'], clip: 'phone-remote.mp4', at: 0, laptop: 'laptop-files.png' },
+  { from: 36, to: 44, cap: ['Any network.', 'Laptop asleep? Files wait in your Drive, sealed.'] },
+  { from: 44, to: 52 },
+  { from: 52, to: 60 },
+]
+const DURATION = 60
+
+let loadedClip = null
+async function useClip(name) {
+  const v = $('clip')
+  if (loadedClip === name) return v
+  loadedClip = name
+  v.src = name ? `assets/${name}` : ''
+  if (!name) return v
+  await new Promise((ok) => { v.onloadeddata = ok; v.onerror = ok; v.load() })
+  return v
+}
+async function seekClip(v, at) {
+  if (!v.src || !isFinite(v.duration)) return
+  const target = Math.min(at, v.duration - 0.05)
+  if (Math.abs(v.currentTime - target) < 0.001) return
+  await new Promise((ok) => { v.onseeked = ok; v.currentTime = target })
+}
+
+async function seek(t) {
+  // 1: the two circles drift together until they almost touch.
+  const meet = inOut((t - 0.2) / 1.8)
+  const markIn = span(t, 0, 4.9, 0.6, 0.6) + span(t, 52, 60.5, 0.8, 0.1)
+  const end = t >= 52
+  set('mark', clamp(markIn), end ? -40 : 0, 1)
+  const gap = end ? 0 : (1 - meet) * 70
+  const c1 = $('mark').querySelector('.c1'), c2 = $('mark').querySelector('.c2')
+  c1.style.left = `${34.4 - gap / 2.2}%`; c2.style.left = `${65.6 + gap / 2.2}%`
+  $('mark').querySelector('.tile').style.opacity = end ? 1 : clamp((t - 1.4) / 0.8)
+  set('word', span(t, 2.0, 4.9, 0.8) + span(t, 52.6, 61, 0.8, 0.1), (1 - rise(t, end ? 52.6 : 2.0)) * 24 + (end ? -40 : 0))
+  set('tag', span(t, 2.8, 4.9, 0.8), (1 - rise(t, 2.8)) * 20)
+  set('beta', span(t, 53.4, 61, 0.6, 0.1), (1 - rise(t, 53.4)) * 16)
+  set('platforms', span(t, 54.0, 61, 0.6, 0.1), (1 - rise(t, 54.0)) * 16)
+  set('site', span(t, 54.8, 61, 0.8, 0.1), (1 - rise(t, 54.8)) * 20, 0.96 + 0.04 * rise(t, 54.8, 1.2))
+
+  // 2 to 6: captions.
+  const s = SCENES.find((x) => t >= x.from && t < x.to) || SCENES[0]
+  if (s.cap) {
+    $('cap1').textContent = s.cap[0]; $('cap2').textContent = s.cap[1]
+    set('cap1', span(t, s.from + 0.1, s.to, 0.6, 0.45), (1 - rise(t, s.from + 0.1)) * 26)
+    set('cap2', span(t, s.from + 0.45, s.to, 0.6, 0.45), (1 - rise(t, s.from + 0.45)) * 20)
+  } else { set('cap1', 0); set('cap2', 0) }
+
+  // 2 to 5: the devices, in for the four app scenes, with the phone's clip.
+  const dev = span(t, 5.2, 36, 0.9, 0.6)
+  set('laptop', dev, (1 - rise(t, 5.2, 1.0)) * 60, 0.97 + 0.03 * rise(t, 5.2, 1.2), (1 - rise(t, 5.2, 1.0)) * -40)
+  set('phone', dev, (1 - rise(t, 5.5, 1.0)) * 80, 0.97 + 0.03 * rise(t, 5.5, 1.2), (1 - rise(t, 5.5, 1.0)) * 40)
+  const pulse = 0.5 + 0.5 * Math.sin(t * 3.2)
+  set('beam', dev * (0.35 + 0.65 * pulse), 0, 1)
+  if (s.laptop) { const img = $('laptopImg'); const src = `assets/${s.laptop}`; if (!img.src.endsWith(src)) img.src = src }
+  const v = await useClip(s.clip || null)
+  $('phoneImg').style.display = 'none'
+  if (s.clip) await seekClip(v, s.at + (t - s.from))
+
+  // 6: any network, then the Drive.
+  const net = span(t, 36.3, 44, 0.6, 0.5)
+  ;['net1', 'net2', 'net3'].forEach((id, i) => set(id, Math.min(net, rise(t, 36.5 + i * 0.5, 0.6)), (1 - rise(t, 36.5 + i * 0.5)) * 24))
+  const drv = span(t, 39.6, 44, 0.6, 0.5)
+  ;['seal', 'arrow', 'cloud'].forEach((id, i) => set(id, Math.min(drv, rise(t, 39.8 + i * 0.45, 0.6)), 0, 1, (1 - rise(t, 39.8 + i * 0.45)) * -30))
+  set('nets', 1); set('drive', 1)
+
+  // 7: three lines, one after another.
+  ;['p1', 'p2', 'p3'].forEach((id, i) => set(id, span(t, 44.3 + i * 1.6, 51.9, 0.7, 0.5), (1 - rise(t, 44.3 + i * 1.6, 0.8)) * 40))
+
+  // The glow breathes a little, and leans with the story.
+  $('glow').style.transform = `translate(${Math.sin(t * 0.35) * 30}px, ${Math.cos(t * 0.3) * 20}px)`
+  await document.fonts.ready
+  return true
+}
+window.seek = seek
+window.DURATION = DURATION
+seek(0)
+</script>
+</body>
+</html>
