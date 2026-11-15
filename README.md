@@ -38,14 +38,16 @@ never stored on a server of ours. Your computer is your cloud.
 
 ## Get the beta
 
-Tap the one for your device; the download starts at once.
+Pick your device; the download starts at once.
 
-| Device | Download | Then |
+| Your device | Download | To install |
 |---|---|---|
-| Android 8 or later | **[QurbSpace for Android](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-android.apk)** | Open it, and allow installing from your browser when asked. It updates itself. |
-| Linux | **[QurbSpace for Linux](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-linux.AppImage)** | Make it executable (right click, Properties, allow running) and open it. It updates itself. |
-| Ubuntu, Debian | **[QurbSpace .deb](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-linux.deb)** | `sudo apt install ./QurbSpace-linux.deb` |
-| Windows 10 and 11 | **[QurbSpace for Windows](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-windows-setup.exe)** | **Never run by us yet.** Tell us how it goes. |
+| **Android phone** (Android 8 or later) | [QurbSpace for Android](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-android.apk) | Open the file, and allow installing from your browser when asked. Updates itself. |
+| **Windows** 10 or 11 | [QurbSpace for Windows](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-windows-setup.exe) | Run the installer. **Not yet tested by us**: tell us how it goes. |
+| **Linux**: Ubuntu, Debian, Mint, Pop!_OS | [QurbSpace for Ubuntu and Debian](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-linux.deb) | Open the file to install it. Does not update itself yet: download again for a new version. |
+| **Linux**: any other (Fedora, Arch and the rest) | [QurbSpace for any Linux](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-linux.AppImage) | Allow it to run (right click, Properties, Permissions), then open it. Updates itself. |
+
+Not sure which Linux you have? The second Linux download works on all of them.
 
 Then:
 
