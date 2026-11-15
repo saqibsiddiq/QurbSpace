@@ -34,8 +34,10 @@
 
   /* Devices. */
   .phone { width: 372px; height: 780px; border-radius: 58px; background: #0d0f0e; padding: 13px; box-shadow: 0 50px 140px rgba(0,0,0,.6), 0 0 0 2px #2a302d inset, 0 0 0 1px #3a423e; }
-  .phone .screen { width: 100%; height: 100%; border-radius: 46px; overflow: hidden; background: #f6f6f3; position: relative; }
-  .phone video, .phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .phone .screen { width: 100%; height: 100%; border-radius: 46px; overflow: hidden; background: #e9efec; position: relative; }
+  /* The recordings start below the status bar, cropped off; the space it
+     took is the app's own background, under the camera's island. */
+  .phone video, .phone img { position: absolute; top: 44px; left: 0; width: 100%; height: calc(100% - 44px); object-fit: cover; object-position: top; display: block; }
   .phone .island { position: absolute; top: 14px; left: 50%; width: 96px; height: 26px; margin-left: -48px; border-radius: 13px; background: #000; }
   .laptop { width: 1000px; }
   .laptop .lid { width: 1000px; height: 626px; border-radius: 22px 22px 6px 6px; background: #0d0f0e; padding: 14px 14px 18px; box-shadow: 0 50px 140px rgba(0,0,0,.55), 0 0 0 1px #3a423e; }
@@ -116,20 +118,25 @@ const SCENES = [
 const DURATION = 60
 
 let loadedClip = null
+// Waits that cannot hang the render: a media event that never comes gives up
+// after three seconds, and the frame is drawn with what there is.
+const within = (p, ms = 3000) => Promise.race([p, new Promise((r) => setTimeout(r, ms))])
 async function useClip(name) {
   const v = $('clip')
   if (loadedClip === name) return v
   loadedClip = name
-  v.src = name ? `assets/${name}` : ''
-  if (!name) return v
-  await new Promise((ok) => { v.onloadeddata = ok; v.onerror = ok; v.load() })
+  if (!name) { v.removeAttribute('src'); return v }
+  // Whole, from memory: the http.server this is served by answers no range
+  // requests, and without them the browser cannot seek in the file.
+  v.src = URL.createObjectURL(await (await fetch(`assets/${name}`)).blob())
+  await within(new Promise((ok) => { v.onloadeddata = ok; v.onerror = ok; v.load() }))
   return v
 }
 async function seekClip(v, at) {
   if (!v.src || !isFinite(v.duration)) return
   const target = Math.min(at, v.duration - 0.05)
   if (Math.abs(v.currentTime - target) < 0.001) return
-  await new Promise((ok) => { v.onseeked = ok; v.currentTime = target })
+  await within(new Promise((ok) => { v.onseeked = ok; v.currentTime = target }))
 }
 
 async function seek(t) {
@@ -162,7 +169,10 @@ async function seek(t) {
   set('phone', dev, (1 - rise(t, 5.5, 1.0)) * 80, 0.97 + 0.03 * rise(t, 5.5, 1.2), (1 - rise(t, 5.5, 1.0)) * 40)
   const pulse = 0.5 + 0.5 * Math.sin(t * 3.2)
   set('beam', dev * (0.35 + 0.65 * pulse), 0, 1)
-  if (s.laptop) { const img = $('laptopImg'); const src = `assets/${s.laptop}`; if (!img.src.endsWith(src)) img.src = src }
+  if (s.laptop) {
+    const img = $('laptopImg'); const src = `assets/${s.laptop}`
+    if (!img.src.endsWith(src)) { img.src = src; await img.decode().catch(() => {}) }
+  }
   const v = await useClip(s.clip || null)
   $('phoneImg').style.display = 'none'
   if (s.clip) await seekClip(v, s.at + (t - s.from))
@@ -180,6 +190,9 @@ async function seek(t) {
   // The glow breathes a little, and leans with the story.
   $('glow').style.transform = `translate(${Math.sin(t * 0.35) * 30}px, ${Math.cos(t * 0.3) * 20}px)`
   await document.fonts.ready
+  // Painted before it is captured: a new image or video frame shows on the
+  // frame after it is ready, not the one it became ready in.
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
   return true
 }
 window.seek = seek

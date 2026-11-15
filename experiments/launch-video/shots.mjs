@@ -11,7 +11,7 @@ const SHOTS = {
   'laptop-backups.png': `${BASE}?still&dev=4cef0d89`,
   'laptop-files.png': `${BASE}?still&then=${encodeURIComponent('go("files")')}`,
 }
-const c = await chrome({ width: 1440, height: 880, scale: 1.5 })
+const c = await chrome({ width: 1040, height: 650, scale: 2 })
 try {
   for (const [name, url] of Object.entries(SHOTS)) {
     await c.open(url, 2600)
