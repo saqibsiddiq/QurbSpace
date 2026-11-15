@@ -2419,7 +2419,10 @@ html.lenis {
   text-align: center;
   text-decoration: none;
 }
-.qs-nav {
+/* Above the page's sections, which `.qs > :not(.near-field)` puts at 1 and
+   would otherwise win: the menu inside the bar opened under the hero. */
+.qs-nav,
+.qs > .qs-nav {
   position: relative;
   z-index: 60;
 }

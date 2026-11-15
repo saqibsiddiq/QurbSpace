@@ -3,8 +3,9 @@
 import { useEffect, useRef } from 'react'
 
 // The page's living ground (docs/design/website-brief.md, *Richer*): a field
-// of tiny dots (files, if you like) drifting slowly behind everything and
-// gathering near the mouse pointer, nearness made something you can feel.
+// of tiny dots (files, if you like) drifting slowly behind everything. They
+// gathered near the mouse pointer until 2026-11-15, when the owner asked for
+// that to go.
 // Near the end of the page a second set flies in and settles into the
 // wordmark of the element marked data-settle.
 //
@@ -29,7 +30,6 @@ export function NearField() {
     let dpr = 1
     let field: Dot[] = []
     let word: Dot[] = []
-    const pointer = { x: -9999, y: -9999, on: false }
     const settle = document.querySelector<HTMLElement>('[data-settle]')
     // While designing, ?settle shows the ending alone, for screenshots.
     if (process.env.NODE_ENV !== 'production' && new URLSearchParams(location.search).has('settle'))
@@ -86,16 +86,6 @@ export function NearField() {
       word = targets().map(([tx, ty]) => ({ ...dot(Math.random() * w, Math.random() * h, 0.55 + Math.random() * 0.35), tx, ty }))
     }
 
-    // Only a mouse draws the dots near. On a touch screen a finger is busy
-    // scrolling, and dots chasing it were a distraction (the owner).
-    const move = (e: PointerEvent) => {
-      if (e.pointerType !== 'mouse') return
-      pointer.x = e.clientX
-      pointer.y = e.clientY
-      pointer.on = true
-    }
-    const leave = () => (pointer.on = false)
-
     let frame = 0
     let t = 0
     let scattered = true
@@ -103,22 +93,11 @@ export function NearField() {
       t += 1
       ctx.clearRect(0, 0, w, h)
 
-      // The field: a slow drift, a little wander, and a pull toward the
-      // pointer that eases off with distance and never quite arrives.
+      // The field: a slow drift and a little wander.
       for (const d of field) {
         if (!still) {
           d.vx += Math.sin((t + d.seed) * 0.004) * 0.004
           d.vy += Math.cos((t + d.seed * 1.3) * 0.004) * 0.004
-          if (pointer.on) {
-            const dx = pointer.x - d.x
-            const dy = pointer.y - d.y
-            const dist = Math.hypot(dx, dy)
-            if (dist < 220 && dist > 24) {
-              const f = (1 - dist / 220) * 0.06
-              d.vx += (dx / dist) * f
-              d.vy += (dy / dist) * f
-            }
-          }
           d.vx *= 0.965
           d.vy *= 0.965
           d.x += d.vx + 0.05
@@ -128,10 +107,8 @@ export function NearField() {
           if (d.y < -10) d.y = h + 10
           if (d.y > h + 10) d.y = -10
         }
-        const near = pointer.on ? Math.max(0, 1 - Math.hypot(pointer.x - d.x, pointer.y - d.y) / 220) : 0
-        ctx.fillStyle = `rgba(${GREEN}, ${Math.min(0.9, d.a + near * 0.5)})`
-        const r = d.r + near * 0.8
-        ctx.fillRect(d.x - r, d.y - r, r * 2, r * 2)
+        ctx.fillStyle = `rgba(${GREEN}, ${Math.min(0.9, d.a)})`
+        ctx.fillRect(d.x - d.r, d.y - d.r, d.r * 2, d.r * 2)
       }
 
       // The wordmark: as it comes into view its dots fly in from wherever
@@ -185,15 +162,11 @@ export function NearField() {
       resizing = window.setTimeout(resize, 150)
     }
     addEventListener('resize', onResize)
-    addEventListener('pointermove', move, { passive: true })
-    document.addEventListener('pointerleave', leave)
     document.addEventListener('visibilitychange', visible)
     if (still) addEventListener('scroll', tick, { passive: true })
     return () => {
       cancelAnimationFrame(frame)
       removeEventListener('resize', onResize)
-      removeEventListener('pointermove', move)
-      document.removeEventListener('pointerleave', leave)
       document.removeEventListener('visibilitychange', visible)
       removeEventListener('scroll', tick)
     }
