@@ -11,7 +11,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Qurb",
+        "title": "QurbSpace",
         "visible": false,
         "width": 1120,
         "height": 760,
@@ -33,7 +33,7 @@
     ],
     "category": "Utility",
     "shortDescription": "Private cloud storage on your own devices",
-    "longDescription": "qurb keeps your files on the devices you already own, end-to-end encrypted, and syncs them directly between those devices. Nothing is stored on anybody else's server."
+    "longDescription": "QurbSpace keeps your files on the devices you already own, end-to-end encrypted, and syncs them directly between those devices. Nothing is stored on anybody else's server."
   },
   "plugins": {
     "updater": {

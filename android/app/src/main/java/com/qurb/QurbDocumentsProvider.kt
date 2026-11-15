@@ -78,7 +78,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
             add(Root.COLUMN_ROOT_ID, ROOT_ID)
             add(Root.COLUMN_DOCUMENT_ID, ROOT_ID)
             // Its name as the app says it; the id stays "qurb".
-            add(Root.COLUMN_TITLE, "Qurb")
+            add(Root.COLUMN_TITLE, "QurbSpace")
             add(Root.COLUMN_SUMMARY, "Synced across your devices")
             add(Root.COLUMN_MIME_TYPES, "*/*")
             add(Root.COLUMN_ICON, R.mipmap.ic_launcher)
@@ -99,7 +99,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
     override fun queryDocument(documentId: String, projection: Array<out String>?): Cursor {
         val cursor = MatrixCursor(projection ?: DOCUMENT_COLUMNS)
         if (documentId == ROOT_ID) {
-            cursor.addDirectory(ROOT_ID, "Qurb")
+            cursor.addDirectory(ROOT_ID, "QurbSpace")
             return cursor
         }
 
@@ -115,7 +115,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
             cursor.addDirectory(documentId, path.substringAfterLast('/'))
             return cursor
         }
-        throw FileNotFoundException("$path is not in qurb")
+        throw FileNotFoundException("$path is not in QurbSpace")
     }
 
     /**
@@ -204,7 +204,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
 
         if (!file.isFile) {
             val engine = engine()
-            val entry = engine.entry(path) ?: throw FileNotFoundException("$path is not in qurb")
+            val entry = engine.entry(path) ?: throw FileNotFoundException("$path is not in QurbSpace")
             if (entry.available == Available.NOWHERE) {
                 throw FileNotFoundException(
                     "${path.substringAfterLast('/')} is on no device this phone syncs with any more."
@@ -310,7 +310,7 @@ class QurbDocumentsProvider : DocumentsProvider() {
         val inside = file == root || file.path.startsWith(root.path + File.separator)
         val store = File(root, ".qurb").path
         if (!inside || file.path == store || file.path.startsWith(store + File.separator)) {
-            throw SecurityException("$path is outside qurb's folder")
+            throw SecurityException("$path is outside QurbSpace's folder")
         }
         return file
     }

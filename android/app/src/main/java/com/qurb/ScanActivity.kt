@@ -269,7 +269,7 @@ class ScanActivity : AppCompatActivity() {
             if (views.frame.look == ScanFrame.Look.NOT_OURS) return@runOnUiThread
             views.frame.look = ScanFrame.Look.NOT_OURS
             views.hint.visibility = View.GONE
-            showResult(R.drawable.ic_triangle_alert, R.color.error, R.color.error_bg, null, "Not a Qurb code")
+            showResult(R.drawable.ic_triangle_alert, R.color.error, R.color.error_bg, null, "Not a QurbSpace code")
             lifecycleScope.launch {
                 while (SystemClock.elapsedRealtime() - otherSeenAt < OTHER_FOR_MS) delay(250)
                 if (done) return@launch

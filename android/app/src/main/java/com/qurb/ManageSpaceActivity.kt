@@ -57,10 +57,10 @@ class ManageSpaceActivity : AppCompatActivity() {
 
     private fun load() {
         body.removeAllViews()
-        text("Qurb's storage on this phone", R.style.Text_Title)
+        text("QurbSpace's storage on this phone", R.style.Text_Title)
         lifecycleScope.launch {
             if (!Engine.isSetUp(this@ManageSpaceActivity)) {
-                text("Qurb is not set up on this phone, so it keeps nothing here worth keeping.", R.style.Text_Body)
+                text("QurbSpace is not set up on this phone, so it keeps nothing here worth keeping.", R.style.Text_Body)
                 deleteButton(emptyList())
                 return@launch
             }
@@ -70,25 +70,25 @@ class ManageSpaceActivity : AppCompatActivity() {
                     Triple(engine.usage(), engine.onlyHere(), engine.sentCopies())
                 }
             } catch (e: Exception) {
-                text("Could not read Qurb's files: ${e.message}", R.style.Text_Body)
+                text("Could not read QurbSpace's files: ${e.message}", R.style.Text_Body)
                 deleteButton(emptyList())
                 return@launch
             }
 
-            text("Qurb uses ${Words.size(usage.onDisk)} here.", R.style.Text_Body)
+            text("QurbSpace uses ${Words.size(usage.onDisk)} here.", R.style.Text_Body)
             if (only.isEmpty()) {
-                text("Every file here is also on another of your devices. Deleting Qurb's data loses " +
+                text("Every file here is also on another of your devices. Deleting QurbSpace's data loses " +
                     "none of them, though this phone would have to be set up again and joined to " +
                     "your other devices with a code.", R.style.Text_Body)
             } else {
                 val total = only.sumOf { it.size.toLong() }.toULong()
                 val verb = if (only.size == 1) "exists" else "exist"
                 text("${Words.files(only.size)} (${Words.size(total)}) $verb only on this phone. " +
-                    "Deleting Qurb's data deletes ${if (only.size == 1) "it" else "them"} for good:", R.style.Text_Body)
+                    "Deleting QurbSpace's data deletes ${if (only.size == 1) "it" else "them"} for good:", R.style.Text_Body)
                 // Not "private": the flag also covers a send not collected yet.
                 only.take(20).forEach { text("· ${it.path}", R.style.Text_Quiet) }
                 if (only.size > 20) text("and ${only.size - 20} more", R.style.Text_Quiet)
-                text("Open Qurb and sync with your computer first, and they will be safe there.", R.style.Text_Meta)
+                text("Open QurbSpace and sync with your computer first, and they will be safe there.", R.style.Text_Meta)
             }
 
             button("Free space safely", primary = true) {
@@ -127,14 +127,14 @@ class ManageSpaceActivity : AppCompatActivity() {
                         .show()
                 }
             }
-            button("Open Qurb") { startActivity(Intent(this@ManageSpaceActivity, MainActivity::class.java)) }
+            button("Open QurbSpace") { startActivity(Intent(this@ManageSpaceActivity, MainActivity::class.java)) }
             deleteButton(only, sent)
         }
     }
 
     /** Still possible, as it should be: after saying what it costs. */
     private fun deleteButton(only: List<OnlyHere>, sent: ULong = 0uL) {
-        button("Delete everything Qurb keeps here…", danger = true) {
+        button("Delete everything QurbSpace keeps here…", danger = true) {
             val files = if (only.isEmpty()) "Nothing in your folders exists only on this phone."
             else "${Words.files(only.size)} that ${if (only.size == 1) "exists" else "exist"} only on this phone " +
                 "will be gone for good."
@@ -142,7 +142,7 @@ class ManageSpaceActivity : AppCompatActivity() {
             val lost = if (sent == 0uL) files
             else "$files This phone's copies of files it sent (${Words.size(sent)}) go too."
             MaterialAlertDialogBuilder(this)
-                .setTitle("Delete everything Qurb keeps here?")
+                .setTitle("Delete everything QurbSpace keeps here?")
                 .setMessage("$lost This phone's key and its pairings go too. Your other devices keep what they have.")
                 .setNegativeButton("Keep", null)
                 .setPositiveButton("Delete everything") { _, _ ->

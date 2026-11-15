@@ -196,7 +196,7 @@ class ComputerFolders(app: MainActivity, private val computer: PeerInfo) : Scree
                 if (places == null) {
                     views.sections.removeAllViews()
                     kit.empty(views.sections, R.drawable.ic_cloud_off,
-                        "${computer.name} isn't reachable. It has to be on with Qurb running, and this phone online.",
+                        "${computer.name} isn't reachable. It has to be on with QurbSpace running, and this phone online.",
                         "Try again") { refresh() }
                 }
                 android.util.Log.w("qurb", "could not reach ${computer.name}", e)

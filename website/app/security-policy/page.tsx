@@ -5,14 +5,14 @@ import { repoDoc } from '../site-config'
 
 export const metadata: Metadata = {
   title: 'Security',
-  description: 'How Qurb protects your files and keys, and the limits it states rather than hides.'
+  description: 'How QurbSpace protects your files and keys, and the limits it states rather than hides.'
 }
 
 export default function SecurityPage() {
   return (
     <DocPage
       title="Security"
-      intro="How Qurb protects your files and keys today, and, just as plainly, what it doesn’t protect against yet."
+      intro="How QurbSpace protects your files and keys today, and, just as plainly, what it doesn’t protect against yet."
     >
       <h2>Your key</h2>
       <p>

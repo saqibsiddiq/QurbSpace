@@ -4,15 +4,15 @@ import { Icon } from '@/components/icon'
 import { repoDoc, repoUrl } from '../site-config'
 
 export const metadata: Metadata = {
-  title: 'Get Qurb',
-  description: 'How to install Qurb today: built from source on Linux, and the Android app from the same repository.'
+  title: 'Get QurbSpace',
+  description: 'How to install QurbSpace today: built from source on Linux, and the Android app from the same repository.'
 }
 
 export default function DownloadPage() {
   return (
     <DocPage
-      title="Get Qurb"
-      intro="There’s no release to download yet. Qurb builds from its source on Linux, and the Android app builds from the same repository: this is how."
+      title="Get QurbSpace"
+      intro="There’s no release to download yet. QurbSpace builds from its source on Linux, and the Android app builds from the same repository: this is how."
     >
       <p className="callout">
         <Icon name="circle-check" size={20} />

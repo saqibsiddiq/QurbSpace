@@ -4,7 +4,7 @@ import { repoDoc } from '../site-config'
 
 export const metadata: Metadata = {
   title: 'Licences',
-  description: "Qurb’s licence, and the licences of what it and this site are built with."
+  description: "QurbSpace’s licence, and the licences of what it and this site are built with."
 }
 
 const thirdParty = [
@@ -16,7 +16,7 @@ const thirdParty = [
 
 export default function LicencesPage() {
   return (
-    <DocPage title="Licences" intro="Qurb’s own licence, and the licences of what it and this site are built with.">
+    <DocPage title="Licences" intro="QurbSpace’s own licence, and the licences of what it and this site are built with.">
       <h2>Qurb</h2>
       <p>
         Qurb’s Rust code declares its licence as <strong>MIT OR Apache-2.0</strong>, in its{' '}

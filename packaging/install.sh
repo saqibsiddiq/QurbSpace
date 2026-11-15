@@ -19,7 +19,7 @@ if [[ ${1:-} == --uninstall ]]; then
     rm -f "$APPS/qurb.desktop" "$ICONS/qurb.svg" "$BIN/qurb-desktop" "$BIN/qurb-tray" "$BIN/qurb" \
           "$AUTOSTART/qurb.desktop"
     command -v update-desktop-database >/dev/null && update-desktop-database "$APPS" 2>/dev/null || true
-    echo "Removed qurb from the application menu."
+    echo "Removed QurbSpace from the application menu."
     exit 0
 fi
 
@@ -66,7 +66,7 @@ echo "Installed:"
 echo "    $APPS/qurb.desktop"
 echo "    $ICONS/qurb.svg"
 echo "    $BIN/qurb-desktop, $BIN/qurb-tray  and  $BIN/qurb"
-echo "    $AUTOSTART/qurb.desktop: qurb starts when you log in; turn that off in its Settings"
+echo "    $AUTOSTART/qurb.desktop: QurbSpace starts when you log in; turn that off in its Settings"
 echo
 
 # The menu entry names the program by its full path, always. It must not
@@ -81,4 +81,4 @@ case ":$PATH:" in
        ;;
 esac
 
-echo "qurb should now be in your application menu."
+echo "QurbSpace should now be in your application menu."

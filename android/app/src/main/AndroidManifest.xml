@@ -102,7 +102,7 @@
             android:screenOrientation="portrait"
             android:name=".ManageSpaceActivity"
             android:exported="false"
-            android:label="Qurb's storage" />
+            android:label="QurbSpace's storage" />
 
         <activity
             android:screenOrientation="portrait"
@@ -125,7 +125,7 @@
             android:screenOrientation="portrait"
             android:name=".ShareActivity"
             android:exported="true"
-            android:label="Save to qurb"
+            android:label="Save to QurbSpace"
             android:excludeFromRecents="true"
             android:taskAffinity=""
             android:theme="@style/Theme.Qurb.Share">

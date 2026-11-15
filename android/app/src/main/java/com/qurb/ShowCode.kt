@@ -118,7 +118,7 @@ class ShowCode(app: MainActivity) : Screen(app) {
         actions.addView(kit.button("Copy code", Kit.Style.SECONDARY) {
             val spoken = offer?.spoken() ?: return@button
             val clip = app.getSystemService(android.content.ClipboardManager::class.java)
-            clip?.setPrimaryClip(android.content.ClipData.newPlainText("Qurb code", spoken))
+            clip?.setPrimaryClip(android.content.ClipData.newPlainText("QurbSpace code", spoken))
             // Android 13 and later show their own note of a copy.
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) app.say("Copied")
         }.also(::pill), LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, kit.dp(48)))

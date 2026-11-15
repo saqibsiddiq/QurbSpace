@@ -1,8 +1,8 @@
-Qurb for Windows: built, NOT tested on Windows
+QurbSpace for Windows: built, NOT tested on Windows
 ===============================================
 
 Read this first. These programs were cross-compiled on Linux. Nobody has run
-them on a Windows computer yet. Qurb is finished for Linux and Android; Windows
+them on a Windows computer yet. QurbSpace is finished for Linux and Android; Windows
 comes after, and this build is the first step towards it, not a release of it.
 
 What is here
@@ -24,10 +24,10 @@ What is known not to work, or not to be checked
   - Opening a large video from somebody's folder opens it in your browser,
     which plays some formats and not others (on Linux, in your video player).
   - Starting at sign-in uses your user's Run entry in the registry; turn it
-    off in Qurb's Settings or in Task Manager, Startup apps.
+    off in QurbSpace's Settings or in Task Manager, Startup apps.
   - Not signed: Windows SmartScreen will warn that the publisher is unknown.
 
-Where Qurb keeps things
+Where QurbSpace keeps things
 
   Your files:              %USERPROFILE%\qurb
   Its key and its index:   the hidden .qurb folder inside the synced folder

@@ -112,7 +112,7 @@ class HomeScreen(app: MainActivity) : Screen(app) {
                 show(state)
             } catch (e: Exception) {
                 hero(StatusMark.Look.ERROR, R.drawable.mark_circle_alert, "Can't read this phone's files")
-                app.fail("Qurb can't read this phone's files", e)
+                app.fail("QurbSpace can't read this phone's files", e)
             }
         }
     }

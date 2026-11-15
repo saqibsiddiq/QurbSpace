@@ -6,14 +6,14 @@ import { repoUrl } from '../site-config'
 
 export const metadata: Metadata = {
   title: 'Reporting a vulnerability',
-  description: 'How to tell the people building Qurb about a security problem without making it public.'
+  description: 'How to tell the people building QurbSpace about a security problem without making it public.'
 }
 
 export default function DisclosurePage() {
   return (
     <DocPage
       title="Reporting a vulnerability"
-      intro="If you’ve found a way into someone’s files, keys or devices through Qurb, thank you, and please tell us before anyone else."
+      intro="If you’ve found a way into someone’s files, keys or devices through QurbSpace, thank you, and please tell us before anyone else."
     >
       <h2>How</h2>
       <p>
@@ -37,7 +37,7 @@ export default function DisclosurePage() {
         <li>Whether it needs the other person’s device, their network, or neither.</li>
       </ul>
 
-      <h2>What Qurb already says about itself</h2>
+      <h2>What QurbSpace already says about itself</h2>
       <p>
         Some limits are known and written down rather than hidden: your devices share one key, and removing a device
         doesn’t take that key away. They’re on the <Link href="/security-policy">security page</Link>; a report

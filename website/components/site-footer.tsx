@@ -4,10 +4,10 @@ import { Mark } from './mark'
 
 const columns = [
   [
-    'Qurb',
+    'QurbSpace',
     [
       ['How it works', '/#how'],
-      ['Get Qurb', '/download'],
+      ['Get QurbSpace', '/download'],
       ['Docs', '/docs'],
       ['Status', '/status'],
       ['Notes', '/blog']
@@ -41,7 +41,7 @@ export function SiteFooter() {
           <div>
             <Link href="/" className="brand">
               <Mark size={26} />
-              <span>Qurb</span>
+              <span>QurbSpace</span>
             </Link>
             <p className="tagline">
               Your files. Your devices. Your space.
@@ -62,7 +62,7 @@ export function SiteFooter() {
             </div>
           ))}
         </div>
-        <p className="small">© 2026 Qurb. Inter is under the SIL Open Font License; the icons are Lucide’s, under ISC.</p>
+        <p className="small">© 2026 QurbSpace. Inter is under the SIL Open Font License; the icons are Lucide’s, under ISC.</p>
       </div>
     </footer>
   )

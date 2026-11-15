@@ -132,7 +132,7 @@ class KeptScreen(
                 // mobile data stopped carrying anything while Android still
                 // called it connected, and this screen blamed the laptop.
                 kit.empty(listed, R.drawable.ic_cloud_off,
-                    "${computer.name} isn't reachable. It has to be on with Qurb running, and this phone " +
+                    "${computer.name} isn't reachable. It has to be on with QurbSpace running, and this phone " +
                         "online.", "Try again") { refresh() }
                 android.util.Log.w("qurb", "could not reach the kept folder", e)
             } finally {
@@ -399,7 +399,7 @@ class KeptScreen(
                 // Writing into another app's folder, or anywhere in the phone's
                 // storage, is what "All files access" allows.
                 if (!Folders.allowed(app)) {
-                    app.say("Allow Qurb to manage this phone's files first, in Settings → Backups")
+                    app.say("Allow QurbSpace to manage this phone's files first, in Settings → Backups")
                     return
                 }
                 val rest = if (file.path.startsWith(WHATSAPP)) "${WhatsApp.relative()}/" +

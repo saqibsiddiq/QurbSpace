@@ -17,9 +17,9 @@ export function SiteHeader({ current }: { current?: string }) {
     <header className="site-header">
       <div className="wrap">
         <div className="bar glass-clear">
-          <Link href="/" className="brand" aria-label="Qurb, home">
+          <Link href="/" className="brand" aria-label="QurbSpace, home">
             <Mark size={28} />
-            <span>Qurb</span>
+            <span>QurbSpace</span>
           </Link>
           <nav className="site-nav" aria-label="Main">
             {places.map(([label, href]) => (

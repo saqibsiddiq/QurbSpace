@@ -24,7 +24,7 @@ const description =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'QurbSpace · Your files. Always near.',
+    default: 'QurbSpace: Your files. Always near.',
     template: '%s · QurbSpace'
   },
   description,

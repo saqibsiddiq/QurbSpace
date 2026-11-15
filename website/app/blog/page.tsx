@@ -11,7 +11,7 @@ export default function NotesPage() {
   return (
     <DocPage
       title="Notes"
-      intro="Nothing is published here yet. What changes in Qurb, and why, is written down in the repository as it happens."
+      intro="Nothing is published here yet. What changes in QurbSpace, and why, is written down in the repository as it happens."
     >
       <div className="rows">
         <LinkRow

@@ -50,7 +50,7 @@ class ShareActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val incoming = incomingUris()
         when {
-            !Engine.isSetUp(this) -> outcome(Outcome.ATTENTION, "Set up Qurb first")
+            !Engine.isSetUp(this) -> outcome(Outcome.ATTENTION, "Set up QurbSpace first")
             incoming.isEmpty() -> outcome(Outcome.ATTENTION, "Nothing to save")
             else -> chooseWhere(incoming)
         }

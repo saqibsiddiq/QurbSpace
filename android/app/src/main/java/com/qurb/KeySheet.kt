@@ -114,7 +114,7 @@ class KeySheet(private val app: MainActivity, private val scope: CoroutineScope,
             kit.sheet()
                 .mark(R.drawable.ic_key_round, R.color.attention_bg, R.color.attention)
                 .title("Show your 24 words?", centred = true)
-                .line("Anyone who sees them can read every file you keep in Qurb")
+                .line("Anyone who sees them can read every file you keep in QurbSpace")
                 .buttons("Show") { phrase() }
                 .show()
         }

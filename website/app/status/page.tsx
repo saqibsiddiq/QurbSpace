@@ -4,14 +4,14 @@ import { Icon } from '@/components/icon'
 
 export const metadata: Metadata = {
   title: 'Status',
-  description: 'Qurb runs no service of its own, so there is nothing here to be up or down.'
+  description: 'QurbSpace runs no service of its own, so there is nothing here to be up or down.'
 }
 
 export default function StatusPage() {
   return (
     <DocPage
       title="Status"
-      intro="Qurb runs no service of its own yet, so there’s nothing here to be up or down."
+      intro="QurbSpace runs no service of its own yet, so there’s nothing here to be up or down."
     >
       <p className="callout">
         <Icon name="info" size={20} />
@@ -22,7 +22,7 @@ export default function StatusPage() {
           it trusts.
         </span>
       </p>
-      <p>When Qurb runs a service people rely on, its status will be here, with its history.</p>
+      <p>When QurbSpace runs a service people rely on, its status will be here, with its history.</p>
     </DocPage>
   )
 }

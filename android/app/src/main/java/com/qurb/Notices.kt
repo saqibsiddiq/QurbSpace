@@ -190,7 +190,7 @@ object Notices {
             // Anything else is tried again by the next sync, which the button
             // starts now.
             h.kind == "failed" ->
-                Said(if (what.isEmpty()) "Qurb could not finish something" else "Could not finish $what",
+                Said(if (what.isEmpty()) "QurbSpace could not finish something" else "Could not finish $what",
                     detail?.replaceFirstChar { it.uppercase() } ?: "", Action.TRY_AGAIN)
             else -> null
         }
@@ -201,7 +201,7 @@ object Notices {
         if (manager.getNotificationChannel(CHANNEL) != null) return
         manager.createNotificationChannel(
             NotificationChannel(CHANNEL, "Sent, delivered, and what failed", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                description = "A file somebody sent you, a file you sent arriving, and anything Qurb could not finish"
+                description = "A file somebody sent you, a file you sent arriving, and anything QurbSpace could not finish"
             }
         )
     }

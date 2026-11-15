@@ -32,6 +32,16 @@ the app should be qurbspace", written **QurbSpace**, where people see it.
 - **The wordmark**: QurbSpace in Inter Semi Bold, tracked in by 2.5 %, beside
   the mark (`docs/brand/`).
 
+- **The name QurbSpace where people see it**: the apps' sentences and titles
+  (the phone's Files root, the setup's directions, the storage page, the
+  notifications' channel), the window's title, the Linux menu entry, the
+  installer's publisher, the website, the Windows README. **Not** renamed, at
+  the owner's choice: the `qurb` command and its output, the folders
+  (`~/qurb`, `~/.config/qurb`, `Downloads/Qurb`), the download file names, and
+  every internal name (the package `com.qurb`, settings and store names, style
+  names, the Windows start-up entry), since renaming those would orphan what
+  installed copies already hold.
+
 ## Consequences
 
 - Installed apps show the new icon from the release that carries it.

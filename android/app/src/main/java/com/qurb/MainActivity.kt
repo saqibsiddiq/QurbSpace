@@ -984,7 +984,7 @@ class MainActivity : AppCompatActivity() {
                     withContext(Dispatchers.IO) { SyncWorker.runNow(this@MainActivity) }
                     if (!quiet) say(
                         "Sending ${Words.size(forOthers)} to your devices. It carries on if you " +
-                            "leave Qurb; a notification shows how far it has got."
+                            "leave QurbSpace; a notification shows how far it has got."
                     )
                     return@launch
                 }
@@ -1036,7 +1036,7 @@ class MainActivity : AppCompatActivity() {
                         "No devices connected yet"
                     outcome.reached == 0u ->
                         if (onHome) null
-                        else "No device answered. It has to be on with Qurb running, and this phone online."
+                        else "No device answered. It has to be on with QurbSpace running, and this phone online."
                     outcome.adopted == 0u && outcome.conflicts == 0u ->
                         if (onHome) null else "All synced"
                     else -> buildString {
@@ -1086,7 +1086,7 @@ class MainActivity : AppCompatActivity() {
         say(if (names.size == 1) "Sending ${names[0]} to ${to.name}…" else "Sending ${names.size} files to ${to.name}…")
         sync(quiet = true) { synced ->
             if (synced.inBackground) {
-                say("Sending to ${to.name}. It carries on if you leave Qurb; a notification shows how far it has got.")
+                say("Sending to ${to.name}. It carries on if you leave QurbSpace; a notification shows how far it has got.")
                 return@sync
             }
             val left = runCatching {

@@ -71,7 +71,7 @@ class FilesScreen(app: MainActivity, private val private: Boolean, private val u
             views.back.text = up
             views.back.setOnClickListener { app.onBackPressedDispatcher.onBackPressed() }
         } else {
-            views.subtitle.text = "Everything in your Qurb space, and where it is."
+            views.subtitle.text = "Everything in your QurbSpace, and where it is."
         }
         views.subtitle.visibility = if (private) View.GONE else View.VISIBLE
         views.action.setOnClickListener { app.pickFilesToAdd(dir, private) }
@@ -240,7 +240,7 @@ class FilesScreen(app: MainActivity, private val private: Boolean, private val u
                 if (!last) setOnClickListener { open(to) }
             })
         }
-        crumb(if (private) "Private Vault" else "Qurb", "", parts.isEmpty())
+        crumb(if (private) "Private Vault" else "QurbSpace", "", parts.isEmpty())
         parts.forEachIndexed { i, part ->
             crumbs.addView(android.widget.ImageView(app).apply {
                 setImageResource(R.drawable.ic_chevron_right)
@@ -431,7 +431,7 @@ class FilesScreen(app: MainActivity, private val private: Boolean, private val u
         scope.launch {
             try {
                 val freed = withContext(Dispatchers.IO) { engine().freeLocal(entry.path) }
-                app.say("Freed ${Words.size(freed)}. ${entry.path.substringAfterLast('/')} stays in Qurb.")
+                app.say("Freed ${Words.size(freed)}. ${entry.path.substringAfterLast('/')} stays in QurbSpace.")
             } catch (e: Exception) {
                 app.fail("Could not free that", e)
             } finally {
@@ -464,7 +464,7 @@ class FilesScreen(app: MainActivity, private val private: Boolean, private val u
         val where = if (entry.private) {
             "It's deleted from this phone, and from any device keeping a backup of your Private Vault."
         } else {
-            "It's in your Qurb space, so it's deleted on every device at its next sync."
+            "It's in your QurbSpace, so it's deleted on every device at its next sync."
         }
         kit.sheet()
             .header(States.icon(entry.path), "Delete ${entry.path.substringAfterLast('/')}?")

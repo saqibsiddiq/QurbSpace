@@ -187,7 +187,7 @@ class SetupActivity : AppCompatActivity() {
             setImageResource(R.drawable.ic_chevron_right)
             imageTintList = android.content.res.ColorStateList.valueOf(getColor(R.color.text_3))
         }, LinearLayout.LayoutParams(dp(14), dp(14)).apply { marginStart = dp(8); marginEnd = dp(8) })
-        step(R.drawable.ic_laptop, "Qurb")
+        step(R.drawable.ic_laptop, "QurbSpace")
         arrow()
         step(R.drawable.ic_monitor_smartphone, "Devices")
         arrow()

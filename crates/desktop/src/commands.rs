@@ -1391,8 +1391,8 @@ pub fn details(hosted: Host<'_>, path: String) -> Answer<Details> {
     hosted
         .with_store(|store| {
             let db = store.db();
-            let file = db.folder_entry(&path)?.context("that file is not in qurb any more")?;
-            let (row, _) = db.folder_row(&path)?.context("that file is not in qurb any more")?;
+            let file = db.folder_entry(&path)?.context("that file is not in QurbSpace any more")?;
+            let (row, _) = db.folder_row(&path)?.context("that file is not in QurbSpace any more")?;
             let named = db.device_names()?;
             let name = |id: &qurb_sync::DeviceId| named.get(id).cloned().unwrap_or_else(|| id.short());
             let holders = db.holders_of_content(&row.content_hash)?.iter().map(name).collect();
@@ -1470,12 +1470,12 @@ pub fn delete_file(hosted: Host<'_>, path: String) -> Answer<()> {
 /// climbs out of the folder, or into qurb's own store, is refused.
 fn on_disk(hosted: &Hosted, path: &str) -> Answer<std::path::PathBuf> {
     if !qurb_sync::is_safe_path(path) {
-        return Err("that is not a file in qurb".to_string());
+        return Err("that is not a file in QurbSpace".to_string());
     }
     let here = hosted
         .with_store(|store| Ok(store.db().folder_entry(path)?))
         .map_err(failed)?
-        .ok_or("that file is not in qurb any more")?;
+        .ok_or("that file is not in QurbSpace any more")?;
     match here.availability {
         Availability::Elsewhere => {
             return Err("that file is not on this device: keep it here first".to_string())

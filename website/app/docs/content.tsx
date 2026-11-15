@@ -245,7 +245,7 @@ export const SECTIONS: Section[] = [
             </p>
             <h2>A new phone</h2>
             <Steps>
-              <li>Install QurbSpace and choose <b>I already use Qurb</b>.</li>
+              <li>Install QurbSpace and choose <b>I already use QurbSpace</b>.</li>
               <li>
                 If your key is in your Google backup, choose <b>Use my key</b>.
               </li>

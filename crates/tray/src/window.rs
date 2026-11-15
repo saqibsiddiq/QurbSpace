@@ -67,7 +67,7 @@ pub fn show(root: PathBuf, watcher: Watcher) -> anyhow::Result<()> {
     let usage_bar = gtk::ProgressBar::new();
     usage_bar.set_show_text(true);
 
-    let cap = gtk::CheckButton::with_label("Limit how much space qurb may use");
+    let cap = gtk::CheckButton::with_label("Limit how much space QurbSpace may use");
 
     // In gibibytes, because that is the unit a person thinks in when deciding
     // how much of a disk to give away. The maximum is the size of the
@@ -215,7 +215,7 @@ pub fn show(root: PathBuf, watcher: Watcher) -> anyhow::Result<()> {
             }
             usage_bar.set_fraction(0.0);
             usage_bar.set_text(Some(&format!("{} used", crate::ui::human(status.used))));
-            chosen.set_text("No limit: qurb will use what it needs.");
+            chosen.set_text("No limit: QurbSpace will use what it needs.");
         } else {
             if !cap.is_active() {
                 cap.set_active(true);
@@ -233,7 +233,7 @@ pub fn show(root: PathBuf, watcher: Watcher) -> anyhow::Result<()> {
             )));
             chosen.set_text(&if status.used > limit {
                 format!(
-                    "Over by {}. qurb keeps files no other device has, even to stay under.",
+                    "Over by {}. QurbSpace keeps files no other device has, even to stay under.",
                     crate::ui::human(status.used - limit)
                 )
             } else {
