@@ -1,6 +1,11 @@
-# QurbSpace
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/readme-header-dark.png" />
+    <img src="docs/brand/readme-header-light.png" alt="QurbSpace" width="420" />
+  </picture>
+</h1>
 
-**Your phone and your computer, in sync, with nothing in between.**
+<p align="center"><b>Your phone and your computer, in sync, with nothing in between.</b></p>
 
 QurbSpace keeps files, photo and WhatsApp backups moving between your own
 devices: directly when they can reach each other, encrypted end to end, and

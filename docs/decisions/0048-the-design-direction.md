@@ -2,6 +2,7 @@
 
 **Status:** Accepted, revised the same day twice: for the owner's full
 direction, and to drop Figma (the design is built in the apps themselves)
+The mark itself superseded by [0091](0091-the-mark-almost-touching.md), 2026-11-15.
 **Date:** 2026-09-28
 
 ## Decision

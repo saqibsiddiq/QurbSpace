@@ -3,12 +3,12 @@
 //! A handful of RGBA pixels generated at startup, because the alternative is
 //! carrying PNG files and a decoder for an image sixteen pixels across.
 //!
-//! It is the mark (decision 0048): a rounded tile, a ring for your space, a
-//! stem that makes it a q, and a point of Qurb light inside, the same drawing
-//! as the window's and `packaging/qurb.svg`, in the same 32-unit coordinates,
-//! so the panel and the applications menu agree. What changes with the state
-//! is the tile's colour and whether the ring is whole. At this size an icon is
-//! read as a silhouette and a colour, not as a picture.
+//! It is the mark (decision 0091): a rounded tile and two circles almost
+//! touching, one white and one Qurb light, the same drawing as the window's and
+//! `packaging/qurb.svg`, in the same 32-unit coordinates, so the panel and the
+//! applications menu agree. What changes with the state is the tile's colour
+//! and whether the second circle is whole or only its outline. At this size an
+//! icon is read as a silhouette and a colour, not as a picture.
 
 /// Icons are square; this is the side length.
 const SIZE: u32 = 32;
@@ -19,9 +19,10 @@ const GRID: u32 = 4;
 
 /// The drawing, in the mark's own coordinates: a 32 × 32 box.
 const TILE: (f32, f32, f32) = (1.0, 31.0, 9.0); // from, to, corner radius
-const RING: (f32, f32, f32) = (14.4, 6.2, 1.3); // centre (x = y), radius, half the stroke
-const STEM: (f32, f32, f32) = (20.6, 11.0, 24.5); // x, top, bottom
-const LIGHT: f32 = 1.9;
+/// The two circles: their centres along the middle line, and their radius.
+const NEAR: (f32, f32, f32, f32) = (10.73, 21.27, 16.0, 4.92); // first x, second x, y, radius
+/// Half the outline the second circle becomes while something is moving.
+const OUTLINE: f32 = 1.2;
 const WHITE: [f32; 3] = [255.0, 255.0, 255.0];
 const QURB_LIGHT: [f32; 3] = [0xBD as f32, 0xE7 as f32, 0xD6 as f32];
 
@@ -30,11 +31,11 @@ const QURB_LIGHT: [f32; 3] = [0xBD as f32, 0xE7 as f32, 0xD6 as f32];
 pub enum Look {
     /// The mark as it is: everything is where it should be.
     Settled,
-    /// A gap in the ring: something is moving.
+    /// The second circle an outline: something is moving.
     Working,
     /// Grey: running, but nothing else is reachable.
     Alone,
-    /// A gap in the ring, on a warning colour.
+    /// The second circle an outline, on a warning colour.
     Problem,
 }
 
@@ -65,7 +66,7 @@ impl Look {
         }
     }
 
-    fn ring_is_open(&self) -> bool {
+    fn second_is_outline(&self) -> bool {
         matches!(self, Look::Working | Look::Problem)
     }
 }
@@ -111,19 +112,16 @@ fn colour_at(look: Look, x: f32, y: f32) -> Option<[f32; 3]> {
     if !inside_tile(x, y) {
         return None;
     }
-    let (cx, radius, half) = RING;
-    let from_centre = ((x - cx).powi(2) + (y - cx).powi(2)).sqrt();
-
-    let on_ring = (from_centre - radius).abs() <= half && !(look.ring_is_open() && in_gap(x - cx, y - cx));
-    let (stem_x, top, bottom) = STEM;
-    let on_stem = (x - stem_x).abs() <= half && (top..=bottom).contains(&y)
-        || distance(x, y, stem_x, top) <= half
-        || distance(x, y, stem_x, bottom) <= half;
-
-    if on_ring || on_stem {
+    let (first, second, cy, radius) = NEAR;
+    if distance(x, y, first, cy) <= radius {
         return Some(WHITE);
     }
-    if from_centre <= LIGHT {
+    let from_second = distance(x, y, second, cy);
+    let on_second = match look.second_is_outline() {
+        true => (from_second - (radius - OUTLINE)).abs() <= OUTLINE,
+        false => from_second <= radius,
+    };
+    if on_second {
         return Some(QURB_LIGHT);
     }
 
@@ -144,17 +142,6 @@ fn inside_tile(x: f32, y: f32) -> bool {
     let cx = x.clamp(from + r, to - r);
     let cy = y.clamp(from + r, to - r);
     distance(x, y, cx, cy) <= r
-}
-
-/// The gap in the ring, for the looks that have one: the lower left, from
-/// about seven o'clock to nine, where the stem does not cover it. Reads as
-/// "in motion" without animating: a tray icon that animates is a tray icon
-/// people turn off.
-fn in_gap(dx: f32, dy: f32) -> bool {
-    // y grows downwards, so a positive angle is below the centre. In f64:
-    // f32's is glibc 2.43's `atan2f`, which a tray built here then needed of
-    // every machine it ran on (2026-10-18); `atan2` is as old as glibc.
-    (1.95..3.0).contains(&f64::from(dy).atan2(f64::from(dx)))
 }
 
 fn distance(x: f32, y: f32, to_x: f32, to_y: f32) -> f32 {
@@ -199,20 +186,19 @@ mod tests {
         }
     }
 
-    /// It is the mark: a tile with rounded corners, white where the ring and
-    /// the stem are, the light at the centre, and a gap only while working.
+    /// It is the mark: a tile with rounded corners, the first circle white,
+    /// the second Qurb light, and the second only an outline while working.
     #[test]
     fn it_draws_the_mark() {
         let (settled, _, _) = render(Look::Settled);
         assert_eq!(pixel(&settled, 0, 0)[3], 0, "a corner outside the rounded tile");
         assert_eq!(pixel(&settled, 16, 2)[3], 255, "the tile's top edge, inside");
-        assert_eq!(pixel(&settled, 14, 14)[..3], [0xBD, 0xE7, 0xD6], "the light at the centre");
-        assert_eq!(pixel(&settled, 20, 20)[..3], [255, 255, 255], "the stem");
-        assert_eq!(pixel(&settled, 8, 14)[..3], [255, 255, 255], "the ring, on its left");
+        assert_eq!(pixel(&settled, 10, 15)[..3], [255, 255, 255], "the first circle");
+        assert_eq!(pixel(&settled, 21, 15)[..3], [0xBD, 0xE7, 0xD6], "the second circle");
+        assert_ne!(pixel(&settled, 15, 9)[..3], [255, 255, 255], "the tile above the gap between them");
 
-        // The lower left of the ring is where the gap is.
         let (working, _, _) = render(Look::Working);
-        assert_eq!(pixel(&settled, 9, 17)[..3], [255, 255, 255], "the ring at eight o'clock");
-        assert_ne!(pixel(&working, 9, 17)[..3], [255, 255, 255], "no gap while working");
+        assert_ne!(pixel(&working, 21, 15)[..3], [0xBD, 0xE7, 0xD6], "the second circle whole while working");
+        assert_eq!(pixel(&working, 10, 15)[..3], [255, 255, 255], "the first circle while working");
     }
 }

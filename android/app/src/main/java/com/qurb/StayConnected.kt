@@ -121,7 +121,7 @@ class StayConnected : Service() {
                 PendingIntent.FLAG_IMMUTABLE,
             )
             return NotificationCompat.Builder(context, CHANNEL)
-                .setSmallIcon(R.drawable.qurb_glyph)
+                .setSmallIcon(R.drawable.qurb_notification)
                 .setColor(context.getColor(R.color.green))
                 .setContentTitle("Connected")
                 .setContentText("Tap to disconnect")

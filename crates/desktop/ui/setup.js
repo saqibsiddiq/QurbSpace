@@ -28,7 +28,7 @@ function setupStep(step) {
  * point of light inside; the website's and the phone's drawing. */
 function appMark() {
   const m = h("span", { class: "appmark" });
-  m.innerHTML = '<svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="qm-tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3c806a"/><stop offset="1" stop-color="#22503f"/></linearGradient></defs><rect x="1" y="1" width="30" height="30" rx="9" fill="url(#qm-tile)"/><circle cx="14.4" cy="14.4" r="6.2" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M20.6 11 V24.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="14.4" cy="14.4" r="1.9" fill="#bde7d6"/></svg>';
+  m.innerHTML = '<svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="qm-tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3c806a"/><stop offset="1" stop-color="#22503f"/></linearGradient></defs><rect x="1" y="1" width="30" height="30" rx="9" fill="url(#qm-tile)"/><circle cx="10.73" cy="16" r="4.92" fill="#fff"/><circle cx="21.27" cy="16" r="4.92" fill="#bde7d6"/></svg>';
   return m;
 }
 

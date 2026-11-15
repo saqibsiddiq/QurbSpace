@@ -1,8 +1,8 @@
 import { useId } from 'react'
 
 /**
- * The mark (decision 0048): a ring for your space, a stem that makes it a q,
- * and a point of Qurb light inside. The same drawing as the window’s
+ * The mark (decision 0091): two circles almost touching, one white and one
+ * Qurb light. The same drawing as the window’s
  * `#qurb-mark`, packaging/qurb.svg and the Android launcher icon.
  */
 export function Mark({ size = 28, className }: { size?: number; className?: string }) {
@@ -18,9 +18,8 @@ export function Mark({ size = 28, className }: { size?: number; className?: stri
         </linearGradient>
       </defs>
       <rect x="1" y="1" width="30" height="30" rx="9" fill={`url(#${tile})`} />
-      <circle cx="14.4" cy="14.4" r="6.2" fill="none" stroke="#fff" strokeWidth="2.6" />
-      <path d="M20.6 11 V24.5" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" />
-      <circle cx="14.4" cy="14.4" r="1.9" fill="#bde7d6" />
+      <circle cx="10.73" cy="16" r="4.92" fill="#fff" />
+      <circle cx="21.27" cy="16" r="4.92" fill="#bde7d6" />
     </svg>
   )
 }

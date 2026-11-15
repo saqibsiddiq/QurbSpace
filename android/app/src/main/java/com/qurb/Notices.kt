@@ -77,7 +77,7 @@ object Notices {
         for ((h, said) in worth.takeLast(AT_ONCE)) {
             val id = NEWS_BASE + (h.id % 100_000).toInt()
             val builder = NotificationCompat.Builder(context, CHANNEL)
-                .setSmallIcon(R.drawable.qurb_glyph)
+                .setSmallIcon(R.drawable.qurb_notification)
                 .setColor(ContextCompat.getColor(context, R.color.green))
                 .setContentTitle(said.title)
                 .setContentText(said.words)
@@ -140,7 +140,7 @@ object Notices {
         // Answer opens the app, as a tap does, where the question waits
         // behind the screen lock.
         val notification = NotificationCompat.Builder(context, CHANNEL)
-            .setSmallIcon(R.drawable.qurb_glyph)
+            .setSmallIcon(R.drawable.qurb_notification)
             .setColor(ContextCompat.getColor(context, R.color.green))
             .setContentTitle("${ask.name} asks to open this phone's folder")
             .setContentText("Only if you asked there")

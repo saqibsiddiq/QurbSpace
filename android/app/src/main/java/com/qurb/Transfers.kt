@@ -94,7 +94,7 @@ object Transfers {
         channel(context)
         val shown = shown(sent, total)
         return NotificationCompat.Builder(context, CHANNEL)
-            .setSmallIcon(R.drawable.qurb_glyph)
+            .setSmallIcon(R.drawable.qurb_notification)
             .setColor(ContextCompat.getColor(context, R.color.green))
             .setContentTitle(if (to != null) "Sending to $to" else "Sending to your devices")
             .setContentText(shown.text)
@@ -123,7 +123,7 @@ object Transfers {
     fun backingUp(context: Context, round: BackingUp.Round, to: String?): android.app.Notification {
         channel(context)
         return NotificationCompat.Builder(context, CHANNEL)
-            .setSmallIcon(R.drawable.qurb_glyph)
+            .setSmallIcon(R.drawable.qurb_notification)
             .setColor(ContextCompat.getColor(context, R.color.green))
             .setContentTitle(if (to != null) "Backing up to $to" else "Backing up")
             .setContentText(round.what)
@@ -141,7 +141,7 @@ object Transfers {
     fun backedUp(context: Context, files: ULong, bytes: ULong, to: String?): android.app.Notification {
         channel(context)
         return NotificationCompat.Builder(context, CHANNEL)
-            .setSmallIcon(R.drawable.qurb_glyph)
+            .setSmallIcon(R.drawable.qurb_notification)
             .setColor(ContextCompat.getColor(context, R.color.green))
             .setContentTitle(if (to != null) "Backed up to $to" else "Backed up")
             .setContentText("${Words.files(files.toInt())}, ${Words.size(bytes)}")
@@ -176,7 +176,7 @@ object Transfers {
         ) return
         channel(context)
         val notification = NotificationCompat.Builder(context, CHANNEL)
-            .setSmallIcon(R.drawable.qurb_glyph)
+            .setSmallIcon(R.drawable.qurb_notification)
             .setColor(ContextCompat.getColor(context, R.color.green))
             .setContentTitle("Tap to finish sending")
             .setContentText("${Words.size(waiting)} waiting")
