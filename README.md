@@ -49,6 +49,19 @@ Pick your device; the download starts at once.
 
 Not sure which Linux you have? The second Linux download works on all of them.
 
+**A warning when you install is expected.** QurbSpace is new and comes from
+here rather than an app store, so:
+
+- **Android**: Google Play Protect may say *This app may be harmful* or ask to
+  scan it. Tap **More details**, then **Install anyway**. It warns because the
+  app can install its own updates, which is how it updates itself. On a
+  Samsung phone, *Auto Blocker* (Settings, Security and privacy) may need to
+  be off while you install.
+- **Windows**: *Windows protected your PC*. Tap **More info**, then **Run
+  anyway**. The installer is not signed yet.
+
+The code is all here to read, and each release is built from it by GitHub.
+
 Then:
 
 1. Open QurbSpace on the computer: it sets itself up. Go to **Devices → Add a

@@ -56,6 +56,23 @@ export default function DownloadPage() {
       </div>
       <p>Not sure which Linux you have? The last one works on all of them. Mac and iPhone aren’t ready yet.</p>
 
+      <h2>If it warns you</h2>
+      <p>
+        Expected: QurbSpace is new and comes from here, not an app store. The code is all on GitHub, and each release is
+        built from it there.
+      </p>
+      <ul>
+        <li>
+          <strong>Android</strong>: Play Protect may say <em>This app may be harmful</em>. Tap{' '}
+          <strong>More details</strong>, then <strong>Install anyway</strong>. It warns because the app installs its own
+          updates. On a Samsung phone, turn off <em>Auto Blocker</em> (Settings, Security and privacy) while you install.
+        </li>
+        <li>
+          <strong>Windows</strong>: <em>Windows protected your PC</em>. Tap <strong>More info</strong>, then{' '}
+          <strong>Run anyway</strong>. The installer isn’t signed yet.
+        </li>
+      </ul>
+
       <h2>Then</h2>
       <ol>
         <li>
