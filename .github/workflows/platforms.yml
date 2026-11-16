@@ -23,6 +23,10 @@ permissions:
   contents: read
 
 env:
+  # As the release is built (release.yml): the public Nostr relays as the
+  # meeting point, so a device set up by the command line here finds others
+  # as the released apps do.
+  QURB_DEFAULT_SIGNAL: nostr
   TAG: ${{ github.event.release.tag_name || inputs.tag || 'latest' }}
   REPO: ${{ github.repository }}
 
@@ -64,12 +68,10 @@ jobs:
           foreach ($i in 1..120) {
             Start-Sleep 1
             if ($p.HasExited) { break }
-            if (Select-String -Path err.log, out.log -Pattern 'listening address=' -Quiet) { $ok = $true; break }
-            if (Get-NetUDPEndpoint -LocalPort 47474 -ErrorAction SilentlyContinue) { $ok = $true; break }
+            if (Select-String -Path err.log, out.log -Pattern 'listening.*address' -Quiet) { $ok = $true; break }
           }
           Start-Sleep 5
           "--- log"; Get-Content err.log, out.log -ErrorAction SilentlyContinue | Select-Object -First 80
-          "--- listening on 47474:"; Get-NetUDPEndpoint -LocalPort 47474 -ErrorAction SilentlyContinue | Format-Table -AutoSize | Out-String
           "--- its folder:"; Get-ChildItem "$env:USERPROFILE\qurb" -ErrorAction SilentlyContinue | Out-String
           if ($p.HasExited) { Write-Error "it exited, code $($p.ExitCode)"; exit 1 }
           Stop-Process $p -Force
@@ -160,12 +162,12 @@ jobs:
             HOME=$home xvfb-run -a "$@" --hidden >"$log" 2>&1 &
             pid=$!
             for i in $(seq 120); do
-              grep -q 'listening address=' "$log" && break
+              grep -qE 'listening.*address' "$log" && break
               kill -0 $pid 2>/dev/null || break
               sleep 1
             done
             echo "--- $name"; head -60 "$log"
-            if grep -q 'listening address=' "$log"; then echo "$name: started and listening"; ok=0; else echo "$name: did not start listening"; ok=1; fi
+            if grep -qE 'listening.*address' "$log"; then echo "$name: started and listening"; ok=0; else echo "$name: did not start listening"; ok=1; fi
             pkill -f qurb-desktop || true; pkill -f QurbSpace.AppImage || true; sleep 2
             return $ok
           }
