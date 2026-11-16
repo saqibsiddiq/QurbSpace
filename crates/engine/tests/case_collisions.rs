@@ -58,6 +58,8 @@ fn a_case_sensitive_filesystem_keeps_both_files() {
     assert!(!d.engine.folds_case(), "probe says this filesystem is case-sensitive");
 }
 
+// Needs a disk that holds `README` and `readme` apart; Windows' does not.
+#[cfg(not(windows))]
 #[test]
 fn colliding_paths_are_reported_even_where_they_are_currently_harmless() {
     // The collision is latent, not absent. Reporting it on a case-sensitive

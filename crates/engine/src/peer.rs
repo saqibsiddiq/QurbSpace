@@ -1063,7 +1063,12 @@ impl Engine {
         // on from.
         let staging = staging_path(&path);
         self.bring_in(hash, *size, &staging, &version.path, source, stats, progress)?;
-        std::fs::File::open(&staging)
+        // Opened to write, though nothing is written: Windows flushes only
+        // a handle that may write, and refused every delivery with "Access
+        // is denied" (the platform tests' first run, 2026-11-16).
+        std::fs::File::options()
+            .write(true)
+            .open(&staging)
             .and_then(|file| file.sync_all())
             .map_err(|e| Error::Io { path: staging.clone(), source: e })?;
         std::fs::rename(&staging, &path).map_err(|e| {

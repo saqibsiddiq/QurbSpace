@@ -179,6 +179,8 @@ fn the_store_does_not_count_as_something_already_there() {
     assert!(looked.empty, "the store counted as a file: {:?}", looked);
 }
 
+// `/proc` is Linux's.
+#[cfg(target_os = "linux")]
 #[test]
 fn somewhere_unwritable_says_so() {
     isolated();

@@ -234,6 +234,8 @@ mod tests {
         let note = |who: &str| format!("{who}'s folder opens in Qurb.\n");
         place_people(dir.path(), &[("Saqib".into(), note("Saqib")), ("Ammi".into(), note("Ammi"))]).unwrap();
         assert_eq!(std::fs::read_to_string(dir.path().join("Saqib").join(NOTE)).unwrap(), note("Saqib"));
+        // Read-only only where a folder can be (`writable`): not on Windows.
+        #[cfg(unix)]
         assert!(std::fs::write(dir.path().join("Saqib/dropped.txt"), b"x").is_err(), "a placeholder took a file");
 
         // Somebody's own folder of the same shape is not ours to remove.

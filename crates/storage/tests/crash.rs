@@ -25,7 +25,7 @@ fn writer_binary() -> std::path::PathBuf {
     path.pop(); // deps/
     path.pop(); // debug/
     path.push("examples");
-    path.push("crash_writer");
+    path.push(format!("crash_writer{}", std::env::consts::EXE_SUFFIX));
     path
 }
 

@@ -112,10 +112,9 @@ fn inhibit(why: &str) -> Option<Child> {
 }
 
 fn on_path(name: &str) -> Option<PathBuf> {
-    std::env::var_os("PATH")?
-        .to_str()?
-        .split(':')
-        .map(|dir| PathBuf::from(dir).join(name))
+    // The platform's own separator: `;` on Windows.
+    std::env::split_paths(&std::env::var_os("PATH")?)
+        .map(|dir| dir.join(name))
         .find(|candidate| candidate.is_file())
 }
 
@@ -133,6 +132,8 @@ mod tests {
     }
 
     /// The owner's laptop as it reads: a battery, mains online.
+    // Linux's power supplies, whose names Windows cannot hold (a colon).
+    #[cfg(target_os = "linux")]
     #[test]
     fn plugged_in_is_mains_or_usb_online_or_no_battery() {
         let laptop = tempfile::tempdir().unwrap();

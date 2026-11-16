@@ -64,7 +64,8 @@ impl Device {
                 if p.is_dir() {
                     stack.push(p);
                 } else {
-                    let rel = p.strip_prefix(&self.root).unwrap().to_string_lossy().to_string();
+                    // As the index writes paths: with `/`, on Windows too.
+                    let rel = p.strip_prefix(&self.root).unwrap().to_string_lossy().replace('\\', "/");
                     out.insert(rel, fs::read_to_string(&p).unwrap());
                 }
             }
