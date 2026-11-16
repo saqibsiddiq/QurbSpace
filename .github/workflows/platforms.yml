@@ -1,0 +1,169 @@
+# The released programs, run on the systems we have no machine for
+# (the owner, 2026-11-16: "cant we do a testing of our windows built and other
+# linux built as well?"): Windows, and Linux distributions other than the
+# owner's. What each job proves, and what it does not, is in
+# docs/platforms.md.
+#
+# Runs on each published release, by hand for any release, and on a push to
+# the `platform-tests` branch (to work on this file without a release).
+name: platforms
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The release to test: a tag such as v0.2.0-beta.12, or latest"
+        default: latest
+  push:
+    branches: [platform-tests]
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag || 'latest' }}
+  REPO: ${{ github.repository }}
+
+jobs:
+  # The installer, as a person on Windows runs it: installed without a
+  # question, started as at login, and looked at until its engine listens.
+  windows-install:
+    runs-on: windows-latest
+    steps:
+      - name: The installer
+        shell: pwsh
+        run: |
+          $base = if ($env:TAG -eq 'latest') { "https://github.com/$env:REPO/releases/latest/download" } else { "https://github.com/$env:REPO/releases/download/$env:TAG" }
+          Invoke-WebRequest "$base/QurbSpace-windows-setup.exe" -OutFile setup.exe
+          (Get-Item setup.exe).Length
+      - name: Installed, silently
+        shell: pwsh
+        run: |
+          Start-Process .\setup.exe -ArgumentList '/S' -Wait
+          $exe = Get-ChildItem $env:LOCALAPPDATA, $env:ProgramFiles -Recurse -Filter 'qurb-desktop.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $exe) { Write-Error 'qurb-desktop.exe not found after installing'; exit 1 }
+          "installed at $($exe.FullName)"
+          "APP=$($exe.FullName)" | Out-File -Append $env:GITHUB_ENV
+      - name: Started, until it listens
+        shell: pwsh
+        run: |
+          $p = Start-Process $env:APP -ArgumentList '--hidden' -PassThru -RedirectStandardOutput out.log -RedirectStandardError err.log
+          $ok = $false
+          foreach ($i in 1..120) {
+            Start-Sleep 1
+            if ($p.HasExited) { break }
+            if (Select-String -Path err.log, out.log -Pattern 'listening address=' -Quiet) { $ok = $true; break }
+            if (Get-NetUDPEndpoint -LocalPort 47474 -ErrorAction SilentlyContinue) { $ok = $true; break }
+          }
+          Start-Sleep 5
+          "--- log"; Get-Content err.log, out.log -ErrorAction SilentlyContinue | Select-Object -First 80
+          "--- listening on 47474:"; Get-NetUDPEndpoint -LocalPort 47474 -ErrorAction SilentlyContinue | Format-Table -AutoSize | Out-String
+          "--- its folder:"; Get-ChildItem "$env:USERPROFILE\qurb" -ErrorAction SilentlyContinue | Out-String
+          if ($p.HasExited) { Write-Error "it exited, code $($p.ExitCode)"; exit 1 }
+          Stop-Process $p -Force
+          if (-not $ok) { Write-Error 'it did not start listening within two minutes'; exit 1 }
+      - name: Uninstalled
+        if: always()
+        shell: pwsh
+        run: |
+          $un = Get-ChildItem $env:LOCALAPPDATA, $env:ProgramFiles -Recurse -Filter 'uninstall.exe' -ErrorAction SilentlyContinue | Where-Object { $_.DirectoryName -like '*QurbSpace*' } | Select-Object -First 1
+          if ($un) { Start-Process $un.FullName -ArgumentList '/S' -Wait; "uninstalled" } else { "no uninstaller found" }
+
+  # The engine's own tests, on Windows's file system and network: paths,
+  # case, locking, sockets. The phone's crate is left out (Android's).
+  windows-engine:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || '' }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Tests
+        run: cargo test --workspace --exclude qurb-mobile --exclude qurb-desktop --no-fail-fast
+
+  # Each distribution, as it comes, with what a desktop of it has: the .deb
+  # where the distribution takes one, the AppImage everywhere. Started as at
+  # login on a display of its own, and looked at until its engine listens.
+  linux-start:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["ubuntu:22.04", "ubuntu:24.04", "debian:12", "fedora:latest", "archlinux:latest", "opensuse/tumbleweed:latest"]
+    container: ${{ matrix.image }}
+    steps:
+      - name: A desktop's basics
+        run: |
+          if command -v apt-get >/dev/null; then
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -q && apt-get install -yq curl ca-certificates xvfb xauth libgtk-3-0 >/dev/null
+          elif command -v dnf >/dev/null; then
+            dnf install -yq curl xorg-x11-server-Xvfb xorg-x11-xauth gtk3 mesa-dri-drivers procps-ng findutils >/dev/null
+          elif command -v pacman >/dev/null; then
+            pacman -Syu --noconfirm --quiet curl xorg-server-xvfb xorg-xauth gtk3 mesa procps-ng findutils >/dev/null
+          elif command -v zypper >/dev/null; then
+            zypper -nq in curl xvfb-run gtk3-tools libgtk-3-0 Mesa-dri procps findutils >/dev/null
+          fi
+      - name: The downloads
+        run: |
+          if [ "$TAG" = latest ]; then base=https://github.com/$REPO/releases/latest/download; else base=https://github.com/$REPO/releases/download/$TAG; fi
+          curl -fsSL -o QurbSpace.AppImage $base/QurbSpace-linux.AppImage && chmod +x QurbSpace.AppImage
+          curl -fsSL -o QurbSpace.deb $base/QurbSpace-linux.deb
+          ls -la QurbSpace.*
+      - name: The .deb, installed
+        if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian')
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get install -yq ./QurbSpace.deb >/dev/null && echo installed
+      - name: Started, until it listens
+        run: |
+          # WebKit's own sandbox needs user namespaces, which a container
+          # does not give; a desktop does. Off here, for the container only.
+          export WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1 NO_AT_BRIDGE=1
+          try() {
+            name=$1; shift
+            home=$(mktemp -d); log=$home/log
+            HOME=$home xvfb-run -a "$@" --hidden >"$log" 2>&1 &
+            pid=$!
+            for i in $(seq 120); do
+              grep -q 'listening address=' "$log" && break
+              kill -0 $pid 2>/dev/null || break
+              sleep 1
+            done
+            echo "--- $name"; head -60 "$log"
+            if grep -q 'listening address=' "$log"; then echo "$name: started and listening"; ok=0; else echo "$name: did not start listening"; ok=1; fi
+            pkill -f qurb-desktop || true; pkill -f QurbSpace.AppImage || true; sleep 2
+            return $ok
+          }
+          failed=0
+          try AppImage ./QurbSpace.AppImage --appimage-extract-and-run || failed=1
+          if [ -x /usr/bin/qurb-desktop ]; then try deb /usr/bin/qurb-desktop || failed=1; fi
+          exit $failed
+
+  # The window itself, every function that needs no phone, against a second
+  # device (scripts/desktop-smoke.sh, SMOKE_MODE=full): the released .deb as
+  # the window, the command line built from the same tag as the other device.
+  linux-window:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || '' }}
+      - name: Libraries, the .deb, and what drives the window
+        run: |
+          if [ "$TAG" = latest ]; then base=https://github.com/$REPO/releases/latest/download; else base=https://github.com/$REPO/releases/download/$TAG; fi
+          curl -fsSL -o QurbSpace.deb $base/QurbSpace-linux.deb
+          sudo apt-get update -q
+          sudo apt-get install -yq ./QurbSpace.deb libgtk-3-bin webkit2gtk-driver libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libayatana-appindicator3-dev libssl-dev >/dev/null
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: The command line, for the second device
+        run: cargo build --release -p qurb-cli
+      - name: Every function of the window
+        env:
+          SMOKE_MODE: full
+          SMOKE_APP: /usr/bin/qurb-desktop
+        run: SMOKE_QURB=$PWD/target/release/qurb ./scripts/desktop-smoke.sh --no-build
