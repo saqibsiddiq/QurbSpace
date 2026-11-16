@@ -18,11 +18,18 @@
 /// `/`), `.` and `..` components, and NUL, which no filesystem this runs on
 /// allows in a name and which some APIs treat as the end of the string.
 ///
-/// Deliberately *not* refused: backslashes, which are ordinary characters in
-/// a Linux filename. A device on Windows would read one as a separator; that
-/// platform is not supported yet, and supporting it means revisiting this.
+/// On Windows also refused: backslashes, which Windows reads as separators,
+/// so `..\..\x` would climb out; and colons, which name a drive (`C:\x`,
+/// or `C:x`, relative to that drive's own directory) or a file's hidden
+/// stream. Found by the platform tests' first run on Windows (2026-11-16): a
+/// path naming a file elsewhere on the disk was written there.
+///
+/// Elsewhere backslashes are ordinary characters in a filename, and kept.
 pub fn is_safe_path(path: &str) -> bool {
     if path.is_empty() || path.starts_with('/') || path.contains('\0') {
+        return false;
+    }
+    if cfg!(windows) && (path.contains('\\') || path.contains(':')) {
         return false;
     }
     path.split('/').all(|component| !matches!(component, "" | "." | ".."))
@@ -34,7 +41,7 @@ mod tests {
 
     #[test]
     fn ordinary_paths_are_safe() {
-        for path in ["notes.txt", "photos/2026/beach.jpg", ".bashrc", "a..b", "...", "café/ü.txt", "back\\slash"] {
+        for path in ["notes.txt", "photos/2026/beach.jpg", ".bashrc", "a..b", "...", "café/ü.txt"] {
             assert!(is_safe_path(path), "{path:?} should be allowed");
         }
     }
@@ -54,6 +61,13 @@ mod tests {
             "nul\0byte",
         ] {
             assert!(!is_safe_path(path), "{path:?} should be refused");
+        }
+    }
+
+    #[test]
+    fn a_backslash_and_a_colon_are_names_or_ways_out_by_platform() {
+        for path in ["back\\slash", "..\\..\\escape.txt", "C:\\Windows\\x.dll", "C:x", "notes.txt:hidden"] {
+            assert_eq!(is_safe_path(path), !cfg!(windows), "{path:?}");
         }
     }
 }
