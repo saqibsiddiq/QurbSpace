@@ -137,7 +137,13 @@ def main():
             for n in "ab":
                 print(f"--- {n}'s log, its end")
                 with open(os.path.join(WORK, f"{n}.log"), errors="replace") as f:
-                    print("".join(f.readlines()[-60:]))
+                    print("".join(f.readlines()[-int(os.environ.get("TWO_DEVICES_LOG_LINES", "60")):]))
+            for folder in (a, b):
+                print(f"--- what {folder} holds")
+                for top, _, names in os.walk(folder):
+                    if ".qurb" not in top:
+                        for name in names:
+                            print(os.path.join(top, name))
 
 
 if __name__ == "__main__":

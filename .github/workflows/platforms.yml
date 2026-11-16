@@ -94,8 +94,14 @@ jobs:
           ref: ${{ github.event.release.tag_name || '' }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      # Each test limited, so one that hangs is named and the rest still run.
+      - uses: taiki-e/install-action@nextest
       - name: Tests
-        run: cargo test --workspace --exclude qurb-mobile --exclude qurb-desktop --no-fail-fast
+        shell: bash
+        run: |
+          mkdir -p .config
+          printf '[profile.default]\nslow-timeout = { period = "60s", terminate-after = 3 }\nfail-fast = false\n' > .config/nextest.toml
+          cargo nextest run --workspace --exclude qurb-mobile --exclude qurb-desktop
 
   # Two devices on one machine, through the command line: paired by code, a
   # file in a folder each way, a send each way, every byte checked
@@ -116,6 +122,9 @@ jobs:
       - run: cargo build --release -p qurb-cli
       - name: Two devices
         shell: bash
+        env:
+          RUST_LOG: debug,quinn=info,rustls=info,tor_proto=info,arti=info,tor_circmgr=info,tor_guardmgr=info,tor_dirmgr=info
+          TWO_DEVICES_LOG_LINES: "300"
         run: QURB=$PWD/target/release/qurb python3 scripts/two_devices.py
 
   # The command line, built on the oldest system tested, so it runs on all of
