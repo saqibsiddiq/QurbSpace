@@ -87,6 +87,7 @@ jobs:
   # case, locking, sockets. The phone's crate is left out (Android's).
   windows-engine:
     runs-on: windows-latest
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
         with:
@@ -95,6 +96,27 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Tests
         run: cargo test --workspace --exclude qurb-mobile --exclude qurb-desktop --no-fail-fast
+
+  # Two devices on one machine, through the command line: paired by code, a
+  # file in a folder each way, a send each way, every byte checked
+  # (scripts/two_devices.py). On Windows this is the engine end to end.
+  two-devices:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || '' }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release -p qurb-cli
+      - name: Two devices
+        shell: bash
+        run: QURB=$PWD/target/release/qurb python3 scripts/two_devices.py
 
   # The command line, built on the oldest system tested, so it runs on all of
   # them: what sets each one up, as the window would.
