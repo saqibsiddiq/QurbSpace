@@ -1165,6 +1165,8 @@ qurb/
 │   │                      window function, against a second device that runs
 │   ├── smoke_portal.py    a stand-in desktop settings portal, for the
 │   │                      smoke test's dark-preference check
+│   ├── two_devices.py     two devices through the command line, any OS:
+│   │                      paired, a file each way, a send each way
 │   ├── mobile-bindings.sh generate the Kotlin and Swift bindings
 │   └── release.sh         build a release into dist/<version>/: Linux
 │                          packages, the static qurb program, every Android
@@ -1351,7 +1353,11 @@ for the workspace as it stands.
 879 tests in 94 test binaries on Linux, all passing, 3 ignored (2026-10-15,
 debug build, the development laptop, on a network that carries multicast:
 the tests of local discovery and of six digits find devices that way, and
-fail on one that does not). Clippy is clean. On Android the engine's crates run by `scripts/android-test.sh`:
+fail on one that does not). Clippy is clean. On Windows and six Linux
+distributions the released programs and the engine's tests run on GitHub's
+machines ([platforms.md](platforms.md), `.github/workflows/platforms.yml`):
+on Windows 910 of 917 passed on 2026-11-16 before the fixes the run found.
+On Android the engine's crates run by `scripts/android-test.sh`:
 678 tests in 63 binaries passed on the Android 14 x86_64 emulator on
 2026-10-08, including two phones pairing and syncing. The last run on a
 Galaxy S23 was 426 of them, on 2026-09-17. See

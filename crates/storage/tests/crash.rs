@@ -20,13 +20,15 @@ use std::process::{Command, Stdio};
 use std::time::Duration;
 
 fn writer_binary() -> std::path::PathBuf {
-    // The examples are built alongside the test binary.
-    let mut path = std::env::current_exe().expect("test binary path");
-    path.pop(); // deps/
-    path.pop(); // debug/
-    path.push("examples");
-    path.push(format!("crash_writer{}", std::env::consts::EXE_SUFFIX));
-    path
+    // The examples are built in the profile's directory, above the test
+    // binary: two up under `cargo test`, further under nextest on Windows,
+    // which runs test binaries from elsewhere (the platform tests, 2026-11-16).
+    let name = format!("crash_writer{}", std::env::consts::EXE_SUFFIX);
+    let exe = std::env::current_exe().expect("test binary path");
+    exe.ancestors()
+        .map(|dir| dir.join("examples").join(&name))
+        .find(|candidate| candidate.is_file())
+        .unwrap_or_else(|| exe.parent().unwrap().join("examples").join(&name))
 }
 
 /// Run the writer against `dir` and kill it after `after`.
