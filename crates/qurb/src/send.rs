@@ -196,6 +196,8 @@ mod tests {
         assert_eq!(plan.skipped.len(), 1);
     }
 
+    // Links need a privilege on Windows that a test does not have.
+    #[cfg(unix)]
     #[test]
     fn links_inside_a_folder_are_not_followed() {
         let dir = tempfile::tempdir().unwrap();

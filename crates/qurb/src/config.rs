@@ -557,9 +557,13 @@ mod tests {
         assert!(Downloads::At(root.clone()).resolve(&root).is_err());
         assert!(Downloads::At(dir.path().to_path_buf()).resolve(&root).is_err());
 
-        let link = dir.path().join("looks-elsewhere");
-        std::os::unix::fs::symlink(&root, &link).unwrap();
-        assert!(Downloads::At(link.join("in")).resolve(&root).is_err(), "a link got past");
+        // A link needs a privilege on Windows that a test does not have.
+        #[cfg(unix)]
+        {
+            let link = dir.path().join("looks-elsewhere");
+            std::os::unix::fs::symlink(&root, &link).unwrap();
+            assert!(Downloads::At(link.join("in")).resolve(&root).is_err(), "a link got past");
+        }
 
         let elsewhere = dir.path().join("Downloads").join("qurb");
         assert_eq!(Downloads::At(elsewhere.clone()).resolve(&root).unwrap(), Some(elsewhere));

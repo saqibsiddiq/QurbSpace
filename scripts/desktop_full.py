@@ -13,8 +13,7 @@ files and to the other device:
  3. Files both ways: a file made here reaches the other device, and one made
     there arrives here; its details name both holders.
  4. A file's local copy freed, and fetched back.
- 5. Deleting: the file gone on both, listed in Recently deleted, restored on
-    both; deleted again and deleted for good; emptying Recently deleted.
+ 5. Deleting: the file gone on both, and for good (decision 0089).
  6. The Vault: a file moved in leaves the other device, and moved out
     returns to it.
  7. Two versions: the same file changed on both while apart, found, and
@@ -236,26 +235,11 @@ def deleting(window, other):
     call_js(window, "delete_file", {"path": "to-delete.txt"})
     wait("the file gone here", lambda: not os.path.exists(path_of(window, "to-delete.txt")), 30)
     wait("the file gone there", lambda: not os.path.exists(other.path("to-delete.txt")), 120)
-    gone = [d for d in call_js(window, "recently_deleted", {}) if d["path"] == "to-delete.txt"]
-    assert gone, "not in Recently deleted"
-    go(window, "deleted")
-    window.until("its picture in Recently deleted", "return document.querySelectorAll('.rd').length > 0")
-
-    call_js(window, "restore_deleted", {"id": gone[0]["id"]})
-    wait("restored here", lambda: read(path_of(window, "to-delete.txt")) == "delete me\n", 30)
-    wait("restored there", lambda: read(other.path("to-delete.txt")) == "delete me\n", 120)
-
-    call_js(window, "delete_file", {"path": "to-delete.txt"})
-    gone = wait("deleted again", lambda: [d for d in call_js(window, "recently_deleted", {}) if d["path"] == "to-delete.txt"], 30)
-    call_js(window, "forget_deleted", {"id": gone[0]["id"]})
-    assert not [d for d in call_js(window, "recently_deleted", {}) if d["path"] == "to-delete.txt"], "still listed after Delete"
-
-    write(path_of(window, "also-gone.txt"), "and me\n")
-    wait("indexed", lambda: entry(window, "also-gone.txt"), 30)
-    call_js(window, "delete_file", {"path": "also-gone.txt"})
-    wait("listed", lambda: call_js(window, "recently_deleted", {}), 30)
-    call_js(window, "empty_deleted", {})
-    assert call_js(window, "recently_deleted", {}) == [], "Recently deleted not emptied"
+    # For good, on both (decision 0089): no Recently deleted to bring it back.
+    time.sleep(5)
+    assert not os.path.exists(path_of(window, "to-delete.txt")), "came back here"
+    assert not os.path.exists(other.path("to-delete.txt")), "came back there"
+    assert not entry(window, "to-delete.txt"), "still listed"
 
 
 def vault(window, other):
@@ -469,7 +453,7 @@ def main():
         free_and_fetch(window)
         say("4. a local copy freed, and fetched back")
         deleting(window, other)
-        say("5. deleted on both, restored on both, deleted for good, Recently deleted emptied")
+        say("5. deleted on both, for good")
         vault(window, other)
         say("6. moved into the Vault and off the other device; out again and back on it")
         kept = two_versions(window, other)

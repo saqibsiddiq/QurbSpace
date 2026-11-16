@@ -32,6 +32,13 @@ jobs:
   windows-install:
     runs-on: windows-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || '' }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: The command line, to set the device up as the window would
+        run: cargo build --release -p qurb-cli
       - name: The installer
         shell: pwsh
         run: |
@@ -46,6 +53,9 @@ jobs:
           if (-not $exe) { Write-Error 'qurb-desktop.exe not found after installing'; exit 1 }
           "installed at $($exe.FullName)"
           "APP=$($exe.FullName)" | Out-File -Append $env:GITHUB_ENV
+      - name: Set up
+        shell: pwsh
+        run: .\target\release\qurb.exe init
       - name: Started, until it listens
         shell: pwsh
         run: |
@@ -68,7 +78,7 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          $un = Get-ChildItem $env:LOCALAPPDATA, $env:ProgramFiles -Recurse -Filter 'uninstall.exe' -ErrorAction SilentlyContinue | Where-Object { $_.DirectoryName -like '*QurbSpace*' } | Select-Object -First 1
+          $un = Get-ChildItem $env:LOCALAPPDATA, $env:ProgramFiles -Recurse -Filter 'uninstall.exe' -ErrorAction SilentlyContinue | Where-Object { $_.DirectoryName -like '*qurb*' } | Select-Object -First 1
           if ($un) { Start-Process $un.FullName -ArgumentList '/S' -Wait; "uninstalled" } else { "no uninstaller found" }
 
   # The engine's own tests, on Windows's file system and network: paths,
@@ -84,10 +94,27 @@ jobs:
       - name: Tests
         run: cargo test --workspace --exclude qurb-mobile --exclude qurb-desktop --no-fail-fast
 
+  # The command line, built on the oldest system tested, so it runs on all of
+  # them: what sets each one up, as the window would.
+  linux-cli:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || '' }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release -p qurb-cli
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qurb-cli
+          path: target/release/qurb
+
   # Each distribution, as it comes, with what a desktop of it has: the .deb
   # where the distribution takes one, the AppImage everywhere. Started as at
   # login on a display of its own, and looked at until its engine listens.
   linux-start:
+    needs: linux-cli
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -113,6 +140,9 @@ jobs:
           curl -fsSL -o QurbSpace.AppImage $base/QurbSpace-linux.AppImage && chmod +x QurbSpace.AppImage
           curl -fsSL -o QurbSpace.deb $base/QurbSpace-linux.deb
           ls -la QurbSpace.*
+      - uses: actions/download-artifact@v4
+        with:
+          name: qurb-cli
       - name: The .deb, installed
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian')
         run: |
@@ -126,6 +156,7 @@ jobs:
           try() {
             name=$1; shift
             home=$(mktemp -d); log=$home/log
+            chmod +x ./qurb; HOME=$home ./qurb init >"$home/init.log" 2>&1 || { cat "$home/init.log"; return 1; }
             HOME=$home xvfb-run -a "$@" --hidden >"$log" 2>&1 &
             pid=$!
             for i in $(seq 120); do
