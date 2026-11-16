@@ -97,30 +97,50 @@ struct Here((u64, u64));
 impl Here {
     fn of(dir: &Path) -> Result<Self> {
         let meta = std::fs::metadata(dir).with_context(|| format!("reading {}", dir.display()))?;
-        Ok(Self(Self::identity(&meta)))
+        #[cfg(not(unix))]
+        if Self::identity(dir, &meta).is_none() {
+            Self::mark(dir).with_context(|| format!("marking {}", dir.display()))?;
+        }
+        Self::identity(dir, &meta).map(Self).with_context(|| format!("reading {}", dir.display()))
     }
 
     /// Whether `dir` still names this folder: not gone, and not replaced by
     /// another made at the same path.
     fn still(&self, dir: &Path) -> bool {
-        std::fs::metadata(dir).map(|m| Self::identity(&m) == self.0).unwrap_or(false)
+        std::fs::metadata(dir).ok().and_then(|m| Self::identity(dir, &m)) == Some(self.0)
     }
 
     /// What tells a folder from another made at its path: its device and
-    /// inode on Unix. Windows' file index is not in stable Rust, so there it
-    /// is when the folder was made, which a folder made in its place does not
-    /// share.
-    fn identity(meta: &std::fs::Metadata) -> (u64, u64) {
+    /// inode on Unix.
+    ///
+    /// On Windows a mark of its own inside it (`here`), made when the daemon
+    /// starts and only read after: Windows' file index is not in stable Rust,
+    /// and when the folder was made does not do, since Windows gives a folder
+    /// made where one was removed in the last 15 seconds the removed one's
+    /// creation time ("tunnelling"; the platform tests, 2026-11-16). A folder
+    /// made in its place has no mark, and is not this one.
+    fn identity(dir: &Path, meta: &std::fs::Metadata) -> Option<(u64, u64)> {
         #[cfg(unix)]
         {
+            let _ = dir;
             use std::os::unix::fs::MetadataExt;
-            (meta.dev(), meta.ino())
+            Some((meta.dev(), meta.ino()))
         }
         #[cfg(not(unix))]
         {
-            let made = meta.created().ok().and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok());
-            (made.map_or(0, |d| d.as_secs()), made.map_or(0, |d| u64::from(d.subsec_nanos())))
+            let _ = meta;
+            let text = std::fs::read_to_string(dir.join("here")).ok()?;
+            let (a, b) = text.trim().split_once(' ')?;
+            Some((a.parse().ok()?, b.parse().ok()?))
         }
+    }
+
+    #[cfg(not(unix))]
+    fn mark(dir: &Path) -> std::io::Result<()> {
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_nanos() as u64);
+        std::fs::write(dir.join("here"), format!("{now} {}", std::process::id()))
     }
 }
 

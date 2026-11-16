@@ -53,6 +53,9 @@ fn a_replica_materialises_nothing() {
     runtime.block_on(async {
         let _ = tokio::time::timeout(std::time::Duration::from_secs(3), daemon.run()).await;
     });
+    // Let go of, not waited for: on Windows a task the daemon started kept
+    // a test waiting for minutes after the daemon had stopped (2026-11-16).
+    runtime.shutdown_timeout(std::time::Duration::from_secs(5));
 
     let visible: Vec<_> = std::fs::read_dir(&root)
         .unwrap()
@@ -102,6 +105,9 @@ fn a_replica_does_not_tombstone_what_it_holds() {
     runtime.block_on(async {
         let _ = tokio::time::timeout(std::time::Duration::from_secs(3), daemon.run()).await;
     });
+    // Let go of, not waited for: on Windows a task the daemon started kept
+    // a test waiting for minutes after the daemon had stopped (2026-11-16).
+    runtime.shutdown_timeout(std::time::Duration::from_secs(5));
 
     // Still live, and still readable.
     let chunk_key = qurb_storage::ChunkKey::from_bytes(
