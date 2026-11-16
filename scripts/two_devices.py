@@ -102,13 +102,14 @@ def main():
     try:
         # A folder in a folder, so separators are crossed too.
         os.makedirs(os.path.join(a, "notes", "2026"), exist_ok=True)
-        with open(os.path.join(a, "notes", "2026", "from-a.txt"), "w") as f:
-            f.write("written on a\n")
+        # Bytes, not text: Windows' text mode would write `\r\n`.
+        with open(os.path.join(a, "notes", "2026", "from-a.txt"), "wb") as f:
+            f.write(b"written on a\n")
         wait("a file in a's folder, in b's",
              lambda: same_bytes(os.path.join(b, "notes", "2026", "from-a.txt"),
                                 hashlib.sha256(b"written on a\n").hexdigest()))
-        with open(os.path.join(b, "from-b.txt"), "w") as f:
-            f.write("written on b\n")
+        with open(os.path.join(b, "from-b.txt"), "wb") as f:
+            f.write(b"written on b\n")
         wait("a file in b's folder, in a's",
              lambda: same_bytes(os.path.join(a, "from-b.txt"), hashlib.sha256(b"written on b\n").hexdigest()))
 

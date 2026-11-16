@@ -101,6 +101,8 @@ jobs:
         run: |
           mkdir -p .config
           printf '[profile.default]\nslow-timeout = { period = "60s", terminate-after = 3 }\nfail-fast = false\n' > .config/nextest.toml
+          # The crash tests' writer is an example, which nextest does not build.
+          cargo build --examples -p qurb-storage
           cargo nextest run --workspace --exclude qurb-mobile --exclude qurb-desktop
 
   # Two devices on one machine, through the command line: paired by code, a

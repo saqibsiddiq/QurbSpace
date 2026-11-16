@@ -31,6 +31,9 @@ fn set_up(root: &Path) -> (qurb_keys::MasterKey, Identity) {
 /// machine they do not sit at, which is the opposite of the point.
 #[test]
 fn a_replica_materialises_nothing() {
+    // Said as it runs: on Windows this did not stop at its 3 s (2026-11-16),
+    // and what it was doing is the question.
+    let _ = tracing_subscriber::fmt().with_env_filter("debug,tor_dirmgr=info,tor_chanmgr=info,tor_guardmgr=info,tor_circmgr=info,tor_proto=info,arti_client=info").with_test_writer().try_init();
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().join("replica");
     let (key, identity) = set_up(&root);
