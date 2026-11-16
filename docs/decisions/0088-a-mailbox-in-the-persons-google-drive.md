@@ -137,3 +137,11 @@ before it was handed, and Google gives a lasting sign-in only with a code
 asked for with the person's consent ("Google gave no refresh token for the
 phone's code"). Now the refresh asks for the token alone.
 
+
+## Amended 2026-11-16: open to every Google account
+
+The consent screen was published (in production) with no review: the one
+scope, `drive.appdata`, is listed by Google as non-sensitive, and no logo
+was uploaded, which would have asked for one. Any Google account may now
+sign in and stays signed in; the test-user limit above no longer applies.
+Not yet tried with an account that was not a test user (beta.md).

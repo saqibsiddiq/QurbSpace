@@ -44,7 +44,12 @@ Built by Claude unless marked **owner**.
   Note: the web client's secret then ships inside the program, as the desktop
   client's does; Google treats a desktop client's secret as public, not a web
   client's. Acceptable for a beta; to revisit before public release.
-- [ ] **Who may sign in to Drive.** Open on 2026-11-15, being done. While the consent screen is in *Testing*,
+- [x] **Who may sign in to Drive.** Done 2026-11-16: `drive.appdata` is listed
+  by the console as non-sensitive, so the consent screen was published with
+  no review (no logo uploaded, which would have asked for one); branding set
+  to QurbSpace, qurb.cloud, its privacy policy and terms, `qurb.cloud` the
+  authorised domain. Any Google account may now sign in, and stays signed in.
+  Not yet tried with an account that was not on the test list. While the consent screen is in *Testing*,
   only listed test users can (100 at most), and they sign in again every
   seven days. **Owner:** check in the console whether `drive.appdata` counts
   as a non-sensitive scope; if so, publishing the consent screen needs only

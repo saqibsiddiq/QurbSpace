@@ -73,8 +73,8 @@ with:
   end to end. Restoring single files and folders has.
 - **Windows** builds, and has never been run by us. There is **no iPhone or
   Mac** version.
-- **Google Drive** is optional; until Google verifies the app, it is limited
-  to the accounts we add as testers.
+- **Google Drive** is optional. A file waiting there reaches the phone at its
+  next sync: Drive cannot wake a phone.
 - Tested on a Galaxy S23 and an OPPO CPH2363 (Jio), and one Linux laptop.
   Other phones, carriers and routers are what this beta is for.
 
