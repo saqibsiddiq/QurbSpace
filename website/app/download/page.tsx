@@ -39,7 +39,7 @@ export default function DownloadPage() {
           href={downloads.windows}
           icon="laptop"
           title="QurbSpace for Windows"
-          text="Windows 10 or 11. Run the installer. Not yet tested by us: tell us how it goes."
+          text="Windows 10 or 11. Run the installer. Tested on GitHub’s Windows machines, not yet on a person’s PC: tell us how it goes."
         />
         <LinkRow
           href={downloads.deb}

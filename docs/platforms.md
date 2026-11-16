@@ -28,7 +28,9 @@ On Linux, nothing: every distribution started, and the full window test
 passed once one of its steps stopped asking for Recently deleted, removed in
 [decision 0089](decisions/0089-no-recently-deleted.md).
 
-On Windows, the app installed and started; the engine did not hold up:
+On Windows, the app installed and started; the engine did not hold up
+(910 of 917 of its tests passing at first, all 917 after the fixes, run
+43926713489):
 
 | Found | What it meant | Fixed |
 |---|---|---|

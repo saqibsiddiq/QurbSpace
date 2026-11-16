@@ -1356,7 +1356,7 @@ the tests of local discovery and of six digits find devices that way, and
 fail on one that does not). Clippy is clean. On Windows and six Linux
 distributions the released programs and the engine's tests run on GitHub's
 machines ([platforms.md](platforms.md), `.github/workflows/platforms.yml`):
-on Windows 910 of 917 passed on 2026-11-16 before the fixes the run found.
+on Windows all 917 pass since the fixes that run found (2026-11-16).
 On Android the engine's crates run by `scripts/android-test.sh`:
 678 tests in 63 binaries passed on the Android 14 x86_64 emulator on
 2026-10-08, including two phones pairing and syncing. The last run on a

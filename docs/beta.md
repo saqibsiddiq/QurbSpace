@@ -24,7 +24,10 @@ Said plainly on the release page and in the guide, not hidden:
   removed (decision 0089).
 - **Restoring a backup to a new phone has not been proven end to end**
   (WhatsApp's included, decision 0062).
-- **Windows has never been run** by us; Linux has, on the owner's laptop.
+- **Windows is tested on GitHub's machines only** (docs/platforms.md, from
+  2026-11-16): installing, starting, two devices syncing and sending; its
+  window not yet, nor a person's PC. Linux on the owner's laptop, and on six
+  distributions there.
 - **Google Drive** is optional and limited while Google has not verified the
   app (below).
 - What leaves the devices: files go directly between them, or encrypted

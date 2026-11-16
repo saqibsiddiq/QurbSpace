@@ -43,7 +43,7 @@ Pick your device; the download starts at once.
 | Your device | Download | To install |
 |---|---|---|
 | **Android phone** (Android 8 or later) | [QurbSpace for Android](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-android.apk) | Open the file, and allow installing from your browser when asked. Updates itself. |
-| **Windows** 10 or 11 | [QurbSpace for Windows](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-windows-setup.exe) | Run the installer. **Not yet tested by us**: tell us how it goes. |
+| **Windows** 10 or 11 | [QurbSpace for Windows](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-windows-setup.exe) | Run the installer. Tested on GitHub's Windows machines, not yet on a person's PC: tell us how it goes. |
 | **Linux**: Ubuntu, Debian, Mint, Pop!_OS | [QurbSpace for Ubuntu and Debian](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-linux.deb) | Open the file to install it. Does not update itself yet: download again for a new version. |
 | **Linux**: any other (Fedora, Arch and the rest) | [QurbSpace for any Linux](https://github.com/saqibsiddiq/QurbSpace/releases/latest/download/QurbSpace-linux.AppImage) | Allow it to run (right click, Properties, Permissions), then open it. Updates itself. |
 
@@ -84,7 +84,9 @@ with:
   one device is deleted on all of them.
 - **Restoring a whole WhatsApp backup to a new phone has not been proven**
   end to end. Restoring single files and folders has.
-- **Windows** builds, and has never been run by us. There is **no iPhone or
+- **Windows** is tested automatically on GitHub's machines (installing,
+  starting, two devices syncing and sending), not yet on a person's PC, and
+  its window not yet at all. There is **no iPhone or
   Mac** version.
 - **Google Drive** is optional. A file waiting there reaches the phone at its
   next sync: Drive cannot wake a phone.
