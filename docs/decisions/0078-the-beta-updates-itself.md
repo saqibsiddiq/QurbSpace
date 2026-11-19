@@ -98,3 +98,20 @@ installs over the last (`scripts/release-manifests.py`, `versionCodeOf` in
   Play build would leave the updater out. Short of that, the APK can be
   submitted to Google for review as a false positive, and the developer
   registered under Android's developer verification.
+
+## Amended 2026-11-19: the warning appealed, and said to testers
+
+- **Said before it is seen**: the README and the website's download page tell
+  a tester what Play Protect (and Windows SmartScreen) will say, and the way
+  past it.
+- **Appealed** for v0.2.0-beta.11 on Google's Play Protect appeals form, as
+  false positive: package `com.qurb`, the APK's SHA-256
+  `da914a4a34a3f37cbdc587cd823febb342475e107d2809ec16cdc3a0c1b8c18f`, which
+  VirusTotal had scanned with no vendor flagging it. Google answers no
+  appeal; whether it worked shows only as the warning gone. Each release is
+  a new file, so each is appealed again.
+- **Developer verification** is the owner's, later: $25 once and a
+  government ID (Android developer verification FAQ, 2026-11-17). Needed
+  before 2027, when an unregistered app installs and updates only on phones
+  with Android's advanced flow turned on. Package `com.qurb`, release key
+  SHA-256 `4F:AE:59:0B:9C:0E:C3:05:60:7D:F0:4C:AE:35:82:CA:FE:05:A4:2A:FD:09:12:A3:00:40:30:03:01:3F:FD:2A`.
