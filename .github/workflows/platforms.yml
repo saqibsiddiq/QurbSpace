@@ -4,13 +4,17 @@
 # owner's. What each job proves, and what it does not, is in
 # docs/platforms.md.
 #
-# Runs on each published release, by hand for any release, and on a push to
+# Runs once the release workflow has finished, by hand for any release, and on a push to
 # the `platform-tests` branch (to work on this file without a release).
 name: platforms
 
 on:
-  release:
-    types: [published]
+  # When the release workflow has finished. Not on `release: published`: a
+  # release published by a workflow starts no other workflow (GitHub's rule),
+  # and beta.12's ran none (2026-11-19).
+  workflow_run:
+    workflows: [release]
+    types: [completed]
   workflow_dispatch:
     inputs:
       tag:
@@ -27,7 +31,7 @@ env:
   # meeting point, so a device set up by the command line here finds others
   # as the released apps do.
   QURB_DEFAULT_SIGNAL: nostr
-  TAG: ${{ github.event.release.tag_name || inputs.tag || 'latest' }}
+  TAG: ${{ github.event.workflow_run.head_branch || inputs.tag || 'latest' }}
   REPO: ${{ github.repository }}
 
 jobs:
@@ -38,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || '' }}
+          ref: ${{ github.event.workflow_run.head_branch || inputs.tag != 'latest' && inputs.tag || '' }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: The command line, to set the device up as the window would
@@ -91,7 +95,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || '' }}
+          ref: ${{ github.event.workflow_run.head_branch || inputs.tag != 'latest' && inputs.tag || '' }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       # Each test limited, so one that hangs is named and the rest still run.
@@ -118,7 +122,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || '' }}
+          ref: ${{ github.event.workflow_run.head_branch || inputs.tag != 'latest' && inputs.tag || '' }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo build --release -p qurb-cli
@@ -136,7 +140,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || '' }}
+          ref: ${{ github.event.workflow_run.head_branch || inputs.tag != 'latest' && inputs.tag || '' }}
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo build --release -p qurb-cli
@@ -217,7 +221,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || '' }}
+          ref: ${{ github.event.workflow_run.head_branch || inputs.tag != 'latest' && inputs.tag || '' }}
       - name: Libraries, the .deb, and what drives the window
         run: |
           if [ "$TAG" = latest ]; then base=https://github.com/$REPO/releases/latest/download; else base=https://github.com/$REPO/releases/download/$TAG; fi

@@ -115,3 +115,6 @@ installs over the last (`scripts/release-manifests.py`, `versionCodeOf` in
   before 2027, when an unregistered app installs and updates only on phones
   with Android's advanced flow turned on. Package `com.qurb`, release key
   SHA-256 `4F:AE:59:0B:9C:0E:C3:05:60:7D:F0:4C:AE:35:82:CA:FE:05:A4:2A:FD:09:12:A3:00:40:30:03:01:3F:FD:2A`.
+- **Appealed again for v0.2.0-beta.12** the same evening (2026-11-19):
+  SHA-256 `099309fd288660b6e79ada65328b2d10599e01949a5ae694c69de6b620c3a868`,
+  VirusTotal again with no vendor flagging it.

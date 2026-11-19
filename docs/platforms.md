@@ -4,7 +4,7 @@ Asked for on 2026-11-16 ("cant we do a testing of our windows built and
 other linux built as well? is there anyway?"): we have one Linux laptop and
 no Windows machine. GitHub has both, free for a public repository, so
 [`.github/workflows/platforms.yml`](../.github/workflows/platforms.yml) runs
-the released programs there: on each published release, by hand for any
+the released programs there: once the release workflow has finished, by hand for any
 release (`gh workflow run platforms.yml -f tag=v0.2.0-beta.12`), and on a push
 to the `platform-tests` branch.
 
