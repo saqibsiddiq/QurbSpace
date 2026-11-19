@@ -197,9 +197,12 @@ impl PeerClient {
         send.finish()?;
         let mut versions = Vec::new();
         let mut total = 0usize;
+        // Each frame in its time, as any answer (`request`): a list is long,
+        // its frames are not.
+        let late = |_| Error::Unanswered { seconds: ANSWER_WITHIN.as_secs() };
         loop {
             let mut length = [0u8; 4];
-            recv.read_exact(&mut length).await?;
+            tokio::time::timeout(ANSWER_WITHIN, recv.read_exact(&mut length)).await.map_err(late)??;
             let length = u32::from_le_bytes(length) as usize;
             if length == 0 {
                 return Ok(versions);
@@ -209,7 +212,7 @@ impl PeerClient {
                 return Err(Error::Protocol { detail: format!("a file list frame of {length} bytes, {total} in all") });
             }
             let mut frame = vec![0u8; length];
-            recv.read_exact(&mut frame).await?;
+            tokio::time::timeout(ANSWER_WITHIN, recv.read_exact(&mut frame)).await.map_err(late)??;
             versions.extend(decode_tree_frame(&frame)?);
         }
     }
@@ -756,12 +759,25 @@ impl PeerClient {
     }
 
     pub(crate) async fn request(&self, request: Request) -> Result<Response> {
+        // Waited for as long as it takes only when asked to: `Changes` is held
+        // until something changes. Any other answer comes in its time or not
+        // at all. A connection the other device keeps open, answering QUIC's
+        // keep-alives and not the request, otherwise held the computer's whole
+        // sync for good: it announced nothing for over an hour, a send waiting
+        // (2026-11-19).
+        let waits = matches!(request, Request::Changes { .. });
         let (mut send, mut recv) = self.connection.open_bi().await?;
         send.write_all(&request.encode()).await?;
         // Finishing the stream is what tells the peer the request is complete;
         // there is no length prefix because the stream itself is the frame.
         send.finish()?;
-        let raw = recv.read_to_end(MAX_MESSAGE).await?;
+        let raw = if waits {
+            recv.read_to_end(MAX_MESSAGE).await?
+        } else {
+            tokio::time::timeout(ANSWER_WITHIN, recv.read_to_end(MAX_MESSAGE))
+                .await
+                .map_err(|_| Error::Unanswered { seconds: ANSWER_WITHIN.as_secs() })??
+        };
         match Response::decode(&raw)? {
             Response::Removed => Err(Error::Removed),
             response => Ok(response),
@@ -783,6 +799,12 @@ impl PeerClient {
         self.connection.close(0u32.into(), why.as_bytes());
     }
 }
+
+/// How long an answer may take, a request not held on purpose. Long enough
+/// for a phone's list of tens of thousands of files, or a chunk, over a relay
+/// on mobile data; short enough that a device that stopped answering costs a
+/// pass two minutes, not the rest of the day.
+const ANSWER_WITHIN: std::time::Duration = std::time::Duration::from_secs(120);
 
 /// What a computer that takes no changes from this device is taken to say:
 /// one that is not its own person's nor one it visits, or one from before

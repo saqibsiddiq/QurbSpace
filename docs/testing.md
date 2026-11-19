@@ -4,6 +4,29 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-19: the laptop's app stopped syncing, alive, after four days
+
+Found measuring speed: a send from the laptop to the S23 was never announced.
+The app (a local build of beta.12, started 2026-11-15) had run four days; its
+log stopped at 20:52 with "not reached; asking on the connection it made" and
+said nothing after, for over an hour. All 51 threads asleep, the daemon's
+using no processor time in 10 s, its connections to the Nostr relays open:
+waiting, not busy. A stack could not be had (attaching needs root here).
+
+What the code showed: when the phone could not be dialled, the laptop asked
+on the connection the phone had made to it, and waited for the answer with
+no limit, as it did for most requests. A device that keeps a connection open
+(QUIC's keep-alives answered) and does not answer on it held the daemon's one
+loop for good: no timers, no announcements, no syncing with anyone. Which of
+the phone's parts stopped answering is not known: its log did not reach back.
+
+Fixed: every answer comes within 120 s (each frame of a file list within
+120 s), except `Changes`, which is held until something changes on purpose
+(`qurb_peer::client::request`). After a restart on the fix, a 3.2 MB send
+reached the S23 in 28 s (the command line's 30 s check), bytes identical.
+
+Not done: a test of a device that keeps a connection and never answers.
+
 ## 2026-11-15: a send between the laptop and the phone beside it
 
 The owner, on the release-day check's 49 s: "shouldnt it be instantaneous

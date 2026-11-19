@@ -10,6 +10,11 @@ pub enum Error {
     #[error("peer is not one we trust")]
     UntrustedPeer,
 
+    /// Asked, and no answer came in time, on a connection that is still open:
+    /// the device keeps it alive and does not answer on it.
+    #[error("the other device did not answer within {seconds} s")]
+    Unanswered { seconds: u64 },
+
     /// The other device removed this one, and said so ([`crate::Response::Removed`]).
     #[error("the other device removed this one")]
     Removed,
