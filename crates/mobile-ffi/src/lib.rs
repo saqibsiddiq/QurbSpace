@@ -4790,7 +4790,20 @@ impl Dial {
             }
         }
         match client {
-            Ok(client) => Ok(Link { client, _connector: connector, accepting, network }),
+            Ok(client) => {
+                // Answering on this connection too, as a sync pass does on
+                // its own. A computer that cannot dial the phone asks on the
+                // connection the phone made; this one, kept open for browsing,
+                // answered its keep-alives and not its requests, and the
+                // laptop's sync waited on it for good (2026-11-19).
+                let (store, trust) = (Arc::clone(&self.served), self.trust.clone());
+                let watcher: Arc<dyn qurb_peer::Served> = self.serving.clone();
+                let connection = client.connection();
+                accepting.push(runtime.spawn(async move {
+                    qurb_peer::server::serve_connection_watched(connection, store, generation, watcher, &trust).await
+                }));
+                Ok(Link { client, _connector: connector, accepting, network })
+            }
             Err(e) => {
                 for task in &accepting {
                     task.abort();

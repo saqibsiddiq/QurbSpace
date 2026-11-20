@@ -25,6 +25,15 @@ Fixed: every answer comes within 120 s (each frame of a file list within
 (`qurb_peer::client::request`). After a restart on the fix, a 3.2 MB send
 reached the S23 in 28 s (the command line's 30 s check), bytes identical.
 
+The phone's half, found the next morning in the code: a computer's folder
+opened on the phone (Files) keeps its connection to the computer while the
+folder is open, and the phone answered only connections made to it, not
+requests on that one. A sync pass answers on its own connection; this did
+not. The laptop, unable to dial the phone, asked on it, and was answered by
+keep-alives alone. Now answered as a pass's is (`KeptFolder`'s link), built
+onto the S23 the same morning. Not seen to happen again or not: the laptop's
+fallback runs only when the phone cannot be dialled.
+
 Not done: a test of a device that keeps a connection and never answers.
 
 ## 2026-11-15: a send between the laptop and the phone beside it
