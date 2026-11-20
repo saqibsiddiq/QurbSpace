@@ -83,6 +83,7 @@ object GoogleDrive {
         val email = runCatching { result.toGoogleSignInAccount()?.email }.getOrNull()
         prefs(context).edit().putString(ACCOUNT, email ?: PLACEHOLDER).apply()
         Engine.current()?.setDriveToken(token)
+        Engine.current()?.setDriveAccount(email)
         result.serverAuthCode?.let { Engine.current()?.setDriveCode(it) }
         return true
     }
@@ -91,7 +92,57 @@ object GoogleDrive {
         prefs(context).edit().remove(ACCOUNT).remove(HANDED).apply()
         Engine.current()?.setDriveToken(null)
         Engine.current()?.setDriveCode(null)
+        Engine.current()?.setDriveAccount(null)
     }
+
+    /**
+     * A computer wants a fresh sign-in to this phone's account: Google
+     * refused the one it had (expired, revoked). The laptop's ran out on
+     * 2026-11-20, seven days after it was made while the app was in Google's
+     * testing, and nothing but its log said so. Asked of Google as at
+     * sign-in, with the person's yes, the only way that brings a lasting
+     * sign-in for the computer; with nothing shown when Google has it
+     * already, and the next pass hands it over. When Google wants the person,
+     * one notification, and the yes is a tap.
+     */
+    fun renew(context: Context) {
+        if (account(context) == null) return
+        val result = runCatching {
+            Tasks.await(Identity.getAuthorizationClient(context).authorize(request(code = true, again = true)), 20, TimeUnit.SECONDS)
+        }.onFailure { Log.w(TAG, "no fresh sign-in for the computer", it) }.getOrNull() ?: return
+        if (result.hasResolution()) {
+            askToReconnect(context)
+            return
+        }
+        if (taken(context, result)) SyncWorker.runNow(context, quick = true)
+    }
+
+    private fun askToReconnect(context: Context) {
+        val manager = context.getSystemService(android.app.NotificationManager::class.java) ?: return
+        if (manager.getNotificationChannel(RECONNECT_CHANNEL) == null) {
+            manager.createNotificationChannel(android.app.NotificationChannel(
+                RECONNECT_CHANNEL, "Google Drive", android.app.NotificationManager.IMPORTANCE_DEFAULT))
+        }
+        val open = android.content.Intent(context, MainActivity::class.java)
+            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            .putExtra(RECONNECT, true)
+        val tap = android.app.PendingIntent.getActivity(context, RECONNECT_ID, open,
+            android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
+        val notice = androidx.core.app.NotificationCompat.Builder(context, RECONNECT_CHANNEL)
+            .setSmallIcon(R.drawable.qurb_notification)
+            .setColor(androidx.core.content.ContextCompat.getColor(context, R.color.green))
+            .setContentTitle("Reconnect Google Drive")
+            .setContentText("Tap to let your computer use it again")
+            .setContentIntent(tap)
+            .setAutoCancel(true)
+            .build()
+        runCatching { androidx.core.app.NotificationManagerCompat.from(context).notify(RECONNECT_ID, notice) }
+    }
+
+    /** On the intent the reconnect notification opens the app with. */
+    const val RECONNECT = "com.qurb.RECONNECT_DRIVE"
+    const val RECONNECT_ID = 9_100
+    private const val RECONNECT_CHANNEL = "drive"
 
     /**
      * Before a sync, with nothing shown: a token for the engine. Never a code
@@ -102,6 +153,9 @@ object GoogleDrive {
      * account gets it again when the person chooses the account again.
      */
     suspend fun refresh(context: Context, engine: uniffi.qurb_mobile.Qurb) = withContext(Dispatchers.IO) {
+        // Which account, for the computers' asking whether they need a fresh
+        // sign-in to it (`renew`).
+        engine.setDriveAccount(account(context)?.takeIf { it != PLACEHOLDER })
         if (account(context) == null) return@withContext
         if (engine.driveCodeHanded()) prefs(context).edit().putLong(HANDED, System.currentTimeMillis()).apply()
         // Refused by Google since (revoked, or expired early): another now.

@@ -258,6 +258,11 @@ pub enum Request {
     /// the computer for a lasting sign-in to that account. From this person's
     /// own phones only. Answered [`Response::Noted`].
     DriveCode { code: String },
+    /// Whether this computer wants a fresh sign-in for the asking phone's
+    /// Google account, Google having refused the one it had: answered
+    /// [`Response::Noted`] if so, [`Response::NotFound`] if not. From this
+    /// person's own phones only; a computer from before answers neither.
+    DriveWanted { account: String },
     /// An Office document turned into a PDF by the computer, to be shown on
     /// the phone: answered [`Response::Converted`], or [`Response::NotFound`]
     /// where it may not be read, is not Office, or nothing here converts it.
@@ -462,6 +467,7 @@ const TAG_CONVERT: u8 = 36;
 const TAG_GOODBYE: u8 = 37;
 const TAG_ONION: u8 = 38;
 const TAG_DRIVE_CODE: u8 = 39;
+const TAG_DRIVE_WANTED: u8 = 40;
 
 /// The most of a file one [`Request::Upload`] carries: a few chunks' worth,
 /// small enough that a slow link sends one in seconds.
@@ -689,6 +695,10 @@ impl Request {
                 out.push(TAG_DRIVE_CODE);
                 put_name(&mut out, code);
             }
+            Request::DriveWanted { account } => {
+                out.push(TAG_DRIVE_WANTED);
+                put_name(&mut out, account);
+            }
             Request::Convert { content, name } => {
                 out.push(TAG_CONVERT);
                 out.extend_from_slice(content);
@@ -793,6 +803,7 @@ impl Request {
             TAG_GOODBYE => Request::Goodbye,
             TAG_ONION => Request::Onion,
             TAG_DRIVE_CODE => Request::DriveCode { code: r.name()? },
+            TAG_DRIVE_WANTED => Request::DriveWanted { account: r.name()? },
             TAG_CONVERT => Request::Convert { content: r.hash()?, name: r.name()? },
             TAG_BECOME => {
                 let len = r.count()?;
@@ -1609,6 +1620,7 @@ mod tests {
             Request::Goodbye,
             Request::Onion,
             Request::DriveCode { code: "4/0Ab32j9...".into() },
+            Request::DriveWanted { account: "someone@example.com".into() },
             Request::Convert { content: [7; 32], name: "lease.docx".into() },
             Request::Become { cert: vec![0x30, 0x82, 1, 2] },
         ] {

@@ -224,6 +224,9 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             // What is worth telling the person, now nobody is looking.
             tellArrived(engine)
             Notices.asked(applicationContext, engine)
+            // A computer reached wants a fresh sign-in to this phone's
+            // Google account (`GoogleDrive.renew`).
+            if (engine.driveSignInWanted()) withContext(Dispatchers.IO) { GoogleDrive.renew(applicationContext) }
 
             if (long || elsewhere || forOthers < LONG_PASS_BYTES) {
                 Transfers.clearPaused(applicationContext)

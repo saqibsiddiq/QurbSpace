@@ -88,6 +88,35 @@ pub fn drive_codes_taken() -> Vec<(qurb_sync::DeviceId, String)> {
     DRIVE_CODES.lock().map(|mut codes| std::mem::take(&mut *codes)).unwrap_or_default()
 }
 
+/// Google accounts this computer was signed in to and Google no longer
+/// takes the sign-in of (expired, revoked): a phone of that account asks
+/// ([`wire::Request::DriveWanted`]) and hands a fresh one over. The
+/// laptop's sign-in for the owner's account, made while the app was in
+/// Google's testing, ran out after seven days, and nothing said so but a log
+/// line every round (2026-11-20).
+static DRIVE_WANTED: std::sync::Mutex<std::collections::BTreeSet<String>> =
+    std::sync::Mutex::new(std::collections::BTreeSet::new());
+
+/// Google refused this account's sign-in: asked of the phones.
+pub fn drive_sign_in_wanted(account: &str) {
+    if let Ok(mut wanted) = DRIVE_WANTED.lock() {
+        if wanted.insert(account.to_lowercase()) {
+            tracing::info!(%account, "Google no longer takes this account's sign-in; asking its phone for a new one");
+        }
+    }
+}
+
+/// The account works again, or was signed in afresh.
+pub fn drive_sign_in_kept(account: &str) {
+    if let Ok(mut wanted) = DRIVE_WANTED.lock() {
+        wanted.remove(&account.to_lowercase());
+    }
+}
+
+pub fn drive_sign_in_is_wanted(account: &str) -> bool {
+    DRIVE_WANTED.lock().is_ok_and(|wanted| wanted.contains(&account.to_lowercase()))
+}
+
 pub fn onion_hosted() -> Option<String> {
     HOSTED_ONION.lock().ok().and_then(|o| o.clone())
 }

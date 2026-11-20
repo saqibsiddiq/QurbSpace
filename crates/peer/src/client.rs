@@ -443,6 +443,18 @@ impl PeerClient {
     /// Hand the computer a one-time code for this phone's Google account
     /// ([`Request::DriveCode`]). Whether it was taken; a build from before
     /// cannot.
+    /// Whether this computer wants a fresh sign-in for `account`, Google
+    /// having refused its last ([`Request::DriveWanted`]). No from a computer
+    /// from before, which does not know the question.
+    pub async fn drive_wanted(&self, account: &str) -> Result<bool> {
+        match self.request(Request::DriveWanted { account: account.to_string() }).await {
+            Ok(Response::Noted) => Ok(true),
+            Ok(_) => Ok(false),
+            Err(Error::Connection(e)) => Err(Error::Connection(e)),
+            Err(_) => Ok(false),
+        }
+    }
+
     pub async fn drive_code(&self, code: &str) -> Result<bool> {
         match self.request(Request::DriveCode { code: code.to_string() }).await {
             Ok(Response::Noted) => Ok(true),

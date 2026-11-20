@@ -1060,10 +1060,22 @@ impl Daemon {
         // are (2026-11-13).
         let mut heard = Vec::with_capacity(mailboxes.len());
         for (label, mailbox) in &mailboxes {
-            heard.push(mailbox.heard_from().await.unwrap_or_else(|e| {
-                tracing::info!(account = %label, error = %e, "the mailbox could not be read");
-                Default::default()
-            }));
+            // Google refusing the sign-in is asked of the account's phone,
+            // which hands a fresh one over at its next sync; working again,
+            // it is not (`qurb_peer::drive_sign_in_wanted`).
+            heard.push(match mailbox.heard_from().await {
+                Ok(heard) => {
+                    qurb_peer::drive_sign_in_kept(label);
+                    heard
+                }
+                Err(e) => {
+                    if matches!(e, qurb_mailbox::Error::NotSignedIn) {
+                        qurb_peer::drive_sign_in_wanted(label);
+                    }
+                    tracing::info!(account = %label, error = %e, "the mailbox could not be read");
+                    Default::default()
+                }
+            });
         }
         let Ok(known) = engine.store().db().trusted_peers() else { return };
         let mine: Vec<_> = known
@@ -2248,7 +2260,10 @@ async fn take_drive_codes() {
             Ok(refresh) => {
                 let account = refresh.account.clone().unwrap_or_default();
                 match crate::drive_account::keep(&refresh) {
-                    Ok(()) => tracing::info!(phone = %from.short(), %account, "signed in to a phone's Google account, as it asked"),
+                    Ok(()) => {
+                        qurb_peer::drive_sign_in_kept(&account);
+                        tracing::info!(phone = %from.short(), %account, "signed in to a phone's Google account, as it asked")
+                    }
                     Err(e) => tracing::warn!(error = %e, "a phone's Google account could not be kept"),
                 }
             }

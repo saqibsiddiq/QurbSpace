@@ -145,3 +145,23 @@ scope, `drive.appdata`, is listed by Google as non-sensitive, and no logo
 was uploaded, which would have asked for one. Any Google account may now
 sign in and stays signed in; the test-user limit above no longer applies.
 Not yet tried with an account that was not a test user (beta.md).
+
+## Amended 2026-11-21: a sign-in Google refuses is renewed by the phone
+
+The laptop's sign-in to the owner's account, made on 2026-11-14 while the
+app was in Google's testing, ran out after seven days (Google: `invalid_grant`,
+"Token has been expired or revoked"); the laptop logged "not signed in" every
+round and nothing else happened. A sign-in can end any time (a password
+changed, access removed), so:
+
+- The computer, refused, keeps the account as wanting a fresh sign-in
+  (`qurb_peer::drive_sign_in_wanted`), and forgets that once it works again.
+- The phone asks each computer it reaches whether it wants one for its own
+  account (`Request::DriveWanted`; a computer from before says no).
+- Wanted, the app asks Google as at sign-in, with the person's yes: with
+  nothing shown when Google has it, and the next pass hands it over; when
+  Google wants the person, one notification, *Reconnect Google Drive*, and a
+  tap.
+
+Built, and the computer's half seen on the laptop ("asking its phone for a
+new one"); the phone's half is not yet tried on a phone.

@@ -957,6 +957,10 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
             }
             _ => Response::NotFound,
         },
+        Request::DriveWanted { account } => match &owner {
+            Some(_) if !other_person && crate::drive_sign_in_is_wanted(account) => Response::Noted,
+            _ => Response::NotFound,
+        },
         Request::Onion => match crate::onion_hosted() {
             Some(onion) if !other_person && owner.is_some() => Response::About { kind: onion },
             _ => Response::NotFound,

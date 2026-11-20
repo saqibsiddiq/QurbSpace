@@ -4,6 +4,19 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-21: a red dot on a laptop being browsed, and Drive signed out
+
+The laptop on a hotspot ("Realme 1"), the S23 elsewhere. The owner: "they
+are connected since im able to remote access but still red dot". Home's dot
+says a device is off when the last pass that tried it got no answer, and only
+sync passes said a device was seen; browsing the laptop did not. Now a
+connection made to browse a computer marks it seen (`Dial::connect`). Built,
+not yet installed: the phone and the laptop were on different networks.
+
+The same morning the laptop's Drive mailbox for the owner's account was
+signed out: Google answered `invalid_grant`, the sign-in made in testing
+having run out (decision 0088, amended: renewed by the phone from now on).
+
 ## 2026-11-19: the laptop's app stopped syncing, alive, after four days
 
 Found measuring speed: a send from the laptop to the S23 was never announced.

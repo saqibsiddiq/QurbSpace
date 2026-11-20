@@ -441,6 +441,7 @@ class MainActivity : AppCompatActivity() {
         // while connected, when a computer says it has something (StayConnected).
         continueSending(intent)
         fromNotice(intent)
+        reconnectDrive(intent)
         fromSetup(intent)
     }
 
@@ -479,6 +480,7 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         continueSending(intent)
         fromNotice(intent)
+        reconnectDrive(intent)
     }
 
     /**
@@ -498,6 +500,15 @@ class MainActivity : AppCompatActivity() {
         intent.removeExtra(Notices.ANSWER)
         if (path != null) openPath(path)
         if (again) sync()
+    }
+
+    /** Opened from *Reconnect Google Drive* ([GoogleDrive.renew]): Google's
+     *  own sheet for the yes, then a sync to hand the sign-in over. */
+    private fun reconnectDrive(intent: Intent?) {
+        if (intent?.getBooleanExtra(GoogleDrive.RECONNECT, false) != true) return
+        intent.removeExtra(GoogleDrive.RECONNECT)
+        androidx.core.app.NotificationManagerCompat.from(this).cancel(GoogleDrive.RECONNECT_ID)
+        GoogleDrive.signIn(this) { ok -> if (ok) sync() }
     }
 
     /**

@@ -734,6 +734,11 @@ pub struct Qurb {
     /// the engine (`arrived`), so the app can say what came while the pass
     /// goes on waiting for the others.
     arrived: std::sync::atomic::AtomicU64,
+    /// This phone's Google account, as the app knows it, and whether a
+    /// computer reached since last asked wants a fresh sign-in for it
+    /// (`Request::DriveWanted`).
+    drive_account: Mutex<Option<String>>,
+    drive_wanted: std::sync::atomic::AtomicBool,
     /// Each computer reached to browse it, kept while its connection lasts
     /// (the owner's list of 2026-11-01, item 7): opening a computer built
     /// a whole connection from nothing every time (an endpoint, the relay,
@@ -2094,6 +2099,22 @@ impl Qurb {
         }
     }
 
+    /// This phone's Google account, for asking the computers whether they
+    /// need a fresh sign-in for it. None when the mailbox is off.
+    pub fn set_drive_account(&self, account: Option<String>) {
+        if let Ok(mut held) = self.drive_account.lock() {
+            *held = account.filter(|a| a.contains('@'));
+        }
+    }
+
+    /// Whether a computer reached since last asked wants a fresh sign-in for
+    /// this phone's Google account: Google refused the one it had (expired,
+    /// revoked). The app then asks Google for one, with the person's yes if
+    /// Google wants it, and the next pass hands it over.
+    pub fn drive_sign_in_wanted(&self) -> bool {
+        self.drive_wanted.swap(false, std::sync::atomic::Ordering::Relaxed)
+    }
+
     /// How many times passes have taken in files, since the app started.
     ///
     /// Without the engine, so it answers while a pass holds it. A pass
@@ -3175,6 +3196,8 @@ impl Qurb {
             drive_code: Mutex::new(None),
             drive_code_handed: std::sync::atomic::AtomicBool::new(false),
             arrived: std::sync::atomic::AtomicU64::new(0),
+            drive_account: Mutex::new(None),
+            drive_wanted: std::sync::atomic::AtomicBool::new(false),
             kept_open: Mutex::new(std::collections::HashMap::new()),
             opening: Mutex::new(std::collections::HashMap::new()),
             reach_states: Arc::new(Mutex::new(std::collections::HashMap::new())),
@@ -3612,6 +3635,14 @@ impl Qurb {
                     if let Ok(mut held) = self.drive_code.lock() {
                         *held = None;
                     }
+                }
+            } else if let Some(account) = self.drive_account.lock().ok().and_then(|a| a.clone()) {
+                // No code to hand: does it want one?
+                if let Ok(Ok(true)) = runtime.block_on(async {
+                    tokio::time::timeout(std::time::Duration::from_secs(5), client.drive_wanted(&account)).await
+                }) {
+                    tracing::info!(computer = %peer.short(), "it wants a fresh sign-in to this phone's Google account");
+                    self.drive_wanted.store(true, std::sync::atomic::Ordering::Relaxed);
                 }
             }
             match self.sync_reached(&runtime, &client, peer, left) {
@@ -4797,6 +4828,13 @@ impl Dial {
                 // answered its keep-alives and not its requests, and the
                 // laptop's sync waited on it for good (2026-11-19).
                 let (store, trust) = (Arc::clone(&self.served), self.trust.clone());
+                // Reached, so on: what Home's dot says (`isOff`) comes from
+                // when a device was last seen, and only sync passes said so.
+                // A laptop on another network, browsed from the phone without
+                // trouble, stayed red after one pass missed it (2026-11-21).
+                if let Ok(store) = store.lock() {
+                    let _ = store.db().mark_peer_seen(self.peer.as_bytes());
+                }
                 let watcher: Arc<dyn qurb_peer::Served> = self.serving.clone();
                 let connection = client.connection();
                 accepting.push(runtime.spawn(async move {
