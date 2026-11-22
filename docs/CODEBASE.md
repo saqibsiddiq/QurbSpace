@@ -1172,6 +1172,9 @@ qurb/
 │   ├── two_devices.py     two devices through the command line, any OS:
 │   │                      paired, a file each way, a send each way
 │   ├── mobile-bindings.sh generate the Kotlin and Swift bindings
+│   ├── released-files.sh  a release's files from the build that made it,
+│   │                      checked against the published digests: tests
+│   │                      and checks use it, so no download is counted
 │   └── release.sh         build a release into dist/<version>/: Linux
 │                          packages, the static qurb program, every Android
 │                          ABI, Windows, and SHA256SUMS (docs/releasing.md)

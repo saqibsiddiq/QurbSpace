@@ -25,6 +25,8 @@ on:
 
 permissions:
   contents: read
+  # The release build's files (scripts/released-files.sh).
+  actions: read
 
 env:
   # As the release is built (release.yml): the public Nostr relays as the
@@ -35,9 +37,32 @@ env:
   REPO: ${{ github.repository }}
 
 jobs:
+  # The release's files, taken from the build that made them rather than
+  # downloaded from the release: every download is counted, and the
+  # dashboard's counts of people were mostly these tests (2026-11-22).
+  # Checked against the published files' digests, so each is what people
+  # download.
+  released:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: The release's files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/released-files.sh "$TAG" released
+      - uses: actions/upload-artifact@v4
+        with:
+          name: released
+          path: |
+            released/QurbSpace-windows-setup.exe
+            released/QurbSpace-linux.AppImage
+            released/QurbSpace-linux.deb
+          retention-days: 3
+
   # The installer, as a person on Windows runs it: installed without a
   # question, started as at login, and looked at until its engine listens.
   windows-install:
+    needs: released
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -47,11 +72,13 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: The command line, to set the device up as the window would
         run: cargo build --release -p qurb-cli
-      - name: The installer
+      - uses: actions/download-artifact@v4
+        with:
+          name: released
+      - name: The released installer
         shell: pwsh
         run: |
-          $base = if ($env:TAG -eq 'latest') { "https://github.com/$env:REPO/releases/latest/download" } else { "https://github.com/$env:REPO/releases/download/$env:TAG" }
-          Invoke-WebRequest "$base/QurbSpace-windows-setup.exe" -OutFile setup.exe
+          Copy-Item QurbSpace-windows-setup.exe setup.exe
           (Get-Item setup.exe).Length
       - name: Installed, silently
         shell: pwsh
@@ -153,7 +180,7 @@ jobs:
   # where the distribution takes one, the AppImage everywhere. Started as at
   # login on a display of its own, and looked at until its engine listens.
   linux-start:
-    needs: linux-cli
+    needs: [linux-cli, released]
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -173,11 +200,13 @@ jobs:
           elif command -v zypper >/dev/null; then
             zypper -nq in curl xvfb-run gtk3-tools libgtk-3-0 Mesa-dri procps findutils >/dev/null
           fi
-      - name: The downloads
+      - uses: actions/download-artifact@v4
+        with:
+          name: released
+      - name: The released files
         run: |
-          if [ "$TAG" = latest ]; then base=https://github.com/$REPO/releases/latest/download; else base=https://github.com/$REPO/releases/download/$TAG; fi
-          curl -fsSL -o QurbSpace.AppImage $base/QurbSpace-linux.AppImage && chmod +x QurbSpace.AppImage
-          curl -fsSL -o QurbSpace.deb $base/QurbSpace-linux.deb
+          mv QurbSpace-linux.AppImage QurbSpace.AppImage && chmod +x QurbSpace.AppImage
+          mv QurbSpace-linux.deb QurbSpace.deb
           ls -la QurbSpace.*
       - uses: actions/download-artifact@v4
         with:
@@ -217,15 +246,18 @@ jobs:
   # device (scripts/desktop-smoke.sh, SMOKE_MODE=full): the released .deb as
   # the window, the command line built from the same tag as the other device.
   linux-window:
+    needs: released
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_branch || inputs.tag != 'latest' && inputs.tag || '' }}
-      - name: Libraries, the .deb, and what drives the window
+      - uses: actions/download-artifact@v4
+        with:
+          name: released
+      - name: Libraries, the released .deb, and what drives the window
         run: |
-          if [ "$TAG" = latest ]; then base=https://github.com/$REPO/releases/latest/download; else base=https://github.com/$REPO/releases/download/$TAG; fi
-          curl -fsSL -o QurbSpace.deb $base/QurbSpace-linux.deb
+          mv QurbSpace-linux.deb QurbSpace.deb
           sudo apt-get update -q
           sudo apt-get install -yq ./QurbSpace.deb libgtk-3-bin webkit2gtk-driver libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libayatana-appindicator3-dev libssl-dev >/dev/null
       - uses: dtolnay/rust-toolchain@stable

@@ -89,7 +89,9 @@ type GitHubJob = { name: string; steps?: { name: string; conclusion: string | nu
  *  run tests the latest release or the one just made. Each run fetches the
  *  AppImage and the .deb on six Linux systems, the .deb once more for the
  *  window, and the Windows installer: about fourteen downloads a run, which
- *  until 2026-11-22 were shown as people. Counted from the steps that ran. */
+ *  until 2026-11-22 were shown as people. Counted from the steps that ran;
+ *  since then the tests take the files from the release build instead
+ *  (scripts/released-files.sh), their steps renamed, and count nothing. */
 async function testDownloads(
   releases: { tag: string; published: string }[],
   token?: string

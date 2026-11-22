@@ -8,6 +8,14 @@ the released programs there: once the release workflow has finished, by hand for
 release (`gh workflow run platforms.yml -f tag=v0.2.0-beta.12`), and on a push
 to the `platform-tests` branch.
 
+The released files are not downloaded from the release: GitHub counts every
+download, and until 2026-11-22 these tests made about fourteen a run, which
+the dashboard showed as people. The first job, `released`, takes them from
+the release build's own artifacts ([`scripts/released-files.sh`](../scripts/released-files.sh))
+and checks each against the published file's digest, so what runs is byte
+for byte what people download. The artifacts are kept 90 days: an older
+release can no longer be tested this way.
+
 ## What each job proves, and what it does not
 
 | Job | Runs | Proves | Does not prove |
