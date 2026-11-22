@@ -318,6 +318,12 @@ async fn serve_connection_inner(
     // attributed to whoever the TLS handshake proved them to be, never to
     // whatever the message claims.
     let asker = fingerprint_of(&connection);
+    // Where it came from, for dialling it back over a direct link: a
+    // computer that joined the phone's link reached the phone, and the phone
+    // knew only its home address, gone with it (decision 0092, 2026-11-22).
+    if let Some(asker) = asker {
+        crate::heard_from(asker, connection.remote_address());
+    }
     let mut told = false;
 
     while let Ok((send, recv)) = connection.accept_bi().await {

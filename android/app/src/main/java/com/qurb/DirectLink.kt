@@ -159,7 +159,11 @@ object DirectLink {
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             Engine.hearingTheNetwork(context) { runCatching { engine.syncWithin(10u) } }
         }
-        if (!engine.directLinkTaken() && link.how == 2.toUByte()) return failed(engine)
+        // Said no at once by a computer somebody is using (decision 0092,
+        // amended): closed, and the usual way, with no waiting for it.
+        // Not a failure: none waits ten minutes for it (2026-11-22: a no at
+        // 16:28 kept the link from two transfers with the laptop locked).
+        if (!engine.directLinkTaken()) return failed(engine, declined = true)
         val joined = if (link.how == 2.toUByte()) waitForClient(25) else { kotlinx.coroutines.delay(8_000); true }
         if (!joined) return failed(engine)
         engine.setDirectLinkReady(true)
@@ -167,8 +171,8 @@ object DirectLink {
         return link
     }
 
-    private fun failed(engine: uniffi.qurb_mobile.Qurb): uniffi.qurb_mobile.DirectLink? {
-        failedAt = System.currentTimeMillis()
+    private fun failed(engine: uniffi.qurb_mobile.Qurb, declined: Boolean = false): uniffi.qurb_mobile.DirectLink? {
+        if (!declined) failedAt = System.currentTimeMillis()
         engine.setDirectLink(null)
         engine.setDirectPossible(false)
         close()

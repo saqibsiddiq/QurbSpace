@@ -30,7 +30,10 @@ pub fn start() {
     if !cfg!(target_os = "linux") || device("wifi").is_none() {
         return;
     }
-    let Some(mut offers) = qurb_peer::take_direct_links() else { return };
+    // Taken only when nobody is at this computer: joining leaves its usual
+    // network while the link lasts. Said at once, so the phone does not
+    // wait for a computer that will not come (2026-11-22: 70 s lost so).
+    let Some(mut offers) = qurb_peer::take_direct_links(away) else { return };
     tokio::spawn(async move {
         while let Some(offer) = offers.recv().await {
             // One at a time: a second offer while one is joined replaces it.
@@ -90,58 +93,29 @@ fn join(offer: &DirectLinkOffer) {
     // A link left from before goes first.
     let _ = nmcli(&["connection", "delete", NAME]);
     let started = Instant::now();
-    // Beside the usual network first: a Wi-Fi Direct client, so this
-    // computer stays online while the link lasts. Only for a Wi-Fi Direct
-    // group; tried briefly, since a search that finds nothing waits out its
-    // whole time. On 2026-11-22 the group on another channel than the home
-    // network was not found this way ("the Wi-Fi P2P peer could not be
-    // found"); the group is now on the home network's channel.
-    let mut beside = false;
-    if offer.how == DIRECT_P2P {
-        if let Some(p2p) = device("wifi-p2p") {
-            let added = nmcli(&[
-                "connection", "add", "type", "wifi-p2p", "ifname", &p2p, "con-name", NAME,
-                "wifi-p2p.peer", &offer.device, "connection.autoconnect", "no",
-            ]);
-            beside = added.is_ok() && nmcli(&["--wait", "20", "connection", "up", NAME]).is_ok();
-            if !beside {
-                tracing::info!(phone = %offer.from.short(), "not joined as Wi-Fi Direct; as a Wi-Fi network, if nobody is using this computer");
-                let _ = nmcli(&["connection", "delete", NAME]);
-            }
-        }
+    // As any Wi-Fi network: the phone's hotspot, or its group, which is a
+    // Wi-Fi network too. That leaves the usual network while the link
+    // lasts; offers are taken only when nobody is at this computer (`away`).
+    // Joined as a Wi-Fi Direct client instead, which would keep the usual
+    // network, the group was never found ("the Wi-Fi P2P peer could not be
+    // found"), on another channel than the home network or the same one
+    // (2026-11-22), and the attempt held up the transfer by 20 s.
+    let Some(wifi) = device("wifi") else { return };
+    let added = nmcli(&[
+        "connection", "add", "type", "wifi", "ifname", &wifi, "con-name", NAME, "ssid", &offer.name,
+        "wifi-sec.key-mgmt", &offer.security, "wifi-sec.psk", &offer.password,
+        "connection.autoconnect", "no",
+    ]);
+    if let Err(e) = added {
+        tracing::warn!(phone = %offer.from.short(), error = %e, "a direct link could not be set up");
+        return;
     }
-    // Otherwise as any Wi-Fi network: the phone's hotspot, or its group,
-    // which is a Wi-Fi network too. That leaves the usual network while the
-    // link lasts, so this computer is offline meanwhile: done only when
-    // nobody is at it (its screen locked or idle), never under somebody's
-    // call or download (2026-11-22: "how do we ensure maximum speed for
-    // everyone by default?").
-    if !beside {
-        if !away() {
-            tracing::info!(phone = %offer.from.short(), "somebody is using this computer: the transfer goes the usual way");
-            return;
-        }
-        let Some(wifi) = device("wifi") else { return };
-        let added = nmcli(&[
-            "connection", "add", "type", "wifi", "ifname", &wifi, "con-name", NAME, "ssid", &offer.name,
-            "wifi-sec.key-mgmt", &offer.security, "wifi-sec.psk", &offer.password,
-            "connection.autoconnect", "no",
-        ]);
-        if let Err(e) = added {
-            tracing::warn!(phone = %offer.from.short(), error = %e, "a direct link could not be set up");
-            return;
-        }
-        if let Err(e) = nmcli(&["--wait", "60", "connection", "up", NAME]) {
-            tracing::warn!(phone = %offer.from.short(), error = %e, "a direct link could not be joined");
-            let _ = nmcli(&["connection", "delete", NAME]);
-            return;
-        }
+    if let Err(e) = nmcli(&["--wait", "60", "connection", "up", NAME]) {
+        tracing::warn!(phone = %offer.from.short(), error = %e, "a direct link could not be joined");
+        let _ = nmcli(&["connection", "delete", NAME]);
+        return;
     }
-    let how = match (beside, offer.how) {
-        (true, _) => "Wi-Fi Direct, beside the usual network",
-        (false, DIRECT_HOTSPOT) => "the phone's hotspot",
-        _ => "the phone's Wi-Fi Direct group, as a Wi-Fi network",
-    };
+    let how = if offer.how == DIRECT_HOTSPOT { "the phone's hotspot" } else { "the phone's Wi-Fi Direct group" };
     let net = joined_net();
     tracing::info!(phone = %offer.from.short(), how, ms = started.elapsed().as_millis() as u64, net = ?net, "joined a direct link");
     // The phone at the far end, tried first from now on, and every

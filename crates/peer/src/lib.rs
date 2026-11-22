@@ -150,6 +150,21 @@ impl DirectNet {
 static DIRECT_NET: std::sync::Mutex<Option<DirectNet>> = std::sync::Mutex::new(None);
 static DIRECT_CHANGED: std::sync::LazyLock<tokio::sync::Notify> = std::sync::LazyLock::new(tokio::sync::Notify::new);
 
+/// Where each device last connected to this one from, by its fingerprint:
+/// on a direct link, the only address it can be dialled at.
+static HEARD_FROM: std::sync::LazyLock<std::sync::Mutex<std::collections::HashMap<Fingerprint, std::net::SocketAddr>>> =
+    std::sync::LazyLock::new(Default::default);
+
+pub(crate) fn heard_from(peer: Fingerprint, at: std::net::SocketAddr) {
+    if let Ok(mut heard) = HEARD_FROM.lock() {
+        heard.insert(peer, at);
+    }
+}
+
+pub(crate) fn last_heard_from(peer: &Fingerprint) -> Option<std::net::SocketAddr> {
+    HEARD_FROM.lock().ok().and_then(|heard| heard.get(peer).copied())
+}
+
 /// A direct link joined, or ended (None): connections kept to its device
 /// are dropped by the daemon, to be made again over the link or without it.
 pub fn set_direct_link(net: Option<DirectNet>) {
@@ -173,15 +188,21 @@ pub async fn direct_link_changed() {
 /// are declined.
 static DIRECT_LINKS: std::sync::OnceLock<tokio::sync::mpsc::UnboundedSender<DirectLinkOffer>> = std::sync::OnceLock::new();
 
-/// Take direct links offered from here on, as they come.
-pub fn take_direct_links() -> Option<tokio::sync::mpsc::UnboundedReceiver<DirectLinkOffer>> {
+/// Whether an offer would be taken now, asked as it arrives so the phone
+/// hears no at once and does not wait for a computer that will not come.
+static DIRECT_TAKES: std::sync::OnceLock<fn() -> bool> = std::sync::OnceLock::new();
+
+/// Take direct links offered from here on, as they come, when `takes` says
+/// so at the time.
+pub fn take_direct_links(takes: fn() -> bool) -> Option<tokio::sync::mpsc::UnboundedReceiver<DirectLinkOffer>> {
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+    DIRECT_TAKES.set(takes).ok()?;
     DIRECT_LINKS.set(tx).ok().map(|_| rx)
 }
 
-/// Offered: passed on, if this program takes them. Whether it does.
+/// Offered: passed on, if this program takes it now. Whether it does.
 pub(crate) fn direct_link_offered(offer: DirectLinkOffer) -> bool {
-    DIRECT_LINKS.get().is_some_and(|tx| tx.send(offer).is_ok())
+    DIRECT_TAKES.get().is_some_and(|takes| takes()) && DIRECT_LINKS.get().is_some_and(|tx| tx.send(offer).is_ok())
 }
 
 pub fn onion_hosted() -> Option<String> {

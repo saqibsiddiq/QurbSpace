@@ -883,6 +883,18 @@ impl Connector {
     }
 
     async fn reach_inner(&self, peer: Fingerprint, need: Need) -> Result<PeerClient> {
+        // A direct link up and the device last heard from on it: there first,
+        // before the local network or the meeting point, which on the link
+        // may know nothing of it (decision 0092).
+        if let (Some(link), Some(at)) = (crate::direct_link(), crate::last_heard_from(&peer)) {
+            if link.holds(at.ip()) {
+                let there = Endpoints { public: None, local: vec![at], onion: None };
+                if let Ok(client) = self.race_among(peer, &there).await {
+                    tracing::info!(peer = %peer.short(), %at, "reached over the direct link, where it was heard from");
+                    return Ok(client);
+                }
+            }
+        }
         let (signal, target, meeting) = self.session_for(&peer);
         if meeting {
             // Another person's device, met under a secret of their own: not
@@ -1170,7 +1182,11 @@ impl Connector {
         // would answer as soon and keep the transfer on it.
         if let Some(link) = crate::direct_link() {
             let mut near: Vec<SocketAddr> = Vec::new();
-            for candidate in endpoints.spread() {
+            // Where it last connected from, if that was over the link: how a
+            // phone finds the computer that joined it, whose new address
+            // nothing else carried.
+            let heard = crate::last_heard_from(&peer).filter(|at| link.holds(at.ip()));
+            for candidate in endpoints.spread().into_iter().chain(heard) {
                 for address in [SocketAddr::new(link.gateway, candidate.port()), candidate] {
                     if !address.ip().is_unspecified() && link.holds(address.ip()) && !near.contains(&address) {
                         near.push(address);
