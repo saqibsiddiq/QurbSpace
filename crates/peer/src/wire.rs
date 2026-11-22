@@ -484,6 +484,12 @@ const TAG_DIRECT_LINK: u8 = 41;
 /// How a direct link is made ([`Request::DirectLink`]).
 pub const DIRECT_HOTSPOT: u8 = 1;
 pub const DIRECT_P2P: u8 = 2;
+/// Wi-Fi Direct made by the two together: the computer connects to the
+/// phone's Wi-Fi Direct address (`device`) while the phone connects to the
+/// computer's, which the computer answers with ([`Response::About`]); the
+/// computer joins beside its usual network and stays on it. No name or
+/// password: the two make the group.
+pub const DIRECT_MEET: u8 = 3;
 
 /// The most of a file one [`Request::Upload`] carries: a few chunks' worth,
 /// small enough that a slow link sends one in seconds.

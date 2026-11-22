@@ -17,7 +17,7 @@
 //! arguments or written into a profile, never through a shell. Only this
 //! person's own phones are heard (`qurb_peer::server`).
 
-use qurb_peer::wire::{DIRECT_HOTSPOT, DIRECT_P2P};
+use qurb_peer::wire::{DIRECT_HOTSPOT, DIRECT_MEET, DIRECT_P2P};
 use qurb_peer::DirectLinkOffer;
 use std::time::{Duration, Instant};
 
@@ -35,7 +35,9 @@ pub fn start() {
     // Taken only when nobody is at this computer, and said at once, so the
     // phone does not wait for a computer that will not come (2026-11-22: 70 s
     // lost so).
-    let Some(mut offers) = qurb_peer::take_direct_links(wifi::away) else { return };
+    // Met over Wi-Fi Direct, it stays on its usual network: taken whoever is
+    // at it, where it can meet.
+    let Some(mut offers) = qurb_peer::take_direct_links(takes, wifi::meets()) else { return };
     tokio::spawn(async move {
         while let Some(offer) = offers.recv().await {
             // One at a time: a second offer while one is joined replaces it.
@@ -44,10 +46,23 @@ pub fn start() {
     });
 }
 
+/// Whether an offer of this kind is taken now.
+fn takes(how: u8) -> bool {
+    if how == DIRECT_MEET { wifi::meets().is_some() } else { wifi::away() }
+}
+
 /// Whether the offer is one this computer may act on: a name a Wi-Fi network
 /// can have, a password WPA takes, a protection it knows, an address.
 fn checked(offer: &DirectLinkOffer) -> Result<(), &'static str> {
     let printable = |s: &str| s.chars().all(|c| !c.is_control());
+    let address = |a: &str| {
+        let hex = a.split(':').collect::<Vec<_>>();
+        hex.len() == 6 && hex.iter().all(|h| h.len() == 2 && h.chars().all(|c| c.is_ascii_hexdigit()))
+    };
+    // Met: only the phone's Wi-Fi Direct address; the two make the rest.
+    if offer.how == DIRECT_MEET {
+        return if address(&offer.device) { Ok(()) } else { Err("no Wi-Fi Direct address") };
+    }
     if offer.name.is_empty() || offer.name.len() > 32 || !printable(&offer.name) {
         return Err("a network name no Wi-Fi network has");
     }
@@ -58,8 +73,7 @@ fn checked(offer: &DirectLinkOffer) -> Result<(), &'static str> {
         return Err("a protection this computer does not join");
     }
     if offer.how == DIRECT_P2P {
-        let hex = offer.device.split(':').collect::<Vec<_>>();
-        if hex.len() != 6 || !hex.iter().all(|h| h.len() == 2 && h.chars().all(|c| c.is_ascii_hexdigit())) {
+        if !address(&offer.device) {
             return Err("no Wi-Fi Direct address");
         }
     } else if offer.how != DIRECT_HOTSPOT {
@@ -79,7 +93,11 @@ fn join(offer: &DirectLinkOffer) {
         wifi::leave();
         return;
     }
-    let how = if offer.how == DIRECT_HOTSPOT { "the phone's hotspot" } else { "the phone's Wi-Fi Direct group" };
+    let how = match offer.how {
+        DIRECT_HOTSPOT => "the phone's hotspot",
+        DIRECT_MEET => "Wi-Fi Direct, met, beside the usual network",
+        _ => "the phone's Wi-Fi Direct group",
+    };
     let net = wifi::joined_net(offer);
     tracing::info!(phone = %offer.from.short(), how, ms = started.elapsed().as_millis() as u64, net = ?net, "joined a direct link");
     // The phone at the far end, tried first from now on, and every
@@ -133,9 +151,31 @@ mod wifi {
         device("wifi").is_some()
     }
 
+    /// This computer's Wi-Fi Direct address, where a phone meets it: its
+    /// Wi-Fi device's own address, which wpa_supplicant's Wi-Fi Direct
+    /// device takes (seen 2026-11-22 in the phone's log of the laptop's
+    /// request). None without a Wi-Fi Direct device.
+    pub fn meets() -> Option<String> {
+        device("wifi-p2p")?;
+        let wifi = device("wifi")?;
+        let address = std::fs::read_to_string(format!("/sys/class/net/{wifi}/address")).ok()?;
+        Some(address.trim().to_string())
+    }
+
     pub fn join(offer: &DirectLinkOffer) -> Result<(), String> {
         // A link left from before goes first.
         let _ = nmcli(&["connection", "delete", NAME]);
+        // Met: a Wi-Fi Direct connection to the phone, which is connecting
+        // to this computer meanwhile; NetworkManager negotiates the group,
+        // beside the usual network.
+        if offer.how == qurb_peer::wire::DIRECT_MEET {
+            let p2p = device("wifi-p2p").ok_or("no Wi-Fi Direct device")?;
+            nmcli(&[
+                "connection", "add", "type", "wifi-p2p", "ifname", &p2p, "con-name", NAME,
+                "wifi-p2p.peer", &offer.device, "connection.autoconnect", "no",
+            ])?;
+            return nmcli(&["--wait", "45", "connection", "up", NAME]).map(|_| ());
+        }
         let wifi = device("wifi").ok_or("no Wi-Fi device")?;
         nmcli(&[
             "connection", "add", "type", "wifi", "ifname", &wifi, "con-name", NAME, "ssid", &offer.name,
@@ -225,6 +265,11 @@ mod wifi {
         value(&interface(), "Name").is_some()
     }
 
+    /// Not met over Wi-Fi Direct on Windows yet.
+    pub fn meets() -> Option<String> {
+        None
+    }
+
     pub fn join(offer: &DirectLinkOffer) -> Result<(), String> {
         let _ = netsh(&["wlan", "delete", "profile", &format!("name={NAME}")]);
         // The profile holds the password, so it is written where only this
@@ -287,6 +332,9 @@ mod wifi {
     use qurb_peer::DirectLinkOffer;
     pub fn available() -> bool {
         false
+    }
+    pub fn meets() -> Option<String> {
+        None
     }
     pub fn join(_: &DirectLinkOffer) -> Result<(), String> {
         Err("no direct links here".into())
@@ -352,6 +400,8 @@ mod tests {
         assert!(checked(&offer(DIRECT_HOTSPOT, "x\n", "abcdefgh", "wpa-psk", "")).is_err());
         assert!(checked(&offer(DIRECT_P2P, "x", "abcdefgh", "wpa-psk", "not an address")).is_err());
         assert!(checked(&offer(9, "x", "abcdefgh", "wpa-psk", "")).is_err());
+        assert!(checked(&offer(DIRECT_MEET, "", "", "", "aa:bb:cc:dd:ee:ff")).is_ok());
+        assert!(checked(&offer(DIRECT_MEET, "", "", "", "")).is_err());
     }
 
     #[test]

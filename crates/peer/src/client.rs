@@ -443,6 +443,24 @@ impl PeerClient {
     /// Hand the computer a one-time code for this phone's Google account
     /// ([`Request::DriveCode`]). Whether it was taken; a build from before
     /// cannot.
+    /// Offer to meet the computer over Wi-Fi Direct ([`wire::DIRECT_MEET`]):
+    /// its Wi-Fi Direct address if it will connect to `device`, this phone's.
+    pub async fn direct_meet(&self, device: &str) -> Result<Option<String>> {
+        let asked = Request::DirectLink {
+            how: crate::wire::DIRECT_MEET,
+            name: String::new(),
+            password: String::new(),
+            security: String::new(),
+            device: device.to_string(),
+        };
+        match self.request(asked).await {
+            Ok(Response::About { kind }) => Ok(Some(kind)),
+            Ok(_) => Ok(None),
+            Err(Error::Connection(e)) => Err(Error::Connection(e)),
+            Err(_) => Ok(None),
+        }
+    }
+
     /// Offer the computer a direct link (decision 0092): whether it will
     /// try to join. No from a computer that cannot, or from before.
     pub async fn direct_link(&self, how: u8, name: &str, password: &str, security: &str, device: &str) -> Result<bool> {

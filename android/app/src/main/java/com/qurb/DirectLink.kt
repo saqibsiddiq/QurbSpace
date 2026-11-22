@@ -153,6 +153,10 @@ object DirectLink {
      * then the transfer goes the usual way, never slower for having tried.
      */
     suspend fun establish(context: Context, engine: uniffi.qurb_mobile.Qurb): uniffi.qurb_mobile.DirectLink? {
+        // Met over Wi-Fi Direct first: the computer stays on its usual
+        // network, so it comes whoever is at it. Else the phone's own group,
+        // which a computer joins only when nobody is at it.
+        if (Controls.fastLink(context) == Controls.FAST_DIRECT) meet(context, engine)?.let { return it }
         val link = open(context, Controls.fastLink(context)) ?: return failed(engine)
         engine.setDirectLink(link)
         // A short pass hands the offer to the computer it reaches.
@@ -169,6 +173,83 @@ object DirectLink {
         engine.setDirectLinkReady(true)
         Log.i(TAG, "the computer is on ${link.name}")
         return link
+    }
+
+    /**
+     * Wi-Fi Direct made by the two together (decision 0092, the meeting):
+     * this phone's Wi-Fi Direct address offered in a short pass, the
+     * computer's back; then each connects to the other, this phone asking
+     * to own the group. Made this way rather than by joining a group the
+     * phone already owns, which NetworkManager does not do: it asks to make
+     * one, and a phone owning one ignored it (2026-11-22).
+     */
+    @android.annotation.SuppressLint("MissingPermission")
+    private suspend fun meet(context: Context, engine: uniffi.qurb_mobile.Qurb): uniffi.qurb_mobile.DirectLink? {
+        if (!allowed(context)) return null
+        close()
+        val manager = context.applicationContext.getSystemService(WifiP2pManager::class.java) ?: return null
+        val channel = manager.initialize(context.applicationContext, Looper.getMainLooper(), null) ?: return null
+        p2p = manager to channel
+        suspendCancellableCoroutine { done ->
+            manager.removeGroup(channel, object : WifiP2pManager.ActionListener {
+                override fun onSuccess() { if (done.isActive) done.resume(Unit) }
+                override fun onFailure(reason: Int) { if (done.isActive) done.resume(Unit) }
+            })
+        }
+        val me = suspendCancellableCoroutine<String?> { done ->
+            manager.requestDeviceInfo(channel) { device -> if (done.isActive) done.resume(device?.deviceAddress) }
+        } ?: return null.also { close() }
+        val link = uniffi.qurb_mobile.DirectLink(3u, "", "", "", me)
+        engine.setDirectLink(link)
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            Engine.hearingTheNetwork(context) { runCatching { engine.syncWithin(10u) } }
+        }
+        val computer = engine.directLinkPeer()
+        if (computer == null || !engine.directLinkTaken()) {
+            Log.i(TAG, "the computer does not meet over Wi-Fi Direct")
+            engine.setDirectLink(null)
+            close()
+            return null
+        }
+        // Found first: Android connects only to a device it has seen.
+        manager.discoverPeers(channel, null)
+        var seen = false
+        repeat(15) {
+            if (!seen) {
+                seen = suspendCancellableCoroutine { done ->
+                    manager.requestPeers(channel) { peers ->
+                        if (done.isActive) done.resume(peers.deviceList.any { it.deviceAddress.equals(computer, ignoreCase = true) })
+                    }
+                }
+                if (!seen) kotlinx.coroutines.delay(1_000)
+            }
+        }
+        if (!seen) return unmet(engine, "the computer was not seen")
+        val config = WifiP2pConfig().apply {
+            deviceAddress = computer
+            wps.setup = android.net.wifi.WpsInfo.PBC
+            groupOwnerIntent = WifiP2pConfig.GROUP_OWNER_INTENT_MAX
+        }
+        val asked = suspendCancellableCoroutine { done ->
+            manager.connect(channel, config, object : WifiP2pManager.ActionListener {
+                override fun onSuccess() { if (done.isActive) done.resume(true) }
+                override fun onFailure(reason: Int) {
+                    Log.w(TAG, "connecting to the computer failed: $reason")
+                    if (done.isActive) done.resume(false)
+                }
+            })
+        }
+        if (!asked || !waitForClient(30)) return unmet(engine, "the computer did not come")
+        engine.setDirectLinkReady(true)
+        Log.i(TAG, "met the computer over Wi-Fi Direct")
+        return link
+    }
+
+    private fun unmet(engine: uniffi.qurb_mobile.Qurb, why: String): uniffi.qurb_mobile.DirectLink? {
+        Log.i(TAG, "not met: $why; the phone's own group")
+        engine.setDirectLink(null)
+        close()
+        return null
     }
 
     private fun failed(engine: uniffi.qurb_mobile.Qurb, declined: Boolean = false): uniffi.qurb_mobile.DirectLink? {

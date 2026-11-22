@@ -973,7 +973,19 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
                     security: security.clone(),
                     device: device.clone(),
                 };
-                if crate::direct_link_offered(offer) { Response::Noted } else { Response::NotFound }
+                // Met, the answer carries where to meet this computer.
+                let meet = *how == crate::wire::DIRECT_MEET;
+                let address = crate::direct_address();
+                if meet && address.is_none() {
+                    Response::NotFound
+                } else if !crate::direct_link_offered(offer) {
+                    Response::NotFound
+                } else {
+                    match address {
+                        Some(address) if meet => Response::About { kind: address },
+                        _ => Response::Noted,
+                    }
+                }
             }
             _ => Response::NotFound,
         },

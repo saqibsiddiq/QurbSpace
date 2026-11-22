@@ -190,19 +190,35 @@ static DIRECT_LINKS: std::sync::OnceLock<tokio::sync::mpsc::UnboundedSender<Dire
 
 /// Whether an offer would be taken now, asked as it arrives so the phone
 /// hears no at once and does not wait for a computer that will not come.
-static DIRECT_TAKES: std::sync::OnceLock<fn() -> bool> = std::sync::OnceLock::new();
+static DIRECT_TAKES: std::sync::OnceLock<fn(u8) -> bool> = std::sync::OnceLock::new();
+/// This computer's Wi-Fi Direct address, told a phone that meets it
+/// ([`wire::DIRECT_MEET`]).
+static DIRECT_ADDRESS: std::sync::OnceLock<String> = std::sync::OnceLock::new();
 
 /// Take direct links offered from here on, as they come, when `takes` says
-/// so at the time.
-pub fn take_direct_links(takes: fn() -> bool) -> Option<tokio::sync::mpsc::UnboundedReceiver<DirectLinkOffer>> {
+/// so at the time for that kind of link; `address` this computer's Wi-Fi
+/// Direct address, if it meets phones.
+pub fn take_direct_links(
+    takes: fn(u8) -> bool,
+    address: Option<String>,
+) -> Option<tokio::sync::mpsc::UnboundedReceiver<DirectLinkOffer>> {
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
     DIRECT_TAKES.set(takes).ok()?;
+    if let Some(address) = address {
+        let _ = DIRECT_ADDRESS.set(address);
+    }
     DIRECT_LINKS.set(tx).ok().map(|_| rx)
+}
+
+/// This computer's Wi-Fi Direct address, where it meets phones.
+pub(crate) fn direct_address() -> Option<String> {
+    DIRECT_ADDRESS.get().cloned()
 }
 
 /// Offered: passed on, if this program takes it now. Whether it does.
 pub(crate) fn direct_link_offered(offer: DirectLinkOffer) -> bool {
-    DIRECT_TAKES.get().is_some_and(|takes| takes()) && DIRECT_LINKS.get().is_some_and(|tx| tx.send(offer).is_ok())
+    let how = offer.how;
+    DIRECT_TAKES.get().is_some_and(|takes| takes(how)) && DIRECT_LINKS.get().is_some_and(|tx| tx.send(offer).is_ok())
 }
 
 pub fn onion_hosted() -> Option<String> {

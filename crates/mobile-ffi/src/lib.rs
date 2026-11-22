@@ -765,6 +765,8 @@ pub struct Qurb {
     /// off for one: a large transfer *to* this phone waits for the link
     /// rather than starting on the router's path (decision 0092, amended).
     direct_possible: std::sync::atomic::AtomicBool,
+    /// The computer's Wi-Fi Direct address, from one that will meet.
+    direct_peer: Mutex<Option<String>>,
     direct_ready: std::sync::atomic::AtomicBool,
     large_incoming: std::sync::atomic::AtomicU64,
     /// Each computer reached to browse it, kept while its connection lasts
@@ -2150,7 +2152,7 @@ impl Qurb {
         // A Wi-Fi Direct group this phone owns is always 192.168.49.1/24 on
         // Android: the computer on it is tried there first when this phone
         // dials it (`Connector::race`).
-        qurb_peer::set_direct_link(link.as_ref().filter(|l| l.how == 2).map(|_| qurb_peer::DirectNet {
+        qurb_peer::set_direct_link(link.as_ref().filter(|l| l.how == 2 || l.how == 3).map(|_| qurb_peer::DirectNet {
             address: std::net::Ipv4Addr::new(192, 168, 49, 1),
             prefix: 24,
             gateway: std::net::IpAddr::V4(std::net::Ipv4Addr::UNSPECIFIED),
@@ -2161,6 +2163,12 @@ impl Qurb {
         if let Ok(mut held) = self.direct_link.lock() {
             *held = link;
         }
+    }
+
+    /// The Wi-Fi Direct address of a computer that said it will meet this
+    /// phone (`how` 3), since last asked: what the phone connects to.
+    pub fn direct_link_peer(&self) -> Option<String> {
+        self.direct_peer.lock().ok().and_then(|mut p| p.take())
     }
 
     /// Whether a direct link could be made now: the app's Fast link on and
@@ -3272,6 +3280,7 @@ impl Qurb {
             direct_link: Mutex::new(None),
             direct_link_taken: std::sync::atomic::AtomicBool::new(false),
             direct_possible: std::sync::atomic::AtomicBool::new(false),
+            direct_peer: Mutex::new(None),
             direct_ready: std::sync::atomic::AtomicBool::new(false),
             large_incoming: std::sync::atomic::AtomicU64::new(0),
             kept_open: Mutex::new(std::collections::HashMap::new()),
@@ -3714,7 +3723,19 @@ impl Qurb {
                 }
             }
             // A direct link to join, for what this pass and the next carry.
-            if let Some(link) = self.direct_link.lock().ok().and_then(|l| l.clone()) {
+            if let Some(link) = self.direct_link.lock().ok().and_then(|l| l.clone()).filter(|l| l.how == 3) {
+                // Met: the computer's address back, to connect to it.
+                let met = runtime.block_on(async {
+                    tokio::time::timeout(std::time::Duration::from_secs(5), client.direct_meet(&link.device)).await
+                });
+                if let Ok(Ok(Some(address))) = met {
+                    tracing::info!(computer = %peer.short(), %address, "it will meet over Wi-Fi Direct");
+                    if let Ok(mut held) = self.direct_peer.lock() {
+                        *held = Some(address);
+                    }
+                    self.direct_link_taken.store(true, std::sync::atomic::Ordering::Relaxed);
+                }
+            } else if let Some(link) = self.direct_link.lock().ok().and_then(|l| l.clone()) {
                 let offered = runtime.block_on(async {
                     tokio::time::timeout(
                         std::time::Duration::from_secs(5),

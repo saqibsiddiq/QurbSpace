@@ -6,6 +6,7 @@ import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import com.qurb.databinding.ScreenPageBinding
 import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -68,6 +69,18 @@ class AdvancedScreen(app: MainActivity) : Screen(app) {
         if (DirectLink.possible()) {
             val sheets = ControlSheets(app)
             kit.setting(card, R.drawable.ic_wifi, "Fast link", sheets.fastLinkWords()) { sheets.fastLink { refresh() } }
+                .root.setOnLongClickListener {
+                    // A test link held a minute, for looking at it from the
+                    // computer (decision 0092): its name in a note.
+                    app.lifecycleScope.launch {
+                        val link = DirectLink.open(app, Controls.FAST_DIRECT, seconds = 15)
+                        if (link == null) { app.say("No link: Fast link needs Wi-Fi and its permission"); return@launch }
+                        app.say("${link.name} for a minute, at ${link.device}")
+                        kotlinx.coroutines.delay(60_000)
+                        DirectLink.close()
+                    }
+                    true
+                }
         }
 
         kit.label(page, "App")
