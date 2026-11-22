@@ -16,16 +16,21 @@ function same(a: string, b: string) {
   return x.length === y.length && timingSafeEqual(x, y)
 }
 
+/** The key set, without what a paste can bring around it: a key pasted
+ *  into Vercel's prompt with a line break after it matched nothing
+ *  (2026-11-22). */
+const wantedKey = () => process.env.DASHBOARD_KEY?.trim() || null
+
 /** The key's fingerprint, for the cookie; none with no key set. */
 export function remembered(): string | null {
-  const wanted = process.env.DASHBOARD_KEY
+  const wanted = wantedKey()
   return wanted ? fingerprint(wanted) : null
 }
 
 /** Whether this is the key. */
 export function isKey(key: string | undefined): boolean {
-  const wanted = process.env.DASHBOARD_KEY
-  return !!wanted && !!key && same(key, wanted)
+  const wanted = wantedKey()
+  return !!wanted && !!key && same(key.trim(), wanted)
 }
 
 /** Whether a cookie holds this browser as let in. */
