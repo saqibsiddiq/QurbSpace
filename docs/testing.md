@@ -4,6 +4,22 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-22, evening: the fast link with somebody at the computer, and without
+
+The S23 (charging, 14 to 19 %) and the laptop, the home router's 5 GHz,
+512 MB of random bytes each, checksums identical (decision 0092, amended).
+
+| test | what happened | MB/s |
+|---|---|---:|
+| phone to laptop, the owner at the laptop (first build) | the laptop tried to join as a Wi-Fi Direct client (not found, 20 s), then said no; the phone waited 25 s more | 9.7, bytes from 110 s |
+| the same, the no said at once | link offered, no at once, the usual way | 12.9, bytes from 14 s |
+| phone to laptop, laptop locked (first try) | no link: a ten-minute pause after the no above, wrongly | 12.3 |
+| phone to laptop, laptop locked | joined in 2.4 to 3.8 s, the phone reached over the link | **29.8** (best 36.1) |
+| laptop to phone, 256 MB, laptop locked | the phone put it off for a link, the laptop joined each time, and the phone could not reach it there; five links in a row, then the usual way's turn never came before the send was withdrawn | none |
+
+Fixed after the last: the phone dials a device first where it last
+connected from on the link. Not yet tried again.
+
 ## 2026-11-22: a direct link for large transfers (decision 0092)
 
 The S23 (Android 16, 23 to 32 % battery, about 36 °C, not charging) and the

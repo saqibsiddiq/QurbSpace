@@ -26,6 +26,10 @@ never stored on a server of ours. Your computer is your cloud.
 
 - **Sends** a file or photo from the phone to the computer, or back, in
   seconds on the same Wi-Fi.
+- **Fast transfers at home**: a large file goes over a Wi-Fi link straight
+  between the phone and the computer, about three times as fast as through
+  the router, whenever nobody is using the computer (it is offline for the
+  minute it takes). Android 13 or later, and a Linux or Windows computer.
 - **Backs up** WhatsApp and the folders you choose from the phone to your
   computer, overnight while charging, instead of Google's 15 GB.
 - **Opens your computer's folders from the phone**, from anywhere: browse,

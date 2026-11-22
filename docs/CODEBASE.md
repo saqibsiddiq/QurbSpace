@@ -1707,8 +1707,11 @@ For a large transfer the phone can make a Wi-Fi network of its own, a Wi-Fi
 Direct group or its hotspot, and offer it to the computer
 (`Request::DirectLink`), which joins it through NetworkManager
 (`qurb_cli::direct`) and dials the phone over it first; it ends with the
-pass. Off until the person turns *Fast link* on; Linux computers only; not
-yet tried on the devices ([decision 0092](decisions/0092-a-direct-link-for-large-transfers.md)).
+pass. On from setup (*Fast transfers*); taken by the computer only when
+nobody is at it, since joining leaves its usual network; both ways; Linux and
+Windows computers. 512 MB phone to laptop at 29.8 to 33.2 MB/s against 9.1
+through the router ([decision 0092](decisions/0092-a-direct-link-for-large-transfers.md),
+testing.md, 2026-11-22).
 
 **A real phone and a real laptop sync both ways**, verified on hardware: a
 4.7 MB photo crossed from a Galaxy S23 to a laptop, byte-identical by SHA-256.

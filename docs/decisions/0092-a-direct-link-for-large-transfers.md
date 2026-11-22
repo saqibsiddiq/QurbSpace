@@ -89,3 +89,38 @@ network, 8.0 on another channel than the phone's home network; **33.2, best
 - **The phone hotspot is kept as a choice** but gains nothing (2.4 GHz).
   Wi-Fi Direct is the one to use.
 
+
+## Amended 2026-11-22, evening: towards on by default
+
+The owner: "how do we ensure maximum speed for everyone by default?". What
+held it back was the computer leaving its usual network while the link
+lasts. Built, and tried on the S23 and the laptop where it says so:
+
+- **Taken only when nobody is at the computer**: its screen locked or idle
+  (logind on Linux; Windows' lock screen running). Asked as the offer
+  arrives, so a computer somebody is using says no at once and the phone
+  goes the usual way without waiting: tried, 512 MB with the owner at the
+  laptop, bytes moving 14 s after the tap as with no link at all. Joining
+  beside the usual network as a Wi-Fi Direct client was tried first, and
+  failed again with the group on the home network's channel; dropped.
+- **On in setup**: *Fast transfers* among the choices of the step that
+  follows pairing, on, Android's permission asked there.
+- **Used only once the computer is on it**: the phone makes the link, offers
+  it in a short pass, and waits for the computer to join (25 s at most);
+  then the transfer. A computer that agreed and never came keeps links off
+  for ten minutes; a no does not (it is free). Tried: locked, 512 MB phone to
+  laptop at **29.8 MB/s** (best 36.1).
+- **Both ways**: a large transfer to the phone (32 MiB) is put off by the
+  pass that finds it and fetched over a link made for it. Tried, and the
+  phone could not reach the computer on the link: it knew only the
+  computer's home address, gone with it, and the new one went out over the
+  internet the computer had just left. Fixed: a device is dialled first
+  where it last connected from on the link (the computer reaches the phone
+  as soon as it joins). **Not yet tried again.**
+- **Windows**: joined through `netsh wlan`, with a profile written for the
+  link and deleted after; taken only with the screen locked. Built and
+  checked by GitHub's Windows machines; **not yet tried on a Windows computer
+  with Wi-Fi.**
+
+Still not done: staying on the usual network beside the link (the one change
+that would let the link be taken while somebody is at the computer); macOS.
