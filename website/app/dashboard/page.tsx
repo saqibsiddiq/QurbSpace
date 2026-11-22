@@ -1,12 +1,15 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { cookies } from 'next/headers'
+import { notFound, redirect } from 'next/navigation'
+import { COOKIE, isKey, isRemembered } from './access'
 import { load, type Platform } from './data'
 import './dashboard.css'
 
 // The owner's view of how QurbSpace is doing (2026-11-22: "a dashboard where
 // i can monitor information like downloads"). Opened with the key set in
-// Vercel as DASHBOARD_KEY (/dashboard?key=...); without it, or with no key
-// set, there is no page here. Never indexed.
+// Vercel as DASHBOARD_KEY (/dashboard?key=...) once per browser, which is
+// then remembered for a year (access.ts); without either, or with no key set,
+// there is no page here. Never indexed.
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
@@ -39,8 +42,9 @@ function Bars({ rows }: { rows: { label: string; value: number }[] }) {
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ key?: string }> }) {
   const { key } = await searchParams
-  const wanted = process.env.DASHBOARD_KEY
-  if (!wanted || key !== wanted) notFound()
+  // Brought the key: remembered, and the address cleaned of it.
+  if (isKey(key)) redirect(`/dashboard/enter?key=${encodeURIComponent(key!)}`)
+  if (!isRemembered((await cookies()).get(COOKIE)?.value)) notFound()
 
   const d = await load()
   const installs = INSTALLS.reduce((n, p) => n + (d.totals[p] ?? 0), 0)
