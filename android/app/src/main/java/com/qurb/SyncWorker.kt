@@ -109,6 +109,12 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             val backupBefore = if (collect) null else runCatching { engine.backupWaiting(1u) }.getOrNull()
             val keeper = if (collect) null else BackingUp.keeper(engine)
             val long = forOthers >= LONG_PASS_BYTES && startLong(forOthers, started, to)
+            // A large transfer, and a direct link wanted (decision 0092): made
+            // before the pass, so the pass is heard on it too, and offered to
+            // the computer the pass reaches; ended with the pass.
+            val fast = Controls.fastLink(applicationContext)
+            val link = if (long && fast != Controls.FAST_OFF) DirectLink.open(applicationContext, fast) else null
+            engine.setDirectLink(link)
             // Another pass is the long one, and is already answering.
             val elsewhere = !long && LONG_PASS.get()
 
@@ -187,6 +193,10 @@ class SyncWorker(context: Context, params: WorkerParameters) :
                     arriving.cancel()
                     // Long or not, *Backed up* when the pass saw the round done.
                     if (collect) showing.cancel() else BackingUp.finish(applicationContext, engine, backupBefore, showing, keeper)
+                    if (link != null) {
+                        engine.setDirectLink(null)
+                        DirectLink.close()
+                    }
                 }
             }
 

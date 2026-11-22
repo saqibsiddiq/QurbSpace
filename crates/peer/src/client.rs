@@ -443,6 +443,24 @@ impl PeerClient {
     /// Hand the computer a one-time code for this phone's Google account
     /// ([`Request::DriveCode`]). Whether it was taken; a build from before
     /// cannot.
+    /// Offer the computer a direct link (decision 0092): whether it will
+    /// try to join. No from a computer that cannot, or from before.
+    pub async fn direct_link(&self, how: u8, name: &str, password: &str, security: &str, device: &str) -> Result<bool> {
+        let asked = Request::DirectLink {
+            how,
+            name: name.to_string(),
+            password: password.to_string(),
+            security: security.to_string(),
+            device: device.to_string(),
+        };
+        match self.request(asked).await {
+            Ok(Response::Noted) => Ok(true),
+            Ok(_) => Ok(false),
+            Err(Error::Connection(e)) => Err(Error::Connection(e)),
+            Err(_) => Ok(false),
+        }
+    }
+
     /// Whether this computer wants a fresh sign-in for `account`, Google
     /// having refused its last ([`Request::DriveWanted`]). No from a computer
     /// from before, which does not know the question.

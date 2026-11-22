@@ -263,6 +263,17 @@ pub enum Request {
     /// [`Response::Noted`] if so, [`Response::NotFound`] if not. From this
     /// person's own phones only; a computer from before answers neither.
     DriveWanted { account: String },
+    /// A link straight between the phone and this computer, for a large
+    /// transfer (decision 0092): a Wi-Fi network the phone has just made, by
+    /// its name and password, for the computer to join while the transfer
+    /// runs. `how` is [`DIRECT_HOTSPOT`] (the phone's own hotspot: joined on
+    /// the computer's Wi-Fi, leaving its usual network meanwhile) or
+    /// [`DIRECT_P2P`] (a Wi-Fi Direct group, `device` the phone's Wi-Fi
+    /// Direct address: joined beside the usual network). `security` is how
+    /// the network is protected, as NetworkManager names it. From this
+    /// person's own phones only. Answered [`Response::Noted`] when the
+    /// computer will try, [`Response::NotFound`] when it cannot.
+    DirectLink { how: u8, name: String, password: String, security: String, device: String },
     /// An Office document turned into a PDF by the computer, to be shown on
     /// the phone: answered [`Response::Converted`], or [`Response::NotFound`]
     /// where it may not be read, is not Office, or nothing here converts it.
@@ -468,6 +479,11 @@ const TAG_GOODBYE: u8 = 37;
 const TAG_ONION: u8 = 38;
 const TAG_DRIVE_CODE: u8 = 39;
 const TAG_DRIVE_WANTED: u8 = 40;
+const TAG_DIRECT_LINK: u8 = 41;
+
+/// How a direct link is made ([`Request::DirectLink`]).
+pub const DIRECT_HOTSPOT: u8 = 1;
+pub const DIRECT_P2P: u8 = 2;
 
 /// The most of a file one [`Request::Upload`] carries: a few chunks' worth,
 /// small enough that a slow link sends one in seconds.
@@ -699,6 +715,13 @@ impl Request {
                 out.push(TAG_DRIVE_WANTED);
                 put_name(&mut out, account);
             }
+            Request::DirectLink { how, name, password, security, device } => {
+                out.push(TAG_DIRECT_LINK);
+                out.push(*how);
+                for text in [name, password, security, device] {
+                    put_name(&mut out, text);
+                }
+            }
             Request::Convert { content, name } => {
                 out.push(TAG_CONVERT);
                 out.extend_from_slice(content);
@@ -804,6 +827,13 @@ impl Request {
             TAG_ONION => Request::Onion,
             TAG_DRIVE_CODE => Request::DriveCode { code: r.name()? },
             TAG_DRIVE_WANTED => Request::DriveWanted { account: r.name()? },
+            TAG_DIRECT_LINK => Request::DirectLink {
+                how: r.u8()?,
+                name: r.name()?,
+                password: r.name()?,
+                security: r.name()?,
+                device: r.name()?,
+            },
             TAG_CONVERT => Request::Convert { content: r.hash()?, name: r.name()? },
             TAG_BECOME => {
                 let len = r.count()?;
@@ -1621,6 +1651,13 @@ mod tests {
             Request::Onion,
             Request::DriveCode { code: "4/0Ab32j9...".into() },
             Request::DriveWanted { account: "someone@example.com".into() },
+            Request::DirectLink {
+                how: DIRECT_P2P,
+                name: "DIRECT-qb-7f3a".into(),
+                password: "a long password".into(),
+                security: "wpa-psk".into(),
+                device: "aa:bb:cc:dd:ee:ff".into(),
+            },
             Request::Convert { content: [7; 32], name: "lease.docx".into() },
             Request::Become { cert: vec![0x30, 0x82, 1, 2] },
         ] {

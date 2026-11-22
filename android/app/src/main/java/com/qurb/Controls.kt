@@ -113,6 +113,18 @@ object Controls {
 
     fun setAppLock(context: Context, on: Boolean) = prefs(context).edit().putBoolean("app_lock", on).apply()
 
+    // ---------- A direct link for large transfers (decision 0092) ----------
+
+    const val FAST_OFF = "off"
+    /** A Wi-Fi Direct group: the computer stays on its usual network. */
+    const val FAST_DIRECT = "direct"
+    /** The phone's own hotspot: the computer leaves its usual network while it lasts. */
+    const val FAST_HOTSPOT = "hotspot"
+
+    fun fastLink(context: Context): String = prefs(context).getString("fast_link", FAST_OFF) ?: FAST_OFF
+
+    fun setFastLink(context: Context, to: String) = prefs(context).edit().putString("fast_link", to).apply()
+
     // ---------- Received files ----------
 
     /** Kept in QurbSpace only, as before: saved out by hand. */

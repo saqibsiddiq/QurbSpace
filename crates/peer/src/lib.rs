@@ -117,6 +117,73 @@ pub fn drive_sign_in_is_wanted(account: &str) -> bool {
     DRIVE_WANTED.lock().is_ok_and(|wanted| wanted.contains(&account.to_lowercase()))
 }
 
+/// A direct link a phone of this person's offered ([`wire::Request::DirectLink`],
+/// decision 0092), for the computer to join.
+#[derive(Debug, Clone)]
+pub struct DirectLinkOffer {
+    pub from: qurb_sync::DeviceId,
+    pub how: u8,
+    pub name: String,
+    pub password: String,
+    pub security: String,
+    pub device: String,
+}
+
+/// The network of a direct link this computer has joined, while it is up:
+/// tried first for the device that made it (`Connector::race`).
+#[derive(Debug, Clone, Copy)]
+pub struct DirectNet {
+    pub address: std::net::Ipv4Addr,
+    pub prefix: u8,
+    /// The phone that made it.
+    pub gateway: std::net::IpAddr,
+}
+
+impl DirectNet {
+    pub fn holds(&self, ip: std::net::IpAddr) -> bool {
+        let std::net::IpAddr::V4(ip) = ip else { return false };
+        let mask = u32::MAX.checked_shl(32 - u32::from(self.prefix.min(32))).unwrap_or(0);
+        u32::from(ip) & mask == u32::from(self.address) & mask
+    }
+}
+
+static DIRECT_NET: std::sync::Mutex<Option<DirectNet>> = std::sync::Mutex::new(None);
+static DIRECT_CHANGED: std::sync::LazyLock<tokio::sync::Notify> = std::sync::LazyLock::new(tokio::sync::Notify::new);
+
+/// A direct link joined, or ended (None): connections kept to its device
+/// are dropped by the daemon, to be made again over the link or without it.
+pub fn set_direct_link(net: Option<DirectNet>) {
+    if let Ok(mut held) = DIRECT_NET.lock() {
+        *held = net;
+    }
+    DIRECT_CHANGED.notify_one();
+}
+
+pub fn direct_link() -> Option<DirectNet> {
+    DIRECT_NET.lock().ok().and_then(|n| *n)
+}
+
+/// Until a direct link is joined or ends.
+pub async fn direct_link_changed() {
+    DIRECT_CHANGED.notified().await
+}
+
+/// Whether this program joins direct links, and how it is told of one: set
+/// by the computer's daemon where it can (`qurb_cli::direct`). Unset, offers
+/// are declined.
+static DIRECT_LINKS: std::sync::OnceLock<tokio::sync::mpsc::UnboundedSender<DirectLinkOffer>> = std::sync::OnceLock::new();
+
+/// Take direct links offered from here on, as they come.
+pub fn take_direct_links() -> Option<tokio::sync::mpsc::UnboundedReceiver<DirectLinkOffer>> {
+    let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+    DIRECT_LINKS.set(tx).ok().map(|_| rx)
+}
+
+/// Offered: passed on, if this program takes them. Whether it does.
+pub(crate) fn direct_link_offered(offer: DirectLinkOffer) -> bool {
+    DIRECT_LINKS.get().is_some_and(|tx| tx.send(offer).is_ok())
+}
+
 pub fn onion_hosted() -> Option<String> {
     HOSTED_ONION.lock().ok().and_then(|o| o.clone())
 }

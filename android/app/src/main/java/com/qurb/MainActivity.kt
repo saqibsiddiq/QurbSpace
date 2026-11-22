@@ -94,6 +94,24 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { }
 
+    /** Nearby Wi-Fi devices, for a direct link ([DirectLink]); what to do after. */
+    private var nearbyThen: ((Boolean) -> Unit)? = null
+    private val nearbyAsk = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted -> nearbyThen?.invoke(granted); nearbyThen = null }
+
+    /** Whether a direct link may be made, asking once if it may not yet. */
+    fun allowNearbyWifi(then: (Boolean) -> Unit) {
+        when {
+            !DirectLink.possible() -> then(false)
+            DirectLink.allowed(this) -> then(true)
+            else -> {
+                nearbyThen = then
+                nearbyAsk.launch(android.Manifest.permission.NEARBY_WIFI_DEVICES)
+            }
+        }
+    }
+
     /** The storage permission, asked for in a dialog before Android 11. */
     private val filesAsk = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()

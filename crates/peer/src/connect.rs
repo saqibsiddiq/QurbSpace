@@ -1163,6 +1163,35 @@ impl Connector {
     /// three timeouts to discover the last one worked. Local addresses are
     /// listed first, so when several succeed the cheapest path is preferred.
     pub async fn race(&self, peer: Fingerprint, endpoints: &Endpoints) -> Result<PeerClient> {
+        // A direct link up (decision 0092): the device on it first, at the
+        // link's gateway (the phone that made it) on each port it answers on,
+        // and at any address of its in the link's network; then, failing
+        // that, every path as ever. Raced together, the home router's path
+        // would answer as soon and keep the transfer on it.
+        if let Some(link) = crate::direct_link() {
+            let mut near: Vec<SocketAddr> = Vec::new();
+            for candidate in endpoints.spread() {
+                for address in [SocketAddr::new(link.gateway, candidate.port()), candidate] {
+                    if link.holds(address.ip()) && !near.contains(&address) {
+                        near.push(address);
+                    }
+                }
+            }
+            if !near.is_empty() {
+                let on_link = Endpoints { public: None, local: near, onion: None };
+                match self.race_among(peer, &on_link).await {
+                    Ok(client) => {
+                        tracing::info!(peer = %peer.short(), "reached over the direct link");
+                        return Ok(client);
+                    }
+                    Err(e) => tracing::debug!(peer = %peer.short(), error = %e, "not on the direct link; every path"),
+                }
+            }
+        }
+        self.race_among(peer, endpoints).await
+    }
+
+    async fn race_among(&self, peer: Fingerprint, endpoints: &Endpoints) -> Result<PeerClient> {
         // With the ports beside the public one, for a stricter NAT (0082).
         let candidates = endpoints.spread();
         if candidates.is_empty() {

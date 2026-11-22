@@ -1097,6 +1097,10 @@ qurb/
 │       │                                      a quick one to collect or send
 │       │                  StayConnected.kt    *Connected*: waits for news and
 │       │                                      collects (decision 0090)
+│       │                  DirectLink.kt       a Wi-Fi network straight to the
+│       │                                      computer for large transfers:
+│       │                                      Wi-Fi Direct or the phone's own
+│       │                                      hotspot (decision 0092)
 │       │                  Transfers.kt        the notification a long transfer
 │       │                                      runs under, and its progress; a
 │       │                                      backup's, *Backing up to …*
@@ -1698,6 +1702,13 @@ Within a pass the file comes before the bookkeeping with the computer
 not when the last device has answered. On the S23 beside the laptop: 3.4 to
 4.3 s from hearing the news to *sent you a file*, was 28 s
 ([testing.md, 2026-11-15](testing.md)).
+
+For a large transfer the phone can make a Wi-Fi network of its own, a Wi-Fi
+Direct group or its hotspot, and offer it to the computer
+(`Request::DirectLink`), which joins it through NetworkManager
+(`qurb_cli::direct`) and dials the phone over it first; it ends with the
+pass. Off until the person turns *Fast link* on; Linux computers only; not
+yet tried on the devices ([decision 0092](decisions/0092-a-direct-link-for-large-transfers.md)).
 
 **A real phone and a real laptop sync both ways**, verified on hardware: a
 4.7 MB photo crossed from a Galaxy S23 to a laptop, byte-identical by SHA-256.

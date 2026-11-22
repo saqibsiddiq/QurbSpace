@@ -15,6 +15,7 @@ pub mod awake;
 pub mod backup;
 pub mod config;
 pub mod daemon;
+pub mod direct;
 pub mod disk;
 pub mod drive_account;
 pub mod layout;

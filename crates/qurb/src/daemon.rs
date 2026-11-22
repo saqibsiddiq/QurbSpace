@@ -696,6 +696,10 @@ impl Daemon {
             }
         });
 
+        // A phone's direct link for a large transfer, joined as offered
+        // (decision 0092), where this computer can.
+        crate::direct::start();
+
         let mut peers = Peers::new(trusted);
         let mut arrivals = connector.arrivals();
         self.sync_all(&mut engine, &connector, &mut peers, &generation).await;
@@ -797,6 +801,19 @@ impl Daemon {
                         self.sync_all(&mut engine, &connector, &mut peers, &generation).await;
                     }
                     self.announce_deliveries(&engine, &connector, &peers);
+                }
+
+                // A direct link joined or ended (decision 0092): connections
+                // kept to a phone are made again, over the link while it is
+                // up, so a transfer moves to it rather than staying on the
+                // router's path.
+                _ = qurb_peer::direct_link_changed() => {
+                    let kept: Vec<Fingerprint> = peers.known.iter().copied().collect();
+                    for peer in kept {
+                        peers.disconnected(peer);
+                    }
+                    peers.all_ready_now();
+                    self.sync_all(&mut engine, &connector, &mut peers, &generation).await;
                 }
 
                 // *Sync now*. Waiting out a backoff is the opposite of what

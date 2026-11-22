@@ -18,6 +18,16 @@
       the laptop could see the phone and the phone could not see the laptop.
     -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <!-- A Wi-Fi network straight to the computer for a large transfer
+         (DirectLink, decision 0092): a Wi-Fi Direct group or the app's own
+         local-only hotspot. Android 13 and later only, and asked with no
+         location: nothing is looked for, only a network made. -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="33" />
 
     <!-- To scan a pairing code. Asked for only when the user taps "Scan",
          never at launch, and the app works without it: the code can always be

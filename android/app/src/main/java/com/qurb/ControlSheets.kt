@@ -182,6 +182,28 @@ class ControlSheets(private val app: MainActivity) {
         else -> "QurbSpace"
     }
 
+    fun fastLinkWords(): String = when (Controls.fastLink(app)) {
+        Controls.FAST_DIRECT -> "Wi-Fi Direct"
+        Controls.FAST_HOTSPOT -> "Phone hotspot"
+        else -> "Off"
+    }
+
+    /** A Wi-Fi network straight to the computer for large transfers (decision 0092). */
+    fun fastLink(then: () -> Unit) =
+        choose(R.drawable.ic_wifi, "Fast link", listOf(
+            Choice(Controls.FAST_OFF, R.drawable.ic_x, "Off"),
+            Choice(Controls.FAST_DIRECT, R.drawable.ic_wifi, "Wi-Fi Direct"),
+            Choice(Controls.FAST_HOTSPOT, R.drawable.ic_cell_signal, "Phone hotspot"),
+        ), Controls.fastLink(app)) { key ->
+            if (key == Controls.FAST_OFF) {
+                Controls.setFastLink(app, key)
+                then()
+            } else app.allowNearbyWifi { granted ->
+                if (granted) Controls.setFastLink(app, key)
+                then()
+            }
+        }
+
     /** Kept in QurbSpace only, or also saved to Downloads or a chosen folder. */
     fun received(then: () -> Unit) =
         choose(R.drawable.ic_folder_input, "Received files", listOf(

@@ -64,6 +64,11 @@ class AdvancedScreen(app: MainActivity) : Screen(app) {
             "off" -> "Off"
             else -> relay
         }) { editRelay() }
+        // Only where Android can make one (13 and later).
+        if (DirectLink.possible()) {
+            val sheets = ControlSheets(app)
+            kit.setting(card, R.drawable.ic_wifi, "Fast link", sheets.fastLinkWords()) { sheets.fastLink { refresh() } }
+        }
 
         kit.label(page, "App")
         card = kit.card(page)

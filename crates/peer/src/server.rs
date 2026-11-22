@@ -957,6 +957,20 @@ fn answer(store: &mut Store, request: &Request, asker: Option<Fingerprint>) -> R
             }
             _ => Response::NotFound,
         },
+        Request::DirectLink { how, name, password, security, device } => match &owner {
+            Some(from) if !other_person => {
+                let offer = crate::DirectLinkOffer {
+                    from: *from,
+                    how: *how,
+                    name: name.clone(),
+                    password: password.clone(),
+                    security: security.clone(),
+                    device: device.clone(),
+                };
+                if crate::direct_link_offered(offer) { Response::Noted } else { Response::NotFound }
+            }
+            _ => Response::NotFound,
+        },
         Request::DriveWanted { account } => match &owner {
             Some(_) if !other_person && crate::drive_sign_in_is_wanted(account) => Response::Noted,
             _ => Response::NotFound,

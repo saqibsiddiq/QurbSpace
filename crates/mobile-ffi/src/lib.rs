@@ -185,6 +185,19 @@ impl From<qurb_storage::db::FolderEntry> for FileEntry {
 
 /// A device removed: by this phone, or this phone by it, which the phone
 /// shows as "saqib removed this phone", with Add it again.
+/// A Wi-Fi network the phone made for a direct link (decision 0092):
+/// `how` 1 for its hotspot, 2 for a Wi-Fi Direct group, whose `device` is the
+/// phone's Wi-Fi Direct address. `security` as NetworkManager names it
+/// (`wpa-psk`, `sae`).
+#[derive(Debug, Clone, uniffi::Record)]
+pub struct DirectLink {
+    pub how: u8,
+    pub name: String,
+    pub password: String,
+    pub security: String,
+    pub device: String,
+}
+
 #[derive(Debug, Clone, uniffi::Record)]
 pub struct RemovedDevice {
     pub name: String,
@@ -739,6 +752,10 @@ pub struct Qurb {
     /// (`Request::DriveWanted`).
     drive_account: Mutex<Option<String>>,
     drive_wanted: std::sync::atomic::AtomicBool,
+    /// A direct link this phone has made, to offer the computers it reaches
+    /// (decision 0092), and whether one said it will join.
+    direct_link: Mutex<Option<DirectLink>>,
+    direct_link_taken: std::sync::atomic::AtomicBool,
     /// Each computer reached to browse it, kept while its connection lasts
     /// (the owner's list of 2026-11-01, item 7): opening a computer built
     /// a whole connection from nothing every time (an endpoint, the relay,
@@ -2115,6 +2132,21 @@ impl Qurb {
         self.drive_wanted.swap(false, std::sync::atomic::Ordering::Relaxed)
     }
 
+    /// A Wi-Fi network this phone has just made, its hotspot or a Wi-Fi
+    /// Direct group, to offer the computers the next pass reaches for a large
+    /// transfer (decision 0092). None when there is none.
+    pub fn set_direct_link(&self, link: Option<DirectLink>) {
+        if let Ok(mut held) = self.direct_link.lock() {
+            *held = link;
+        }
+    }
+
+    /// Whether a computer reached since last asked said it will join the
+    /// direct link offered.
+    pub fn direct_link_taken(&self) -> bool {
+        self.direct_link_taken.swap(false, std::sync::atomic::Ordering::Relaxed)
+    }
+
     /// How many times passes have taken in files, since the app started.
     ///
     /// Without the engine, so it answers while a pass holds it. A pass
@@ -3198,6 +3230,8 @@ impl Qurb {
             arrived: std::sync::atomic::AtomicU64::new(0),
             drive_account: Mutex::new(None),
             drive_wanted: std::sync::atomic::AtomicBool::new(false),
+            direct_link: Mutex::new(None),
+            direct_link_taken: std::sync::atomic::AtomicBool::new(false),
             kept_open: Mutex::new(std::collections::HashMap::new()),
             opening: Mutex::new(std::collections::HashMap::new()),
             reach_states: Arc::new(Mutex::new(std::collections::HashMap::new())),
@@ -3636,6 +3670,23 @@ impl Qurb {
                         *held = None;
                     }
                 }
+            }
+            // A direct link to join, for what this pass and the next carry.
+            if let Some(link) = self.direct_link.lock().ok().and_then(|l| l.clone()) {
+                let offered = runtime.block_on(async {
+                    tokio::time::timeout(
+                        std::time::Duration::from_secs(5),
+                        client.direct_link(link.how, &link.name, &link.password, &link.security, &link.device),
+                    )
+                    .await
+                });
+                if let Ok(Ok(true)) = offered {
+                    tracing::info!(computer = %peer.short(), how = link.how, "it will join the direct link");
+                    self.direct_link_taken.store(true, std::sync::atomic::Ordering::Relaxed);
+                }
+            }
+            if self.drive_code.lock().ok().is_some_and(|c| c.is_some()) {
+                // Handed above, or to be handed next time.
             } else if let Some(account) = self.drive_account.lock().ok().and_then(|a| a.clone()) {
                 // No code to hand: does it want one?
                 if let Ok(Ok(true)) = runtime.block_on(async {
