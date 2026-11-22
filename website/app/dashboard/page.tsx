@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 }
 
 const INSTALLS: Platform[] = ['Android', 'Windows', 'Ubuntu and Debian', 'Any Linux']
-const UPDATES: Platform[] = ['Phone updates', 'Computer updates']
+const UPDATES: Platform[] = ['Phone updates', 'Computer updates', 'Phone update checks', 'Computer update checks']
 
 const number = (n: number | undefined | null) => (n ?? 0).toLocaleString('en')
 const date = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -62,11 +62,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <span>downloads</span>
         </div>
         <div className="db-tile">
-          <b>{number(d.totals['Phone updates'])}</b>
+          <b>{number(d.totals['Phone update checks'])}</b>
           <span>phone update checks</span>
         </div>
         <div className="db-tile">
-          <b>{number(d.totals['Computer updates'])}</b>
+          <b>{number(d.totals['Computer update checks'])}</b>
           <span>computer update checks</span>
         </div>
         <div className="db-tile">
@@ -94,6 +94,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               <tr>
                 <th>Release</th>
                 <th>Published</th>
+                <th>Tests</th>
                 {[...INSTALLS, ...UPDATES].map((p) => (
                   <th key={p}>{p}</th>
                 ))}
@@ -104,6 +105,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 <tr key={r.tag}>
                   <td>{r.tag}</td>
                   <td>{date(r.published)}</td>
+                  <td>{number(r.tests)}</td>
                   {[...INSTALLS, ...UPDATES].map((p) => (
                     <td key={p}>{number(r.byPlatform[p])}</td>
                   ))}
@@ -113,8 +115,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           </table>
         </div>
         <p className="db-note">
-          Update checks are each installed app asking whether there is a newer version: a rough measure of how many
-          copies are in use, not of people. A download may be the same person twice.
+          Downloads are the files people are sent to. Left out: {number(d.tests)} downloads by QurbSpace’s own platform
+          tests (Tests), and the files the apps update themselves from (Phone updates, Computer updates). Update checks
+          are each installed app asking whether there is a newer version: a rough measure of how many copies are in use,
+          not of people. A download may be the same person twice.
         </p>
       </section>
 

@@ -160,7 +160,11 @@ warned.
 
 `/dashboard?key=…`: downloads by device and release, update checks (a rough
 count of copies in use), GitHub stars and issues, the waitlist's size, and,
-with a token, visits to the GitHub page. Nothing in it comes from anybody's
+with a token, visits to the GitHub page. Downloads are the files people are
+sent to (the names without a version); left out, and shown apart, are the
+versioned files the apps update themselves from and what the platform tests
+fetch from each release (about fourteen files a run, counted from the steps
+each run took). On 2026-11-22 these were 480 of the 543 GitHub counted. Nothing in it comes from anybody's
 devices; the apps report nothing (PRIVACY.md). Set in Vercel:
 
 - `DASHBOARD_KEY`: the key in the address. Without it there is no page.
