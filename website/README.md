@@ -155,3 +155,14 @@ warned.
   or by the owner.
 - **A blog.** Notes points at the repository's phase and decision records
   instead.
+
+## The dashboard
+
+`/dashboard?key=…`: downloads by device and release, update checks (a rough
+count of copies in use), GitHub stars and issues, the waitlist's size, and,
+with a token, visits to the GitHub page. Nothing in it comes from anybody's
+devices; the apps report nothing (PRIVACY.md). Set in Vercel:
+
+- `DASHBOARD_KEY`: the key in the address. Without it there is no page.
+- `GITHUB_TOKEN`, optional: a fine-grained token with read access to this
+  repository's administration, for its traffic (views, visitors, referrers).
