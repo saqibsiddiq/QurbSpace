@@ -475,18 +475,30 @@ class MainActivity : AppCompatActivity() {
         val photos = intent.getBooleanExtra(SetupActivity.SETUP_PHOTOS, false)
         val whatsApp = intent.getBooleanExtra(SetupActivity.SETUP_WHATSAPP, false)
         val drive = intent.getBooleanExtra(SetupActivity.SETUP_DRIVE, false)
+        val fast = intent.getBooleanExtra(SetupActivity.SETUP_FAST, false)
         intent.removeExtra(SetupActivity.SETUP_PHOTOS)
         intent.removeExtra(SetupActivity.SETUP_WHATSAPP)
         intent.removeExtra(SetupActivity.SETUP_DRIVE)
+        intent.removeExtra(SetupActivity.SETUP_FAST)
         if (drive && GoogleDrive.account(this) == null) {
             pickDriveAccount { on ->
                 if (on) say("Google Drive on")
-                afterSetupDrive(photos, whatsApp)
+                afterSetupDrive(photos, whatsApp, fast)
             }
-        } else afterSetupDrive(photos, whatsApp)
+        } else afterSetupDrive(photos, whatsApp, fast)
     }
 
-    private fun afterSetupDrive(photos: Boolean, whatsApp: Boolean) {
+    private fun afterSetupDrive(photos: Boolean, whatsApp: Boolean, fast: Boolean) {
+        // Fast transfers: Android's permission asked here, with the others,
+        // so it is on without anybody finding the setting (decision 0092).
+        // One ask at a time: the photos' page opened over this one's dialog.
+        if (fast) {
+            allowNearbyWifi { granted ->
+                if (granted) Controls.setFastLink(this, Controls.FAST_DIRECT)
+                afterSetupDrive(photos, whatsApp, fast = false)
+            }
+            return
+        }
         if (photos && !Folders.allowed(this)) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) startActivity(Folders.allowing(this))
             else requestPermissions(Folders.OLDER, 0)
@@ -1054,6 +1066,11 @@ class MainActivity : AppCompatActivity() {
                 // A computer asking to open this phone's folder there, and
                 // what one did with a yes sent it.
                 heard()
+                // A large transfer to this phone waits for a direct link,
+                // which the worker makes and fetches over (decision 0092).
+                if (engine.largeIncoming() > 0uL) {
+                    withContext(Dispatchers.IO) { SyncWorker.runNow(this@MainActivity, quick = true) }
+                }
                 // A computer wants a fresh sign-in to this phone's Google
                 // account (decision 0088, amended): on screen, Google's own
                 // sheet when it wants the person, and a sync to hand it over.

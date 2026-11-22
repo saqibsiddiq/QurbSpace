@@ -112,9 +112,7 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             // A large transfer, and a direct link wanted (decision 0092): made
             // before the pass, so the pass is heard on it too, and offered to
             // the computer the pass reaches; ended with the pass.
-            val fast = Controls.fastLink(applicationContext)
-            val link = if (long && fast != Controls.FAST_OFF) DirectLink.open(applicationContext, fast) else null
-            engine.setDirectLink(link)
+            val link = if (long && DirectLink.possibleNow(applicationContext)) DirectLink.establish(applicationContext, engine) else null
             // Another pass is the long one, and is already answering.
             val elsewhere = !long && LONG_PASS.get()
 
@@ -232,6 +230,21 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             // device was there for it: reached, or collecting on its own
             // connection: say so, with the way to carry on.
             // What is worth telling the person, now nobody is looking.
+            // A large transfer to this phone put off for a direct link: made,
+            // the computer on it, and fetched over it; or, failing that, the
+            // usual way at once (decision 0092, amended).
+            if (engine.largeIncoming() > 0uL) {
+                val incoming = DirectLink.establish(applicationContext, engine)
+                withContext(Dispatchers.IO) {
+                    Engine.hearingTheNetwork(applicationContext) {
+                        runCatching { engine.syncServing(BUDGET_SECONDS, SERVING_SECONDS) }
+                    }
+                }
+                if (incoming != null) {
+                    engine.setDirectLink(null)
+                    DirectLink.close()
+                }
+            }
             tellArrived(engine)
             Notices.asked(applicationContext, engine)
             // A computer reached wants a fresh sign-in to this phone's

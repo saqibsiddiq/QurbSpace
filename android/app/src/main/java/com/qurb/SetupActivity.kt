@@ -354,6 +354,8 @@ class SetupActivity : AppCompatActivity() {
     /** Google Drive as the mailbox, asked here (the owner, 2026-11-14:
      *  "include setting up google account during the setup of the phone"). */
     private var wantsDrive = true
+    /** Fast transfers over a direct link (decision 0092): on, where Android can. */
+    private var wantsFast = true
 
     /**
      * Connected (the setup stories of 2026-11-03): the computer's face, what
@@ -369,16 +371,18 @@ class SetupActivity : AppCompatActivity() {
         views.connectedTitle.text = "Connected to $name"
         views.connectedChoices.removeAllViews()
         val card = kit.card(views.connectedChoices)
-        val choices = listOf(
+        val choices = listOfNotNull(
             Triple("Photos", R.drawable.ic_image, wantsPhotos),
             Triple("WhatsApp", R.drawable.ic_whatsapp, wantsWhatsApp),
             Triple("Google Drive", R.drawable.ic_cloud, wantsDrive),
+            Triple("Fast transfers", R.drawable.ic_wifi, wantsFast).takeIf { DirectLink.possible() },
         )
         for ((label, icon, on) in choices) {
             kit.toggle(card, label, "", on) { checked ->
                 when (label) {
                     "Photos" -> wantsPhotos = checked
                     "WhatsApp" -> wantsWhatsApp = checked
+                    "Fast transfers" -> wantsFast = checked
                     else -> wantsDrive = checked
                 }
             }.apply {
@@ -403,7 +407,8 @@ class SetupActivity : AppCompatActivity() {
             startActivity(Intent(this@SetupActivity, MainActivity::class.java)
                 .putExtra(SETUP_PHOTOS, wantsPhotos)
                 .putExtra(SETUP_WHATSAPP, wantsWhatsApp)
-                .putExtra(SETUP_DRIVE, wantsDrive))
+                .putExtra(SETUP_DRIVE, wantsDrive)
+                .putExtra(SETUP_FAST, wantsFast && DirectLink.possible()))
             finish()
         }
     }
@@ -477,5 +482,6 @@ class SetupActivity : AppCompatActivity() {
         const val SETUP_PHOTOS = "setup-photos"
         const val SETUP_WHATSAPP = "setup-whatsapp"
         const val SETUP_DRIVE = "setup-drive"
+        const val SETUP_FAST = "setup-fast"
     }
 }

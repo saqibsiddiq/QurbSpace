@@ -396,6 +396,8 @@ object Engine {
         noteNetwork(context)
         // A Google Drive token for the mailbox, when it is on (2026-11-13).
         handle?.let { GoogleDrive.refresh(context, it) }
+        // Whether a large transfer waits for a direct link (decision 0092).
+        handle?.setDirectPossible(DirectLink.possibleNow(context))
         val wifi = context.applicationContext
             .getSystemService(Context.WIFI_SERVICE) as? android.net.wifi.WifiManager
         val lock = runCatching {

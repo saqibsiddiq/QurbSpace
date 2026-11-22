@@ -185,6 +185,10 @@ impl From<qurb_storage::db::FolderEntry> for FileEntry {
 
 /// A device removed: by this phone, or this phone by it, which the phone
 /// shows as "saqib removed this phone", with Add it again.
+/// How much coming to this phone is worth a direct link: as much as makes a
+/// pass from it a long one (`SyncWorker.LONG_PASS_BYTES`).
+const LARGE_INCOMING: u64 = 32 << 20;
+
 /// A Wi-Fi network the phone made for a direct link (decision 0092):
 /// `how` 1 for its hotspot, 2 for a Wi-Fi Direct group, whose `device` is the
 /// phone's Wi-Fi Direct address. `security` as NetworkManager names it
@@ -756,6 +760,13 @@ pub struct Qurb {
     /// (decision 0092), and whether one said it will join.
     direct_link: Mutex<Option<DirectLink>>,
     direct_link_taken: std::sync::atomic::AtomicBool,
+    /// Whether the app could make a direct link now (Fast link on, allowed),
+    /// whether the one made has the computer on it, and how much a pass put
+    /// off for one: a large transfer *to* this phone waits for the link
+    /// rather than starting on the router's path (decision 0092, amended).
+    direct_possible: std::sync::atomic::AtomicBool,
+    direct_ready: std::sync::atomic::AtomicBool,
+    large_incoming: std::sync::atomic::AtomicU64,
     /// Each computer reached to browse it, kept while its connection lasts
     /// (the owner's list of 2026-11-01, item 7): opening a computer built
     /// a whole connection from nothing every time (an endpoint, the relay,
@@ -2136,9 +2147,37 @@ impl Qurb {
     /// Direct group, to offer the computers the next pass reaches for a large
     /// transfer (decision 0092). None when there is none.
     pub fn set_direct_link(&self, link: Option<DirectLink>) {
+        // A Wi-Fi Direct group this phone owns is always 192.168.49.1/24 on
+        // Android: the computer on it is tried there first when this phone
+        // dials it (`Connector::race`).
+        qurb_peer::set_direct_link(link.as_ref().filter(|l| l.how == 2).map(|_| qurb_peer::DirectNet {
+            address: std::net::Ipv4Addr::new(192, 168, 49, 1),
+            prefix: 24,
+            gateway: std::net::IpAddr::V4(std::net::Ipv4Addr::UNSPECIFIED),
+        }));
+        if link.is_none() {
+            self.direct_ready.store(false, std::sync::atomic::Ordering::Relaxed);
+        }
         if let Ok(mut held) = self.direct_link.lock() {
             *held = link;
         }
+    }
+
+    /// Whether a direct link could be made now: the app's Fast link on and
+    /// allowed. Off, nothing waits for one.
+    pub fn set_direct_possible(&self, possible: bool) {
+        self.direct_possible.store(possible, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// The computer has joined the direct link: what waited for it goes.
+    pub fn set_direct_link_ready(&self, ready: bool) {
+        self.direct_ready.store(ready, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// Bytes a pass put off since last asked, to go over a direct link: a
+    /// large transfer to this phone, the link possible and not yet up.
+    pub fn large_incoming(&self) -> u64 {
+        self.large_incoming.swap(0, std::sync::atomic::Ordering::Relaxed)
     }
 
     /// Whether a computer reached since last asked said it will join the
@@ -3232,6 +3271,9 @@ impl Qurb {
             drive_wanted: std::sync::atomic::AtomicBool::new(false),
             direct_link: Mutex::new(None),
             direct_link_taken: std::sync::atomic::AtomicBool::new(false),
+            direct_possible: std::sync::atomic::AtomicBool::new(false),
+            direct_ready: std::sync::atomic::AtomicBool::new(false),
+            large_incoming: std::sync::atomic::AtomicU64::new(0),
             kept_open: Mutex::new(std::collections::HashMap::new()),
             opening: Mutex::new(std::collections::HashMap::new()),
             reach_states: Arc::new(Mutex::new(std::collections::HashMap::new())),
@@ -4052,6 +4094,29 @@ impl Qurb {
             }
         }
         let plan = engine.plan_with(&tree, peer_device.as_ref())?;
+        // A large transfer to this phone, and a direct link possible but not
+        // up: put off, for the app to make the link and come back over it,
+        // rather than started on the router's path and kept there.
+        if self.direct_possible.load(std::sync::atomic::Ordering::Relaxed)
+            && !self.direct_ready.load(std::sync::atomic::Ordering::Relaxed)
+        {
+            let coming: u64 = plan
+                .iter()
+                .filter_map(|action| match action {
+                    qurb_sync::Action::Adopt { remote } | qurb_sync::Action::Restored { remote } => Some(remote),
+                    _ => None,
+                })
+                .filter_map(|v| match v.content {
+                    qurb_sync::Content::File { size, .. } => Some(size),
+                    _ => None,
+                })
+                .sum();
+            if coming >= LARGE_INCOMING {
+                tracing::info!(computer = %peer.short(), bytes = coming, "a large transfer waits for a direct link");
+                self.large_incoming.store(coming, std::sync::atomic::Ordering::Relaxed);
+                return Ok(Some(qurb_engine::PlanStats::default()));
+            }
+        }
 
         // Before the early return, not after: two devices that agree about
         // everything produce an empty plan every time, and those are exactly

@@ -1172,7 +1172,7 @@ impl Connector {
             let mut near: Vec<SocketAddr> = Vec::new();
             for candidate in endpoints.spread() {
                 for address in [SocketAddr::new(link.gateway, candidate.port()), candidate] {
-                    if link.holds(address.ip()) && !near.contains(&address) {
+                    if !address.ip().is_unspecified() && link.holds(address.ip()) && !near.contains(&address) {
                         near.push(address);
                     }
                 }

@@ -135,6 +135,60 @@ object DirectLink {
         return uniffi.qurb_mobile.DirectLink(2u, name, password, "wpa-psk", address)
     }
 
+    /** When a link last failed to bring the computer on: none tried for a
+     *  while after, and nothing waits for one meanwhile. */
+    @Volatile private var failedAt = 0L
+    private const val AFTER_FAILING_MS = 10 * 60_000L
+
+    /** Whether a large transfer should wait for a link now: the person's
+     *  Fast link on, allowed, and none failed in the last ten minutes. */
+    fun possibleNow(context: Context): Boolean =
+        Controls.fastLink(context) != Controls.FAST_OFF && allowed(context) &&
+            System.currentTimeMillis() - failedAt > AFTER_FAILING_MS
+
+    /**
+     * Make the link and bring the computer onto it (decision 0092, amended):
+     * made, offered in a short pass, and waited for until the computer has
+     * joined. The link if it did; none, and closed, if it did not in time:
+     * then the transfer goes the usual way, never slower for having tried.
+     */
+    suspend fun establish(context: Context, engine: uniffi.qurb_mobile.Qurb): uniffi.qurb_mobile.DirectLink? {
+        val link = open(context, Controls.fastLink(context)) ?: return failed(engine)
+        engine.setDirectLink(link)
+        // A short pass hands the offer to the computer it reaches.
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            Engine.hearingTheNetwork(context) { runCatching { engine.syncWithin(10u) } }
+        }
+        if (!engine.directLinkTaken() && link.how == 2.toUByte()) return failed(engine)
+        val joined = if (link.how == 2.toUByte()) waitForClient(25) else { kotlinx.coroutines.delay(8_000); true }
+        if (!joined) return failed(engine)
+        engine.setDirectLinkReady(true)
+        Log.i(TAG, "the computer is on ${link.name}")
+        return link
+    }
+
+    private fun failed(engine: uniffi.qurb_mobile.Qurb): uniffi.qurb_mobile.DirectLink? {
+        failedAt = System.currentTimeMillis()
+        engine.setDirectLink(null)
+        engine.setDirectPossible(false)
+        close()
+        Log.i(TAG, "no computer joined; the usual way")
+        return null
+    }
+
+    @android.annotation.SuppressLint("MissingPermission")
+    private suspend fun waitForClient(seconds: Int): Boolean {
+        val (manager, channel) = p2p ?: return false
+        repeat(seconds) {
+            val joined = suspendCancellableCoroutine { done ->
+                manager.requestGroupInfo(channel) { group -> if (done.isActive) done.resume(group?.clientList?.isNotEmpty() == true) }
+            }
+            if (joined) return true
+            kotlinx.coroutines.delay(1_000)
+        }
+        return false
+    }
+
     /** End the link, if one is open. */
     fun close() {
         hotspot?.let { runCatching { it.close() } }
