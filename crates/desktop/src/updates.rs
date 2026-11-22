@@ -8,13 +8,15 @@
 //! after starting and every six hours. Where an update can be put in place
 //! while the window runs (an AppImage on Linux) it is, and takes over at
 //! the next start; on Windows, where installing closes the window, it is
-//! fetched and waits to be installed from Settings. In place, it restarts
+//! fetched and waits to be installed from Settings, kept on disk so a
+//! restart before then does not fetch it again. In place, it restarts
 //! itself into the new one once nobody is using the window (N-2). Installed by a package
 //! manager, the window cannot replace itself, and says a newer one exists.
 //!
 //! The check sends nothing about the person: one request for a public file.
 
 use serde::Serialize;
+use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::Duration;
 use tauri::AppHandle;
@@ -92,7 +94,13 @@ pub async fn look(app: AppHandle, fetch: bool) {
     };
     let update = match found {
         Ok(Some(update)) => update,
-        Ok(None) => return set(|h| h.state.state = "idle"),
+        Ok(None) => {
+            // Installed, or none: a kept update is done with.
+            if let Some(dir) = kept_dir(&app) {
+                let _ = std::fs::remove_dir_all(dir);
+            }
+            return set(|h| h.state.state = "idle");
+        }
         Err(e) => {
             tracing::warn!(error = %e, "could not look for an update");
             return set(|h| {
@@ -114,6 +122,14 @@ pub async fn look(app: AppHandle, fetch: bool) {
             h.state.state = "available";
             h.state.version = Some(version);
         });
+    }
+    // Fetched before and kept, waiting to be installed (Windows): the same
+    // file again, not another download.
+    if !cfg!(target_os = "linux") {
+        if let Some(bytes) = kept(&app, &update) {
+            tracing::info!(%version, "the update fetched before is kept; not fetched again");
+            return ready(update, version, bytes);
+        }
     }
     set(|h| {
         h.state.state = "downloading";
@@ -160,12 +176,79 @@ pub async fn look(app: AppHandle, fetch: bool) {
         }
         return;
     }
+    keep(&app, &version, &bytes);
+    ready(update, version, bytes);
+}
+
+/// Fetched, signed, and waiting to be installed from Settings.
+fn ready(update: tauri_plugin_updater::Update, version: String, bytes: Vec<u8>) {
     set(|h| {
         h.state.state = "ready";
+        h.state.version = Some(version);
         h.state.progress = None;
         h.bytes = Some(bytes);
     });
     *PENDING.lock().expect("pending update poisoned") = Some(update);
+}
+
+/// Where a fetched update waits on disk to be installed. Kept in memory only,
+/// it was fetched again at every start of a computer restarted before the
+/// person installed it, about ten megabytes each time (found 2026-11-22).
+fn kept_dir(app: &AppHandle) -> Option<PathBuf> {
+    use tauri::Manager;
+    app.path().app_cache_dir().ok().map(|dir| dir.join("update"))
+}
+
+fn kept_file(dir: &std::path::Path, version: &str) -> PathBuf {
+    dir.join(format!("{version}.update"))
+}
+
+/// Keep a fetched update, in place of any kept before. Not kept is no harm:
+/// it is fetched again, as before.
+fn keep(app: &AppHandle, version: &str, bytes: &[u8]) {
+    let Some(dir) = kept_dir(app) else { return };
+    let _ = std::fs::remove_dir_all(&dir);
+    let file = kept_file(&dir, version);
+    let partial = file.with_extension("partial");
+    let kept = std::fs::create_dir_all(&dir)
+        .and_then(|()| std::fs::write(&partial, bytes))
+        .and_then(|()| std::fs::rename(&partial, &file));
+    if let Err(e) = kept {
+        tracing::warn!(error = %e, "could not keep the update; it is fetched again after a restart");
+    }
+}
+
+/// The update for this version, kept before, if it is there and the
+/// signature announced now is the updater key's over it: checked as the
+/// updater checks a download, so a file changed on disk is not installed.
+fn kept(app: &AppHandle, update: &tauri_plugin_updater::Update) -> Option<Vec<u8>> {
+    let file = kept_file(&kept_dir(app)?, &update.version);
+    let bytes = std::fs::read(&file).ok()?;
+    let key = app.config().plugins.0.get("updater")?.get("pubkey")?.as_str()?;
+    if signed(key, &bytes, &update.signature) {
+        Some(bytes)
+    } else {
+        tracing::warn!("the kept update is not the one signed; fetched again");
+        let _ = std::fs::remove_file(&file);
+        None
+    }
+}
+
+/// Whether `signature` is the key's over `bytes`, both as the updater has
+/// them: base64 of minisign's text (tauri.conf.json, latest.json).
+fn signed(key: &str, bytes: &[u8], signature: &str) -> bool {
+    use base64::Engine;
+    let text = |b64: &str| {
+        base64::engine::general_purpose::STANDARD
+            .decode(b64)
+            .ok()
+            .and_then(|d| String::from_utf8(d).ok())
+    };
+    let (Some(key), Some(signature)) = (text(key), text(signature)) else { return false };
+    match (minisign_verify::PublicKey::decode(&key), minisign_verify::Signature::decode(&signature)) {
+        (Ok(key), Ok(signature)) => key.verify(bytes, &signature, true).is_ok(),
+        _ => false,
+    }
 }
 
 /// The update fetched and waiting to be installed (Windows), kept with what
@@ -237,4 +320,32 @@ pub fn watch(app: AppHandle) {
             tokio::time::sleep(EVERY).await;
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::signed;
+    use base64::Engine;
+
+    // minisign-verify's own example: a key, and its signature over "test".
+    const KEY: &str = "untrusted comment: minisign public key\nRWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3\n";
+    const SIGNATURE: &str = "untrusted comment: signature from minisign secret key
+RWQf6LRCGA9i59SLOFxz6NxvASXDJeRtuZykwQepbDEGt87ig1BNpWaVWuNrm73YiIiJbq71Wi+dP9eKL8OC351vwIasSSbXxwA=
+trusted comment: timestamp:1555779966\tfile:test
+QtKMXWyYcwdpZAlPF7tE2ENJkRd1ujvKjlj1m9RtHTBnZPa5WKU5uWRs5GoP5M/VqE81QFuMKI5k/SfNQUaOAA==";
+
+    fn b64(s: &str) -> String {
+        base64::engine::general_purpose::STANDARD.encode(s)
+    }
+
+    #[test]
+    fn a_kept_update_is_used_only_as_signed() {
+        assert!(signed(&b64(KEY), b"test", &b64(SIGNATURE)));
+        // Changed on disk.
+        assert!(!signed(&b64(KEY), b"Test", &b64(SIGNATURE)));
+        assert!(!signed(&b64(KEY), b"", &b64(SIGNATURE)));
+        // Not the updater's text at all.
+        assert!(!signed("not base64", b"test", &b64(SIGNATURE)));
+        assert!(!signed(&b64(KEY), b"test", "not base64"));
+    }
 }

@@ -5209,6 +5209,7 @@ dependencies = [
  "blake3",
  "fuser",
  "libc",
+ "minisign-verify",
  "notify-rust",
  "qurb-cli",
  "qurb-keys",

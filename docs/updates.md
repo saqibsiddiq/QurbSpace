@@ -11,7 +11,9 @@ starts the new one anyway. A .deb install does not update itself.
 
 **Desktop (Windows):** the installer from the latest release. A new version
 is fetched in the background; *Install update* in the sidebar installs it.
-Not yet run on Windows.
+Fetched, it is kept on disk until then, so a computer restarted first does
+not fetch it again; the kept file is installed only if the release's
+signature still checks over it. Not yet run on a Windows computer.
 
 **Phone:** the APK from the latest release. The first time an update is
 ready, Android asks to allow QurbSpace to install apps: allow it once; after

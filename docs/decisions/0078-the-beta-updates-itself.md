@@ -118,3 +118,25 @@ installs over the last (`scripts/release-manifests.py`, `versionCodeOf` in
 - **Appealed again for v0.2.0-beta.12** the same evening (2026-11-19):
   SHA-256 `099309fd288660b6e79ada65328b2d10599e01949a5ae694c69de6b620c3a868`,
   VirusTotal again with no vendor flagging it.
+
+## Amended 2026-11-22: Windows keeps a fetched update; downloads looked at
+
+- **Kept on disk until installed** (`updates.rs`, `keep` and `kept`). Held
+  only in memory, a fetched Windows update was fetched again after every
+  restart before *Install update*: about 10 MB each start. Now kept in the
+  app's cache folder and, after a restart, used again if the signature the
+  release announces is the updater key's over it (checked as the updater
+  checks a download; tried on beta.13's real installer and signature, and on
+  the same with one bit changed, refused). Removed once no update is found.
+  Built and tested on Linux; not yet run on a Windows computer.
+- **Not a loop in the app.** The dashboard showed beta.11's Windows update
+  file fetched 180 times against 44 checks of `latest.json`. The app fetches
+  it only after a check, so at least 136 of those came from outside the app,
+  most likely scanners and download sites reading the release; GitHub does
+  not say who.
+- **Appealed again for v0.2.0-beta.13** (2026-11-22): SHA-256
+  `af57e45781eddbe367d8f62892483d7ffe3fcef7c49ab12abc74b2e3978c12be`,
+  VirusTotal's page heading no vendor flagging it (the vendor list was
+  behind a CAPTCHA, not solved). The form filled with beta.12's words and a
+  line on the Nearby Wi-Fi devices permission new in beta.13; the owner
+  completes Google's reCAPTCHA and submits.

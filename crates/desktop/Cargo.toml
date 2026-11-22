@@ -38,6 +38,9 @@ tauri = { version = "2", features = [] }
 # cannot drag or is using a keyboard.
 tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
+# The updater's own signature check, for an update kept on disk between starts
+# (updates.rs). Already built for the updater.
+minisign-verify = "0.2"
 # Desktop notifications, for the few things worth interrupting somebody about.
 # Raised from Rust rather than from the page, because a notification is most
 # useful exactly when nobody is looking at the window.
