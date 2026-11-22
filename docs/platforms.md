@@ -15,6 +15,9 @@ the release build's own artifacts ([`scripts/released-files.sh`](../scripts/rele
 and checks each against the published file's digest, so what runs is byte
 for byte what people download. The artifacts are kept 90 days: an older
 release can no longer be tested this way.
+Tried on 2026-11-22 (run 45032421923, beta.13): every job passed, and
+beta.13's counts were the same after as before (AppImage 6, .deb 7, Windows
+installer 2), where the old way would have added fourteen.
 
 ## What each job proves, and what it does not
 
