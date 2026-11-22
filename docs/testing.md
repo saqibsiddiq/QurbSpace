@@ -4,6 +4,19 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-22, night: meeting over Wi-Fi Direct (decision 0092)
+
+The S23 (68 %, not charging) and the laptop, the owner at the laptop; 512 MB
+phone to laptop each time, checksums identical, the laptop's active
+connections sampled every 2 s. Three tries of the two connecting to each
+other over Wi-Fi Direct: the laptop stayed on its home network in every one
+(e.g. 11 samples of the home network alone and 72 of it with the Wi-Fi
+Direct connection beside it); the transfer never went over the link (10.2,
+4.9 and 3.7 MB/s the usual way). Found: NetworkManager makes a group rather
+than joins one; Android's own Wi-Fi Direct address is not the one on the air;
+both connecting at once, Android says *busy*. Set aside; details in decision
+0092.
+
 ## 2026-11-22, evening: the fast link with somebody at the computer, and without
 
 The S23 (charging, 14 to 19 %) and the laptop, the home router's 5 GHz,

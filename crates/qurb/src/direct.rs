@@ -59,8 +59,11 @@ fn checked(offer: &DirectLinkOffer) -> Result<(), &'static str> {
         let hex = a.split(':').collect::<Vec<_>>();
         hex.len() == 6 && hex.iter().all(|h| h.len() == 2 && h.chars().all(|c| c.is_ascii_hexdigit()))
     };
-    // Met: only the phone's Wi-Fi Direct address; the two make the rest.
+    // Met: the phone's Wi-Fi Direct name and address; the two make the rest.
     if offer.how == DIRECT_MEET {
+        if offer.name.len() > 32 || !printable(&offer.name) {
+            return Err("no Wi-Fi Direct name");
+        }
         return if address(&offer.device) { Ok(()) } else { Err("no Wi-Fi Direct address") };
     }
     if offer.name.is_empty() || offer.name.len() > 32 || !printable(&offer.name) {
@@ -170,11 +173,27 @@ mod wifi {
         // beside the usual network.
         if offer.how == qurb_peer::wire::DIRECT_MEET {
             let p2p = device("wifi-p2p").ok_or("no Wi-Fi Direct device")?;
+            // Found by its name: Android gives an app the phone's own
+            // address and uses a random one on the air, and the laptop looked
+            // for the first and saw only the second (2026-11-22). The address
+            // given, if nothing by that name answers.
+            let peer = found(&p2p, &offer.name).unwrap_or_else(|| offer.device.clone());
             nmcli(&[
                 "connection", "add", "type", "wifi-p2p", "ifname", &p2p, "con-name", NAME,
-                "wifi-p2p.peer", &offer.device, "connection.autoconnect", "no",
+                "wifi-p2p.peer", &peer, "connection.autoconnect", "no",
             ])?;
-            return nmcli(&["--wait", "45", "connection", "up", NAME]).map(|_| ());
+            // Again and again for a while: NetworkManager's search for the
+            // phone gives up after about 10 s, and the phone may begin to be
+            // seen only later (2026-11-22: given up at 10 s, the phone
+            // looking from 10 s).
+            let started = std::time::Instant::now();
+            loop {
+                match nmcli(&["--wait", "20", "connection", "up", NAME]) {
+                    Ok(_) => return Ok(()),
+                    Err(e) if started.elapsed() > std::time::Duration::from_secs(50) => return Err(e),
+                    Err(_) => std::thread::sleep(std::time::Duration::from_secs(1)),
+                }
+            }
         }
         let wifi = device("wifi").ok_or("no Wi-Fi device")?;
         nmcli(&[
@@ -183,6 +202,32 @@ mod wifi {
             "connection.autoconnect", "no",
         ])?;
         nmcli(&["--wait", "60", "connection", "up", NAME]).map(|_| ())
+    }
+
+    /// The address the Wi-Fi Direct device called `name` is on, searched for
+    /// through NetworkManager for up to 20 s.
+    fn found(p2p: &str, name: &str) -> Option<String> {
+        if name.is_empty() {
+            return None;
+        }
+        let path = nmcli(&["-g", "GENERAL.DBUS-PATH", "device", "show", p2p]).ok()?.trim().to_string();
+        let nm = "org.freedesktop.NetworkManager";
+        let _ = run("busctl", &["--system", "call", nm, &path, &format!("{nm}.Device.WifiP2P"), "StartFind", "a{sv}", "1", "timeout", "i", "30"]);
+        for _ in 0..20 {
+            std::thread::sleep(std::time::Duration::from_secs(1));
+            let peers = run("busctl", &["--system", "get-property", nm, &path, &format!("{nm}.Device.WifiP2P"), "Peers"]).unwrap_or_default();
+            for peer in peers.split('"').filter(|p| p.starts_with('/')) {
+                let property = |what: &str| {
+                    run("busctl", &["--system", "get-property", nm, peer, &format!("{nm}.WifiP2PPeer"), what])
+                        .ok()
+                        .and_then(|s| s.split_once(' ').map(|(_, v)| v.trim().trim_matches('"').to_string()))
+                };
+                if property("Name").as_deref() == Some(name) {
+                    return property("HwAddress");
+                }
+            }
+        }
+        None
     }
 
     pub fn up(_offer: &DirectLinkOffer) -> bool {

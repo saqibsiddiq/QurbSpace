@@ -3726,7 +3726,7 @@ impl Qurb {
             if let Some(link) = self.direct_link.lock().ok().and_then(|l| l.clone()).filter(|l| l.how == 3) {
                 // Met: the computer's address back, to connect to it.
                 let met = runtime.block_on(async {
-                    tokio::time::timeout(std::time::Duration::from_secs(5), client.direct_meet(&link.device)).await
+                    tokio::time::timeout(std::time::Duration::from_secs(5), client.direct_meet(&link.name, &link.device)).await
                 });
                 if let Ok(Ok(Some(address))) = met {
                     tracing::info!(computer = %peer.short(), %address, "it will meet over Wi-Fi Direct");

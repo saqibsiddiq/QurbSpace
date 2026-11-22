@@ -135,6 +135,16 @@ object DirectLink {
         return uniffi.qurb_mobile.DirectLink(2u, name, password, "wpa-psk", address)
     }
 
+    /**
+     * Whether to try meeting over Wi-Fi Direct first. Off: tried three times
+     * on 2026-11-22 and never carried a transfer. The computer joined beside
+     * its usual network once (13.7 s), but Android told the phone *busy* as
+     * both connected at once, the group came up with no address for the
+     * computer, and the transfer meanwhile went the usual way at 3.7 MB/s,
+     * slower than not trying. Kept for working on (decision 0092).
+     */
+    private const val MEET = false
+
     /** When a link last failed to bring the computer on: none tried for a
      *  while after, and nothing waits for one meanwhile. */
     @Volatile private var failedAt = 0L
@@ -156,7 +166,7 @@ object DirectLink {
         // Met over Wi-Fi Direct first: the computer stays on its usual
         // network, so it comes whoever is at it. Else the phone's own group,
         // which a computer joins only when nobody is at it.
-        if (Controls.fastLink(context) == Controls.FAST_DIRECT) meet(context, engine)?.let { return it }
+        if (MEET && Controls.fastLink(context) == Controls.FAST_DIRECT) meet(context, engine)?.let { return it }
         val link = open(context, Controls.fastLink(context)) ?: return failed(engine)
         engine.setDirectLink(link)
         // A short pass hands the offer to the computer it reaches.
@@ -196,10 +206,17 @@ object DirectLink {
                 override fun onFailure(reason: Int) { if (done.isActive) done.resume(Unit) }
             })
         }
-        val me = suspendCancellableCoroutine<String?> { done ->
-            manager.requestDeviceInfo(channel) { device -> if (done.isActive) done.resume(device?.deviceAddress) }
+        // Its name too: the address Android gives here is the phone's own,
+        // and on the air it uses a random one, which the computer finds by
+        // the name (2026-11-22).
+        val me = suspendCancellableCoroutine<android.net.wifi.p2p.WifiP2pDevice?> { done ->
+            manager.requestDeviceInfo(channel) { device -> if (done.isActive) done.resume(device) }
         } ?: return null.also { close() }
-        val link = uniffi.qurb_mobile.DirectLink(3u, "", "", "", me)
+        // Seen from now on: the computer starts looking as soon as it hears
+        // the offer, and gave up before a phone that began looking only
+        // after the pass (2026-11-22).
+        manager.discoverPeers(channel, null)
+        val link = uniffi.qurb_mobile.DirectLink(3u, me.deviceName ?: "", "", "", me.deviceAddress ?: "")
         engine.setDirectLink(link)
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             Engine.hearingTheNetwork(context) { runCatching { engine.syncWithin(10u) } }
@@ -212,9 +229,9 @@ object DirectLink {
             return null
         }
         // Found first: Android connects only to a device it has seen.
-        manager.discoverPeers(channel, null)
         var seen = false
-        repeat(15) {
+        repeat(25) {
+            if (it % 8 == 7) manager.discoverPeers(channel, null)
             if (!seen) {
                 seen = suspendCancellableCoroutine { done ->
                     manager.requestPeers(channel) { peers ->

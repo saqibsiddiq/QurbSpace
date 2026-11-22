@@ -124,3 +124,36 @@ lasts. Built, and tried on the S23 and the laptop where it says so:
 
 Still not done: staying on the usual network beside the link (the one change
 that would let the link be taken while somebody is at the computer); macOS.
+
+## Amended 2026-11-22, night: meeting over Wi-Fi Direct, tried and set aside
+
+To keep the computer on its usual network beside the link (the one thing
+between the fast link and *whoever is at the computer*), the two were made
+to **meet**: the phone offers its Wi-Fi Direct name and address, the
+computer answers with its own, and each connects to the other, the phone
+asking to own the group (`DIRECT_MEET`; `DirectLink.meet`;
+`qurb_cli::direct::wifi::join`). Found on the way, with the phone's group held
+a minute by a long press on *Fast link*:
+
+- NetworkManager does not **join** a group another device owns: it asks to
+  **make** one ("GO-NEG-REQUEST" in the phone's log), which a phone already
+  owning one ignores. Hence the meeting.
+- Android gives an app the phone's **own** Wi-Fi Direct address
+  (`d4:ab:cd:92:19:cf`) and uses a **random** one on the air
+  (`ce:f9:f0:87:f0:49`): NetworkManager looked for the first and saw only the
+  second, "peer not found". The first try of all, that morning, failed the
+  same way. Now found by its name.
+
+Three tries, the owner at the laptop each time; the laptop stayed on its home
+network throughout, every time:
+
+| try | what happened | the transfer |
+|---|---|---|
+| 1 | the laptop gave up looking after 10 s, the phone began after its 10 s pass | the usual way, bytes from 40 s, 10.2 MB/s |
+| 2 | the phone looked from the start and found the laptop; the laptop, given the phone's own address, never did | the usual way, 4.9 MB/s, bytes from 50 s |
+| 3 | found by name; **the laptop joined beside its home network in 13.7 s**; Android told the phone *busy* (both connecting at once), the group came up with no address for the laptop | the usual way, **3.7 MB/s** |
+
+Slower than not trying, so **set aside** (`DirectLink.MEET = false`): the fast
+link is the phone's own group, which the computer joins only when nobody is
+at it. The code stays for the next try, which would have one side connect
+and the other only accept, and give the computer an address on the group.

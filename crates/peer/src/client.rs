@@ -445,10 +445,10 @@ impl PeerClient {
     /// cannot.
     /// Offer to meet the computer over Wi-Fi Direct ([`wire::DIRECT_MEET`]):
     /// its Wi-Fi Direct address if it will connect to `device`, this phone's.
-    pub async fn direct_meet(&self, device: &str) -> Result<Option<String>> {
+    pub async fn direct_meet(&self, name: &str, device: &str) -> Result<Option<String>> {
         let asked = Request::DirectLink {
             how: crate::wire::DIRECT_MEET,
-            name: String::new(),
+            name: name.to_string(),
             password: String::new(),
             security: String::new(),
             device: device.to_string(),
