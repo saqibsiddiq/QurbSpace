@@ -76,7 +76,8 @@ async function waitlistSize(): Promise<number | null> {
 }
 
 export async function load(): Promise<Dashboard> {
-  const token = process.env.GITHUB_TOKEN
+  // Trimmed: a token pasted at Vercel's prompt can bring a line break.
+  const token = process.env.GITHUB_TOKEN?.trim() || undefined
   const notes: string[] = []
 
   const releases: Release[] = []
