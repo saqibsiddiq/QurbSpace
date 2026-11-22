@@ -4,6 +4,14 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-22, night: laptop to phone over the link (decision 0092)
+
+256 MB, the laptop locked, the S23 connected. The link was made and joined
+each minute (3.8 s), the laptop reaching the phone over it, and the pass
+over it took nothing; eleven minutes, the file not arriving. With transfers
+to the phone no longer waiting for a link, it arrived the usual way, intact.
+Cause not found.
+
 ## 2026-11-22, night: meeting over Wi-Fi Direct (decision 0092)
 
 The S23 (68 %, not charging) and the laptop, the owner at the laptop; 512 MB

@@ -157,3 +157,16 @@ Slower than not trying, so **set aside** (`DirectLink.MEET = false`): the fast
 link is the phone's own group, which the computer joins only when nobody is
 at it. The code stays for the next try, which would have one side connect
 and the other only accept, and give the computer an address on the group.
+
+## Amended 2026-11-22, night: transfers to the phone, tried and turned off
+
+Test 3, 256 MB laptop to phone with the laptop locked, after the dial-back
+fix: the phone put the file off for a link, made it, the laptop joined
+(3.8 s) and reached the phone over it; then the pass meant to fetch over the
+link took nothing ("adopted=0"), the link ended, and the next pass put the
+file off again: a new link every minute for eleven minutes, the file never
+arriving. Worse than slow, so **turned off**: a large transfer to the phone
+goes the usual way (`setDirectPossible(false)`), and the stuck file arrived
+the usual way, intact, minutes after. Why the pass over the link took
+nothing is not found yet. **Phone to computer is unchanged**: 29.8 to 33.2
+MB/s with nobody at the computer.
