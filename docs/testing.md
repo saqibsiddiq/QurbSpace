@@ -4,6 +4,32 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-22: a direct link for large transfers (decision 0092)
+
+The S23 (Android 16, 23 to 32 % battery, about 36 °C, not charging) and the
+laptop (Intel Raptor Lake CNVi), both on the home router's 5 GHz Wi-Fi.
+Each run: a new file of 536,870,912 random bytes made on the phone, shared
+to QurbSpace, sent to the laptop; timed on the laptop by the arriving file's
+size every 2 s; checksums identical every time.
+
+| run | path | MB/s once bytes flowed | best 2 s | from the tap |
+|---|---|---:|---:|---:|
+| Fast link off | through the router | 9.1 | 11.6 | 72 s |
+| Wi-Fi Direct, laptop as a Wi-Fi Direct client | not joined: "the Wi-Fi P2P peer could not be found"; through the router | 6.6 | 10.4 | 126 s |
+| Phone hotspot (Android's local-only hotspot) | joined in 3.6 s, on **2.4 GHz** (2437 MHz), which an app cannot change | 8.3 | 11.3 | 132 s |
+| Wi-Fi Direct group joined as a Wi-Fi network | joined in 3.0 s on 5805 MHz, the phone's home network on 5765 | 8.0 | 11.4 | 80 s |
+| the same, **the group on the home network's channel** | joined in 2.3 s on 5240 MHz, the phone's home network on 5240 | **33.2** | **38.9** | 28 s |
+
+The router's second hop was not the limit; the phone's one radio on two
+channels was, taking turns between them. On one channel, 3.6 times the
+router's path. Kept: the group on the home network's channel (when that is
+5 GHz), joined by the laptop as a Wi-Fi network. What that costs: the laptop
+leaves its home network while the link lasts (about the transfer's length).
+
+Not measured: a file from the laptop to the phone (no link is made for it
+yet); the hotspot on 5 GHz (not possible for an app); the phone on 2.4 GHz
+at home (the group then goes on any 5 GHz channel, two channels again).
+
 ## 2026-11-21: a red dot on a laptop being browsed, and Drive signed out
 
 The laptop on a hotspot ("Realme 1"), the S23 elsewhere. The owner: "they

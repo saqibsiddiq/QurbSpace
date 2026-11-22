@@ -103,12 +103,22 @@ object DirectLink {
         fun word(n: Int) = (1..n).map { letters[random.nextInt(letters.length)] }.joinToString("")
         val name = "DIRECT-qb-${word(6)}"
         val password = word(20)
+        // On the channel the phone's own Wi-Fi is on, when that is 5 GHz: one
+        // radio on two channels takes turns between them, and the group on
+        // 5805 MHz beside the home network on 5765 carried 8.0 MB/s, one hop
+        // or not (2026-11-22). Otherwise any 5 GHz channel.
+        @Suppress("DEPRECATION")
+        val home = context.applicationContext.getSystemService(WifiManager::class.java)?.connectionInfo?.frequency ?: 0
         val config = WifiP2pConfig.Builder()
             .setNetworkName(name)
             .setPassphrase(password)
-            .setGroupOperatingBand(WifiP2pConfig.GROUP_OWNER_BAND_5GHZ)
+            .apply {
+                if (home in 4900..5900) setGroupOperatingFrequency(home)
+                else setGroupOperatingBand(WifiP2pConfig.GROUP_OWNER_BAND_5GHZ)
+            }
             .enablePersistentMode(false)
             .build()
+        Log.i(TAG, "a group beside the home network on $home MHz")
         val made = suspendCancellableCoroutine { done ->
             manager.createGroup(channel, config, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() { if (done.isActive) done.resume(true) }

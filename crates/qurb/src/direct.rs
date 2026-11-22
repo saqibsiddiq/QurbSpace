@@ -90,10 +90,15 @@ fn join(offer: &DirectLinkOffer) {
     // A link left from before goes first.
     let _ = nmcli(&["connection", "delete", NAME]);
     let added = match offer.how {
-        // The phone's hotspot, on this computer's Wi-Fi: its usual network
-        // is left while the link lasts, and NetworkManager goes back to it
-        // when the link is deleted.
-        DIRECT_HOTSPOT => {
+        // On this computer's Wi-Fi, as any network: its usual network is
+        // left while the link lasts, and NetworkManager goes back to it when
+        // the link is deleted. The phone's hotspot; and its Wi-Fi Direct
+        // group, which is a Wi-Fi network too. Joined as a Wi-Fi Direct
+        // client instead, the group was not found (2026-11-22: "The Wi-Fi
+        // P2P peer could not be found"): the search listens on 2.4 GHz and
+        // the group, asked for the speed, was on 5. Android's local-only
+        // hotspot is on 2.4 GHz, which an app cannot change: 8.3 MB/s.
+        DIRECT_HOTSPOT | DIRECT_P2P => {
             let Some(wifi) = device("wifi") else { return };
             nmcli(&[
                 "connection", "add", "type", "wifi", "ifname", &wifi, "con-name", NAME, "ssid", &offer.name,
@@ -101,23 +106,13 @@ fn join(offer: &DirectLinkOffer) {
                 "connection.autoconnect", "no",
             ])
         }
-        // Wi-Fi Direct, beside the usual network.
-        _ => {
-            let Some(p2p) = device("wifi-p2p") else {
-                tracing::info!(phone = %offer.from.short(), "no Wi-Fi Direct here; the transfer goes the usual way");
-                return;
-            };
-            nmcli(&[
-                "connection", "add", "type", "wifi-p2p", "ifname", &p2p, "con-name", NAME,
-                "wifi-p2p.peer", &offer.device, "connection.autoconnect", "no",
-            ])
-        }
+        _ => return,
     };
     if let Err(e) = added {
         tracing::warn!(phone = %offer.from.short(), error = %e, "a direct link could not be set up");
         return;
     }
-    let how = if offer.how == DIRECT_HOTSPOT { "the phone's hotspot" } else { "Wi-Fi Direct" };
+    let how = if offer.how == DIRECT_HOTSPOT { "the phone's hotspot" } else { "the phone's Wi-Fi Direct group" };
     let started = Instant::now();
     match nmcli(&["--wait", "60", "connection", "up", NAME]) {
         Ok(_) => {

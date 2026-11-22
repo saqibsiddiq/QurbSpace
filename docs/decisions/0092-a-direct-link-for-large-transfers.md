@@ -1,7 +1,7 @@
 # 0092: A direct link for large transfers
 
 **Date:** 2026-11-22
-**Status:** built, not yet tried on the devices
+**Status:** built, and measured on the S23 and the laptop (amended below)
 
 ## What was asked
 
@@ -69,3 +69,23 @@ the usual way. The fast link is off until the person turns it on.
   computer does when it dials the phone, which is the direction a backup
   goes.
 - **Windows and macOS** decline: no NetworkManager.
+
+## Amended 2026-11-22: tried, and changed by what was measured
+
+Measured the same day (testing.md, 2026-11-22), 512 MB phone to laptop: the
+router's path 9.1 MB/s; the phone's hotspot 8.3 (Android puts an app's
+hotspot on 2.4 GHz); a Wi-Fi Direct group not found by the laptop's Wi-Fi
+Direct search ("peer could not be found"), and, joined as a plain Wi-Fi
+network, 8.0 on another channel than the phone's home network; **33.2, best
+38.9**, on the same channel. Changed:
+
+- **The group goes on the home network's channel** when that is 5 GHz
+  (`WifiP2pConfig.setGroupOperatingFrequency`): one radio on two channels
+  takes turns between them, which, not the router's hop, held every run to
+  8 to 11 MB/s.
+- **The laptop joins the group as a Wi-Fi network**, by its name and
+  password, not as a Wi-Fi Direct client: so it **leaves its home network
+  while the link lasts**, as with the hotspot. Staying on both is for later.
+- **The phone hotspot is kept as a choice** but gains nothing (2.4 GHz).
+  Wi-Fi Direct is the one to use.
+
