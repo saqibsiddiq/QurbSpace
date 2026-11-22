@@ -1054,6 +1054,12 @@ class MainActivity : AppCompatActivity() {
                 // A computer asking to open this phone's folder there, and
                 // what one did with a yes sent it.
                 heard()
+                // A computer wants a fresh sign-in to this phone's Google
+                // account (decision 0088, amended): on screen, Google's own
+                // sheet when it wants the person, and a sync to hand it over.
+                if (engine.driveSignInWanted() && GoogleDrive.account(this@MainActivity) != null) {
+                    GoogleDrive.signIn(this@MainActivity) { ok -> if (ok) sync(quiet = true) }
+                }
                 // Home says *All synced* and *saqib is off* in the middle of
                 // the screen (the redesign), so they are not said again
                 // under it; elsewhere, and what Home does not say, still are.

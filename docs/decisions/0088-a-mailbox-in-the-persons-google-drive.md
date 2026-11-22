@@ -163,5 +163,11 @@ changed, access removed), so:
   Google wants the person, one notification, *Reconnect Google Drive*, and a
   tap.
 
-Built, and the computer's half seen on the laptop ("asking its phone for a
-new one"); the phone's half is not yet tried on a phone.
+Tried on 2026-11-22, the S23 and the laptop: the phone's sync heard "it
+wants a fresh sign-in" at 14:48; on screen, so Google's sheet ("You're
+signing back in to QurbSpace") opened in the app rather than a notification;
+the owner tapped Continue; handed over at 14:52; the laptop "signed in to a
+phone's Google account, as it asked", and Google took both accounts'
+sign-ins again. (The first build asked only after the background worker's
+passes, and a sync from Home, run in the app, did not: fixed the same hour.)
+The notification, for a sync nobody is watching, is not yet seen.
