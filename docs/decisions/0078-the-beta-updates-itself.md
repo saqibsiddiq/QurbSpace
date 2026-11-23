@@ -139,4 +139,5 @@ installs over the last (`scripts/release-manifests.py`, `versionCodeOf` in
   VirusTotal's page heading no vendor flagging it (the vendor list was
   behind a CAPTCHA, not solved). The form filled with beta.12's words and a
   line on the Nearby Wi-Fi devices permission new in beta.13; the owner
-  completes Google's reCAPTCHA and submits.
+  completed Google's reCAPTCHA and submitted it, and Google's confirmation
+  email came.
