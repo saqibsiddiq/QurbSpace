@@ -1,0 +1,50 @@
+# Known vulnerabilities in what QurbSpace is built from (the owner,
+# 2026-11-23: an automatic check for libraries with published flaws, the
+# cheapest of three steps against someone exploiting one; SECURITY.md).
+#
+# The Rust crates against the RustSec advisory database, and the website's
+# packages against npm's. Weekly, since an advisory can be published against
+# a library nobody changed; and whenever either lock file changes. A failed
+# run is GitHub's email to the owner.
+#
+# Not covered yet: the Android app's Gradle libraries.
+name: audit
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  push:
+    branches: [main]
+    paths:
+      - Cargo.lock
+      - website/package-lock.json
+      - .github/workflows/audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      # Fails on a vulnerability; an unmaintained or unsound crate is listed
+      # as a warning, to be read.
+      - run: cargo audit
+
+  website:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # What runs on the site, not the tools that build it; high and above.
+      - run: npm audit --omit=dev --audit-level=high

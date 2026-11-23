@@ -1364,6 +1364,9 @@ fail on one that does not). Clippy is clean. On Windows and six Linux
 distributions the released programs and the engine's tests run on GitHub's
 machines ([platforms.md](platforms.md), `.github/workflows/platforms.yml`):
 on Windows all 917 pass since the fixes that run found (2026-11-16).
+The libraries the engine and the website are built from are checked weekly
+against published vulnerabilities (`.github/workflows/audit.yml`); the
+Android app's are not yet.
 On Android the engine's crates run by `scripts/android-test.sh`:
 678 tests in 63 binaries passed on the Android 14 x86_64 emulator on
 2026-10-08, including two phones pairing and syncing. The last run on a

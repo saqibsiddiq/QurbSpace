@@ -24,4 +24,7 @@ scope.
 This is an open beta. The design is described in
 [docs/CODEBASE.md](docs/CODEBASE.md) and the decision records in
 [docs/decisions/](docs/decisions/). **No independent security review has
-been done yet.**
+been done yet.** Known vulnerabilities in the libraries QurbSpace is built
+from are checked weekly and whenever they change
+([.github/workflows/audit.yml](.github/workflows/audit.yml)): the Rust crates
+and the website's packages, not yet the Android app's.
