@@ -180,11 +180,12 @@ object DirectLink {
         if (!engine.directLinkTaken()) return failed(engine, declined = true)
         val joined = if (link.how == 2.toUByte()) waitForClient(25) else { kotlinx.coroutines.delay(8_000); true }
         if (!joined) return failed(engine)
-        // On the Wi-Fi is not yet reachable: the computer is dialled where it
-        // connects from, once it has an address on the link and has dialled
-        // in (2.6 to 4 s after joining, 2026-11-22). A pass begun before
-        // dialled where the computer had been, and fetched nothing.
-        if (link.how == 2.toUByte() && !heard(engine, 15)) return failed(engine)
+        // On the Wi-Fi is not yet reachable: the two must meet over the link
+        // first, the computer dialling in or the phone reaching it there. A
+        // pass begun before dialled where the computer had been, and fetched
+        // nothing (2026-11-22); waited for with nothing listening on the
+        // phone and nothing dialling from it, they never met (2026-11-23).
+        if (link.how == 2.toUByte() && !met(context, engine, 20)) return failed(engine)
         engine.setDirectLinkReady(true)
         Log.i(TAG, "the computer is on ${link.name}")
         return link
@@ -283,11 +284,22 @@ object DirectLink {
         return null
     }
 
-    /** Until the computer on the link has connected over it, or `seconds`. */
-    private suspend fun heard(engine: uniffi.qurb_mobile.Qurb, seconds: Int): Boolean {
-        repeat(seconds * 4) {
+    /**
+     * Until the phone and the computer on the link have met over it, or
+     * `seconds`: short passes meanwhile, which listen for the computer
+     * dialling in and dial it where its beacons on the link say it is. They
+     * carry nothing large (it waits for the link) and do not offer the link
+     * again.
+     */
+    private suspend fun met(context: Context, engine: uniffi.qurb_mobile.Qurb, seconds: Int): Boolean {
+        val until = System.currentTimeMillis() + seconds * 1000L
+        while (System.currentTimeMillis() < until) {
             if (engine.directLinkHeard()) return true
-            kotlinx.coroutines.delay(250)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                Engine.hearingTheNetwork(context) { runCatching { engine.syncWithin(4u) } }
+            }
+            if (engine.directLinkHeard()) return true
+            kotlinx.coroutines.delay(500)
         }
         return engine.directLinkHeard()
     }

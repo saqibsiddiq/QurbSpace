@@ -148,6 +148,12 @@ impl DirectNet {
 }
 
 static DIRECT_NET: std::sync::Mutex<Option<DirectNet>> = std::sync::Mutex::new(None);
+/// Whether this device has reached another over the direct link up now.
+static REACHED_ON_LINK: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+pub(crate) fn reached_on_direct_link() {
+    REACHED_ON_LINK.store(true, std::sync::atomic::Ordering::Relaxed);
+}
 static DIRECT_CHANGED: std::sync::LazyLock<tokio::sync::Notify> = std::sync::LazyLock::new(tokio::sync::Notify::new);
 
 /// Where each device last connected to this one from, by its fingerprint:
@@ -173,6 +179,7 @@ pub(crate) fn last_heard_from(peer: &Fingerprint) -> Option<std::net::SocketAddr
 pub fn set_direct_link(net: Option<DirectNet>) {
     if let Ok(mut held) = DIRECT_NET.lock() {
         let before = std::mem::replace(&mut *held, net);
+        REACHED_ON_LINK.store(false, std::sync::atomic::Ordering::Relaxed);
         if let Ok(mut heard) = HEARD_FROM.lock() {
             heard.retain(|_, at| ![before, net].iter().flatten().any(|n| n.holds(at.ip())));
         }
@@ -180,15 +187,17 @@ pub fn set_direct_link(net: Option<DirectNet>) {
     DIRECT_CHANGED.notify_one();
 }
 
-/// Whether a device has connected to this one over the direct link up now:
-/// on the phone that made it, the computer that joined is on it with an
-/// address and has dialled in, so the phone can dial it there. Joining the
-/// Wi-Fi is not that: the phone started a pass on it before the computer
-/// had an address, dialled where the computer had been, and fetched nothing
-/// (2026-11-22, five links in a row).
+/// Whether a device and this one have met over the direct link up now: it
+/// connected to this one there, or this one reached it there. On the phone
+/// that made the link, the computer that joined is then on it with an
+/// address, and is dialled there. Joining the Wi-Fi is not that: the phone
+/// started a pass on it before the computer had an address, dialled where
+/// the computer had been, and fetched nothing (2026-11-22, five links in a
+/// row).
 pub fn heard_on_direct_link() -> bool {
     let Some(net) = direct_link() else { return false };
-    HEARD_FROM.lock().map(|heard| heard.values().any(|at| net.holds(at.ip()))).unwrap_or(false)
+    REACHED_ON_LINK.load(std::sync::atomic::Ordering::Relaxed)
+        || HEARD_FROM.lock().map(|heard| heard.values().any(|at| net.holds(at.ip()))).unwrap_or(false)
 }
 
 pub fn direct_link() -> Option<DirectNet> {
@@ -289,6 +298,12 @@ mod tests {
         set_direct_link(Some(link));
         assert!(!heard_on_direct_link(), "a stale address is not the computer having connected");
         assert_eq!(last_heard_from(&computer), None);
+
+        // Or this one reached it there.
+        reached_on_direct_link();
+        assert!(heard_on_direct_link());
+        set_direct_link(Some(link));
+        assert!(!heard_on_direct_link(), "reached on the last link, not this one");
         set_direct_link(None);
     }
 }

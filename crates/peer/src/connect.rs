@@ -891,6 +891,7 @@ impl Connector {
                 let there = Endpoints { public: None, local: vec![at], onion: None };
                 if let Ok(client) = self.race_among(peer, &there).await {
                     tracing::info!(peer = %peer.short(), %at, "reached over the direct link, where it was heard from");
+                    crate::reached_on_direct_link();
                     return Ok(client);
                 }
             }
@@ -1198,6 +1199,7 @@ impl Connector {
                 match self.race_among(peer, &on_link).await {
                     Ok(client) => {
                         tracing::info!(peer = %peer.short(), "reached over the direct link");
+                        crate::reached_on_direct_link();
                         return Ok(client);
                     }
                     Err(e) => tracing::debug!(peer = %peer.short(), error = %e, "not on the direct link; every path"),

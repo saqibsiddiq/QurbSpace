@@ -760,6 +760,9 @@ pub struct Qurb {
     /// (decision 0092), and whether one said it will join.
     direct_link: Mutex<Option<DirectLink>>,
     direct_link_taken: std::sync::atomic::AtomicBool,
+    /// The link up now has been taken by a computer: not offered again by
+    /// the passes that follow while it joins.
+    direct_link_offered: std::sync::atomic::AtomicBool,
     /// Whether the app could make a direct link now (Fast link on, allowed),
     /// whether the one made has the computer on it, and how much a pass put
     /// off for one: a large transfer *to* this phone waits for the link
@@ -2160,6 +2163,7 @@ impl Qurb {
         if link.is_none() {
             self.direct_ready.store(false, std::sync::atomic::Ordering::Relaxed);
         }
+        self.direct_link_offered.store(false, std::sync::atomic::Ordering::Relaxed);
         if let Ok(mut held) = self.direct_link.lock() {
             *held = link;
         }
@@ -3285,6 +3289,7 @@ impl Qurb {
             drive_wanted: std::sync::atomic::AtomicBool::new(false),
             direct_link: Mutex::new(None),
             direct_link_taken: std::sync::atomic::AtomicBool::new(false),
+            direct_link_offered: std::sync::atomic::AtomicBool::new(false),
             direct_possible: std::sync::atomic::AtomicBool::new(false),
             direct_peer: Mutex::new(None),
             direct_ready: std::sync::atomic::AtomicBool::new(false),
@@ -3741,7 +3746,13 @@ impl Qurb {
                     }
                     self.direct_link_taken.store(true, std::sync::atomic::Ordering::Relaxed);
                 }
-            } else if let Some(link) = self.direct_link.lock().ok().and_then(|l| l.clone()) {
+            } else if let Some(link) = self
+                .direct_link
+                .lock()
+                .ok()
+                .and_then(|l| l.clone())
+                .filter(|_| !self.direct_link_offered.load(std::sync::atomic::Ordering::Relaxed))
+            {
                 let offered = runtime.block_on(async {
                     tokio::time::timeout(
                         std::time::Duration::from_secs(5),
@@ -3752,6 +3763,7 @@ impl Qurb {
                 if let Ok(Ok(true)) = offered {
                     tracing::info!(computer = %peer.short(), how = link.how, "it will join the direct link");
                     self.direct_link_taken.store(true, std::sync::atomic::Ordering::Relaxed);
+                    self.direct_link_offered.store(true, std::sync::atomic::Ordering::Relaxed);
                 }
             }
             if self.drive_code.lock().ok().is_some_and(|c| c.is_some()) {
