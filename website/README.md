@@ -126,7 +126,8 @@ app/page.tsx              the landing page
 app/layout.tsx            the shell every page shares, and the environment
 app/site-config.ts        the address, the repository, and the metadata
 app/globals.css           the design system, from the window's, and the pages
-app/download/             how to get Qurb today: from source, Linux and Android
+app/download/             the download page: the visitor's device first, every device with
+                          its version and size (GitHub, hourly), warnings, the steps after
 app/page.tsx, app/home.css the landing page, and its styles
 app/docs/                 the docs: how-to and technical pages, with search
 app/api/waitlist/         the waitlist, kept in Upstash Redis
