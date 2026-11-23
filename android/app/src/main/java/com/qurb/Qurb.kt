@@ -397,11 +397,10 @@ object Engine {
         // A Google Drive token for the mailbox, when it is on (2026-11-13).
         handle?.let { GoogleDrive.refresh(context, it) }
         // Whether a large transfer to this phone waits for a direct link
-        // (decision 0092): not for now. Tried on 2026-11-22 with the laptop
-        // locked: the link was made and joined each time, the pass over it
-        // took nothing, and the file waited for a link again, every minute,
-        // never arriving. Until that is found, it goes the usual way.
-        handle?.setDirectPossible(false)
+        // (decision 0092). Off on 2026-11-22 after the pass over the link
+        // took nothing; on again with the phone waiting for the computer to
+        // connect over the link before fetching (`DirectLink.establish`).
+        handle?.setDirectPossible(DirectLink.possibleNow(context))
         val wifi = context.applicationContext
             .getSystemService(Context.WIFI_SERVICE) as? android.net.wifi.WifiManager
         val lock = runCatching {

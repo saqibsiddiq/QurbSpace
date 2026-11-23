@@ -235,14 +235,18 @@ class SyncWorker(context: Context, params: WorkerParameters) :
             // usual way at once (decision 0092, amended).
             if (engine.largeIncoming() > 0uL) {
                 val incoming = DirectLink.establish(applicationContext, engine)
-                withContext(Dispatchers.IO) {
+                // No link: fetched the usual way in the pass below, not put
+                // off for a link again.
+                if (incoming == null) DirectLink.usualWayForNow()
+                val fetched = withContext(Dispatchers.IO) {
                     Engine.hearingTheNetwork(applicationContext) {
-                        runCatching { engine.syncServing(BUDGET_SECONDS, SERVING_SECONDS) }
+                        runCatching { engine.syncServing(BUDGET_SECONDS, SERVING_SECONDS) }.getOrNull()
                     }
                 }
                 if (incoming != null) {
                     engine.setDirectLink(null)
                     DirectLink.close()
+                    if ((fetched?.adopted ?: 0u) == 0u) DirectLink.usualWayForNow()
                 }
             }
             tellArrived(engine)

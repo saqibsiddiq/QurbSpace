@@ -180,6 +180,11 @@ object DirectLink {
         if (!engine.directLinkTaken()) return failed(engine, declined = true)
         val joined = if (link.how == 2.toUByte()) waitForClient(25) else { kotlinx.coroutines.delay(8_000); true }
         if (!joined) return failed(engine)
+        // On the Wi-Fi is not yet reachable: the computer is dialled where it
+        // connects from, once it has an address on the link and has dialled
+        // in (2.6 to 4 s after joining, 2026-11-22). A pass begun before
+        // dialled where the computer had been, and fetched nothing.
+        if (link.how == 2.toUByte() && !heard(engine, 15)) return failed(engine)
         engine.setDirectLinkReady(true)
         Log.i(TAG, "the computer is on ${link.name}")
         return link
@@ -276,6 +281,26 @@ object DirectLink {
         close()
         Log.i(TAG, "no computer joined; the usual way")
         return null
+    }
+
+    /** Until the computer on the link has connected over it, or `seconds`. */
+    private suspend fun heard(engine: uniffi.qurb_mobile.Qurb, seconds: Int): Boolean {
+        repeat(seconds * 4) {
+            if (engine.directLinkHeard()) return true
+            kotlinx.coroutines.delay(250)
+        }
+        return engine.directLinkHeard()
+    }
+
+    /**
+     * A transfer to this phone that no link carried (none made, the computer
+     * said no, or it brought nothing): the usual way, now and for the next
+     * ten minutes, so a link that cannot carry it is not tried again every
+     * minute while the file waits.
+     */
+    fun usualWayForNow() {
+        failedAt = System.currentTimeMillis()
+        Log.i(TAG, "no link carried the transfer to this phone; the usual way for now")
     }
 
     @android.annotation.SuppressLint("MissingPermission")

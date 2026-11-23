@@ -167,11 +167,28 @@ pub(crate) fn last_heard_from(peer: &Fingerprint) -> Option<std::net::SocketAddr
 
 /// A direct link joined, or ended (None): connections kept to its device
 /// are dropped by the daemon, to be made again over the link or without it.
+/// Where devices were heard from on the link before is forgotten: a new link
+/// gives them new addresses, and a stale one would pass for the device
+/// having connected (`heard_on_direct_link`).
 pub fn set_direct_link(net: Option<DirectNet>) {
     if let Ok(mut held) = DIRECT_NET.lock() {
-        *held = net;
+        let before = std::mem::replace(&mut *held, net);
+        if let Ok(mut heard) = HEARD_FROM.lock() {
+            heard.retain(|_, at| ![before, net].iter().flatten().any(|n| n.holds(at.ip())));
+        }
     }
     DIRECT_CHANGED.notify_one();
+}
+
+/// Whether a device has connected to this one over the direct link up now:
+/// on the phone that made it, the computer that joined is on it with an
+/// address and has dialled in, so the phone can dial it there. Joining the
+/// Wi-Fi is not that: the phone started a pass on it before the computer
+/// had an address, dialled where the computer had been, and fetched nothing
+/// (2026-11-22, five links in a row).
+pub fn heard_on_direct_link() -> bool {
+    let Some(net) = direct_link() else { return false };
+    HEARD_FROM.lock().map(|heard| heard.values().any(|at| net.holds(at.ip()))).unwrap_or(false)
 }
 
 pub fn direct_link() -> Option<DirectNet> {
@@ -242,3 +259,36 @@ pub use server::{accepted_fingerprints, trusted_fingerprints, Generation, PeerSe
 pub use kept::{fetch_kept, learn_kept};
 pub use source::{check_holders, confirm_kept, learn_profile, report_holdings, NetworkSource};
 pub use wire::{Request, Response};
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // The direct link is one for the process: the only test that sets it.
+    #[test]
+    fn heard_on_the_link_only_once_dialled_in_over_it() {
+        let link = DirectNet {
+            address: std::net::Ipv4Addr::new(192, 168, 49, 1),
+            prefix: 24,
+            gateway: std::net::IpAddr::V4(std::net::Ipv4Addr::UNSPECIFIED),
+        };
+        let computer = Fingerprint::from_bytes([7; 32]);
+        set_direct_link(None);
+        assert!(!heard_on_direct_link(), "no link, nothing heard on one");
+
+        // Heard at home before the link: not on it.
+        heard_from(computer, "192.168.1.5:47474".parse().unwrap());
+        set_direct_link(Some(link));
+        assert!(!heard_on_direct_link(), "joined the Wi-Fi, not yet dialled in");
+
+        heard_from(computer, "192.168.49.35:47474".parse().unwrap());
+        assert!(heard_on_direct_link());
+
+        // The next link begins with nothing heard on it.
+        set_direct_link(None);
+        set_direct_link(Some(link));
+        assert!(!heard_on_direct_link(), "a stale address is not the computer having connected");
+        assert_eq!(last_heard_from(&computer), None);
+        set_direct_link(None);
+    }
+}

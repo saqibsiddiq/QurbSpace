@@ -2177,6 +2177,12 @@ impl Qurb {
         self.direct_possible.store(possible, std::sync::atomic::Ordering::Relaxed);
     }
 
+    /// Whether the computer that joined the direct link has connected to
+    /// this phone over it: then it can be dialled there.
+    pub fn direct_link_heard(&self) -> bool {
+        qurb_peer::heard_on_direct_link()
+    }
+
     /// The computer has joined the direct link: what waited for it goes.
     pub fn set_direct_link_ready(&self, ready: bool) {
         self.direct_ready.store(ready, std::sync::atomic::Ordering::Relaxed);
@@ -4133,8 +4139,14 @@ impl Qurb {
                 })
                 .sum();
             if coming >= LARGE_INCOMING {
-                tracing::info!(computer = %peer.short(), bytes = coming, "a large transfer waits for a direct link");
-                self.large_incoming.store(coming, std::sync::atomic::Ordering::Relaxed);
+                // Not asked for again by the short pass that offers the link
+                // being made for it: asked again there, every link was
+                // followed by another a minute later (2026-11-22).
+                let offering = self.direct_link.lock().map(|link| link.is_some()).unwrap_or(false);
+                if !offering {
+                    tracing::info!(computer = %peer.short(), bytes = coming, "a large transfer waits for a direct link");
+                    self.large_incoming.store(coming, std::sync::atomic::Ordering::Relaxed);
+                }
                 return Ok(Some(qurb_engine::PlanStats::default()));
             }
         }
