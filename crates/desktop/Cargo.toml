@@ -37,7 +37,10 @@ tauri = { version = "2", features = [] }
 # no plugin; this is the accessible way to do the same thing, for anybody who
 # cannot drag or is using a keyboard.
 tauri-plugin-dialog = "2"
-tauri-plugin-updater = "2"
+# Without its zip support: on Windows it unpacks an update packed as a zip,
+# and QurbSpace's are a signed installer. The zip library had six published
+# flaws in extracting archives (2026-11-23, .github/workflows/audit.yml).
+tauri-plugin-updater = { version = "2", default-features = false, features = ["rustls-tls", "system-proxy"] }
 # The updater's own signature check, for an update kept on disk between starts
 # (updates.rs). Already built for the updater.
 minisign-verify = "0.2"

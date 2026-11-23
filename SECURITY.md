@@ -27,4 +27,6 @@ This is an open beta. The design is described in
 been done yet.** Known vulnerabilities in the libraries QurbSpace is built
 from are checked weekly and whenever they change
 ([.github/workflows/audit.yml](.github/workflows/audit.yml)): the Rust crates
-and the website's packages, not yet the Android app's.
+and the website's packages, not yet the Android app's. Those that cannot be
+fixed yet are listed with their reasons in [.cargo/audit.toml](.cargo/audit.toml)
+([decision 0093](docs/decisions/0093-known-vulnerabilities-checked-weekly.md)).

@@ -1,0 +1,25 @@
+# Advisories accepted for now, each because no fixed version can be taken
+# yet: it comes through a library we use, not one we choose a version of.
+# Read by `cargo audit` (.github/workflows/audit.yml), which still lists them
+# without failing on them. Looked at again on each release, and by
+# 2027-02-01 at the latest; one whose library has since released a fix comes
+# off this list the same day. Decided 2026-11-23, with the owner.
+[advisories]
+ignore = [
+    # rsa 0.9: timing side channel (Marvin). Through Tor (arti); no fixed
+    # 0.9, and arti has not moved to 0.10. Tor is the last-resort path.
+    "RUSTSEC-2023-0071",
+    # crypto-bigint 0.5: operations meant to be constant time are not quite.
+    # Through k256 (the meeting point's Nostr signatures, qurb-signal); the
+    # fix is in 0.7, which k256 0.13 does not take.
+    "RUSTSEC-2026-0387",
+    # libsqlite3-sys 0.38: a flaw in the SQLite it bundles. QurbSpace's
+    # index is SQLite (qurb-storage), and the fix is in 0.39 (rusqlite 0.41);
+    # but Tor (arti 0.47, and 0.48, the latest) requires rusqlite below 0.41,
+    # and only one SQLite can be linked. Every query is QurbSpace's own; no
+    # SQL comes from another device.
+    "RUSTSEC-2026-0459",
+    # glib 0.18: an unsound iterator over GVariant strings, which QurbSpace
+    # does not use. Through the desktop window's GTK (Tauri, the tray).
+    "RUSTSEC-2024-0429",
+]
