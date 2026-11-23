@@ -4,6 +4,23 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-23: laptop to phone over the link, after the fix (decision 0092)
+
+The S23 (77 %, on battery) and the laptop, the home router's 5 GHz; 256 MB
+of random bytes sent from the laptop each time, checksums identical on
+arrival (`Download/Qurb/`).
+
+| run | what happened | the transfer |
+|---|---|---|
+| owner at the laptop | put off for a link 17 s after the send; link made, offered, and declined at once (the laptop in use); fetched the usual way at the next pass, no further link | 16.8 MB/s, all there 46 s after the send |
+| laptop locked throughout | link made and taken; the laptop joined in 2.9 s (Android saw it, 192.168.49.35); the phone waited 25 s without the two meeting over the link, nothing listening on the phone between passes and nothing dialling from it; closed, the usual way, no further link | 13.8 MB/s, all there 115 s after the send |
+
+So the fallbacks hold: a declined or fruitless link costs one try (12 s and
+about 60 s here) and the file arrives; no link every minute any more. The
+link itself carried nothing yet. Fixed after the second run: while it waits
+the phone runs short passes that listen and dial on the link, and the link
+is offered once. **Not yet tried.**
+
 ## 2026-11-22, night: laptop to phone over the link (decision 0092)
 
 256 MB, the laptop locked, the S23 connected. The link was made and joined
