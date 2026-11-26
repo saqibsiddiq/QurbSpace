@@ -4,6 +4,26 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-26: laptop to phone over the link, third try (decision 0092)
+
+The S23 (84 %, charging) and the laptop, locked; 256 MB from the laptop. The
+link was made and taken, the laptop joined in 3.1 s and **reached the phone
+over it twice** (the phone's waiting passes listening, the fix of 11-23).
+Still no transfer over it, for two reasons found:
+
+- the phone recorded the laptop's address as `::ffff:192.168.49.35` (its
+  socket is dual-stack) and did not count it as on the link. Fixed the same
+  day (`DirectNet::holds`).
+- the phone's own call to the laptop on the link timed out: the laptop's
+  firewall (ufw) lets UDP in only from the home network, 192.168.1.0/24.
+  Outgoing calls pass, so the laptop reaches the phone and the phone cannot
+  reach the laptop. Windows' firewall would do the same on a new network.
+  **Not fixed**: the phone must fetch over the connection the laptop makes,
+  not one of its own.
+
+The fallback held: closed after 55 s, the usual way, intact (3.8 MB/s, the
+laptop rejoining its network), no further link.
+
 ## 2026-11-23: laptop to phone over the link, after the fix (decision 0092)
 
 The S23 (77 %, on battery) and the laptop, the home router's 5 GHz; 256 MB

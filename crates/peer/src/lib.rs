@@ -141,7 +141,10 @@ pub struct DirectNet {
 
 impl DirectNet {
     pub fn holds(&self, ip: std::net::IpAddr) -> bool {
-        let std::net::IpAddr::V4(ip) = ip else { return false };
+        // A dual-stack socket gives an IPv4 sender as ::ffff:a.b.c.d: the
+        // phone heard the computer on the link that way and did not count it
+        // (2026-11-26).
+        let std::net::IpAddr::V4(ip) = ip.to_canonical() else { return false };
         let mask = u32::MAX.checked_shl(32 - u32::from(self.prefix.min(32))).unwrap_or(0);
         u32::from(ip) & mask == u32::from(self.address) & mask
     }
@@ -292,6 +295,10 @@ mod tests {
 
         heard_from(computer, "192.168.49.35:47474".parse().unwrap());
         assert!(heard_on_direct_link());
+        // As a dual-stack socket reports it.
+        set_direct_link(Some(link));
+        heard_from(computer, "[::ffff:192.168.49.35]:47474".parse().unwrap());
+        assert!(heard_on_direct_link(), "an IPv4 sender in IPv6 form");
 
         // The next link begins with nothing heard on it.
         set_direct_link(None);
