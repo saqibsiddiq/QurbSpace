@@ -1717,7 +1717,12 @@ pass. On from setup (*Fast transfers*); taken by the computer only when
 nobody is at it, since joining leaves its usual network; both ways; Linux and
 Windows computers. 512 MB phone to laptop at 29.8 to 33.2 MB/s against 9.1
 through the router ([decision 0092](decisions/0092-a-direct-link-for-large-transfers.md),
-testing.md, 2026-11-22).
+testing.md, 2026-11-22). The other way the phone cannot call the computer on
+the link (its firewall lets in only its home network), so the computer
+answers on the call it makes to the phone (`serve_what_is_dialled_on_link`)
+and the phone asks over that one (`connection_on_link`,
+`PeerClient::on_their_connection`): 256 MB laptop to phone at 35.9 MB/s,
+after 33 s of setup (2026-11-26).
 
 **A real phone and a real laptop sync both ways**, verified on hardware: a
 4.7 MB photo crossed from a Galaxy S23 to a laptop, byte-identical by SHA-256.

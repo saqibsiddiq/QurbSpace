@@ -671,6 +671,19 @@ impl Daemon {
                 }
             });
         }
+        // And on the calls this computer makes to a phone over a direct link
+        // the phone made: its own call back is stopped by this computer's
+        // firewall, which lets in only the home network (2026-11-26), so it
+        // asks over this one.
+        {
+            let store = Arc::clone(&served);
+            let generation = Arc::clone(&generation);
+            let trust = trust.clone();
+            qurb_peer::serve_what_is_dialled_on_link(Arc::new(move |connection| {
+                let (store, generation, trust) = (Arc::clone(&store), Arc::clone(&generation), trust.clone());
+                tokio::spawn(async move { qurb_peer::server::serve_connection(connection, store, generation, &trust).await });
+            }));
+        }
 
         // A replica has no directory to watch. Starting one would be worse
         // than useless: it would report an empty tree, and every file the

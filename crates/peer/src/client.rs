@@ -58,6 +58,10 @@ pub struct PeerClient {
     /// the other device. Recorded when it is made, because afterwards the two
     /// look the same: the relay presents itself as an ordinary address.
     relayed: bool,
+    /// Whether the endpoint is this client's to close with it: not when the
+    /// connection is one the other device made, accepted on an endpoint that
+    /// goes on serving (`on_their_connection`).
+    own_endpoint: bool,
 }
 
 impl PeerClient {
@@ -82,7 +86,7 @@ impl PeerClient {
         // The name is required by TLS and means nothing here: identity comes
         // from the pinned certificate, not from what the peer calls itself.
         let connection = endpoint.connect(addr, "qurb-device")?.await?;
-        Ok(Self { endpoint, connection, relayed: false })
+        Ok(Self { endpoint, connection, relayed: false, own_endpoint: true })
     }
 
     /// Connect using a socket that has already been used for discovery and
@@ -101,7 +105,7 @@ impl PeerClient {
         let mut endpoint = crate::nat::endpoint_from(socket, None)?;
         endpoint.set_default_client_config(tls::client_config(identity, expected)?);
         let connection = endpoint.connect(addr, "qurb-device")?.await?;
-        Ok(Self { endpoint, connection, relayed: false })
+        Ok(Self { endpoint, connection, relayed: false, own_endpoint: true })
     }
 
     /// Wrap a connection someone else established.
@@ -110,7 +114,15 @@ impl PeerClient {
     /// candidate addresses and cannot hand over a connection it has not made
     /// yet.
     pub fn from_parts(endpoint: quinn::Endpoint, connection: quinn::Connection) -> Self {
-        Self { endpoint, connection, relayed: false }
+        Self { endpoint, connection, relayed: false, own_endpoint: true }
+    }
+
+    /// Ask over a connection the other device made to this one, which it
+    /// answers on: on a direct link, the computer's call to the phone, when
+    /// the phone's own call to it is stopped by its firewall (2026-11-26).
+    /// Closing it closes that connection only.
+    pub fn on_their_connection(endpoint: quinn::Endpoint, connection: quinn::Connection) -> Self {
+        Self { endpoint, connection, relayed: false, own_endpoint: false }
     }
 
     /// Mark a connection as running through the relay.
@@ -834,7 +846,9 @@ impl PeerClient {
 
     pub fn close(&self) {
         self.connection.close(0u32.into(), b"done");
-        self.endpoint.close(0u32.into(), b"done");
+        if self.own_endpoint {
+            self.endpoint.close(0u32.into(), b"done");
+        }
     }
 
     /// Close this connection and nothing else.

@@ -323,6 +323,7 @@ async fn serve_connection_inner(
     // knew only its home address, gone with it (decision 0092, 2026-11-22).
     if let Some(asker) = asker {
         crate::heard_from(asker, connection.remote_address());
+        crate::dialled_in(asker, &connection);
     }
     let mut told = false;
 

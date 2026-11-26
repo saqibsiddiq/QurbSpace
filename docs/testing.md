@@ -4,6 +4,28 @@ What has been tested end to end, how, under what conditions, and what it
 found. Newest first. Each run says what it could not reach and why: a
 function not listed under *Tested* has not been.
 
+## 2026-11-26, evening: laptop to phone over the link, fourth try (decision 0092)
+
+The S23 (charging) and the laptop, locked throughout; 256 MB from the laptop,
+checksums identical. The laptop on the build that answers the phone over its
+own calls on the link; the phone on the build that asks over them.
+
+| time | what happened |
+|---|---|
+| 21:01:57 | the laptop sends |
+| 21:02:04 | the phone puts it off for a link |
+| 21:02:10 to :14 | link made, offered, taken; the laptop joined in 3.1 s |
+| 21:02:18 | the laptop reached the phone over the link |
+| 21:02:30 | the phone asked over the laptop's call (*reached over the connection it made on the direct link*) |
+| 21:02:38 | **all 256 MB fetched, 7.5 s, 35.9 MB/s**, round trip 3 ms, no loss |
+
+All there **73 s after the send**: 33 s of it before the transfer, most of
+that the phone noticing the laptop on the link between its 4 s passes. On
+11-23 the usual way took 46 s in all for the same size, so at 256 MB the
+link does not yet pay; it does from about 1 GB. The laptop's firewall had
+also been opened to the link's network by the owner beforehand; the phone
+did not use that path (it asks over the laptop's call first).
+
 ## 2026-11-26: laptop to phone over the link, third try (decision 0092)
 
 The S23 (84 %, charging) and the laptop, locked; 256 MB from the laptop. The

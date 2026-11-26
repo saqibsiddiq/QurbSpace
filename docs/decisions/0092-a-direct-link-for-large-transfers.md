@@ -170,3 +170,34 @@ goes the usual way (`setDirectPossible(false)`), and the stuck file arrived
 the usual way, intact, minutes after. Why the pass over the link took
 nothing is not found yet. **Phone to computer is unchanged**: 29.8 to 33.2
 MB/s with nobody at the computer.
+
+## Amended 2026-11-23 to 11-26: transfers to the phone, made to work
+
+Turned on again, and three causes found in four tries on the S23 and the
+laptop (testing.md):
+
+1. The phone fetched the moment the computer joined its Wi-Fi, before it had
+   an address there: it now waits until the two have **met over the link**
+   (`heard_on_direct_link`), running short passes meanwhile that listen and
+   dial, the link offered once (`direct_link_offered`).
+2. A dual-stack socket gave the computer's address as `::ffff:192.168.49.35`,
+   which was not counted as on the link (`DirectNet::holds` now takes it).
+3. The computer's **firewall** let UDP in only from its home network, so the
+   phone's own call over the link timed out, while the computer's call to the
+   phone passed; Windows' firewall does the same on a new network. So the
+   phone **asks over the computer's call**: the computer answers requests on
+   the connections it makes over the link (`serve_what_is_dialled_on_link`),
+   and the phone keeps the computer's call (`connection_on_link`) and asks
+   on it first (`PeerClient::on_their_connection`, which closes that
+   connection only). Tried briefly first, so a computer from before this,
+   which answers nothing on its own call, costs 3 s and the usual paths.
+
+A link that was declined or carried nothing is not tried again for ten
+minutes, and the file goes the usual way at once (`usualWayForNow`): no
+link every minute any more.
+
+Measured 2026-11-26, laptop locked: **256 MB laptop to phone at 35.9 MB/s**.
+Not yet good: 33 s pass before the transfer starts, so the link pays only
+from about 1 GB; the phone notices the computer between 4 s passes, which
+is the most of it. Windows not yet tried on a PC.
+

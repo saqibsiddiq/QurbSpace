@@ -174,6 +174,46 @@ pub(crate) fn last_heard_from(peer: &Fingerprint) -> Option<std::net::SocketAddr
     HEARD_FROM.lock().ok().and_then(|heard| heard.get(peer).copied())
 }
 
+/// Connections devices made to this one over the direct link up now, by
+/// device: on the phone that made the link, the computer's call to it, the
+/// way back to the computer that no firewall stops (`Connector::reach`).
+static ON_LINK_FROM: std::sync::LazyLock<std::sync::Mutex<std::collections::HashMap<Fingerprint, quinn::Connection>>> =
+    std::sync::LazyLock::new(Default::default);
+
+/// A connection a device made to this one: kept if it came over the link.
+pub(crate) fn dialled_in(peer: Fingerprint, connection: &quinn::Connection) {
+    let Some(net) = direct_link() else { return };
+    if net.holds(connection.remote_address().ip()) {
+        if let Ok(mut on_link) = ON_LINK_FROM.lock() {
+            on_link.insert(peer, connection.clone());
+        }
+    }
+}
+
+/// The connection a device made to this one over the link, while it is open.
+pub fn connection_on_link(peer: &Fingerprint) -> Option<quinn::Connection> {
+    direct_link()?;
+    ON_LINK_FROM.lock().ok()?.get(peer).filter(|c| c.close_reason().is_none()).cloned()
+}
+
+/// What answers the requests a device makes over a connection this one made
+/// to it on a direct link: set by the computer, so the phone that made the
+/// link can ask over the computer's own call (2026-11-26). None, nothing does.
+static SERVE_DIALLED: std::sync::Mutex<Option<std::sync::Arc<dyn Fn(quinn::Connection) + Send + Sync>>> =
+    std::sync::Mutex::new(None);
+
+pub fn serve_what_is_dialled_on_link(serve: std::sync::Arc<dyn Fn(quinn::Connection) + Send + Sync>) {
+    if let Ok(mut held) = SERVE_DIALLED.lock() {
+        *held = Some(serve);
+    }
+}
+
+pub(crate) fn dialled_on_link(connection: quinn::Connection) {
+    if let Some(serve) = SERVE_DIALLED.lock().ok().and_then(|s| s.clone()) {
+        serve(connection);
+    }
+}
+
 /// A direct link joined, or ended (None): connections kept to its device
 /// are dropped by the daemon, to be made again over the link or without it.
 /// Where devices were heard from on the link before is forgotten: a new link
@@ -183,6 +223,9 @@ pub fn set_direct_link(net: Option<DirectNet>) {
     if let Ok(mut held) = DIRECT_NET.lock() {
         let before = std::mem::replace(&mut *held, net);
         REACHED_ON_LINK.store(false, std::sync::atomic::Ordering::Relaxed);
+        if let Ok(mut on_link) = ON_LINK_FROM.lock() {
+            on_link.clear();
+        }
         if let Ok(mut heard) = HEARD_FROM.lock() {
             heard.retain(|_, at| ![before, net].iter().flatten().any(|n| n.holds(at.ip())));
         }

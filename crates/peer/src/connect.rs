@@ -883,6 +883,19 @@ impl Connector {
     }
 
     async fn reach_inner(&self, peer: Fingerprint, need: Need) -> Result<PeerClient> {
+        // A direct link up and the device's own call to this one on it: asked
+        // over that, which its firewall lets through where a call from here
+        // is stopped (2026-11-26: the laptop's lets in only its home network).
+        // Tried briefly first: a device from before this answers nothing on
+        // a call it made.
+        if let Some(connection) = crate::connection_on_link(&peer) {
+            let theirs = PeerClient::on_their_connection(self.endpoint.clone(), connection);
+            if let Ok(Ok(_)) = tokio::time::timeout(std::time::Duration::from_secs(3), theirs.about()).await {
+                tracing::info!(peer = %peer.short(), "reached over the connection it made on the direct link");
+                crate::reached_on_direct_link();
+                return Ok(theirs);
+            }
+        }
         // A direct link up and the device last heard from on it: there first,
         // before the local network or the meeting point, which on the link
         // may know nothing of it (decision 0092).
@@ -892,6 +905,7 @@ impl Connector {
                 if let Ok(client) = self.race_among(peer, &there).await {
                     tracing::info!(peer = %peer.short(), %at, "reached over the direct link, where it was heard from");
                     crate::reached_on_direct_link();
+                    crate::dialled_on_link(client.connection());
                     return Ok(client);
                 }
             }
@@ -1200,6 +1214,7 @@ impl Connector {
                     Ok(client) => {
                         tracing::info!(peer = %peer.short(), "reached over the direct link");
                         crate::reached_on_direct_link();
+                        crate::dialled_on_link(client.connection());
                         return Ok(client);
                     }
                     Err(e) => tracing::debug!(peer = %peer.short(), error = %e, "not on the direct link; every path"),
